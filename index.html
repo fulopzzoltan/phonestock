@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PhoneStock — Készlet, Eladás, Szerviz</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    --bg: #14181c; --surface: #1b2127; --surface-2: #232b33; --border: #2d3640;
+    --text: #e9edf1; --text-dim: #8b97a3; --accent: #e8a33d; --accent-dim: #4a3a1f;
+    --green: #4fbf7a; --red: #d9635b; --blue: #5b9dd9;
+    font-family: 'Manrope', sans-serif; background: var(--bg); color: var(--text);
+    min-height: 100vh;
+  }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  .shell { display: flex; min-height: 100vh; }
+  .sidebar { width: 200px; background: var(--surface); border-right: 1px solid var(--border); padding: 20px 12px; display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+  .brand { display: flex; align-items: center; gap: 8px; padding: 6px 10px 20px 10px; font-weight: 800; font-size: 15px; }
+  .brand .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+  .navbtn { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; border: none; background: transparent; color: var(--text-dim); font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; text-align: left; }
+  .navbtn:hover { background: var(--surface-2); color: var(--text); }
+  .navbtn.active { background: var(--accent-dim); color: var(--accent); }
+  .main { flex: 1; padding: 24px 28px; overflow-y: auto; }
+  .headrow { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; gap: 12px; flex-wrap: wrap; }
+  .headrow h1 { font-size: 18px; margin: 0; font-weight: 800; }
+  .headrow .sub { color: var(--text-dim); font-size: 12.5px; margin-top: 2px; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; background: var(--accent); color: #1a1305; border: none; padding: 9px 14px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; font-family: inherit; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .btn.secondary { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+  .statrow { display: flex; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+  .statcard { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; min-width: 130px; flex: 1; }
+  .statcard .label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; }
+  .statcard .val { font-size: 20px; font-weight: 800; }
+  .searchbar { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; margin-bottom: 14px; max-width: 320px; }
+  .searchbar input { background: none; border: none; outline: none; color: var(--text); font-family: inherit; font-size: 13px; width: 100%; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: var(--text-dim); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:hover td { background: var(--surface); }
+  .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+  .badge.new { background: rgba(79,191,122,.15); color: var(--green); }
+  .badge.refurb { background: rgba(91,157,217,.15); color: var(--blue); }
+  .imei { color: var(--text-dim); font-size: 11.5px; }
+  .iconbtn { background: none; border: none; color: var(--text-dim); cursor: pointer; padding: 4px; font-size: 14px; }
+  .iconbtn:hover { color: var(--red); }
+  .empty { color: var(--text-dim); font-size: 13px; padding: 30px 10px; text-align: center; border: 1px dashed var(--border); border-radius: 10px; }
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 20px; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px; width: 100%; max-width: 440px; max-height: 85vh; overflow-y: auto; }
+  .modal h2 { margin: 0 0 16px 0; font-size: 16px; font-weight: 800; display: flex; align-items: center; justify-content: space-between; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 11.5px; color: var(--text-dim); margin-bottom: 5px; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+  .field input, .field select, .field textarea { width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: 7px; padding: 8px 10px; color: var(--text); font-family: inherit; font-size: 13px; outline: none; }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+  .board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .col { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px; min-height: 100px; }
+  .col-head { display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; margin-bottom: 10px; color: var(--text-dim); }
+  .dot-sm { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .card { background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-bottom: 8px; font-size: 12.5px; }
+  .card .cust { font-weight: 700; margin-bottom: 2px; }
+  .card .dev { color: var(--text-dim); font-size: 11.5px; margin-bottom: 6px; }
+  .card .issue { margin-bottom: 8px; line-height: 1.4; }
+  .card select { width: 100%; font-size: 11.5px; padding: 5px 6px; }
+  .card .foot { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+  .errbar { background: rgba(217,99,91,.15); color: var(--red); padding: 8px 12px; border-radius: 8px; font-size: 12.5px; margin-bottom: 12px; }
+  .toggle-link { color: var(--text-dim); font-size: 12px; cursor: pointer; text-decoration: underline; margin-top: 14px; display: inline-block; }
+  @media (max-width: 720px) {
+    .shell { flex-direction: column; }
+    .sidebar { width: 100%; flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--border); }
+    .board { grid-template-columns: 1fr; }
+    .row2 { grid-template-columns: 1fr; }
+    table { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel" data-type="module">
+const { useState, useEffect, useMemo } = React;
+
+// ==== SUPABASE CONFIG — cseréld le, ha másik projektet használsz ====
+const SUPABASE_URL = "https://aaiyyhskvxjqfhrgoulh.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhaXl5aHNrdnhqcWZocmdvdWxoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxMjE1NTMsImV4cCI6MjEwMTY5NzU1M30.2_dLpIgo8El8Iu0O7ucYpPDgJXXO_esMte_se7ngp3A";
+
+async function sb(path, options = {}) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    ...options,
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: options.prefer || "return=representation",
+      ...(options.headers || {}),
+    },
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Supabase hiba ${res.status}: ${text}`);
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+const money = (n) => (Number(n) || 0).toLocaleString("hu-HU") + " Lei";
+const today = () => new Date().toISOString().slice(0, 10);
+
+const SERVICE_STATUSES = [
+  { key: "received", label: "Bejövő", color: "#5b9dd9" },
+  { key: "in_progress", label: "Javítás alatt", color: "#e8a33d" },
+  { key: "waiting_parts", label: "Alkatrészre vár", color: "#d9635b" },
+  { key: "ready", label: "Kész, átvehető", color: "#4fbf7a" },
+  { key: "picked_up", label: "Átvéve", color: "#6b7480" },
+];
+
+const productFromApi = (r) => ({ id: r.id, brand: r.brand, model: r.model, condition: r.condition, grade: r.grade, storage: r.storage, color: r.color, imei: r.imei, costPrice: r.cost_price, salePrice: r.sale_price, status: r.status, dateAdded: r.date_added });
+const productToApi = (p) => ({ brand: p.brand, model: p.model, condition: p.condition, grade: p.grade || null, storage: p.storage || null, color: p.color || null, imei: p.imei || null, cost_price: Number(p.costPrice) || 0, sale_price: Number(p.salePrice) || 0 });
+const saleFromApi = (r) => ({ id: r.id, stockId: r.product_id, productLabel: r.product_label, costPrice: r.cost_price, price: r.price, customerName: r.customer_name, customerPhone: r.customer_phone, payment: r.payment, date: r.sale_date });
+const saleToApi = (s) => ({ product_id: s.stockId, product_label: s.productLabel, cost_price: Number(s.costPrice) || 0, price: Number(s.price) || 0, customer_name: s.customerName || null, customer_phone: s.customerPhone || null, payment: s.payment });
+const ticketFromApi = (r) => ({ id: r.id, customerName: r.customer_name, customerPhone: r.customer_phone, device: r.device, issue: r.issue, price: r.price, notes: r.notes, status: r.status, dateIn: r.date_in, dateOut: r.date_out });
+const ticketToApi = (t) => ({ customer_name: t.customerName, customer_phone: t.customerPhone || null, device: t.device, issue: t.issue, price: Number(t.price) || 0, notes: t.notes || null });
+
+function App() {
+  const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState("stock");
+  const [stock, setStock] = useState([]);
+  const [sales, setSales] = useState([]);
+  const [service, setService] = useState([]);
+  const [showStockModal, setShowStockModal] = useState(false);
+  const [showSaleModal, setShowSaleModal] = useState(false);
+  const [showServiceModal, setShowServiceModal] = useState(false);
+  const [saleTarget, setSaleTarget] = useState(null);
+  const [search, setSearch] = useState("");
+  const [showPickedUp, setShowPickedUp] = useState(false);
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function loadAll() {
+    setLoading(true);
+    try {
+      const [p, s, t] = await Promise.all([
+        sb("products?order=created_at.desc"),
+        sb("sales?order=created_at.desc"),
+        sb("service_tickets?order=created_at.desc"),
+      ]);
+      setStock((p || []).map(productFromApi));
+      setSales((s || []).map(saleFromApi));
+      setService((t || []).map(ticketFromApi));
+      setError("");
+    } catch (e) {
+      console.error(e);
+      setError("Nem sikerült betölteni az adatokat a Supabase-ből: " + e.message);
+    } finally { setLoading(false); }
+  }
+  useEffect(() => { loadAll(); }, []);
+
+  async function withBusy(fn) {
+    setBusy(true);
+    try { await fn(); setError(""); }
+    catch (e) { console.error(e); setError(e.message || "Hiba történt a mentés közben."); }
+    finally { setBusy(false); }
+  }
+
+  async function addStockItem(item) {
+    await withBusy(async () => {
+      const created = await sb("products", { method: "POST", body: JSON.stringify(productToApi(item)) });
+      setStock([productFromApi(created[0]), ...stock]);
+      setShowStockModal(false);
+    });
+  }
+  async function deleteStockItem(id) {
+    await withBusy(async () => {
+      await sb(`products?id=eq.${id}`, { method: "DELETE", prefer: "return=minimal" });
+      setStock(stock.filter((i) => i.id !== id));
+    });
+  }
+  async function confirmSale(sale) {
+    await withBusy(async () => {
+      await sb(`products?id=eq.${sale.stockId}`, { method: "PATCH", prefer: "return=minimal", body: JSON.stringify({ status: "sold" }) });
+      const created = await sb("sales", { method: "POST", body: JSON.stringify(saleToApi(sale)) });
+      setStock(stock.map((i) => (i.id === sale.stockId ? { ...i, status: "sold" } : i)));
+      setSales([saleFromApi(created[0]), ...sales]);
+      setShowSaleModal(false); setSaleTarget(null);
+    });
+  }
+  async function addServiceTicket(ticket) {
+    await withBusy(async () => {
+      const created = await sb("service_tickets", { method: "POST", body: JSON.stringify(ticketToApi(ticket)) });
+      setService([ticketFromApi(created[0]), ...service]);
+      setShowServiceModal(false);
+    });
+  }
+  async function setTicketStatus(id, status) {
+    await withBusy(async () => {
+      const patch = { status };
+      if (status === "picked_up") patch.date_out = today();
+      await sb(`service_tickets?id=eq.${id}`, { method: "PATCH", prefer: "return=minimal", body: JSON.stringify(patch) });
+      setService(service.map((t) => (t.id === id ? { ...t, status, dateOut: status === "picked_up" ? today() : t.dateOut } : t)));
+    });
+  }
+  async function deleteTicket(id) {
+    await withBusy(async () => {
+      await sb(`service_tickets?id=eq.${id}`, { method: "DELETE", prefer: "return=minimal" });
+      setService(service.filter((t) => t.id !== id));
+    });
+  }
+
+  const inStock = useMemo(() => stock.filter((i) => i.status === "in_stock"), [stock]);
+  const filteredStock = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return inStock;
+    return inStock.filter((i) => [i.brand, i.model, i.imei, i.color, i.storage].join(" ").toLowerCase().includes(q));
+  }, [inStock, search]);
+  const stockStats = useMemo(() => {
+    const value = inStock.reduce((s, i) => s + (Number(i.salePrice) || 0), 0);
+    const cost = inStock.reduce((s, i) => s + (Number(i.costPrice) || 0), 0);
+    return { count: inStock.length, value, cost };
+  }, [inStock]);
+  const salesStats = useMemo(() => {
+    const revenue = sales.reduce((s, x) => s + (Number(x.price) || 0), 0);
+    const profit = sales.reduce((s, x) => s + ((Number(x.price) || 0) - (Number(x.costPrice) || 0)), 0);
+    return { count: sales.length, revenue, profit };
+  }, [sales]);
+  const activeTickets = useMemo(() => service.filter((t) => t.status !== "picked_up"), [service]);
+  const pickedUpTickets = useMemo(() => service.filter((t) => t.status === "picked_up"), [service]);
+
+  return (
+    <div className="shell">
+      <div className="sidebar">
+        <div className="brand"><span className="dot"></span> PhoneStock</div>
+        <button className={`navbtn ${tab === "stock" ? "active" : ""}`} onClick={() => setTab("stock")}>📱 Készlet</button>
+        <button className={`navbtn ${tab === "sales" ? "active" : ""}`} onClick={() => setTab("sales")}>🛒 Eladások</button>
+        <button className={`navbtn ${tab === "service" ? "active" : ""}`} onClick={() => setTab("service")}>🔧 Szerviz</button>
+      </div>
+      <div className="main">
+        {error && <div className="errbar">{error}</div>}
+        {tab === "stock" && (
+          <>
+            <div className="headrow">
+              <div><h1>Készlet</h1><div className="sub">Új és felújított telefonok raktáron</div></div>
+              <button className="btn" disabled={busy} onClick={() => setShowStockModal(true)}>+ Új termék</button>
+            </div>
+            <div className="statrow">
+              <div className="statcard"><div className="label">Raktáron</div><div className="val">{stockStats.count} db</div></div>
+              <div className="statcard"><div className="label">Készlet értéke</div><div className="val">{money(stockStats.value)}</div></div>
+              <div className="statcard"><div className="label">Beszerzési érték</div><div className="val">{money(stockStats.cost)}</div></div>
+            </div>
+            <div className="searchbar"><input placeholder="Keresés márka, modell, IMEI..." value={search} onChange={(e) => setSearch(e.target.value)} /></div>
+            {loading ? <div className="empty">Betöltés...</div> : filteredStock.length === 0 ? (
+              <div className="empty">Nincs raktáron termék. Adj hozzá egyet fent.</div>
+            ) : (
+              <table>
+                <thead><tr><th>Termék</th><th>Állapot</th><th>Tárhely / Szín</th><th>IMEI</th><th>Beszerzés</th><th>Eladási ár</th><th></th></tr></thead>
+                <tbody>
+                  {filteredStock.map((i) => (
+                    <tr key={i.id}>
+                      <td><strong>{i.brand} {i.model}</strong></td>
+                      <td><span className={`badge ${i.condition === "New" ? "new" : "refurb"}`}>{i.condition === "New" ? "Új" : `Felújított${i.grade ? " " + i.grade : ""}`}</span></td>
+                      <td className="mono">{[i.storage, i.color].filter(Boolean).join(" / ") || "—"}</td>
+                      <td className="imei mono">{i.imei || "—"}</td>
+                      <td className="mono">{money(i.costPrice)}</td>
+                      <td className="mono"><strong>{money(i.salePrice)}</strong></td>
+                      <td style={{ display: "flex", gap: 6 }}>
+                        <button className="btn secondary" style={{ padding: "6px 10px", fontSize: 12 }} disabled={busy} onClick={() => { setSaleTarget(i); setShowSaleModal(true); }}>Eladva</button>
+                        <button className="iconbtn" disabled={busy} onClick={() => deleteStockItem(i.id)}>🗑</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </>
+        )}
+        {tab === "sales" && (
+          <>
+            <div className="headrow"><div><h1>Eladások</h1><div className="sub">Eladási előzmények</div></div></div>
+            <div className="statrow">
+              <div className="statcard"><div className="label">Eladások száma</div><div className="val">{salesStats.count}</div></div>
+              <div className="statcard"><div className="label">Árbevétel</div><div className="val">{money(salesStats.revenue)}</div></div>
+              <div className="statcard"><div className="label">Profit</div><div className="val" style={{ color: "var(--green)" }}>{money(salesStats.profit)}</div></div>
+            </div>
+            {loading ? <div className="empty">Betöltés...</div> : sales.length === 0 ? (
+              <div className="empty">Még nincs rögzített eladás.</div>
+            ) : (
+              <table>
+                <thead><tr><th>Dátum</th><th>Termék</th><th>Vevő</th><th>Fizetés</th><th>Ár</th><th>Profit</th></tr></thead>
+                <tbody>
+                  {sales.map((s) => (
+                    <tr key={s.id}>
+                      <td className="mono">{s.date}</td>
+                      <td><strong>{s.productLabel}</strong></td>
+                      <td>{s.customerName || "—"}{s.customerPhone ? ` · ${s.customerPhone}` : ""}</td>
+                      <td>{s.payment}</td>
+                      <td className="mono">{money(s.price)}</td>
+                      <td className="mono" style={{ color: "var(--green)" }}>{money((Number(s.price) || 0) - (Number(s.costPrice) || 0))}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </>
+        )}
+        {tab === "service" && (
+          <>
+            <div className="headrow">
+              <div><h1>Szerviz</h1><div className="sub">Bejövő javítások státusz szerint</div></div>
+              <button className="btn" disabled={busy} onClick={() => setShowServiceModal(true)}>+ Új munkalap</button>
+            </div>
+            {loading ? <div className="empty">Betöltés...</div> : (
+              <div className="board">
+                {SERVICE_STATUSES.filter((s) => s.key !== "picked_up").map((col) => {
+                  const items = activeTickets.filter((t) => t.status === col.key);
+                  return (
+                    <div className="col" key={col.key}>
+                      <div className="col-head"><span className="dot-sm" style={{ background: col.color }}></span> {col.label} ({items.length})</div>
+                      {items.length === 0 && <div style={{ color: "var(--text-dim)", fontSize: 12 }}>Üres</div>}
+                      {items.map((t) => (
+                        <div className="card" key={t.id}>
+                          <div className="cust">{t.customerName}{t.customerPhone ? ` · ${t.customerPhone}` : ""}</div>
+                          <div className="dev mono">{t.device}</div>
+                          <div className="issue">{t.issue}</div>
+                          {t.price ? <div className="mono" style={{ marginBottom: 6 }}>{money(t.price)}</div> : null}
+                          <select value={t.status} disabled={busy} onChange={(e) => setTicketStatus(t.id, e.target.value)}>
+                            {SERVICE_STATUSES.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
+                          </select>
+                          <div className="foot"><span style={{ color: "var(--text-dim)", fontSize: 11 }}>{t.dateIn}</span><button className="iconbtn" disabled={busy} onClick={() => deleteTicket(t.id)}>🗑</button></div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            <span className="toggle-link" onClick={() => setShowPickedUp((v) => !v)}>{showPickedUp ? "Átvett munkalapok elrejtése" : `Átvett munkalapok mutatása (${pickedUpTickets.length})`}</span>
+            {showPickedUp && (
+              <table style={{ marginTop: 10 }}>
+                <thead><tr><th>Vevő</th><th>Eszköz</th><th>Hiba</th><th>Bejött</th><th>Kiadva</th><th>Ár</th></tr></thead>
+                <tbody>
+                  {pickedUpTickets.map((t) => (
+                    <tr key={t.id}><td>{t.customerName}</td><td className="mono">{t.device}</td><td>{t.issue}</td><td className="mono">{t.dateIn}</td><td className="mono">{t.dateOut || "—"}</td><td className="mono">{money(t.price)}</td></tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </>
+        )}
+      </div>
+      {showStockModal && <StockModal onClose={() => setShowStockModal(false)} onSave={addStockItem} busy={busy} />}
+      {showSaleModal && saleTarget && <SaleModal item={saleTarget} onClose={() => { setShowSaleModal(false); setSaleTarget(null); }} onSave={confirmSale} busy={busy} />}
+      {showServiceModal && <ServiceModal onClose={() => setShowServiceModal(false)} onSave={addServiceTicket} busy={busy} />}
+    </div>
+  );
+}
+
+function StockModal({ onClose, onSave, busy }) {
+  const [f, setF] = useState({ brand: "", model: "", condition: "New", grade: "A", storage: "", color: "", imei: "", costPrice: "", salePrice: "" });
+  const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+  const valid = f.brand.trim() && f.model.trim() && f.salePrice !== "";
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h2>Új termék <button className="iconbtn" onClick={onClose}>✕</button></h2>
+        <div className="row2"><div className="field"><label>Márka</label><input value={f.brand} onChange={set("brand")} placeholder="Samsung" /></div><div className="field"><label>Modell</label><input value={f.model} onChange={set("model")} placeholder="Galaxy S23" /></div></div>
+        <div className="row2">
+          <div className="field"><label>Állapot</label><select value={f.condition} onChange={set("condition")}><option value="New">Új</option><option value="Refurbished">Felújított</option></select></div>
+          {f.condition === "Refurbished" && <div className="field"><label>Minőség</label><select value={f.grade} onChange={set("grade")}><option value="A">A (kiváló)</option><option value="B">B (jó)</option><option value="C">C (elfogadható)</option></select></div>}
+        </div>
+        <div className="row2"><div className="field"><label>Tárhely</label><input value={f.storage} onChange={set("storage")} placeholder="128GB" /></div><div className="field"><label>Szín</label><input value={f.color} onChange={set("color")} placeholder="Fekete" /></div></div>
+        <div className="field"><label>IMEI / sorozatszám</label><input value={f.imei} onChange={set("imei")} placeholder="35xxxxxxxxxxxxx" /></div>
+        <div className="row2"><div className="field"><label>Beszerzési ár (Lei)</label><input type="number" value={f.costPrice} onChange={set("costPrice")} placeholder="0" /></div><div className="field"><label>Eladási ár (Lei)</label><input type="number" value={f.salePrice} onChange={set("salePrice")} placeholder="0" /></div></div>
+        <div className="modal-actions"><button className="btn secondary" onClick={onClose}>Mégse</button><button className="btn" disabled={!valid || busy} onClick={() => valid && onSave(f)}>{busy ? "Mentés..." : "Hozzáadás"}</button></div>
+      </div>
+    </div>
+  );
+}
+
+function SaleModal({ item, onClose, onSave, busy }) {
+  const [f, setF] = useState({ price: item.salePrice || "", customerName: "", customerPhone: "", payment: "Készpénz" });
+  const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h2>Eladás rögzítése <button className="iconbtn" onClick={onClose}>✕</button></h2>
+        <div className="field"><label>Termék</label><input disabled value={`${item.brand} ${item.model} ${item.condition === "New" ? "(Új)" : "(Felújított)"}`} /></div>
+        <div className="row2"><div className="field"><label>Vevő neve</label><input value={f.customerName} onChange={set("customerName")} placeholder="Kovács János" /></div><div className="field"><label>Telefonszám</label><input value={f.customerPhone} onChange={set("customerPhone")} placeholder="07xx xxx xxx" /></div></div>
+        <div className="row2"><div className="field"><label>Eladási ár (Lei)</label><input type="number" value={f.price} onChange={set("price")} /></div><div className="field"><label>Fizetés</label><select value={f.payment} onChange={set("payment")}><option>Készpénz</option><option>Kártya</option><option>Átutalás</option></select></div></div>
+        <div className="modal-actions"><button className="btn secondary" onClick={onClose}>Mégse</button><button className="btn" disabled={busy} onClick={() => onSave({ stockId: item.id, productLabel: `${item.brand} ${item.model}`, costPrice: item.costPrice, ...f })}>{busy ? "Mentés..." : "Eladás rögzítése"}</button></div>
+      </div>
+    </div>
+  );
+}
+
+function ServiceModal({ onClose, onSave, busy }) {
+  const [f, setF] = useState({ customerName: "", customerPhone: "", device: "", issue: "", price: "", notes: "" });
+  const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+  const valid = f.customerName.trim() && f.device.trim() && f.issue.trim();
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h2>Új munkalap <button className="iconbtn" onClick={onClose}>✕</button></h2>
+        <div className="row2"><div className="field"><label>Vevő neve</label><input value={f.customerName} onChange={set("customerName")} placeholder="Kovács János" /></div><div className="field"><label>Telefonszám</label><input value={f.customerPhone} onChange={set("customerPhone")} placeholder="07xx xxx xxx" /></div></div>
+        <div className="field"><label>Eszköz</label><input value={f.device} onChange={set("device")} placeholder="iPhone 12, kijelző törött" /></div>
+        <div className="field"><label>Hiba leírása</label><textarea rows={3} value={f.issue} onChange={set("issue")} placeholder="Nem tölt, akku csere szükséges..." /></div>
+        <div className="field"><label>Becsült ár (Lei)</label><input type="number" value={f.price} onChange={set("price")} placeholder="0" /></div>
+        <div className="modal-actions"><button className="btn secondary" onClick={onClose}>Mégse</button><button className="btn" disabled={!valid || busy} onClick={() => valid && onSave(f)}>{busy ? "Mentés..." : "Munkalap létrehozása"}</button></div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
