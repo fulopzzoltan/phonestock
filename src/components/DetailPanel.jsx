@@ -1,11 +1,6 @@
 import { money, STATUSES } from "../lib/utils";
 import { CloseIcon, CallIcon } from "./icons";
-
-function Row({ k, v }) {
-  return (
-    <div className="dp-row"><span className="dp-key">{k}</span><span className="dp-val">{v || "—"}</span></div>
-  );
-}
+import Row from "./DetailRow";
 
 export default function DetailPanel({ ticket, locName, onClose, onStatusChange, onEdit, onDelete, busy }) {
   const probs = (ticket.issue || "").split(",").map((p) => p.trim()).filter(Boolean);

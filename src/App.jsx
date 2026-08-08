@@ -9,6 +9,7 @@ import SellModal from "./components/SellModal";
 import PartModal from "./components/PartModal";
 import TicketCard from "./components/TicketCard";
 import DetailPanel from "./components/DetailPanel";
+import ProductDetailPanel from "./components/ProductDetailPanel";
 import TicketFormModal from "./components/TicketFormModal";
 import TransactionQuickAdd from "./components/TransactionQuickAdd";
 import TransactionsPeriodList from "./components/TransactionsPeriodList";
@@ -47,6 +48,7 @@ function AppShell() {
   const [txModal, setTxModal] = useState(null); // null | tx obj (edit)
   const [ticketModal, setTicketModal] = useState(null); // null | "add" | ticket obj (edit)
   const [detailId, setDetailId] = useState(null);
+  const [productDetailId, setProductDetailId] = useState(null);
 
   async function loadAll() {
     setLoadingData(true);
@@ -176,10 +178,24 @@ function AppShell() {
   }
   async function setTicketStatus(id, status) {
     await withBusy(async () => {
+      const ticket = tickets.find((t) => t.id === id);
       const patch = { status };
       if (status === "Kiadva") patch.date_out = today();
       unwrap(await supabase.from("service_tickets").update(patch).eq("id", id));
       setTickets(tickets.map((t) => (t.id === id ? { ...t, status, dateOut: status === "Kiadva" ? today() : t.dateOut } : t)));
+
+      if (status === "Kiadva" && ticket && ticket.status !== "Kiadva" && (Number(ticket.price) || 0) > 0) {
+        const r = unwrap(await supabase.from("transactions").insert(txToApi({
+          type: "income",
+          category: "Szerviz",
+          description: `Szerviz: ${ticket.customerName} — ${[ticket.brand, ticket.model].filter(Boolean).join(" ")}`,
+          amount: ticket.price,
+          costPrice: ticket.matCost,
+          customerName: ticket.customerName,
+          customerPhone: ticket.customerPhone,
+        }, ticket.locationId)).select());
+        setTransactions((prev) => [txFromApi(r[0]), ...prev]);
+      }
     });
   }
   async function deleteTicket(id) {
@@ -240,6 +256,7 @@ function AppShell() {
   }), [filteredTickets]);
 
   const detailTicket = detailId ? tickets.find((t) => t.id === detailId) : null;
+  const detailProduct = productDetailId ? stock.find((i) => i.id === productDetailId) : null;
   const editingTicket = ticketModal && ticketModal !== "add" ? ticketModal : null;
 
   const noLocationAssigned = !isAdmin && !myLocationId;
@@ -308,7 +325,7 @@ function AppShell() {
                   <thead><tr><th>Termék</th><th>Hely</th><th>Állapot</th><th>Tárhely/Szín</th><th>IMEI</th><th>Besz.</th><th>Ár</th><th></th></tr></thead>
                   <tbody>
                     {filteredStock.map((i) => (
-                      <tr key={i.id}>
+                      <tr key={i.id} style={{ cursor: "pointer" }} onClick={() => setProductDetailId(i.id)}>
                         <td style={{ fontWeight: 600 }}>{i.brand} {i.model}</td>
                         <td><span className="badge-loc">{locName(i.locationId)}</span></td>
                         <td><span className={`st ${i.condition === "New" ? "st-kesz" : "st-beveve"}`}>{i.condition === "New" ? "Új" : `Felúj. ${i.grade || ""}`}</span></td>
@@ -316,7 +333,7 @@ function AppShell() {
                         <td className="mono" style={{ color: "#9CA3AF" }}>{i.imei || "—"}</td>
                         <td className="mono" style={{ color: "#6B7280" }}>{money(i.costPrice)}</td>
                         <td className="mono" style={{ fontWeight: 700 }}>{money(i.salePrice)}</td>
-                        <td style={{ display: "flex", gap: 5 }}>
+                        <td style={{ display: "flex", gap: 5 }} onClick={(e) => e.stopPropagation()}>
                           <button className="btn sec sm" disabled={busy} onClick={() => setSellModal(i)}>Eladva</button>
                           <button className="iconbtn" disabled={busy} onClick={() => setStockModal(i)}><EditIcon /></button>
                           <button className="iconbtn" disabled={busy} onClick={() => deleteProduct(i.id)}><TrashIcon /></button>
@@ -479,6 +496,17 @@ function AppShell() {
           onStatusChange={setTicketStatus}
           onEdit={(t) => { setDetailId(null); setTicketModal(t); }}
           onDelete={deleteTicket}
+        />
+      )}
+      {detailProduct && (
+        <ProductDetailPanel
+          product={detailProduct}
+          locName={locName}
+          busy={busy}
+          onClose={() => setProductDetailId(null)}
+          onSell={(p) => { setProductDetailId(null); setSellModal(p); }}
+          onEdit={(p) => { setProductDetailId(null); setStockModal(p); }}
+          onDelete={(id) => { deleteProduct(id); setProductDetailId(null); }}
         />
       )}
     </div>

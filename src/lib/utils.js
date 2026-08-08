@@ -16,7 +16,7 @@ export const statusCls = (s) => STATUSES.find((c) => c.key === s)?.cls || "st-ki
 export const PROBLEM_TAGS = ["LCD", "FRP", "Csatlakozó", "Akku", "Kamera", "Szoftver", "Egyéb"];
 export const WARRANTIES = ["1 hó", "3 hó", "6 hó", "1 év"];
 export const PAYMENTS = ["Készpénz", "Kártya", "Átutalás"];
-export const CATEGORIES = ["Fix", "Készlet", "Marketing", "Eszköz", "Egyéb"];
+export const CATEGORIES = ["Fix", "Készlet", "Marketing", "Eszköz", "Szerviz", "Egyéb"];
 
 export function startOfWeek(d) {
   const date = new Date(d + "T00:00:00");
