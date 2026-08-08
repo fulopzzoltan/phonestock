@@ -1,0 +1,68 @@
+import { money, STATUSES } from "../lib/utils";
+import { CloseIcon, CallIcon } from "./icons";
+
+function Row({ k, v }) {
+  return (
+    <div className="dp-row"><span className="dp-key">{k}</span><span className="dp-val">{v || "—"}</span></div>
+  );
+}
+
+export default function DetailPanel({ ticket, locName, onClose, onStatusChange, onEdit, onDelete, busy }) {
+  const probs = (ticket.issue || "").split(",").map((p) => p.trim()).filter(Boolean);
+  const profit = (Number(ticket.price) || 0) - (Number(ticket.matCost) || 0);
+  return (
+    <div className="detail-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="detail-panel">
+        <div className="dp-head">
+          <div>
+            <div className="dp-sn">#{ticket.ticketNo}</div>
+            <div className="dp-name">{ticket.customerName} — {[ticket.brand, ticket.model].filter(Boolean).join(" ")}</div>
+          </div>
+          <button className="iconbtn" onClick={onClose}><CloseIcon /></button>
+        </div>
+        <div className="dp-body">
+          <div className="dp-section">
+            <div className="dp-section-title">Státusz módosítás</div>
+            <div className="dp-status-row">
+              {STATUSES.map((c) => (
+                <button key={c.key} className={`dp-st-btn${ticket.status === c.key ? " active" : ""}`} disabled={busy}
+                  onClick={() => onStatusChange(ticket.id, c.key)}>{c.key}</button>
+              ))}
+            </div>
+          </div>
+          <div className="dp-section">
+            <div className="dp-section-title">Kliens adatok</div>
+            <Row k="Kliens" v={ticket.customerName} />
+            <Row k="Telefonszám" v={ticket.customerPhone ? (
+              <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                {ticket.customerPhone}
+                <a className="call-link" href={`tel:${ticket.customerPhone.replace(/\s/g, "")}`}><CallIcon />Hívás</a>
+              </span>
+            ) : null} />
+            <Row k="Helyszín" v={locName(ticket.locationId)} />
+          </div>
+          <div className="dp-section">
+            <div className="dp-section-title">Eszköz & Javítás</div>
+            <Row k="Márka" v={ticket.brand} />
+            <Row k="Modell" v={ticket.model} />
+            <Row k="Probléma" v={probs.length ? probs.map((p, i) => <span key={i} className="prob-pill">{p}</span>) : null} />
+            <Row k="Garancia" v={ticket.warranty ? <span className="gar-pill">{ticket.warranty}</span> : null} />
+            <Row k="Fólia" v={ticket.folia ? <span style={{ color: "#22C55E", fontWeight: 700 }}>✓ Igen</span> : "Nem"} />
+            <Row k="Átadás dátuma" v={ticket.handoverDate} />
+            <Row k="Beérkezés" v={ticket.dateIn} />
+          </div>
+          <div className="dp-section">
+            <div className="dp-section-title">Pénzügyek</div>
+            <Row k="Árajánlat" v={money(ticket.price)} />
+            <Row k="Anyagköltség" v={money(ticket.matCost)} />
+            <Row k="Profit" v={<span style={{ color: "#22C55E", fontWeight: 700 }}>{money(profit)}</span>} />
+          </div>
+        </div>
+        <div className="dp-actions">
+          <button className="btn sec sm" disabled={busy} onClick={() => onEdit(ticket)}>Szerkesztés</button>
+          <button className="btn sm danger" disabled={busy} onClick={() => onDelete(ticket.id)}>Törlés</button>
+        </div>
+      </div>
+    </div>
+  );
+}

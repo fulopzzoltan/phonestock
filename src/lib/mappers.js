@@ -1,0 +1,115 @@
+export const profileFromApi = (r) => ({
+  id: r.id,
+  fullName: r.full_name,
+  role: r.role,
+  locationId: r.location_id,
+});
+
+export const pFromApi = (r) => ({
+  id: r.id,
+  brand: r.brand,
+  model: r.model,
+  condition: r.condition,
+  grade: r.grade,
+  storage: r.storage,
+  color: r.color,
+  imei: r.imei,
+  costPrice: r.cost_price,
+  salePrice: r.sale_price,
+  status: r.status,
+  locationId: r.location_id,
+});
+
+export const pToApi = (p, locId) => ({
+  brand: p.brand,
+  model: p.model,
+  condition: p.condition,
+  grade: p.grade || null,
+  storage: p.storage || null,
+  color: p.color || null,
+  imei: p.imei || null,
+  cost_price: Number(p.costPrice) || 0,
+  sale_price: Number(p.salePrice) || 0,
+  location_id: locId,
+});
+
+export const txFromApi = (r) => ({
+  id: r.id,
+  type: r.type,
+  description: r.description,
+  amount: r.amount,
+  category: r.category,
+  payment: r.payment,
+  productId: r.product_id,
+  costPrice: r.cost_price,
+  customerName: r.customer_name,
+  customerPhone: r.customer_phone,
+  locationId: r.location_id,
+  date: r.date,
+});
+
+export const txToApi = (t, locId) => ({
+  type: t.type,
+  description: t.description,
+  amount: Number(t.amount) || 0,
+  category: t.category,
+  payment: t.payment || null,
+  product_id: t.productId || null,
+  cost_price: Number(t.costPrice) || 0,
+  customer_name: t.customerName || null,
+  customer_phone: t.customerPhone || null,
+  location_id: locId,
+});
+
+export const tFromApi = (r) => ({
+  id: r.id,
+  ticketNo: r.ticket_no,
+  customerName: r.customer_name,
+  customerPhone: r.customer_phone,
+  brand: r.brand,
+  model: r.model,
+  issue: r.issue,
+  price: r.price,
+  warranty: r.warranty,
+  matCost: r.mat_cost,
+  folia: r.folia,
+  handoverDate: r.handover_date,
+  status: r.status,
+  dateIn: r.date_in,
+  dateOut: r.date_out,
+  locationId: r.location_id,
+});
+
+export const tToApi = (t, locId) => ({
+  customer_name: t.customerName,
+  customer_phone: t.customerPhone || null,
+  brand: t.brand,
+  model: t.model || null,
+  issue: t.issue || null,
+  price: Number(t.price) || 0,
+  warranty: t.warranty || null,
+  mat_cost: Number(t.matCost) || 0,
+  folia: !!t.folia,
+  handover_date: t.handoverDate || null,
+  status: t.status || "Bevéve",
+  location_id: locId,
+});
+
+export const partFromApi = (r) => ({
+  id: r.id,
+  name: r.name,
+  brand: r.brand,
+  modelFit: r.model_fit,
+  quantity: r.quantity,
+  costPrice: r.cost_price,
+  salePrice: r.sale_price,
+});
+
+export const partToApi = (p) => ({
+  name: p.name,
+  brand: p.brand || null,
+  model_fit: p.modelFit || null,
+  quantity: Number(p.quantity) || 0,
+  cost_price: Number(p.costPrice) || 0,
+  sale_price: Number(p.salePrice) || 0,
+});
