@@ -175,6 +175,14 @@ tr:hover td{background:#FAFAFA}
 .login-toggle button.active{background:#fff;color:var(--accent-dark);box-shadow:0 1px 3px rgba(0,0,0,.1)}
 .login-note{font-size:11.5px;color:#9CA3AF;text-align:center;margin-top:14px;line-height:1.5}
 
+/* PRINT */
+#print-slip-root{display:none}
+@media print{
+  body *{visibility:hidden}
+  #print-slip-root,#print-slip-root *{visibility:visible}
+  #print-slip-root{display:block;position:fixed;inset:0;background:#fff}
+}
+
 @media (max-width:900px){
   .statrow.c4,.statrow.c5{grid-template-columns:repeat(2,1fr)}
 }

@@ -15,6 +15,7 @@ import TransactionQuickAdd from "./components/TransactionQuickAdd";
 import TransactionsPeriodList from "./components/TransactionsPeriodList";
 import TransactionModal from "./components/TransactionModal";
 import CustomerDetailPanel from "./components/CustomerDetailPanel";
+import PrintSlip from "./components/PrintSlip";
 import { SearchIcon, TrashIcon, EditIcon } from "./components/icons";
 
 export default function App() {
@@ -54,6 +55,14 @@ function AppShell() {
   const [productDetailId, setProductDetailId] = useState(null);
   const [showHandedOver, setShowHandedOver] = useState(false);
   const [customerKey, setCustomerKey] = useState(null);
+  const [printTicket, setPrintTicket] = useState(null);
+
+  function printTicketSlip(ticket) {
+    setPrintTicket(ticket);
+    requestAnimationFrame(() => {
+      window.print();
+    });
+  }
 
   async function loadAll() {
     setLoadingData(true);
@@ -702,6 +711,7 @@ function AppShell() {
           onDelete={deleteTicket}
           onAddPart={addPartToTicket}
           onRemovePart={removePartFromTicket}
+          onPrint={printTicketSlip}
         />
       )}
       {detailProduct && (
@@ -718,6 +728,9 @@ function AppShell() {
       {detailCustomer && (
         <CustomerDetailPanel customer={detailCustomer} locName={locName} onClose={() => setCustomerKey(null)} />
       )}
+      <div id="print-slip-root">
+        {printTicket && <PrintSlip ticket={printTicket} location={locations.find((l) => l.id === printTicket.locationId)} />}
+      </div>
     </div>
   );
 }

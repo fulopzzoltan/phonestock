@@ -34,6 +34,40 @@ export const WARRANTIES = ["1 hó", "3 hó", "6 hó", "1 év"];
 export const PAYMENTS = ["Készpénz", "Kártya", "Átutalás"];
 export const CATEGORIES = ["Fix", "Készlet", "Marketing", "Eszköz", "Szerviz", "Egyéb"];
 
+export const SERVICE_WARRANTY_TERMS = `Szerviz Garancia Feltételek és a Javítás Menete
+
+Fontos tudnivaló: A Telefonos által biztosított szervizgarancia kizárólag a javítás során kicserélt alkatrészekre és az általunk elvégzett munkára vonatkozik, nem pedig a készülék teljes egészére!
+
+1. A garanciális ügyintézés menete (A 2 lépcsős folyamat)
+Adatbiztonság: A készülék leadása előtt a vásárló köteles gondoskodni a személyes adatok mentéséről. Az adatok esetleges elvesztéséért a szervizelés során felelősséget nem vállalunk.
+
+A megoldás 2 lépcsője:
+1. lépcső (Újbóli javítás): Vállaljuk, hogy a leadott készüléket megvizsgáljuk, és a jogos szerviz garanciális hibát a beadástól számított 10 munkanapon belül megpróbáljuk ismét, díjmentesen kijavítani.
+2. lépcső (Pénzvisszafizetés): Ha az újbóli javítás valamilyen okból nem lehetséges, vagy technikai akadályokba ütközik, a szervizelés díját (az alkatrész és a munkadíj árát) visszafizetjük az ügyfélnek.
+
+2. Garanciaidők a beépített alkatrészekre és a munkadíjra
+A kicserélt alkatrészek minőségétől és típusától függően az alábbi garancia időket biztosítjuk.`;
+
+// warranty strings look like "1 hó" / "3 hó" / "6 hó" / "1 év"
+export function warrantyExpiry(fromDateStr, warranty) {
+  if (!fromDateStr || !warranty) return null;
+  const m = warranty.match(/^(\d+)\s*(hó|év)$/);
+  if (!m) return null;
+  const n = Number(m[1]);
+  const d = new Date(fromDateStr + "T00:00:00");
+  if (m[2] === "hó") d.setMonth(d.getMonth() + n);
+  else d.setFullYear(d.getFullYear() + n);
+  const y = d.getFullYear();
+  const mo = String(d.getMonth() + 1).padStart(2, "0");
+  const da = String(d.getDate()).padStart(2, "0");
+  return `${y}-${mo}-${da}`;
+}
+export function isWarrantyActive(fromDateStr, warranty) {
+  const exp = warrantyExpiry(fromDateStr, warranty);
+  if (!exp) return false;
+  return exp >= today();
+}
+
 export function startOfWeek(d) {
   const date = new Date(d + "T00:00:00");
   const day = (date.getDay() + 6) % 7; // Monday = 0

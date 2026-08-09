@@ -3,7 +3,7 @@ import { money, STATUSES, SUB_STATUSES } from "../lib/utils";
 import { CloseIcon, CallIcon, TrashIcon } from "./icons";
 import Row from "./DetailRow";
 
-export default function DetailPanel({ ticket, locName, parts, onClose, onStatusChange, onEdit, onDelete, busy, onAddPart, onRemovePart }) {
+export default function DetailPanel({ ticket, locName, parts, onClose, onStatusChange, onEdit, onDelete, busy, onAddPart, onRemovePart, onPrint }) {
   const [copied, setCopied] = useState(false);
   const [showAddPart, setShowAddPart] = useState(false);
   const [selPartId, setSelPartId] = useState("");
@@ -114,6 +114,7 @@ export default function DetailPanel({ ticket, locName, parts, onClose, onStatusC
           </div>
         </div>
         <div className="dp-actions">
+          <button className="btn sec sm" onClick={() => onPrint(ticket)}>Nyomtatás</button>
           <button className="btn sec sm" disabled={busy} onClick={() => onEdit(ticket)}>Szerkesztés</button>
           <button className="btn sm danger" disabled={busy} onClick={() => onDelete(ticket.id)}>Törlés</button>
         </div>
