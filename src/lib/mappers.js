@@ -1,6 +1,7 @@
 export const profileFromApi = (r) => ({
   id: r.id,
   fullName: r.full_name,
+  email: r.email,
   role: r.role,
   locationId: r.location_id,
 });

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap } from "./lib/supabaseClient";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi } from "./lib/mappers";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi } from "./lib/mappers";
 import { money, today, STATUSES } from "./lib/utils";
 import Login from "./Login";
 import StockModal from "./components/StockModal";
@@ -36,6 +36,7 @@ function AppShell() {
   const [transactions, setTransactions] = useState([]);
   const [tickets, setTickets] = useState([]);
   const [parts, setParts] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -57,13 +58,14 @@ function AppShell() {
   async function loadAll() {
     setLoadingData(true);
     try {
-      const [locs, prods, txs, tcks, prs, sps] = await Promise.all([
+      const [locs, prods, txs, tcks, prs, sps, usrs] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         supabase.from("products").select("*").order("created_at", { ascending: false }),
         supabase.from("transactions").select("*").order("date", { ascending: false }),
         supabase.from("service_tickets").select("*").order("created_at", { ascending: false }),
         supabase.from("parts").select("*").order("name", { ascending: true }),
         supabase.from("service_parts").select("*"),
+        supabase.from("profiles").select("*").order("full_name", { ascending: true }),
       ]);
       setLocations(unwrap(locs) || []);
       setStock((unwrap(prods) || []).map(pFromApi));
@@ -74,6 +76,7 @@ function AppShell() {
       });
       setTickets((unwrap(tcks) || []).map((r) => ({ ...tFromApi(r), usedParts: spByTicket[r.id] || [] })));
       setParts((unwrap(prs) || []).map(partFromApi));
+      setUsers((unwrap(usrs) || []).map(profileFromApi));
       setError("");
     } catch (e) {
       setError("Betöltési hiba: " + e.message);
@@ -146,6 +149,14 @@ function AppShell() {
     await withBusy(async () => {
       unwrap(await supabase.from("parts").delete().eq("id", id));
       setParts(parts.filter((p) => p.id !== id));
+    });
+  }
+
+  // USERS (admin only)
+  async function updateUserProfile(id, patch) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("profiles").update(patch).eq("id", id).select());
+      setUsers(users.map((u) => (u.id === id ? profileFromApi(r[0]) : u)));
     });
   }
 
@@ -354,6 +365,9 @@ function AppShell() {
           <button className={`navbtn ${tab === "service" ? "active" : ""}`} onClick={() => setTab("service")}>🔧 Szerviz</button>
           <button className={`navbtn ${tab === "parts" ? "active" : ""}`} onClick={() => setTab("parts")}>🔩 Alkatrészek</button>
           <button className={`navbtn ${tab === "customers" ? "active" : ""}`} onClick={() => setTab("customers")}>👤 Kliensek</button>
+          {isAdmin && (
+            <button className={`navbtn ${tab === "users" ? "active" : ""}`} onClick={() => setTab("users")}>👥 Felhasználók</button>
+          )}
         </div>
         <div className="sidebar-bottom">
           {isAdmin ? (
@@ -592,6 +606,41 @@ function AppShell() {
                         <td>{c.purchases.length} db · <span className="mono">{money(c.purchaseTotal)}</span></td>
                         <td>{c.tickets.length} db · <span className="mono">{money(c.ticketTotal)}</span></td>
                         <td className="mono" style={{ color: "#6B7280" }}>{c.lastActivity || "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </>
+        )}
+
+        {!noLocationAssigned && isAdmin && tab === "users" && (
+          <>
+            <div className="topbar">
+              <div><div className="page-title">Felhasználók</div><div className="page-sub">Szerepkör és helyszín beállítása</div></div>
+            </div>
+            <div className="tw">
+              {loadingData ? <div className="empty">Betöltés...</div> : users.length === 0 ? <div className="empty">Nincs felhasználó.</div> : (
+                <table>
+                  <thead><tr><th>Név</th><th>Email</th><th>Szerepkör</th><th>Helyszín</th></tr></thead>
+                  <tbody>
+                    {users.map((u) => (
+                      <tr key={u.id}>
+                        <td style={{ fontWeight: 600 }}>{u.fullName || "—"}{u.id === user.id ? " (te)" : ""}</td>
+                        <td style={{ color: "#6B7280" }}>{u.email || "—"}</td>
+                        <td>
+                          <select value={u.role} disabled={busy} onChange={(e) => updateUserProfile(u.id, { role: e.target.value })}>
+                            <option value="employee">Alkalmazott</option>
+                            <option value="admin">Admin</option>
+                          </select>
+                        </td>
+                        <td>
+                          <select value={u.locationId || ""} disabled={busy} onChange={(e) => updateUserProfile(u.id, { location_id: e.target.value || null })}>
+                            <option value="">— Nincs —</option>
+                            {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+                          </select>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
