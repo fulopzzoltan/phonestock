@@ -14,6 +14,7 @@ import TicketFormModal from "./components/TicketFormModal";
 import TransactionQuickAdd from "./components/TransactionQuickAdd";
 import TransactionsPeriodList from "./components/TransactionsPeriodList";
 import TransactionModal from "./components/TransactionModal";
+import CustomerDetailPanel from "./components/CustomerDetailPanel";
 import { SearchIcon, TrashIcon, EditIcon } from "./components/icons";
 
 export default function App() {
@@ -40,6 +41,7 @@ function AppShell() {
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [svcSearch, setSvcSearch] = useState("");
+  const [custSearch, setCustSearch] = useState("");
   const [period, setPeriod] = useState("day");
 
   const [stockModal, setStockModal] = useState(null); // null | "add" | product obj (edit)
@@ -50,6 +52,7 @@ function AppShell() {
   const [detailId, setDetailId] = useState(null);
   const [productDetailId, setProductDetailId] = useState(null);
   const [showHandedOver, setShowHandedOver] = useState(false);
+  const [customerKey, setCustomerKey] = useState(null);
 
   async function loadAll() {
     setLoadingData(true);
@@ -259,6 +262,40 @@ function AppShell() {
     kiadva: handedOverTickets.length,
   }), [filteredTickets, handedOverTickets]);
 
+  const customers = useMemo(() => {
+    const norm = (p) => (p || "").replace(/\D/g, "");
+    const map = new Map();
+    function addEntry(name, phone, kind, record) {
+      const key = norm(phone) || (name ? `name:${name.trim().toLowerCase()}` : null);
+      if (!key) return;
+      if (!map.has(key)) map.set(key, { key, name: "", phone: "", purchases: [], tickets: [] });
+      const c = map.get(key);
+      if (name && !c.name) c.name = name;
+      if (phone && !c.phone) c.phone = phone;
+      if (kind === "purchase") c.purchases.push(record);
+      else c.tickets.push(record);
+    }
+    filteredTransactions.filter((t) => t.type === "income" && t.customerName).forEach((t) => addEntry(t.customerName, t.customerPhone, "purchase", t));
+    filteredTickets.forEach((t) => addEntry(t.customerName, t.customerPhone, "ticket", t));
+    let list = [...map.values()].map((c) => ({
+      ...c,
+      purchaseTotal: c.purchases.reduce((s, p) => s + (Number(p.amount) || 0), 0),
+      ticketTotal: c.tickets.reduce((s, t) => s + (Number(t.price) || 0), 0),
+      lastActivity: [...c.purchases.map((p) => p.date), ...c.tickets.map((t) => t.dateIn)].filter(Boolean).sort().reverse()[0] || "",
+    }));
+    const q = custSearch.trim().toLowerCase();
+    if (q) list = list.filter((c) => [c.name, c.phone].join(" ").toLowerCase().includes(q));
+    return list.sort((a, b) => b.lastActivity.localeCompare(a.lastActivity));
+  }, [filteredTransactions, filteredTickets, custSearch]);
+
+  const customerStats = useMemo(() => ({
+    count: customers.length,
+    revenue: customers.reduce((s, c) => s + c.purchaseTotal + c.ticketTotal, 0),
+    avg: customers.length ? customers.reduce((s, c) => s + c.purchaseTotal + c.ticketTotal, 0) / customers.length : 0,
+  }), [customers]);
+
+  const detailCustomer = customerKey ? customers.find((c) => c.key === customerKey) : null;
+
   const detailTicket = detailId ? tickets.find((t) => t.id === detailId) : null;
   const detailProduct = productDetailId ? stock.find((i) => i.id === productDetailId) : null;
   const editingTicket = ticketModal && ticketModal !== "add" ? ticketModal : null;
@@ -277,6 +314,7 @@ function AppShell() {
           <button className={`navbtn ${tab === "finance" ? "active" : ""}`} onClick={() => setTab("finance")}>💰 Bevételek &amp; Kiadások</button>
           <button className={`navbtn ${tab === "service" ? "active" : ""}`} onClick={() => setTab("service")}>🔧 Szerviz</button>
           <button className={`navbtn ${tab === "parts" ? "active" : ""}`} onClick={() => setTab("parts")}>🔩 Alkatrészek</button>
+          <button className={`navbtn ${tab === "customers" ? "active" : ""}`} onClick={() => setTab("customers")}>👤 Kliensek</button>
         </div>
         <div className="sidebar-bottom">
           {isAdmin ? (
@@ -475,6 +513,40 @@ function AppShell() {
             </div>
           </>
         )}
+
+        {!noLocationAssigned && tab === "customers" && (
+          <>
+            <div className="topbar">
+              <div><div className="page-title">Kliensek</div><div className="page-sub">{effectiveLocFilter === "all" ? "Mindkét helyszín" : locName(effectiveLocFilter)}</div></div>
+            </div>
+            <div className="statrow c3">
+              <div className="statcard accent"><div className="lbl">Ügyfelek</div><div className="val">{customerStats.count}</div></div>
+              <div className="statcard"><div className="lbl">Összes bevétel tőlük</div><div className="val" style={{ color: "#15803D" }}>{money(customerStats.revenue)}</div></div>
+              <div className="statcard"><div className="lbl">Átlagos ügyfélérték</div><div className="val">{money(customerStats.avg)}</div></div>
+            </div>
+            <div className="filter-row">
+              <div className="searchbar"><SearchIcon /><input placeholder="Keresés név vagy telefonszám..." value={custSearch} onChange={(e) => setCustSearch(e.target.value)} /></div>
+            </div>
+            <div className="tw">
+              {loadingData ? <div className="empty">Betöltés...</div> : customers.length === 0 ? <div className="empty">Nincs ügyfél.</div> : (
+                <table>
+                  <thead><tr><th>Név</th><th>Telefonszám</th><th>Vásárlások</th><th>Szerviz</th><th>Utolsó aktivitás</th></tr></thead>
+                  <tbody>
+                    {customers.map((c) => (
+                      <tr key={c.key} style={{ cursor: "pointer" }} onClick={() => setCustomerKey(c.key)}>
+                        <td style={{ fontWeight: 600 }}>{c.name || "Névtelen"}</td>
+                        <td className="mono">{c.phone || "—"}</td>
+                        <td>{c.purchases.length} db · <span className="mono">{money(c.purchaseTotal)}</span></td>
+                        <td>{c.tickets.length} db · <span className="mono">{money(c.ticketTotal)}</span></td>
+                        <td className="mono" style={{ color: "#6B7280" }}>{c.lastActivity || "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       {stockModal && (
@@ -537,6 +609,9 @@ function AppShell() {
           onEdit={(p) => { setProductDetailId(null); setStockModal(p); }}
           onDelete={(id) => { deleteProduct(id); setProductDetailId(null); }}
         />
+      )}
+      {detailCustomer && (
+        <CustomerDetailPanel customer={detailCustomer} locName={locName} onClose={() => setCustomerKey(null)} />
       )}
     </div>
   );
