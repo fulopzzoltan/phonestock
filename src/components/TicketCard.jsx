@@ -1,4 +1,4 @@
-import { money } from "../lib/utils";
+import { money, subStatusCls, subStatusLabel } from "../lib/utils";
 import { CallIcon } from "./icons";
 
 export default function TicketCard({ ticket, locName, onOpen }) {
@@ -9,6 +9,13 @@ export default function TicketCard({ ticket, locName, onOpen }) {
         <span className="t-sn">#{ticket.ticketNo}</span>
         <span className="t-loc">{locName(ticket.locationId)}</span>
       </div>
+      {ticket.subStatus && (
+        <div style={{ marginBottom: 4 }}>
+          <span className={`st ${subStatusCls(ticket.status, ticket.subStatus)}`} style={{ fontSize: 10, padding: "2px 8px" }}>
+            {subStatusLabel(ticket.status, ticket.subStatus)}
+          </span>
+        </div>
+      )}
       <div className="t-name">{ticket.customerName}</div>
       <div className="t-device">
         <span>{[ticket.brand, ticket.model].filter(Boolean).join(" ")}</span>

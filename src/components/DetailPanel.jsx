@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { money, STATUSES } from "../lib/utils";
+import { money, STATUSES, SUB_STATUSES } from "../lib/utils";
 import { CloseIcon, CallIcon } from "./icons";
 import Row from "./DetailRow";
 
@@ -30,9 +30,17 @@ export default function DetailPanel({ ticket, locName, onClose, onStatusChange, 
             <div className="dp-status-row">
               {STATUSES.map((c) => (
                 <button key={c.key} className={`dp-st-btn${ticket.status === c.key ? " active" : ""}`} disabled={busy}
-                  onClick={() => onStatusChange(ticket.id, c.key)}>{c.key}</button>
+                  onClick={() => onStatusChange(ticket.id, c.key, SUB_STATUSES[c.key]?.[0]?.key ?? null)}>{c.key}</button>
               ))}
             </div>
+            {(SUB_STATUSES[ticket.status] || []).length > 1 && (
+              <div className="dp-status-row" style={{ marginTop: 8 }}>
+                {SUB_STATUSES[ticket.status].map((s) => (
+                  <button key={s.label} className={`dp-st-btn${(ticket.subStatus || null) === s.key ? " active" : ""}`} disabled={busy}
+                    onClick={() => onStatusChange(ticket.id, ticket.status, s.key)}>{s.label}</button>
+                ))}
+              </div>
+            )}
           </div>
           <div className="dp-section">
             <div className="dp-section-title">Kliens adatok</div>

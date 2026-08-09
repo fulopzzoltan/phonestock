@@ -4,14 +4,30 @@ export const today = () => new Date().toISOString().slice(0, 10);
 export const LOCS = { gyimes: "Gyimes", szentgy: "Szentgyörgy" };
 
 export const STATUSES = [
-  { key: "Bevéve", color: "#F59E0B", cls: "st-beveve" },
-  { key: "Alkatrész", color: "#3B82F6", cls: "st-alkatresz" },
-  { key: "Javítás", color: "#F97316", cls: "st-javitas" },
-  { key: "Kész", color: "#22C55E", cls: "st-kesz" },
-  { key: "Sikertelen", color: "#EC4899", cls: "st-sikertelen" },
-  { key: "Kiadva", color: "#9CA3AF", cls: "st-kiadva" },
+  { key: "Átvett", color: "#F59E0B", cls: "st-beveve" },
+  { key: "Javítás alatt", color: "#F97316", cls: "st-javitas" },
+  { key: "Átadásra", color: "#22C55E", cls: "st-kesz" },
 ];
-export const statusCls = (s) => STATUSES.find((c) => c.key === s)?.cls || "st-kiadva";
+export const statusCls = (s) => STATUSES.find((c) => c.key === s)?.cls || "st-beveve";
+
+// sub_status options available within each main status ("null" entry = plain/no tag)
+export const SUB_STATUSES = {
+  "Átvett": [
+    { key: null, label: "Egyszerű átvétel", cls: "st-beveve" },
+    { key: "Garanciális", label: "Garanciális", cls: "st-garancialis" },
+    { key: "Alkatrészre vár", label: "Alkatrészre vár", cls: "st-alkatresz" },
+  ],
+  "Javítás alatt": [
+    { key: null, label: "Javítás alatt", cls: "st-javitas" },
+  ],
+  "Átadásra": [
+    { key: null, label: "Kész, átvehető", cls: "st-kesz" },
+    { key: "Sikertelen", label: "Sikertelen", cls: "st-sikertelen" },
+    { key: "Átadva", label: "Átadva", cls: "st-kiadva" },
+  ],
+};
+export const subStatusCls = (status, sub) => (SUB_STATUSES[status] || []).find((s) => s.key === sub)?.cls || "st-beveve";
+export const subStatusLabel = (status, sub) => (SUB_STATUSES[status] || []).find((s) => s.key === sub)?.label || sub || "";
 
 export const PROBLEM_TAGS = ["LCD", "FRP", "Csatlakozó", "Akku", "Kamera", "Szoftver", "Egyéb"];
 export const WARRANTIES = ["1 hó", "3 hó", "6 hó", "1 év"];

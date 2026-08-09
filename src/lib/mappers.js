@@ -76,6 +76,7 @@ export const tFromApi = (r) => ({
   folia: r.folia,
   handoverDate: r.handover_date,
   status: r.status,
+  subStatus: r.sub_status,
   dateIn: r.date_in,
   dateOut: r.date_out,
   locationId: r.location_id,
@@ -92,7 +93,8 @@ export const tToApi = (t, locId) => ({
   mat_cost: Number(t.matCost) || 0,
   folia: !!t.folia,
   handover_date: t.handoverDate || null,
-  status: t.status || "Bevéve",
+  status: t.status || "Átvett",
+  sub_status: t.subStatus || null,
   location_id: locId,
 });
 

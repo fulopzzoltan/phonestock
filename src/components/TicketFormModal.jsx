@@ -1,7 +1,7 @@
 import { useState } from "react";
 import LocationField from "./LocationField";
 import { CloseIcon } from "./icons";
-import { PROBLEM_TAGS, WARRANTIES, STATUSES } from "../lib/utils";
+import { PROBLEM_TAGS, WARRANTIES, STATUSES, SUB_STATUSES } from "../lib/utils";
 
 function parseIssue(issue) {
   const parts = (issue || "").split(",").map((p) => p.trim()).filter(Boolean);
@@ -23,7 +23,8 @@ export default function TicketFormModal({ ticket, locations, defaultLocId, onClo
     warranty: ticket?.warranty || "",
     handoverDate: ticket?.handoverDate || "",
     folia: ticket?.folia || false,
-    status: ticket?.status || "Bevéve",
+    status: ticket?.status || "Átvett",
+    subStatus: ticket?.subStatus ?? null,
     extra: parsed.extra,
   });
   const [tags, setTags] = useState(parsed.tags);
@@ -45,11 +46,18 @@ export default function TicketFormModal({ ticket, locations, defaultLocId, onClo
         <div className="row2">
           <LocationField locations={locations} value={locId} onChange={setLocId} />
           <div className="field"><label>Státusz</label>
-            <select value={f.status} onChange={set("status")}>
+            <select value={f.status} onChange={(e) => setF({ ...f, status: e.target.value, subStatus: SUB_STATUSES[e.target.value]?.[0]?.key ?? null })}>
               {STATUSES.map((s) => <option key={s.key} value={s.key}>{s.key}</option>)}
             </select>
           </div>
         </div>
+        {(SUB_STATUSES[f.status] || []).length > 1 && (
+          <div className="field"><label>Altípus</label>
+            <select value={f.subStatus ?? ""} onChange={(e) => setF({ ...f, subStatus: e.target.value || null })}>
+              {SUB_STATUSES[f.status].map((s) => <option key={s.label} value={s.key ?? ""}>{s.label}</option>)}
+            </select>
+          </div>
+        )}
         <div className="row2">
           <div className="field"><label>Kliens neve</label><input value={f.customerName} onChange={set("customerName")} placeholder="Kovács János" /></div>
           <div className="field"><label>Telefonszám</label><input value={f.customerPhone} onChange={set("customerPhone")} placeholder="07xx xxx xxx" /></div>

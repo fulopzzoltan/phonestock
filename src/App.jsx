@@ -49,6 +49,7 @@ function AppShell() {
   const [ticketModal, setTicketModal] = useState(null); // null | "add" | ticket obj (edit)
   const [detailId, setDetailId] = useState(null);
   const [productDetailId, setProductDetailId] = useState(null);
+  const [showHandedOver, setShowHandedOver] = useState(false);
 
   async function loadAll() {
     setLoadingData(true);
@@ -176,15 +177,15 @@ function AppShell() {
       setTicketModal(null);
     });
   }
-  async function setTicketStatus(id, status) {
+  async function setTicketStatus(id, status, subStatus = null) {
     await withBusy(async () => {
       const ticket = tickets.find((t) => t.id === id);
-      const patch = { status };
-      if (status === "Kiadva") patch.date_out = today();
+      const patch = { status, sub_status: subStatus };
+      if (subStatus === "Átadva") patch.date_out = today();
       unwrap(await supabase.from("service_tickets").update(patch).eq("id", id));
-      setTickets(tickets.map((t) => (t.id === id ? { ...t, status, dateOut: status === "Kiadva" ? today() : t.dateOut } : t)));
+      setTickets(tickets.map((t) => (t.id === id ? { ...t, status, subStatus, dateOut: subStatus === "Átadva" ? today() : t.dateOut } : t)));
 
-      if (status === "Kiadva" && ticket && ticket.status !== "Kiadva" && (Number(ticket.price) || 0) > 0) {
+      if (subStatus === "Átadva" && ticket && ticket.subStatus !== "Átadva" && (Number(ticket.price) || 0) > 0) {
         const r = unwrap(await supabase.from("transactions").insert(txToApi({
           type: "income",
           category: "Szerviz",
@@ -247,13 +248,16 @@ function AppShell() {
     qty: parts.reduce((a, p) => a + (Number(p.quantity) || 0), 0),
   }), [parts]);
 
+  const activeTickets = useMemo(() => filteredTickets.filter((t) => t.subStatus !== "Átadva"), [filteredTickets]);
+  const handedOverTickets = useMemo(() => filteredTickets.filter((t) => t.subStatus === "Átadva"), [filteredTickets]);
+
   const svcStats = useMemo(() => ({
     total: filteredTickets.length,
-    active: filteredTickets.filter((t) => !["Kész", "Sikertelen", "Kiadva"].includes(t.status)).length,
-    kesz: filteredTickets.filter((t) => t.status === "Kész").length,
-    sikertelen: filteredTickets.filter((t) => t.status === "Sikertelen").length,
-    kiadva: filteredTickets.filter((t) => t.status === "Kiadva").length,
-  }), [filteredTickets]);
+    active: filteredTickets.filter((t) => t.status !== "Átadásra").length,
+    kesz: filteredTickets.filter((t) => t.status === "Átadásra" && !t.subStatus).length,
+    sikertelen: filteredTickets.filter((t) => t.subStatus === "Sikertelen").length,
+    kiadva: handedOverTickets.length,
+  }), [filteredTickets, handedOverTickets]);
 
   const detailTicket = detailId ? tickets.find((t) => t.id === detailId) : null;
   const detailProduct = productDetailId ? stock.find((i) => i.id === productDetailId) : null;
@@ -390,7 +394,7 @@ function AppShell() {
               <div className="kanban-wrap">
                 <div className="kanban">
                   {STATUSES.map((col) => {
-                    const items = filteredTickets.filter((t) => t.status === col.key);
+                    const items = activeTickets.filter((t) => t.status === col.key);
                     return (
                       <div className="k-col" key={col.key} style={{ "--col-color": col.color }}>
                         <div className="k-col-head">
@@ -405,6 +409,31 @@ function AppShell() {
                     );
                   })}
                 </div>
+              </div>
+            )}
+            <span className="toggle-link" onClick={() => setShowHandedOver((v) => !v)}>
+              {showHandedOver ? "Átadott munkalapok elrejtése" : `Átadott munkalapok megtekintése (${handedOverTickets.length})`}
+            </span>
+            {showHandedOver && (
+              <div className="tw" style={{ marginTop: 12 }}>
+                {handedOverTickets.length === 0 ? <div className="empty">Nincs átadott munkalap.</div> : (
+                  <table>
+                    <thead><tr><th>#</th><th>Vevő</th><th>Helyszín</th><th>Eszköz</th><th>Bejött</th><th>Átadva</th><th>Díj</th></tr></thead>
+                    <tbody>
+                      {handedOverTickets.map((t) => (
+                        <tr key={t.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
+                          <td className="mono">#{t.ticketNo}</td>
+                          <td>{t.customerName}</td>
+                          <td><span className="badge-loc">{locName(t.locationId)}</span></td>
+                          <td>{[t.brand, t.model].filter(Boolean).join(" ")}</td>
+                          <td className="mono">{t.dateIn}</td>
+                          <td className="mono">{t.dateOut || "—"}</td>
+                          <td className="mono" style={{ fontWeight: 700 }}>{money(t.price)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
               </div>
             )}
           </>
