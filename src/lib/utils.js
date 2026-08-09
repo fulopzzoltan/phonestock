@@ -46,7 +46,25 @@ A megoldás 2 lépcsője:
 2. lépcső (Pénzvisszafizetés): Ha az újbóli javítás valamilyen okból nem lehetséges, vagy technikai akadályokba ütközik, a szervizelés díját (az alkatrész és a munkadíj árát) visszafizetjük az ügyfélnek.
 
 2. Garanciaidők a beépített alkatrészekre és a munkadíjra
-A kicserélt alkatrészek minőségétől és típusától függően az alábbi garancia időket biztosítjuk.`;
+A kicserélt alkatrészek minőségétől és típusától függően az alábbi garancia időket biztosítjuk:
+Eredeti akkumulátor: 12 hónap
+Utángyártott akkumulátor: 6 hónap
+Eredeti kijelző: 3 hónap
+Utángyártott kijelző: 1 hónap
+Minden egyéb beépített alkatrész és javítás: 1 hónap
+Megjegyzés: Nem egyértelmű hibával leadott készülékek esetén (pl. a telefon egyáltalán nem kapcsol be, és a hiba oka az átvételkor nem egyértelmű), a sikeres javításra és a cserélt alkatrészre egységesen 1 hónap garancia érvényes.
+
+3. A garancia NEM terjed ki az alábbi esetekre (és azonnal érvényét veszti):
+Mechanikai sérülések: Leesésből, ütődésből, nyomásból, hajlításból eredő hibák, illetve törött, repedt, karcos vagy külső behatás nyomait viselő kijelzők.
+Külső tényezők (Beázás): Víz, pára, nedvesség, folyadék vagy oxidáció által okozott hibák.
+Illetéktelen beavatkozás: Ha a készüléket a javítás után megbontják, vagy magánszemély / más szerviz beavatkozást hajt végre rajta.
+Szoftveres és tartozék hibák: Nem megfelelő töltő, kábel használata, illetve nem hivatalos szoftver, rootolás, jailbreak vagy hibás frissítés okozta problémák.
+Természetes elhasználódás: A készülék és az alkatrészek normál használatból eredő kopása.
+Korábban is fennálló, egyéb hibák: Ha a készüléket egy adott hibával adják le (pl. törött kijelző), a garancia kizárólag a kijelzőre vonatkozik. A szerviz nem vállal felelősséget olyan rejtett vagy korábbi hibákért, amelyek a javítás előtt is fennálltak, de nem képezték a szervizelés tárgyát.
+
+4. Speciális szabályok (Akkumulátorok és Beázott készülékek)
+Akkumulátorok: Az akkumulátor-garancia kizárólag a gyártási hibákra (pl. felpúposodás, belső rövidzárlat) érvényes. Az akkumulátor üzemidejének rövidülése, a kapacitás természetes csökkenése vagy a "Health" százalék romlása normál elhasználódásnak minősül, és nem garanciális hiba.
+Beázott készülékek javítása: Folyadékkal érintkezett, oxidált készülékek esetén a javítás kizárólag a tulajdonos kérésére és saját kockázatára történik. Mivel a folyadékkár utóélete kiszámíthatatlan, beázott telefonok javítására és a beépített alkatrészekre semmilyen garanciát nem vállalunk, még akkor sem, ha a telefon a szervizből kilépve hibátlanul működik.`;
 
 // warranty strings look like "1 hó" / "3 hó" / "6 hó" / "1 év"
 export function warrantyExpiry(fromDateStr, warranty) {
