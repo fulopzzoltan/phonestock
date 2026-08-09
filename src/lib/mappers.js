@@ -116,3 +116,13 @@ export const partToApi = (p) => ({
   cost_price: Number(p.costPrice) || 0,
   sale_price: Number(p.salePrice) || 0,
 });
+
+export const spFromApi = (r) => ({
+  id: r.id,
+  ticketId: r.service_ticket_id,
+  partId: r.part_id,
+  partName: r.part_name,
+  quantity: r.quantity,
+  unitPrice: r.unit_price,
+  costPrice: r.cost_price,
+});

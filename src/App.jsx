@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap } from "./lib/supabaseClient";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi } from "./lib/mappers";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi } from "./lib/mappers";
 import { money, today, STATUSES } from "./lib/utils";
 import Login from "./Login";
 import StockModal from "./components/StockModal";
@@ -57,17 +57,22 @@ function AppShell() {
   async function loadAll() {
     setLoadingData(true);
     try {
-      const [locs, prods, txs, tcks, prs] = await Promise.all([
+      const [locs, prods, txs, tcks, prs, sps] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         supabase.from("products").select("*").order("created_at", { ascending: false }),
         supabase.from("transactions").select("*").order("date", { ascending: false }),
         supabase.from("service_tickets").select("*").order("created_at", { ascending: false }),
         supabase.from("parts").select("*").order("name", { ascending: true }),
+        supabase.from("service_parts").select("*"),
       ]);
       setLocations(unwrap(locs) || []);
       setStock((unwrap(prods) || []).map(pFromApi));
       setTransactions((unwrap(txs) || []).map(txFromApi));
-      setTickets((unwrap(tcks) || []).map(tFromApi));
+      const spByTicket = {};
+      (unwrap(sps) || []).map(spFromApi).forEach((sp) => {
+        (spByTicket[sp.ticketId] ||= []).push(sp);
+      });
+      setTickets((unwrap(tcks) || []).map((r) => ({ ...tFromApi(r), usedParts: spByTicket[r.id] || [] })));
       setParts((unwrap(prs) || []).map(partFromApi));
       setError("");
     } catch (e) {
@@ -207,6 +212,40 @@ function AppShell() {
       unwrap(await supabase.from("service_tickets").delete().eq("id", id));
       setTickets(tickets.filter((t) => t.id !== id));
       setDetailId(null);
+    });
+  }
+  async function addPartToTicket(ticketId, part, qty) {
+    await withBusy(async () => {
+      const ticket = tickets.find((t) => t.id === ticketId);
+      const unitPrice = Number(part.salePrice) || 0;
+      const unitCost = Number(part.costPrice) || 0;
+      const r = unwrap(await supabase.from("service_parts").insert({
+        service_ticket_id: ticketId, part_id: part.id, part_name: part.name, quantity: qty, unit_price: unitPrice, cost_price: unitCost,
+      }).select());
+      const newQty = (Number(part.quantity) || 0) - qty;
+      unwrap(await supabase.from("parts").update({ quantity: newQty }).eq("id", part.id));
+      const newPrice = (Number(ticket.price) || 0) + unitPrice * qty;
+      const newMatCost = (Number(ticket.matCost) || 0) + unitCost * qty;
+      unwrap(await supabase.from("service_tickets").update({ price: newPrice, mat_cost: newMatCost }).eq("id", ticketId));
+
+      setParts(parts.map((p) => (p.id === part.id ? { ...p, quantity: newQty } : p)));
+      setTickets(tickets.map((t) => (t.id === ticketId ? { ...t, price: newPrice, matCost: newMatCost, usedParts: [...(t.usedParts || []), spFromApi(r[0])] } : t)));
+    });
+  }
+  async function removePartFromTicket(ticketId, usedPart) {
+    await withBusy(async () => {
+      const ticket = tickets.find((t) => t.id === ticketId);
+      const part = parts.find((p) => p.id === usedPart.partId);
+      unwrap(await supabase.from("service_parts").delete().eq("id", usedPart.id));
+      if (part) {
+        const restoredQty = (Number(part.quantity) || 0) + usedPart.quantity;
+        unwrap(await supabase.from("parts").update({ quantity: restoredQty }).eq("id", part.id));
+        setParts(parts.map((p) => (p.id === part.id ? { ...p, quantity: restoredQty } : p)));
+      }
+      const newPrice = Math.max(0, (Number(ticket.price) || 0) - (Number(usedPart.unitPrice) || 0) * usedPart.quantity);
+      const newMatCost = Math.max(0, (Number(ticket.matCost) || 0) - (Number(usedPart.costPrice) || 0) * usedPart.quantity);
+      unwrap(await supabase.from("service_tickets").update({ price: newPrice, mat_cost: newMatCost }).eq("id", ticketId));
+      setTickets(tickets.map((t) => (t.id === ticketId ? { ...t, price: newPrice, matCost: newMatCost, usedParts: (t.usedParts || []).filter((sp) => sp.id !== usedPart.id) } : t)));
     });
   }
 
@@ -593,10 +632,13 @@ function AppShell() {
           ticket={detailTicket}
           locName={locName}
           busy={busy}
+          parts={parts}
           onClose={() => setDetailId(null)}
           onStatusChange={setTicketStatus}
           onEdit={(t) => { setDetailId(null); setTicketModal(t); }}
           onDelete={deleteTicket}
+          onAddPart={addPartToTicket}
+          onRemovePart={removePartFromTicket}
         />
       )}
       {detailProduct && (

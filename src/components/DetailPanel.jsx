@@ -1,10 +1,16 @@
 import { useState } from "react";
 import { money, STATUSES, SUB_STATUSES } from "../lib/utils";
-import { CloseIcon, CallIcon } from "./icons";
+import { CloseIcon, CallIcon, TrashIcon } from "./icons";
 import Row from "./DetailRow";
 
-export default function DetailPanel({ ticket, locName, onClose, onStatusChange, onEdit, onDelete, busy }) {
+export default function DetailPanel({ ticket, locName, parts, onClose, onStatusChange, onEdit, onDelete, busy, onAddPart, onRemovePart }) {
   const [copied, setCopied] = useState(false);
+  const [showAddPart, setShowAddPart] = useState(false);
+  const [selPartId, setSelPartId] = useState("");
+  const [qty, setQty] = useState(1);
+  const usedParts = ticket.usedParts || [];
+  const availableParts = (parts || []).filter((p) => Number(p.quantity) > 0);
+  const selPart = availableParts.find((p) => p.id === selPartId);
   const probs = (ticket.issue || "").split(",").map((p) => p.trim()).filter(Boolean);
   const profit = (Number(ticket.price) || 0) - (Number(ticket.matCost) || 0);
   const statusLink = `${window.location.origin}/status/${ticket.publicToken}`;
@@ -69,6 +75,36 @@ export default function DetailPanel({ ticket, locName, onClose, onStatusChange, 
             <Row k="Fólia" v={ticket.folia ? <span style={{ color: "#22C55E", fontWeight: 700 }}>✓ Igen</span> : "Nem"} />
             <Row k="Átadás dátuma" v={ticket.handoverDate} />
             <Row k="Beérkezés" v={ticket.dateIn} />
+          </div>
+          <div className="dp-section">
+            <div className="dp-section-title">Felhasznált alkatrészek</div>
+            {usedParts.length > 0 && usedParts.map((sp) => (
+              <div key={sp.id} className="dp-row">
+                <span className="dp-key">{sp.partName} ×{sp.quantity}</span>
+                <span className="dp-val" style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "flex-end" }}>
+                  {money((sp.unitPrice || 0) * sp.quantity)}
+                  <button className="iconbtn" disabled={busy} onClick={() => onRemovePart(ticket.id, sp)}><TrashIcon /></button>
+                </span>
+              </div>
+            ))}
+            {showAddPart ? (
+              <div className="row2" style={{ marginTop: 8, alignItems: "flex-end" }}>
+                <div className="field" style={{ margin: 0 }}>
+                  <select value={selPartId} onChange={(e) => setSelPartId(e.target.value)}>
+                    <option value="">— Alkatrész —</option>
+                    {availableParts.map((p) => <option key={p.id} value={p.id}>{p.name} ({p.quantity} db)</option>)}
+                  </select>
+                </div>
+                <div style={{ display: "flex", gap: 6 }}>
+                  <input type="number" min="1" max={selPart?.quantity || 1} value={qty} onChange={(e) => setQty(Number(e.target.value))}
+                    style={{ width: 56, background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 9, padding: "9px 8px", fontFamily: "inherit", fontSize: 13 }} />
+                  <button className="btn sm" disabled={!selPart || busy} onClick={() => { if (selPart) { onAddPart(ticket.id, selPart, qty); setShowAddPart(false); setSelPartId(""); setQty(1); } }}>OK</button>
+                  <button className="iconbtn" onClick={() => setShowAddPart(false)}><CloseIcon width={14} height={14} /></button>
+                </div>
+              </div>
+            ) : (
+              <button type="button" className="btn sec sm" style={{ marginTop: usedParts.length ? 8 : 0 }} onClick={() => setShowAddPart(true)}>+ Alkatrész hozzáadása</button>
+            )}
           </div>
           <div className="dp-section">
             <div className="dp-section-title">Pénzügyek</div>
