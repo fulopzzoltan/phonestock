@@ -1,10 +1,19 @@
+import { useState } from "react";
 import { money, STATUSES } from "../lib/utils";
 import { CloseIcon, CallIcon } from "./icons";
 import Row from "./DetailRow";
 
 export default function DetailPanel({ ticket, locName, onClose, onStatusChange, onEdit, onDelete, busy }) {
+  const [copied, setCopied] = useState(false);
   const probs = (ticket.issue || "").split(",").map((p) => p.trim()).filter(Boolean);
   const profit = (Number(ticket.price) || 0) - (Number(ticket.matCost) || 0);
+  const statusLink = `${window.location.origin}/status/${ticket.publicToken}`;
+
+  function copyStatusLink() {
+    navigator.clipboard.writeText(statusLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }
   return (
     <div className="detail-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="detail-panel">
@@ -35,6 +44,13 @@ export default function DetailPanel({ ticket, locName, onClose, onStatusChange, 
               </span>
             ) : null} />
             <Row k="Helyszín" v={locName(ticket.locationId)} />
+          </div>
+          <div className="dp-section">
+            <div className="dp-section-title">Ügyfél nyomon követés</div>
+            <div style={{ fontSize: 12, color: "#6B7280", marginBottom: 8, lineHeight: 1.5 }}>
+              Ezzel az egyedi linkkel a vevő bejelentkezés és adatmegadás nélkül, azonnal látja a javítás állapotát.
+            </div>
+            <button type="button" className="btn sec sm" onClick={copyStatusLink}>{copied ? "Másolva!" : "Nyomon követő link másolása"}</button>
           </div>
           <div className="dp-section">
             <div className="dp-section-title">Eszköz & Javítás</div>

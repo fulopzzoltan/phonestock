@@ -64,6 +64,7 @@ export const txToApi = (t, locId) => ({
 export const tFromApi = (r) => ({
   id: r.id,
   ticketNo: r.ticket_no,
+  publicToken: r.public_token,
   customerName: r.customer_name,
   customerPhone: r.customer_phone,
   brand: r.brand,
