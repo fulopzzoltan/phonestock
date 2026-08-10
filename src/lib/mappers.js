@@ -18,6 +18,7 @@ export const pFromApi = (r) => ({
   costPrice: r.cost_price,
   salePrice: r.sale_price,
   status: r.status,
+  warranty: r.warranty,
   locationId: r.location_id,
 });
 
@@ -31,11 +32,14 @@ export const pToApi = (p, locId) => ({
   imei: p.imei || null,
   cost_price: Number(p.costPrice) || 0,
   sale_price: Number(p.salePrice) || 0,
+  warranty: p.warranty || null,
   location_id: locId,
 });
 
 export const txFromApi = (r) => ({
   id: r.id,
+  receiptNo: r.receipt_no,
+  publicToken: r.public_token,
   type: r.type,
   description: r.description,
   amount: r.amount,
@@ -43,6 +47,7 @@ export const txFromApi = (r) => ({
   payment: r.payment,
   productId: r.product_id,
   costPrice: r.cost_price,
+  warranty: r.warranty,
   customerName: r.customer_name,
   customerPhone: r.customer_phone,
   locationId: r.location_id,
@@ -57,6 +62,7 @@ export const txToApi = (t, locId) => ({
   payment: t.payment || null,
   product_id: t.productId || null,
   cost_price: Number(t.costPrice) || 0,
+  warranty: t.warranty || null,
   customer_name: t.customerName || null,
   customer_phone: t.customerPhone || null,
   location_id: locId,

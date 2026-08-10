@@ -16,6 +16,8 @@ import TransactionsPeriodList from "./components/TransactionsPeriodList";
 import TransactionModal from "./components/TransactionModal";
 import CustomerDetailPanel from "./components/CustomerDetailPanel";
 import PrintSlip from "./components/PrintSlip";
+import SaleReceiptPanel from "./components/SaleReceiptPanel";
+import PrintReceiptSlip from "./components/PrintReceiptSlip";
 import { SearchIcon, TrashIcon, EditIcon } from "./components/icons";
 
 export default function App() {
@@ -56,9 +58,17 @@ function AppShell() {
   const [showHandedOver, setShowHandedOver] = useState(false);
   const [customerKey, setCustomerKey] = useState(null);
   const [printTicket, setPrintTicket] = useState(null);
+  const [receiptTxId, setReceiptTxId] = useState(null);
+  const [printReceipt, setPrintReceipt] = useState(null);
 
   function printTicketSlip(ticket) {
     setPrintTicket(ticket);
+    requestAnimationFrame(() => {
+      window.print();
+    });
+  }
+  function printReceiptSlip(tx) {
+    setPrintReceipt(tx);
     requestAnimationFrame(() => {
       window.print();
     });
@@ -354,6 +364,7 @@ function AppShell() {
   }), [customers]);
 
   const detailCustomer = customerKey ? customers.find((c) => c.key === customerKey) : null;
+  const receiptTx = receiptTxId ? transactions.find((t) => t.id === receiptTxId) : null;
 
   const detailTicket = detailId ? tickets.find((t) => t.id === detailId) : null;
   const detailProduct = productDetailId ? stock.find((i) => i.id === productDetailId) : null;
@@ -483,7 +494,7 @@ function AppShell() {
             </div>
             <TransactionQuickAdd locations={allowedLocations} defaultLocId={defaultLocId} onAdd={addTransaction} busy={busy} />
             {loadingData ? <div className="tw"><div className="empty">Betöltés...</div></div> : (
-              <TransactionsPeriodList transactions={filteredTransactions} period={period} locName={locName} onEdit={setTxModal} onDelete={deleteTransaction} busy={busy} />
+              <TransactionsPeriodList transactions={filteredTransactions} period={period} locName={locName} onEdit={setTxModal} onDelete={deleteTransaction} onOpenReceipt={setReceiptTxId} busy={busy} />
             )}
           </>
         )}
@@ -728,8 +739,12 @@ function AppShell() {
       {detailCustomer && (
         <CustomerDetailPanel customer={detailCustomer} locName={locName} onClose={() => setCustomerKey(null)} />
       )}
+      {receiptTx && (
+        <SaleReceiptPanel tx={receiptTx} locName={locName} onClose={() => setReceiptTxId(null)} onPrint={printReceiptSlip} />
+      )}
       <div id="print-slip-root">
         {printTicket && <PrintSlip ticket={printTicket} location={locations.find((l) => l.id === printTicket.locationId)} />}
+        {printReceipt && <PrintReceiptSlip tx={printReceipt} location={locations.find((l) => l.id === printReceipt.locationId)} />}
       </div>
     </div>
   );

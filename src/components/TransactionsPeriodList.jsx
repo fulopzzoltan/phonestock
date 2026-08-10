@@ -1,7 +1,7 @@
 import { money, periodKey, periodLabel } from "../lib/utils";
 import { TrashIcon, EditIcon } from "./icons";
 
-export default function TransactionsPeriodList({ transactions, period, locName, onEdit, onDelete, busy }) {
+export default function TransactionsPeriodList({ transactions, period, locName, onEdit, onDelete, onOpenReceipt, busy }) {
   if (transactions.length === 0) {
     return <div className="tw"><div className="empty">Nincs rögzített tranzakció.</div></div>;
   }
@@ -34,22 +34,25 @@ export default function TransactionsPeriodList({ transactions, period, locName, 
               <table>
                 <thead><tr><th>Leírás</th><th>Típus</th><th>Kategória</th><th>Helyszín</th><th>Fizetés</th><th>Összeg</th><th></th></tr></thead>
                 <tbody>
-                  {rows.map((t) => (
-                    <tr key={t.id}>
-                      <td style={{ fontWeight: 500, color: "#111827" }}>{t.description}</td>
-                      <td>{t.type === "income" ? <span className="badge-income">Bevétel</span> : <span className="badge-expense">Kiadás</span>}</td>
-                      <td style={{ color: "#6B7280" }}>{t.category}</td>
-                      <td><span className="badge-loc">{locName(t.locationId)}</span></td>
-                      <td style={{ color: "#6B7280" }}>{t.payment || "—"}</td>
-                      <td className="mono" style={{ fontWeight: 700, color: t.type === "income" ? "#15803D" : "#B91C1C" }}>
-                        {t.type === "income" ? "+" : "-"}{money(t.amount)}
-                      </td>
-                      <td style={{ display: "flex", gap: 5 }}>
-                        <button className="iconbtn" disabled={busy} onClick={() => onEdit(t)}><EditIcon /></button>
-                        <button className="iconbtn" disabled={busy} onClick={() => onDelete(t.id)}><TrashIcon /></button>
-                      </td>
-                    </tr>
-                  ))}
+                  {rows.map((t) => {
+                    const isSale = t.type === "income" && t.category === "Készlet";
+                    return (
+                      <tr key={t.id} style={isSale ? { cursor: "pointer" } : undefined} onClick={isSale ? () => onOpenReceipt(t.id) : undefined}>
+                        <td style={{ fontWeight: 500, color: "#111827" }}>{t.description}</td>
+                        <td>{t.type === "income" ? <span className="badge-income">Bevétel</span> : <span className="badge-expense">Kiadás</span>}</td>
+                        <td style={{ color: "#6B7280" }}>{t.category}</td>
+                        <td><span className="badge-loc">{locName(t.locationId)}</span></td>
+                        <td style={{ color: "#6B7280" }}>{t.payment || "—"}</td>
+                        <td className="mono" style={{ fontWeight: 700, color: t.type === "income" ? "#15803D" : "#B91C1C" }}>
+                          {t.type === "income" ? "+" : "-"}{money(t.amount)}
+                        </td>
+                        <td style={{ display: "flex", gap: 5 }} onClick={(e) => isSale && e.stopPropagation()}>
+                          <button className="iconbtn" disabled={busy} onClick={() => onEdit(t)}><EditIcon /></button>
+                          <button className="iconbtn" disabled={busy} onClick={() => onDelete(t.id)}><TrashIcon /></button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

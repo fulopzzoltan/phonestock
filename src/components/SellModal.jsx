@@ -11,6 +11,7 @@ export default function SellModal({ item, locName, onClose, onSave, busy }) {
         <h2>Eladás rögzítése <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
         <div className="field"><label>Helyszín</label><input disabled value={locName(item.locationId)} /></div>
         <div className="field"><label>Termék</label><input disabled value={`${item.brand} ${item.model}`} /></div>
+        <div className="field"><label>Garancia</label><input disabled value={item.warranty || "Nincs"} /></div>
         <div className="row2">
           <div className="field"><label>Vevő neve</label><input value={f.customerName} onChange={set("customerName")} placeholder="Kovács János" /></div>
           <div className="field"><label>Telefonszám</label><input value={f.customerPhone} onChange={set("customerPhone")} placeholder="07xx xxx xxx" /></div>
@@ -34,6 +35,7 @@ export default function SellModal({ item, locName, onClose, onSave, busy }) {
               description: `${item.brand} ${item.model}`,
               amount: f.price,
               costPrice: item.costPrice,
+              warranty: item.warranty || null,
               productId: item.id,
               customerName: f.customerName,
               customerPhone: f.customerPhone,

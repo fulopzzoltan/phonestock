@@ -1,6 +1,7 @@
 import { useState } from "react";
 import LocationField from "./LocationField";
 import { CloseIcon } from "./icons";
+import { WARRANTIES } from "../lib/utils";
 
 export default function StockModal({ product, locations, onClose, onSave, busy, defaultLocId }) {
   const isEdit = !!product;
@@ -14,6 +15,7 @@ export default function StockModal({ product, locations, onClose, onSave, busy, 
     imei: product?.imei || "",
     costPrice: product?.costPrice ?? "",
     salePrice: product?.salePrice ?? "",
+    warranty: product?.warranty || "",
   });
   const [locId, setLocId] = useState(product?.locationId || defaultLocId || locations[0]?.id || "");
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
@@ -52,6 +54,12 @@ export default function StockModal({ product, locations, onClose, onSave, busy, 
         <div className="row2">
           <div className="field"><label>Besz. ár (Lei)</label><input type="number" value={f.costPrice} onChange={set("costPrice")} placeholder="0" /></div>
           <div className="field"><label>Eladási ár (Lei)</label><input type="number" value={f.salePrice} onChange={set("salePrice")} placeholder="0" /></div>
+        </div>
+        <div className="field"><label>Garancia</label>
+          <select value={f.warranty} onChange={set("warranty")}>
+            <option value="">Nincs</option>
+            {WARRANTIES.map((w) => <option key={w} value={w}>{w}</option>)}
+          </select>
         </div>
         <div className="modal-actions">
           <button className="btn sec" onClick={onClose}>Mégse</button>
