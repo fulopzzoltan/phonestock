@@ -1,5 +1,6 @@
 import { money, periodKey, periodLabel } from "../lib/utils";
-import { TrashIcon, EditIcon } from "./icons";
+import { EditIcon } from "./icons";
+import ConfirmDelete from "./ConfirmDelete";
 
 export default function TransactionsPeriodList({ transactions, period, locName, onEdit, onDelete, onOpenReceipt, busy }) {
   if (transactions.length === 0) {
@@ -48,7 +49,7 @@ export default function TransactionsPeriodList({ transactions, period, locName, 
                         </td>
                         <td style={{ display: "flex", gap: 5 }} onClick={(e) => isSale && e.stopPropagation()}>
                           <button className="iconbtn" disabled={busy} onClick={() => onEdit(t)}><EditIcon /></button>
-                          <button className="iconbtn" disabled={busy} onClick={() => onDelete(t.id)}><TrashIcon /></button>
+                          <ConfirmDelete disabled={busy} onConfirm={() => onDelete(t.id)} />
                         </td>
                       </tr>
                     );

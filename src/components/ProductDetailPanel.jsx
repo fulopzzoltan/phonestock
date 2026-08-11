@@ -1,6 +1,7 @@
 import { money } from "../lib/utils";
 import { CloseIcon } from "./icons";
 import Row from "./DetailRow";
+import ConfirmDelete from "./ConfirmDelete";
 
 export default function ProductDetailPanel({ product, locName, onClose, onSell, onEdit, onDelete, busy }) {
   const profit = (Number(product.salePrice) || 0) - (Number(product.costPrice) || 0);
@@ -35,7 +36,7 @@ export default function ProductDetailPanel({ product, locName, onClose, onSell, 
         <div className="dp-actions">
           <button className="btn sm" disabled={busy} onClick={() => onSell(product)}>Eladva</button>
           <button className="btn sec sm" disabled={busy} onClick={() => onEdit(product)}>Szerkesztés</button>
-          <button className="btn sm danger" disabled={busy} onClick={() => onDelete(product.id)}>Törlés</button>
+          <ConfirmDelete variant="full" disabled={busy} onConfirm={() => onDelete(product.id)} />
         </div>
       </div>
     </div>

@@ -11,6 +11,7 @@ import TicketCard from "./components/TicketCard";
 import DetailPanel from "./components/DetailPanel";
 import ProductDetailPanel from "./components/ProductDetailPanel";
 import PartDetailPanel from "./components/PartDetailPanel";
+import StockValueChart from "./components/StockValueChart";
 import TicketFormModal from "./components/TicketFormModal";
 import TransactionQuickAdd from "./components/TransactionQuickAdd";
 import TransactionsPeriodList from "./components/TransactionsPeriodList";
@@ -19,7 +20,8 @@ import CustomerDetailPanel from "./components/CustomerDetailPanel";
 import PrintSlip from "./components/PrintSlip";
 import SaleReceiptPanel from "./components/SaleReceiptPanel";
 import PrintReceiptSlip from "./components/PrintReceiptSlip";
-import { SearchIcon, TrashIcon, EditIcon } from "./components/icons";
+import { SearchIcon, EditIcon } from "./components/icons";
+import ConfirmDelete from "./components/ConfirmDelete";
 
 export default function App() {
   const { session, loading } = useAuth();
@@ -33,7 +35,7 @@ function AppShell() {
   const isAdmin = profile?.role === "admin";
   const myLocationId = profile?.locationId || null;
 
-  const [tab, setTab] = useState("stock");
+  const [tab, setTab] = useState("dashboard");
   const [locFilter, setLocFilter] = useState("all");
   const [locations, setLocations] = useState([]);
   const [stock, setStock] = useState([]);
@@ -44,12 +46,9 @@ function AppShell() {
   const [loadingData, setLoadingData] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [confirmDialog, setConfirmDialog] = useState(null); // { message, resolve }
-  function confirmAsync(message) {
-    return new Promise((resolve) => setConfirmDialog({ message, resolve }));
-  }
   const [search, setSearch] = useState("");
   const [svcSearch, setSvcSearch] = useState("");
+  const [partSearch, setPartSearch] = useState("");
   const [custSearch, setCustSearch] = useState("");
   const [period, setPeriod] = useState("day");
 
@@ -66,6 +65,9 @@ function AppShell() {
   const [printTicket, setPrintTicket] = useState(null);
   const [receiptTxId, setReceiptTxId] = useState(null);
   const [printReceipt, setPrintReceipt] = useState(null);
+  const [stockHistory, setStockHistory] = useState([]);
+  const [trash, setTrash] = useState(null); // null = not loaded | { products, parts, transactions, tickets }
+  const [trashLoading, setTrashLoading] = useState(false);
 
   function printTicketSlip(ticket) {
     setPrintTicket(ticket);
@@ -83,17 +85,19 @@ function AppShell() {
   async function loadAll() {
     setLoadingData(true);
     try {
-      const [locs, prods, txs, tcks, prs, sps, usrs] = await Promise.all([
+      const [locs, prods, txs, tcks, prs, sps, usrs, hist] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
-        supabase.from("products").select("*").order("created_at", { ascending: false }),
-        supabase.from("transactions").select("*").order("date", { ascending: false }),
-        supabase.from("service_tickets").select("*").order("created_at", { ascending: false }),
-        supabase.from("parts").select("*").order("name", { ascending: true }),
+        supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false }),
+        supabase.from("transactions").select("*").is("deleted_at", null).order("date", { ascending: false }),
+        supabase.from("service_tickets").select("*").is("deleted_at", null).order("created_at", { ascending: false }),
+        supabase.from("parts").select("*").is("deleted_at", null).order("name", { ascending: true }),
         supabase.from("service_parts").select("*"),
         supabase.from("profiles").select("*").order("full_name", { ascending: true }),
+        supabase.from("stock_value_history").select("*").order("date", { ascending: true }),
       ]);
       setLocations(unwrap(locs) || []);
-      setStock((unwrap(prods) || []).map(pFromApi));
+      const prodRows = unwrap(prods) || [];
+      setStock(prodRows.map(pFromApi));
       setTransactions((unwrap(txs) || []).map(txFromApi));
       const spByTicket = {};
       (unwrap(sps) || []).map(spFromApi).forEach((sp) => {
@@ -102,6 +106,9 @@ function AppShell() {
       setTickets((unwrap(tcks) || []).map((r) => ({ ...tFromApi(r), usedParts: spByTicket[r.id] || [] })));
       setParts((unwrap(prs) || []).map(partFromApi));
       setUsers((unwrap(usrs) || []).map(profileFromApi));
+      const historyRows = unwrap(hist) || [];
+      setStockHistory(historyRows.map((r) => ({ date: r.date, value: Number(r.value) || 0 })));
+      maybeSnapshotStockValue(prodRows, historyRows);
       setError("");
     } catch (e) {
       setError("Betöltési hiba: " + e.message);
@@ -110,7 +117,76 @@ function AppShell() {
     }
   }
 
+  async function maybeSnapshotStockValue(prodRows, historyRows) {
+    const todayStr = today();
+    const last = historyRows[historyRows.length - 1];
+    if (last) {
+      const daysSince = Math.floor((new Date(todayStr) - new Date(last.date)) / 86400000);
+      if (daysSince < 3) return;
+    }
+    const inStock = prodRows.filter((r) => r.status === "in_stock");
+    const value = inStock.reduce((s, r) => s + (Number(r.sale_price) || 0), 0);
+    const costValue = inStock.reduce((s, r) => s + (Number(r.cost_price) || 0), 0);
+    const r = unwrap(await supabase.from("stock_value_history").upsert(
+      { date: todayStr, value, cost_value: costValue },
+      { onConflict: "date", ignoreDuplicates: true }
+    ).select());
+    if (r && r[0]) setStockHistory((h) => [...h.filter((x) => x.date !== todayStr), { date: todayStr, value }]);
+  }
+
   useEffect(() => { loadAll(); }, []);
+
+  async function loadTrash() {
+    setTrashLoading(true);
+    try {
+      const [prods, prs, txs, tcks] = await Promise.all([
+        supabase.from("products").select("*").not("deleted_at", "is", null).order("deleted_at", { ascending: false }),
+        supabase.from("parts").select("*").not("deleted_at", "is", null).order("deleted_at", { ascending: false }),
+        supabase.from("transactions").select("*").not("deleted_at", "is", null).order("deleted_at", { ascending: false }),
+        supabase.from("service_tickets").select("*").not("deleted_at", "is", null).order("deleted_at", { ascending: false }),
+      ]);
+      setTrash({
+        products: (unwrap(prods) || []).map(pFromApi),
+        parts: (unwrap(prs) || []).map(partFromApi),
+        transactions: (unwrap(txs) || []).map(txFromApi),
+        tickets: (unwrap(tcks) || []).map(tFromApi),
+      });
+    } catch (e) {
+      setError("Kuka betöltési hiba: " + e.message);
+    } finally {
+      setTrashLoading(false);
+    }
+  }
+  useEffect(() => { if (tab === "trash") loadTrash(); }, [tab]);
+
+  async function restoreProduct(id) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("products").update({ deleted_at: null }).eq("id", id).select());
+      setStock([pFromApi(r[0]), ...stock]);
+      setTrash((t) => ({ ...t, products: t.products.filter((p) => p.id !== id) }));
+    });
+  }
+  async function restorePart(id) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("parts").update({ deleted_at: null }).eq("id", id).select());
+      setParts([partFromApi(r[0]), ...parts]);
+      setTrash((t) => ({ ...t, parts: t.parts.filter((p) => p.id !== id) }));
+    });
+  }
+  async function restoreTransaction(id) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("transactions").update({ deleted_at: null }).eq("id", id).select());
+      setTransactions([txFromApi(r[0]), ...transactions]);
+      setTrash((t) => ({ ...t, transactions: t.transactions.filter((x) => x.id !== id) }));
+    });
+  }
+  async function restoreTicket(id) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("service_tickets").update({ deleted_at: null }).eq("id", id).select());
+      setTickets([{ ...tFromApi(r[0]), usedParts: [] }, ...tickets]);
+      setTrash((t) => ({ ...t, tickets: t.tickets.filter((x) => x.id !== id) }));
+    });
+  }
 
   async function withBusy(fn) {
     setBusy(true);
@@ -143,9 +219,8 @@ function AppShell() {
     });
   }
   async function deleteProduct(id) {
-    if (!(await confirmAsync("Biztosan törlöd ezt a terméket? Ez nem vonható vissza."))) return;
     await withBusy(async () => {
-      unwrap(await supabase.from("products").delete().eq("id", id));
+      unwrap(await supabase.from("products").update({ deleted_at: new Date().toISOString() }).eq("id", id));
       setStock(stock.filter((i) => i.id !== id));
     });
   }
@@ -175,9 +250,8 @@ function AppShell() {
     });
   }
   async function deletePart(id) {
-    if (!(await confirmAsync("Biztosan törlöd ezt az alkatrészt? Ez nem vonható vissza."))) return;
     await withBusy(async () => {
-      unwrap(await supabase.from("parts").delete().eq("id", id));
+      unwrap(await supabase.from("parts").update({ deleted_at: new Date().toISOString() }).eq("id", id));
       setParts(parts.filter((p) => p.id !== id));
     });
   }
@@ -205,9 +279,8 @@ function AppShell() {
     });
   }
   async function deleteTransaction(id) {
-    if (!(await confirmAsync("Biztosan törlöd ezt a tranzakciót? Ez nem vonható vissza."))) return;
     await withBusy(async () => {
-      unwrap(await supabase.from("transactions").delete().eq("id", id));
+      unwrap(await supabase.from("transactions").update({ deleted_at: new Date().toISOString() }).eq("id", id));
       setTransactions(transactions.filter((t) => t.id !== id));
     });
   }
@@ -250,9 +323,8 @@ function AppShell() {
     });
   }
   async function deleteTicket(id) {
-    if (!(await confirmAsync("Biztosan törlöd ezt a munkalapot? Ez nem vonható vissza."))) return;
     await withBusy(async () => {
-      unwrap(await supabase.from("service_tickets").delete().eq("id", id));
+      unwrap(await supabase.from("service_tickets").update({ deleted_at: new Date().toISOString() }).eq("id", id));
       setTickets(tickets.filter((t) => t.id !== id));
       setDetailId(null);
     });
@@ -274,7 +346,6 @@ function AppShell() {
     });
   }
   async function removePartFromTicket(ticketId, usedPart) {
-    if (!(await confirmAsync("Biztosan eltávolítod ezt a felhasznált alkatrészt a munkalapról?"))) return;
     await withBusy(async () => {
       const ticket = tickets.find((t) => t.id === ticketId);
       const part = parts.find((p) => p.id === usedPart.partId);
@@ -327,6 +398,12 @@ function AppShell() {
   const partsStats = useMemo(() => ({
     value: parts.reduce((a, p) => a + (Number(p.costPrice) || 0) * (Number(p.quantity) || 0), 0),
   }), [parts]);
+
+  const filteredParts = useMemo(() => {
+    const q = partSearch.trim().toLowerCase();
+    if (!q) return parts;
+    return parts.filter((p) => [p.name, p.brand, p.modelFit, p.category, p.source].join(" ").toLowerCase().includes(q));
+  }, [parts, partSearch]);
 
   const activeTickets = useMemo(() => filteredTickets.filter((t) => t.subStatus !== "Átadva"), [filteredTickets]);
   const handedOverTickets = useMemo(() => filteredTickets.filter((t) => t.subStatus === "Átadva"), [filteredTickets]);
@@ -389,14 +466,27 @@ function AppShell() {
             <div className="brand-icon"><svg viewBox="0 0 24 24"><path d="M17 2H7a2 2 0 00-2 2v16a2 2 0 002 2h10a2 2 0 002-2V4a2 2 0 00-2-2zm-5 15a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm3-7H9V5h6v5z" /></svg></div>
             <div className="brand-name">TELEF<span>O</span>NOS</div>
           </div>
+          <button className={`navbtn ${tab === "dashboard" ? "active" : ""}`} onClick={() => setTab("dashboard")}>📊 Áttekintés</button>
+
+          <div className="nav-lbl">Működés</div>
+          <div className="navrow">
+            <button className={`navbtn ${tab === "service" ? "active" : ""}`} onClick={() => setTab("service")}>🔧 Szerviz</button>
+            <button type="button" className="nav-quick-add" title="Új munkalap" onClick={() => { setTab("service"); setTicketModal("add"); }}>+</button>
+          </div>
           <button className={`navbtn ${tab === "stock" ? "active" : ""}`} onClick={() => setTab("stock")}>📱 Telefonok</button>
-          <button className={`navbtn ${tab === "finance" ? "active" : ""}`} onClick={() => setTab("finance")}>💰 Bevételek &amp; Kiadások</button>
-          <button className={`navbtn ${tab === "service" ? "active" : ""}`} onClick={() => setTab("service")}>🔧 Szerviz</button>
           <button className={`navbtn ${tab === "parts" ? "active" : ""}`} onClick={() => setTab("parts")}>🔩 Alkatrészek</button>
+
+          <div className="nav-lbl">Pénzügy</div>
+          <button className={`navbtn ${tab === "finance" ? "active" : ""}`} onClick={() => setTab("finance")}>💰 Bevételek &amp; Kiadások</button>
+
+          <div className="nav-lbl">Ügyfelek</div>
           <button className={`navbtn ${tab === "customers" ? "active" : ""}`} onClick={() => setTab("customers")}>👤 Kliensek</button>
+
+          <div className="nav-lbl">Adminisztráció</div>
           {isAdmin && (
             <button className={`navbtn ${tab === "users" ? "active" : ""}`} onClick={() => setTab("users")}>👥 Felhasználók</button>
           )}
+          <button className={`navbtn ${tab === "trash" ? "active" : ""}`} onClick={() => setTab("trash")}>🗑️ Kuka</button>
         </div>
         <div className="sidebar-bottom">
           {isAdmin ? (
@@ -428,17 +518,63 @@ function AppShell() {
           <div className="banner warn">Nincs helyszín hozzárendelve a fiókodhoz. Kérj meg egy adminisztrátort, hogy rendeljen hozzá egy helyszínt, addig nem látsz adatokat.</div>
         )}
 
-        {!noLocationAssigned && tab === "stock" && (
+        {!noLocationAssigned && tab === "dashboard" && (
           <>
             <div className="topbar">
-              <div><div className="page-title">Telefonok</div><div className="page-sub">{effectiveLocFilter === "all" ? "Mindkét helyszín" : locName(effectiveLocFilter)}</div></div>
-              <button className="btn" disabled={busy} onClick={() => setStockModal("add")}>+ Új termék</button>
+              <div><div className="page-title">Áttekintés</div><div className="page-sub">{effectiveLocFilter === "all" ? "Mindkét helyszín" : locName(effectiveLocFilter)}</div></div>
             </div>
+
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>📱 Telefonok</div>
             <div className="statrow c4">
               <div className="statcard accent"><div className="lbl">Raktáron</div><div className="val">{stockStats.count} db</div></div>
               <div className="statcard"><div className="lbl">Készlet értéke</div><div className="val">{money(stockStats.value)}</div></div>
               <div className="statcard"><div className="lbl">Besz. érték</div><div className="val">{money(stockStats.cost)}</div></div>
               <div className="statcard"><div className="lbl">Várható profit</div><div className="val" style={{ color: "#22C55E" }}>{money(stockStats.profit)}</div></div>
+            </div>
+            <div style={{ marginBottom: 26 }}>
+              <StockValueChart history={stockHistory} />
+            </div>
+
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>🔧 Szerviz</div>
+            <div className="statrow c5" style={{ marginBottom: 26 }}>
+              <div className="statcard accent"><div className="lbl">Összes</div><div className="val">{svcStats.total}</div></div>
+              <div className="statcard"><div className="lbl">Aktív</div><div className="val">{svcStats.active}</div></div>
+              <div className="statcard"><div className="lbl">Kész</div><div className="val" style={{ color: "#15803D" }}>{svcStats.kesz}</div></div>
+              <div className="statcard"><div className="lbl">Sikertelen</div><div className="val" style={{ color: "#9D174D" }}>{svcStats.sikertelen}</div></div>
+              <div className="statcard"><div className="lbl">Kiadva</div><div className="val">{svcStats.kiadva}</div></div>
+            </div>
+
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>💰 Bevételek &amp; Kiadások</div>
+            <div className="statrow c4" style={{ marginBottom: 26 }}>
+              <div className="statcard accent"><div className="lbl">Tranzakciók</div><div className="val">{txStats.count}</div></div>
+              <div className="statcard"><div className="lbl">Bevétel</div><div className="val" style={{ color: "#15803D" }}>{money(txStats.income)}</div></div>
+              <div className="statcard"><div className="lbl">Kiadás</div><div className="val" style={{ color: "#B91C1C" }}>{money(txStats.expense)}</div></div>
+              <div className="statcard"><div className="lbl">Nettó eredmény</div><div className="val">{money(txStats.net)}</div></div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+              <div>
+                <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>🔩 Alkatrészek</div>
+                <div className="statrow c1">
+                  <div className="statcard accent"><div className="lbl">Raktár értéke</div><div className="val">{money(partsStats.value)}</div></div>
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>👤 Kliensek</div>
+                <div className="statrow c3">
+                  <div className="statcard accent"><div className="lbl">Ügyfelek</div><div className="val">{customerStats.count}</div></div>
+                  <div className="statcard"><div className="lbl">Bevétel tőlük</div><div className="val" style={{ color: "#15803D" }}>{money(customerStats.revenue)}</div></div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
+        {!noLocationAssigned && tab === "stock" && (
+          <>
+            <div className="topbar">
+              <div><div className="page-title">Telefonok</div><div className="page-sub">{effectiveLocFilter === "all" ? "Mindkét helyszín" : locName(effectiveLocFilter)}</div></div>
+              <button className="btn" disabled={busy} onClick={() => setStockModal("add")}>+ Új termék</button>
             </div>
             <div className="filter-row">
               <div className="searchbar"><SearchIcon /><input placeholder="Keresés..." value={search} onChange={(e) => setSearch(e.target.value)} /></div>
@@ -468,7 +604,7 @@ function AppShell() {
                                 <td style={{ display: "flex", gap: 5 }} onClick={(e) => e.stopPropagation()}>
                                   <button className="btn sec sm" disabled={busy} onClick={() => setSellModal(i)}>Eladva</button>
                                   <button className="iconbtn" disabled={busy} onClick={() => setStockModal(i)}><EditIcon /></button>
-                                  <button className="iconbtn" disabled={busy} onClick={() => deleteProduct(i.id)}><TrashIcon /></button>
+                                  <ConfirmDelete disabled={busy} onConfirm={() => deleteProduct(i.id)} />
                                 </td>
                               </tr>
                             ))}
@@ -493,12 +629,6 @@ function AppShell() {
                 <button type="button" className={period === "month" ? "active" : ""} onClick={() => setPeriod("month")}>Havi</button>
               </div>
             </div>
-            <div className="statrow c4">
-              <div className="statcard accent"><div className="lbl">Tranzakciók</div><div className="val">{txStats.count}</div></div>
-              <div className="statcard"><div className="lbl">Bevétel</div><div className="val" style={{ color: "#15803D" }}>{money(txStats.income)}</div></div>
-              <div className="statcard"><div className="lbl">Kiadás</div><div className="val" style={{ color: "#B91C1C" }}>{money(txStats.expense)}</div></div>
-              <div className="statcard"><div className="lbl">Nettó eredmény</div><div className="val">{money(txStats.net)}</div></div>
-            </div>
             <TransactionQuickAdd locations={allowedLocations} defaultLocId={defaultLocId} onAdd={addTransaction} busy={busy} />
             {loadingData ? <div className="tw"><div className="empty">Betöltés...</div></div> : (
               <TransactionsPeriodList transactions={filteredTransactions} period={period} locName={locName} onEdit={setTxModal} onDelete={deleteTransaction} onOpenReceipt={setReceiptTxId} busy={busy} />
@@ -511,13 +641,6 @@ function AppShell() {
             <div className="topbar">
               <div><div className="page-title">Szerviz</div><div className="page-sub">{effectiveLocFilter === "all" ? "Mindkét helyszín" : locName(effectiveLocFilter)}</div></div>
               <button className="btn" disabled={busy} onClick={() => setTicketModal("add")}>+ Új munkalap</button>
-            </div>
-            <div className="statrow c5">
-              <div className="statcard accent"><div className="lbl">Összes</div><div className="val">{svcStats.total}</div></div>
-              <div className="statcard"><div className="lbl">Aktív</div><div className="val">{svcStats.active}</div></div>
-              <div className="statcard"><div className="lbl">Kész</div><div className="val" style={{ color: "#15803D" }}>{svcStats.kesz}</div></div>
-              <div className="statcard"><div className="lbl">Sikertelen</div><div className="val" style={{ color: "#9D174D" }}>{svcStats.sikertelen}</div></div>
-              <div className="statcard"><div className="lbl">Kiadva</div><div className="val">{svcStats.kiadva}</div></div>
             </div>
             <div className="filter-row">
               <div className="searchbar"><SearchIcon /><input placeholder="Keresés vevő, márka, modell..." value={svcSearch} onChange={(e) => setSvcSearch(e.target.value)} /></div>
@@ -577,14 +700,14 @@ function AppShell() {
               <div><div className="page-title">Alkatrész raktár</div><div className="page-sub">Közös raktár — mindkét helyszín</div></div>
               <button className="btn" disabled={busy} onClick={() => setPartModal("add")}>+ Új alkatrész</button>
             </div>
-            <div className="statrow c1">
-              <div className="statcard accent"><div className="lbl">Raktár értéke</div><div className="val">{money(partsStats.value)}</div></div>
+            <div className="filter-row">
+              <div className="searchbar"><SearchIcon /><input placeholder="Keresés név, márka, kategória, forrás szerint..." value={partSearch} onChange={(e) => setPartSearch(e.target.value)} /></div>
             </div>
-            {loadingData ? <div className="tw"><div className="empty">Betöltés...</div></div> : parts.length === 0 ? <div className="tw"><div className="empty">Nincs alkatrész.</div></div> : (
+            {loadingData ? <div className="tw"><div className="empty">Betöltés...</div></div> : filteredParts.length === 0 ? <div className="tw"><div className="empty">Nincs találat.</div></div> : (
               [...PART_CATEGORIES, "Egyéb"].map((cat) => {
                 const items = cat === "Egyéb"
-                  ? parts.filter((p) => !PART_CATEGORIES.includes(p.category))
-                  : parts.filter((p) => p.category === cat);
+                  ? filteredParts.filter((p) => !PART_CATEGORIES.includes(p.category))
+                  : filteredParts.filter((p) => p.category === cat);
                 if (items.length === 0) return null;
                 return (
                   <div key={cat} style={{ marginBottom: 18 }}>
@@ -605,7 +728,7 @@ function AppShell() {
                               <td style={{ color: "#6B7280", fontSize: 12 }}>{p.source || "—"}</td>
                               <td style={{ display: "flex", gap: 5 }} onClick={(e) => e.stopPropagation()}>
                                 <button className="iconbtn" disabled={busy} onClick={() => setPartModal(p)}><EditIcon /></button>
-                                <button className="iconbtn" disabled={busy} onClick={() => deletePart(p.id)}><TrashIcon /></button>
+                                <ConfirmDelete disabled={busy} onConfirm={() => deletePart(p.id)} />
                               </td>
                             </tr>
                           ))}
@@ -623,11 +746,6 @@ function AppShell() {
           <>
             <div className="topbar">
               <div><div className="page-title">Kliensek</div><div className="page-sub">{effectiveLocFilter === "all" ? "Mindkét helyszín" : locName(effectiveLocFilter)}</div></div>
-            </div>
-            <div className="statrow c3">
-              <div className="statcard accent"><div className="lbl">Ügyfelek</div><div className="val">{customerStats.count}</div></div>
-              <div className="statcard"><div className="lbl">Összes bevétel tőlük</div><div className="val" style={{ color: "#15803D" }}>{money(customerStats.revenue)}</div></div>
-              <div className="statcard"><div className="lbl">Átlagos ügyfélérték</div><div className="val">{money(customerStats.avg)}</div></div>
             </div>
             <div className="filter-row">
               <div className="searchbar"><SearchIcon /><input placeholder="Keresés név vagy telefonszám..." value={custSearch} onChange={(e) => setCustSearch(e.target.value)} /></div>
@@ -685,6 +803,101 @@ function AppShell() {
                 </table>
               )}
             </div>
+          </>
+        )}
+
+        {!noLocationAssigned && tab === "trash" && (
+          <>
+            <div className="topbar">
+              <div><div className="page-title">Kuka</div><div className="page-sub">Törölt tételek — bármikor visszaállíthatók</div></div>
+            </div>
+            {trashLoading || !trash ? <div className="tw"><div className="empty">Betöltés...</div></div> : (
+              <>
+                {trash.products.length === 0 && trash.parts.length === 0 && trash.transactions.length === 0 && trash.tickets.length === 0 && (
+                  <div className="tw"><div className="empty">A kuka üres.</div></div>
+                )}
+                {trash.products.length > 0 && (
+                  <div style={{ marginBottom: 18 }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>Telefonok <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({trash.products.length} db)</span></div>
+                    <div className="tw">
+                      <table>
+                        <thead><tr><th>Termék</th><th>IMEI</th><th>Ár</th><th></th></tr></thead>
+                        <tbody>
+                          {trash.products.map((p) => (
+                            <tr key={p.id}>
+                              <td style={{ fontWeight: 600 }}>{p.brand} {p.model}</td>
+                              <td className="mono" style={{ color: "#9CA3AF" }}>{p.imei || "—"}</td>
+                              <td className="mono" style={{ fontWeight: 700 }}>{money(p.salePrice)}</td>
+                              <td><button className="btn sec sm" disabled={busy} onClick={() => restoreProduct(p.id)}>Visszaállítás</button></td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+                {trash.parts.length > 0 && (
+                  <div style={{ marginBottom: 18 }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>Alkatrészek <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({trash.parts.length} db)</span></div>
+                    <div className="tw">
+                      <table>
+                        <thead><tr><th>Alkatrész</th><th>Kategória</th><th>Készlet</th><th></th></tr></thead>
+                        <tbody>
+                          {trash.parts.map((p) => (
+                            <tr key={p.id}>
+                              <td style={{ fontWeight: 600 }}>{p.name}</td>
+                              <td style={{ color: "#6B7280", fontSize: 12 }}>{p.category || "—"}</td>
+                              <td style={{ fontWeight: 700 }}>{p.quantity} db</td>
+                              <td><button className="btn sec sm" disabled={busy} onClick={() => restorePart(p.id)}>Visszaállítás</button></td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+                {trash.transactions.length > 0 && (
+                  <div style={{ marginBottom: 18 }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>Bevételek &amp; Kiadások <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({trash.transactions.length} db)</span></div>
+                    <div className="tw">
+                      <table>
+                        <thead><tr><th>Leírás</th><th>Összeg</th><th>Dátum</th><th></th></tr></thead>
+                        <tbody>
+                          {trash.transactions.map((t) => (
+                            <tr key={t.id}>
+                              <td style={{ fontWeight: 600 }}>{t.description}</td>
+                              <td className="mono" style={{ fontWeight: 700, color: t.type === "income" ? "#15803D" : "#B91C1C" }}>{t.type === "income" ? "+" : "-"}{money(t.amount)}</td>
+                              <td style={{ color: "#6B7280" }}>{t.date}</td>
+                              <td><button className="btn sec sm" disabled={busy} onClick={() => restoreTransaction(t.id)}>Visszaállítás</button></td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+                {trash.tickets.length > 0 && (
+                  <div style={{ marginBottom: 18 }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>Szerviz munkalapok <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({trash.tickets.length} db)</span></div>
+                    <div className="tw">
+                      <table>
+                        <thead><tr><th>#</th><th>Ügyfél</th><th>Eszköz</th><th></th></tr></thead>
+                        <tbody>
+                          {trash.tickets.map((t) => (
+                            <tr key={t.id}>
+                              <td className="mono" style={{ color: "#9CA3AF" }}>{t.ticketNo}</td>
+                              <td style={{ fontWeight: 600 }}>{t.customerName}</td>
+                              <td style={{ color: "#6B7280" }}>{[t.brand, t.model].filter(Boolean).join(" ")}</td>
+                              <td><button className="btn sec sm" disabled={busy} onClick={() => restoreTicket(t.id)}>Visszaállítás</button></td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </>
         )}
       </div>
@@ -773,18 +986,6 @@ function AppShell() {
         {printTicket && <PrintSlip ticket={printTicket} location={locations.find((l) => l.id === printTicket.locationId)} />}
         {printReceipt && <PrintReceiptSlip tx={printReceipt} location={locations.find((l) => l.id === printReceipt.locationId)} />}
       </div>
-      {confirmDialog && (
-        <div className="overlay" onClick={() => { confirmDialog.resolve(false); setConfirmDialog(null); }}>
-          <div className="modal" style={{ maxWidth: 380 }} onClick={(e) => e.stopPropagation()}>
-            <h2>Megerősítés</h2>
-            <p style={{ fontSize: 13, color: "#374151", margin: "-8px 0 20px", lineHeight: 1.5 }}>{confirmDialog.message}</p>
-            <div className="modal-actions">
-              <button className="btn sec" onClick={() => { confirmDialog.resolve(false); setConfirmDialog(null); }}>Mégse</button>
-              <button className="btn danger" onClick={() => { confirmDialog.resolve(true); setConfirmDialog(null); }}>Törlés</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

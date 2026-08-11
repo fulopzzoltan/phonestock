@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { money, STATUSES, SUB_STATUSES } from "../lib/utils";
-import { CloseIcon, TrashIcon } from "./icons";
+import { CloseIcon } from "./icons";
 import Row from "./DetailRow";
 import CallLink from "./CallLink";
+import ConfirmDelete from "./ConfirmDelete";
 
 export default function DetailPanel({ ticket, locName, parts, onClose, onStatusChange, onEdit, onDelete, busy, onAddPart, onRemovePart, onPrint }) {
   const [copied, setCopied] = useState(false);
@@ -84,7 +85,7 @@ export default function DetailPanel({ ticket, locName, parts, onClose, onStatusC
                 <span className="dp-key">{sp.partName} ×{sp.quantity}</span>
                 <span className="dp-val" style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "flex-end" }}>
                   {money((sp.costPrice || 0) * sp.quantity)}
-                  <button className="iconbtn" disabled={busy} onClick={() => onRemovePart(ticket.id, sp)}><TrashIcon /></button>
+                  <ConfirmDelete disabled={busy} onConfirm={() => onRemovePart(ticket.id, sp)} />
                 </span>
               </div>
             ))}
@@ -117,7 +118,7 @@ export default function DetailPanel({ ticket, locName, parts, onClose, onStatusC
         <div className="dp-actions">
           <button className="btn sec sm" onClick={() => onPrint(ticket)}>Nyomtatás</button>
           <button className="btn sec sm" disabled={busy} onClick={() => onEdit(ticket)}>Szerkesztés</button>
-          <button className="btn sm danger" disabled={busy} onClick={() => onDelete(ticket.id)}>Törlés</button>
+          <ConfirmDelete variant="full" disabled={busy} onConfirm={() => onDelete(ticket.id)} />
         </div>
       </div>
     </div>

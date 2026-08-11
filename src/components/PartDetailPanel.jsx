@@ -1,6 +1,7 @@
 import { money } from "../lib/utils";
 import { CloseIcon } from "./icons";
 import Row from "./DetailRow";
+import ConfirmDelete from "./ConfirmDelete";
 
 export default function PartDetailPanel({ part, onClose, onEdit, onDelete, busy }) {
   return (
@@ -30,7 +31,7 @@ export default function PartDetailPanel({ part, onClose, onEdit, onDelete, busy 
         </div>
         <div className="dp-actions">
           <button className="btn sec sm" disabled={busy} onClick={() => onEdit(part)}>Szerkesztés</button>
-          <button className="btn sm danger" disabled={busy} onClick={() => onDelete(part.id)}>Törlés</button>
+          <ConfirmDelete variant="full" disabled={busy} onConfirm={() => onDelete(part.id)} />
         </div>
       </div>
     </div>
