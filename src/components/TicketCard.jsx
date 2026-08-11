@@ -1,5 +1,5 @@
 import { money, subStatusCls, subStatusLabel } from "../lib/utils";
-import { CallIcon } from "./icons";
+import CallLink from "./CallLink";
 
 export default function TicketCard({ ticket, locName, onOpen }) {
   const probs = (ticket.issue || "").split(",").map((p) => p.trim()).filter(Boolean);
@@ -19,11 +19,7 @@ export default function TicketCard({ ticket, locName, onOpen }) {
       <div className="t-name">{ticket.customerName}</div>
       <div className="t-device">
         <span>{[ticket.brand, ticket.model].filter(Boolean).join(" ")}</span>
-        {ticket.customerPhone && (
-          <a className="call-link" href={`tel:${ticket.customerPhone.replace(/\s/g, "")}`} onClick={(e) => e.stopPropagation()}>
-            <CallIcon />Hívás
-          </a>
-        )}
+        <CallLink phone={ticket.customerPhone} />
       </div>
       {probs.length > 0 && (
         <div className="t-probs">{probs.map((p, i) => <span key={i} className="prob-pill">{p}</span>)}</div>

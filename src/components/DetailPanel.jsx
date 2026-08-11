@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { money, STATUSES, SUB_STATUSES } from "../lib/utils";
-import { CloseIcon, CallIcon, TrashIcon } from "./icons";
+import { CloseIcon, TrashIcon } from "./icons";
 import Row from "./DetailRow";
+import CallLink from "./CallLink";
 
 export default function DetailPanel({ ticket, locName, parts, onClose, onStatusChange, onEdit, onDelete, busy, onAddPart, onRemovePart, onPrint }) {
   const [copied, setCopied] = useState(false);
@@ -54,7 +55,7 @@ export default function DetailPanel({ ticket, locName, parts, onClose, onStatusC
             <Row k="Telefonszám" v={ticket.customerPhone ? (
               <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 {ticket.customerPhone}
-                <a className="call-link" href={`tel:${ticket.customerPhone.replace(/\s/g, "")}`}><CallIcon />Hívás</a>
+                <CallLink phone={ticket.customerPhone} />
               </span>
             ) : null} />
             <Row k="Helyszín" v={locName(ticket.locationId)} />
@@ -82,7 +83,7 @@ export default function DetailPanel({ ticket, locName, parts, onClose, onStatusC
               <div key={sp.id} className="dp-row">
                 <span className="dp-key">{sp.partName} ×{sp.quantity}</span>
                 <span className="dp-val" style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "flex-end" }}>
-                  {money((sp.unitPrice || 0) * sp.quantity)}
+                  {money((sp.costPrice || 0) * sp.quantity)}
                   <button className="iconbtn" disabled={busy} onClick={() => onRemovePart(ticket.id, sp)}><TrashIcon /></button>
                 </span>
               </div>

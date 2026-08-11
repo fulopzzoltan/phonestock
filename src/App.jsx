@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap } from "./lib/supabaseClient";
 import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi } from "./lib/mappers";
-import { money, today, STATUSES } from "./lib/utils";
+import { money, today, STATUSES, PART_CATEGORIES } from "./lib/utils";
 import Login from "./Login";
 import StockModal from "./components/StockModal";
 import SellModal from "./components/SellModal";
@@ -10,6 +10,7 @@ import PartModal from "./components/PartModal";
 import TicketCard from "./components/TicketCard";
 import DetailPanel from "./components/DetailPanel";
 import ProductDetailPanel from "./components/ProductDetailPanel";
+import PartDetailPanel from "./components/PartDetailPanel";
 import TicketFormModal from "./components/TicketFormModal";
 import TransactionQuickAdd from "./components/TransactionQuickAdd";
 import TransactionsPeriodList from "./components/TransactionsPeriodList";
@@ -43,6 +44,10 @@ function AppShell() {
   const [loadingData, setLoadingData] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [confirmDialog, setConfirmDialog] = useState(null); // { message, resolve }
+  function confirmAsync(message) {
+    return new Promise((resolve) => setConfirmDialog({ message, resolve }));
+  }
   const [search, setSearch] = useState("");
   const [svcSearch, setSvcSearch] = useState("");
   const [custSearch, setCustSearch] = useState("");
@@ -55,6 +60,7 @@ function AppShell() {
   const [ticketModal, setTicketModal] = useState(null); // null | "add" | ticket obj (edit)
   const [detailId, setDetailId] = useState(null);
   const [productDetailId, setProductDetailId] = useState(null);
+  const [partDetailId, setPartDetailId] = useState(null);
   const [showHandedOver, setShowHandedOver] = useState(false);
   const [customerKey, setCustomerKey] = useState(null);
   const [printTicket, setPrintTicket] = useState(null);
@@ -114,9 +120,12 @@ function AppShell() {
   }
 
   const locName = (id) => locations.find((l) => l.id === id)?.name || "—";
-  const allowedLocations = isAdmin ? locations : locations.filter((l) => l.id === myLocationId);
+  const stockLocations = isAdmin ? locations : locations.filter((l) => l.id === myLocationId);
+  const allowedLocations = stockLocations.filter((l) => l.name !== "Tartalék");
   const effectiveLocFilter = isAdmin ? locFilter : (myLocationId || "none");
-  const defaultLocId = isAdmin ? (locFilter !== "all" ? locFilter : locations[0]?.id) : myLocationId;
+  const defaultLocId = isAdmin ? (locFilter !== "all" ? locFilter : allowedLocations[0]?.id) : myLocationId;
+  const reserveLocId = locations.find((l) => l.name === "Tartalék")?.id;
+  const defaultStockLocId = isAdmin ? (locFilter !== "all" ? locFilter : (reserveLocId || allowedLocations[0]?.id)) : myLocationId;
 
   // STOCK
   async function addProduct(data, locId) {
@@ -134,6 +143,7 @@ function AppShell() {
     });
   }
   async function deleteProduct(id) {
+    if (!(await confirmAsync("Biztosan törlöd ezt a terméket? Ez nem vonható vissza."))) return;
     await withBusy(async () => {
       unwrap(await supabase.from("products").delete().eq("id", id));
       setStock(stock.filter((i) => i.id !== id));
@@ -165,6 +175,7 @@ function AppShell() {
     });
   }
   async function deletePart(id) {
+    if (!(await confirmAsync("Biztosan törlöd ezt az alkatrészt? Ez nem vonható vissza."))) return;
     await withBusy(async () => {
       unwrap(await supabase.from("parts").delete().eq("id", id));
       setParts(parts.filter((p) => p.id !== id));
@@ -194,6 +205,7 @@ function AppShell() {
     });
   }
   async function deleteTransaction(id) {
+    if (!(await confirmAsync("Biztosan törlöd ezt a tranzakciót? Ez nem vonható vissza."))) return;
     await withBusy(async () => {
       unwrap(await supabase.from("transactions").delete().eq("id", id));
       setTransactions(transactions.filter((t) => t.id !== id));
@@ -238,6 +250,7 @@ function AppShell() {
     });
   }
   async function deleteTicket(id) {
+    if (!(await confirmAsync("Biztosan törlöd ezt a munkalapot? Ez nem vonható vissza."))) return;
     await withBusy(async () => {
       unwrap(await supabase.from("service_tickets").delete().eq("id", id));
       setTickets(tickets.filter((t) => t.id !== id));
@@ -247,22 +260,21 @@ function AppShell() {
   async function addPartToTicket(ticketId, part, qty) {
     await withBusy(async () => {
       const ticket = tickets.find((t) => t.id === ticketId);
-      const unitPrice = Number(part.salePrice) || 0;
       const unitCost = Number(part.costPrice) || 0;
       const r = unwrap(await supabase.from("service_parts").insert({
-        service_ticket_id: ticketId, part_id: part.id, part_name: part.name, quantity: qty, unit_price: unitPrice, cost_price: unitCost,
+        service_ticket_id: ticketId, part_id: part.id, part_name: part.name, quantity: qty, cost_price: unitCost,
       }).select());
       const newQty = (Number(part.quantity) || 0) - qty;
       unwrap(await supabase.from("parts").update({ quantity: newQty }).eq("id", part.id));
-      const newPrice = (Number(ticket.price) || 0) + unitPrice * qty;
       const newMatCost = (Number(ticket.matCost) || 0) + unitCost * qty;
-      unwrap(await supabase.from("service_tickets").update({ price: newPrice, mat_cost: newMatCost }).eq("id", ticketId));
+      unwrap(await supabase.from("service_tickets").update({ mat_cost: newMatCost }).eq("id", ticketId));
 
       setParts(parts.map((p) => (p.id === part.id ? { ...p, quantity: newQty } : p)));
-      setTickets(tickets.map((t) => (t.id === ticketId ? { ...t, price: newPrice, matCost: newMatCost, usedParts: [...(t.usedParts || []), spFromApi(r[0])] } : t)));
+      setTickets(tickets.map((t) => (t.id === ticketId ? { ...t, matCost: newMatCost, usedParts: [...(t.usedParts || []), spFromApi(r[0])] } : t)));
     });
   }
   async function removePartFromTicket(ticketId, usedPart) {
+    if (!(await confirmAsync("Biztosan eltávolítod ezt a felhasznált alkatrészt a munkalapról?"))) return;
     await withBusy(async () => {
       const ticket = tickets.find((t) => t.id === ticketId);
       const part = parts.find((p) => p.id === usedPart.partId);
@@ -272,21 +284,20 @@ function AppShell() {
         unwrap(await supabase.from("parts").update({ quantity: restoredQty }).eq("id", part.id));
         setParts(parts.map((p) => (p.id === part.id ? { ...p, quantity: restoredQty } : p)));
       }
-      const newPrice = Math.max(0, (Number(ticket.price) || 0) - (Number(usedPart.unitPrice) || 0) * usedPart.quantity);
       const newMatCost = Math.max(0, (Number(ticket.matCost) || 0) - (Number(usedPart.costPrice) || 0) * usedPart.quantity);
-      unwrap(await supabase.from("service_tickets").update({ price: newPrice, mat_cost: newMatCost }).eq("id", ticketId));
-      setTickets(tickets.map((t) => (t.id === ticketId ? { ...t, price: newPrice, matCost: newMatCost, usedParts: (t.usedParts || []).filter((sp) => sp.id !== usedPart.id) } : t)));
+      unwrap(await supabase.from("service_tickets").update({ mat_cost: newMatCost }).eq("id", ticketId));
+      setTickets(tickets.map((t) => (t.id === ticketId ? { ...t, matCost: newMatCost, usedParts: (t.usedParts || []).filter((sp) => sp.id !== usedPart.id) } : t)));
     });
   }
 
   // FILTERED DATA
   const filteredStock = useMemo(() => {
     let s = stock.filter((i) => i.status === "in_stock");
-    if (effectiveLocFilter !== "all") s = s.filter((i) => i.locationId === effectiveLocFilter);
+    if (effectiveLocFilter !== "all") s = s.filter((i) => i.locationId === effectiveLocFilter || i.locationId === reserveLocId);
     const q = search.trim().toLowerCase();
     if (q) s = s.filter((i) => [i.brand, i.model, i.imei, i.color].join(" ").toLowerCase().includes(q));
     return s;
-  }, [stock, effectiveLocFilter, search]);
+  }, [stock, effectiveLocFilter, search, reserveLocId]);
 
   const filteredTransactions = useMemo(() => {
     if (effectiveLocFilter === "all") return transactions;
@@ -314,10 +325,7 @@ function AppShell() {
   }, [filteredTransactions]);
 
   const partsStats = useMemo(() => ({
-    count: parts.length,
     value: parts.reduce((a, p) => a + (Number(p.costPrice) || 0) * (Number(p.quantity) || 0), 0),
-    low: parts.filter((p) => Number(p.quantity) <= 2).length,
-    qty: parts.reduce((a, p) => a + (Number(p.quantity) || 0), 0),
   }), [parts]);
 
   const activeTickets = useMemo(() => filteredTickets.filter((t) => t.subStatus !== "Átadva"), [filteredTickets]);
@@ -368,6 +376,7 @@ function AppShell() {
 
   const detailTicket = detailId ? tickets.find((t) => t.id === detailId) : null;
   const detailProduct = productDetailId ? stock.find((i) => i.id === productDetailId) : null;
+  const detailPart = partDetailId ? parts.find((p) => p.id === partDetailId) : null;
   const editingTicket = ticketModal && ticketModal !== "add" ? ticketModal : null;
 
   const noLocationAssigned = !isAdmin && !myLocationId;
@@ -393,7 +402,7 @@ function AppShell() {
           {isAdmin ? (
             <div className="loc-sw">
               <button className={`loc-btn ${locFilter === "all" ? "active" : ""}`} onClick={() => setLocFilter("all")}>Mind</button>
-              {locations.map((l) => (
+              {allowedLocations.map((l) => (
                 <button key={l.id} className={`loc-btn ${locFilter === l.id ? "active" : ""}`} onClick={() => setLocFilter(l.id)}>{l.name}</button>
               ))}
             </div>
@@ -435,16 +444,14 @@ function AppShell() {
               <div className="searchbar"><SearchIcon /><input placeholder="Keresés..." value={search} onChange={(e) => setSearch(e.target.value)} /></div>
             </div>
             {loadingData ? <div className="empty">Betöltés...</div> : filteredStock.length === 0 ? <div className="empty">Nincs termék raktáron.</div> : (
-              (effectiveLocFilter === "all" ? locations : locations.filter((l) => l.id === effectiveLocFilter)).map((loc) => {
+              (effectiveLocFilter === "all" ? locations : locations.filter((l) => l.id === effectiveLocFilter || l.id === reserveLocId)).map((loc) => {
                 const items = filteredStock.filter((i) => i.locationId === loc.id);
-                if (effectiveLocFilter === "all" && items.length === 0) return null;
+                if (items.length === 0) return null;
                 return (
                   <div key={loc.id} style={{ marginBottom: 18 }}>
-                    {effectiveLocFilter === "all" && (
-                      <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>
-                        {loc.name} <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({items.length} db)</span>
-                      </div>
-                    )}
+                    <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>
+                      {loc.name} <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({items.length} db)</span>
+                    </div>
                     <div className="tw">
                       {items.length === 0 ? <div className="empty">Nincs termék ezen a helyszínen.</div> : (
                         <table>
@@ -570,34 +577,45 @@ function AppShell() {
               <div><div className="page-title">Alkatrész raktár</div><div className="page-sub">Közös raktár — mindkét helyszín</div></div>
               <button className="btn" disabled={busy} onClick={() => setPartModal("add")}>+ Új alkatrész</button>
             </div>
-            <div className="statrow c4">
-              <div className="statcard accent"><div className="lbl">Féleségek</div><div className="val">{partsStats.count}</div></div>
-              <div className="statcard"><div className="lbl">Raktár értéke</div><div className="val">{money(partsStats.value)}</div></div>
-              <div className="statcard"><div className="lbl">Alacsony készlet</div><div className="val" style={{ color: "#DC2626" }}>{partsStats.low} tétel</div></div>
-              <div className="statcard"><div className="lbl">Össz. darab</div><div className="val">{partsStats.qty} db</div></div>
+            <div className="statrow c1">
+              <div className="statcard accent"><div className="lbl">Raktár értéke</div><div className="val">{money(partsStats.value)}</div></div>
             </div>
-            <div className="tw">
-              {loadingData ? <div className="empty">Betöltés...</div> : parts.length === 0 ? <div className="empty">Nincs alkatrész.</div> : (
-                <table>
-                  <thead><tr><th>Alkatrész</th><th>Márka/Illik</th><th>Készlet</th><th>Besz.</th><th>Elad.</th><th></th></tr></thead>
-                  <tbody>
-                    {parts.map((p) => (
-                      <tr key={p.id}>
-                        <td style={{ fontWeight: 600 }}>{p.name}</td>
-                        <td style={{ color: "#6B7280", fontSize: 12 }}>{[p.brand, p.modelFit].filter(Boolean).join(" · ") || "—"}</td>
-                        <td style={{ fontWeight: 700, color: Number(p.quantity) <= 2 ? "#DC2626" : "#22C55E" }}>{p.quantity} db</td>
-                        <td className="mono" style={{ color: "#6B7280" }}>{money(p.costPrice)}</td>
-                        <td className="mono" style={{ fontWeight: 600 }}>{money(p.salePrice)}</td>
-                        <td style={{ display: "flex", gap: 5 }}>
-                          <button className="iconbtn" disabled={busy} onClick={() => setPartModal(p)}><EditIcon /></button>
-                          <button className="iconbtn" disabled={busy} onClick={() => deletePart(p.id)}><TrashIcon /></button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
+            {loadingData ? <div className="tw"><div className="empty">Betöltés...</div></div> : parts.length === 0 ? <div className="tw"><div className="empty">Nincs alkatrész.</div></div> : (
+              [...PART_CATEGORIES, "Egyéb"].map((cat) => {
+                const items = cat === "Egyéb"
+                  ? parts.filter((p) => !PART_CATEGORIES.includes(p.category))
+                  : parts.filter((p) => p.category === cat);
+                if (items.length === 0) return null;
+                return (
+                  <div key={cat} style={{ marginBottom: 18 }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>
+                      {cat} <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({items.length} db)</span>
+                    </div>
+                    <div className="tw">
+                      <table>
+                        <thead><tr><th>#</th><th>Alkatrész</th><th>Márka/Illik</th><th>Készlet</th><th>Beérk. ár</th><th>Forrás</th><th></th></tr></thead>
+                        <tbody>
+                          {items.map((p) => (
+                            <tr key={p.id} style={{ cursor: "pointer" }} onClick={() => setPartDetailId(p.id)}>
+                              <td className="mono" style={{ color: "#9CA3AF" }}>{p.partNo}</td>
+                              <td style={{ fontWeight: 600 }}>{p.name}</td>
+                              <td style={{ color: "#6B7280", fontSize: 12 }}>{[p.brand, p.modelFit].filter(Boolean).join(" · ") || "—"}</td>
+                              <td style={{ fontWeight: 700 }}>{p.quantity} db</td>
+                              <td className="mono" style={{ color: "#6B7280" }}>{money(p.costPrice)}</td>
+                              <td style={{ color: "#6B7280", fontSize: 12 }}>{p.source || "—"}</td>
+                              <td style={{ display: "flex", gap: 5 }} onClick={(e) => e.stopPropagation()}>
+                                <button className="iconbtn" disabled={busy} onClick={() => setPartModal(p)}><EditIcon /></button>
+                                <button className="iconbtn" disabled={busy} onClick={() => deletePart(p.id)}><TrashIcon /></button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </>
         )}
 
@@ -658,7 +676,7 @@ function AppShell() {
                         <td>
                           <select value={u.locationId || ""} disabled={busy} onChange={(e) => updateUserProfile(u.id, { location_id: e.target.value || null })}>
                             <option value="">— Nincs —</option>
-                            {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+                            {allowedLocations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
                           </select>
                         </td>
                       </tr>
@@ -674,10 +692,10 @@ function AppShell() {
       {stockModal && (
         <StockModal
           product={stockModal !== "add" ? stockModal : null}
-          locations={allowedLocations}
+          locations={stockLocations}
           onClose={() => setStockModal(null)}
           busy={busy}
-          defaultLocId={defaultLocId}
+          defaultLocId={defaultStockLocId}
           onSave={(data, locId) => (stockModal !== "add" ? editProduct(stockModal.id, data, locId) : addProduct(data, locId))}
         />
       )}
@@ -736,6 +754,15 @@ function AppShell() {
           onDelete={(id) => { deleteProduct(id); setProductDetailId(null); }}
         />
       )}
+      {detailPart && (
+        <PartDetailPanel
+          part={detailPart}
+          busy={busy}
+          onClose={() => setPartDetailId(null)}
+          onEdit={(p) => { setPartDetailId(null); setPartModal(p); }}
+          onDelete={(id) => { deletePart(id); setPartDetailId(null); }}
+        />
+      )}
       {detailCustomer && (
         <CustomerDetailPanel customer={detailCustomer} locName={locName} onClose={() => setCustomerKey(null)} />
       )}
@@ -746,6 +773,18 @@ function AppShell() {
         {printTicket && <PrintSlip ticket={printTicket} location={locations.find((l) => l.id === printTicket.locationId)} />}
         {printReceipt && <PrintReceiptSlip tx={printReceipt} location={locations.find((l) => l.id === printReceipt.locationId)} />}
       </div>
+      {confirmDialog && (
+        <div className="overlay" onClick={() => { confirmDialog.resolve(false); setConfirmDialog(null); }}>
+          <div className="modal" style={{ maxWidth: 380 }} onClick={(e) => e.stopPropagation()}>
+            <h2>Megerősítés</h2>
+            <p style={{ fontSize: 13, color: "#374151", margin: "-8px 0 20px", lineHeight: 1.5 }}>{confirmDialog.message}</p>
+            <div className="modal-actions">
+              <button className="btn sec" onClick={() => { confirmDialog.resolve(false); setConfirmDialog(null); }}>Mégse</button>
+              <button className="btn danger" onClick={() => { confirmDialog.resolve(true); setConfirmDialog(null); }}>Törlés</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

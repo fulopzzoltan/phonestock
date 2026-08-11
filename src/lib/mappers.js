@@ -107,12 +107,14 @@ export const tToApi = (t, locId) => ({
 
 export const partFromApi = (r) => ({
   id: r.id,
+  partNo: r.part_no,
   name: r.name,
   brand: r.brand,
   modelFit: r.model_fit,
   quantity: r.quantity,
   costPrice: r.cost_price,
-  salePrice: r.sale_price,
+  source: r.source,
+  category: r.category,
 });
 
 export const partToApi = (p) => ({
@@ -121,7 +123,8 @@ export const partToApi = (p) => ({
   model_fit: p.modelFit || null,
   quantity: Number(p.quantity) || 0,
   cost_price: Number(p.costPrice) || 0,
-  sale_price: Number(p.salePrice) || 0,
+  source: p.source || null,
+  category: p.category || null,
 });
 
 export const spFromApi = (r) => ({

@@ -30,6 +30,7 @@ export const subStatusCls = (status, sub) => (SUB_STATUSES[status] || []).find((
 export const subStatusLabel = (status, sub) => (SUB_STATUSES[status] || []).find((s) => s.key === sub)?.label || sub || "";
 
 export const PROBLEM_TAGS = ["LCD", "FRP", "Csatlakozó", "Akku", "Kamera", "Szoftver", "Egyéb"];
+export const PART_CATEGORIES = ["Kijelző", "Akkumulátor"];
 export const WARRANTIES = ["1 hó", "3 hó", "6 hó", "1 év"];
 export const PAYMENTS = ["Készpénz", "Kártya", "Átutalás"];
 export const CATEGORIES = ["Fix", "Készlet", "Marketing", "Eszköz", "Szerviz", "Egyéb"];

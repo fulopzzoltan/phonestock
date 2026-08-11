@@ -1,6 +1,7 @@
 import { money, statusCls, subStatusLabel } from "../lib/utils";
-import { CloseIcon, CallIcon } from "./icons";
+import { CloseIcon } from "./icons";
 import Row from "./DetailRow";
+import CallLink from "./CallLink";
 
 export default function CustomerDetailPanel({ customer, locName, onClose }) {
   const events = [
@@ -23,7 +24,7 @@ export default function CustomerDetailPanel({ customer, locName, onClose }) {
             <Row k="Telefonszám" v={customer.phone ? (
               <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 {customer.phone}
-                <a className="call-link" href={`tel:${customer.phone.replace(/\s/g, "")}`}><CallIcon />Hívás</a>
+                <CallLink phone={customer.phone} />
               </span>
             ) : null} />
             <Row k="Vásárlások" v={`${customer.purchases.length} db — ${money(customer.purchaseTotal)}`} />

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { money, warrantyExpiry, isWarrantyActive } from "../lib/utils";
-import { CloseIcon, CallIcon } from "./icons";
+import { CloseIcon } from "./icons";
 import Row from "./DetailRow";
+import CallLink from "./CallLink";
 
 export default function SaleReceiptPanel({ tx, locName, onClose, onPrint }) {
   const [copied, setCopied] = useState(false);
@@ -31,7 +32,7 @@ export default function SaleReceiptPanel({ tx, locName, onClose, onPrint }) {
             <Row k="Telefonszám" v={tx.customerPhone ? (
               <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 {tx.customerPhone}
-                <a className="call-link" href={`tel:${tx.customerPhone.replace(/\s/g, "")}`}><CallIcon />Hívás</a>
+                <CallLink phone={tx.customerPhone} />
               </span>
             ) : null} />
             <Row k="Helyszín" v={locName(tx.locationId)} />
