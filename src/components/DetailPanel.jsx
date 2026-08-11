@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { money, STATUSES, SUB_STATUSES } from "../lib/utils";
+import { money, STATUSES, SUB_STATUSES, slaInfo } from "../lib/utils";
 import { CloseIcon } from "./icons";
 import Row from "./DetailRow";
 import CallLink from "./CallLink";
@@ -16,6 +16,7 @@ export default function DetailPanel({ ticket, locName, parts, onClose, onStatusC
   const probs = (ticket.issue || "").split(",").map((p) => p.trim()).filter(Boolean);
   const profit = (Number(ticket.price) || 0) - (Number(ticket.matCost) || 0);
   const statusLink = `${window.location.origin}/status/${ticket.publicToken}`;
+  const sla = slaInfo(ticket);
 
   function copyStatusLink() {
     navigator.clipboard.writeText(statusLink);
@@ -75,8 +76,16 @@ export default function DetailPanel({ ticket, locName, parts, onClose, onStatusC
             <Row k="Probléma" v={probs.length ? probs.map((p, i) => <span key={i} className="prob-pill">{p}</span>) : null} />
             <Row k="Garancia" v={ticket.warranty ? <span className="gar-pill">{ticket.warranty}</span> : null} />
             <Row k="Fólia" v={ticket.folia ? <span style={{ color: "#22C55E", fontWeight: 700 }}>✓ Igen</span> : "Nem"} />
-            <Row k="Átadás dátuma" v={ticket.handoverDate} />
             <Row k="Beérkezés" v={ticket.dateIn} />
+            <Row k="Átadás dátuma" v={ticket.handoverDate} />
+            <Row k="Határidő (SLA)" v={ticket.dueDate ? (
+              <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                {ticket.dueDate}
+                {sla && (sla.level === "warn" || sla.level === "overdue") && (
+                  <span className={`sla-badge sla-${sla.level}`}>{sla.label}</span>
+                )}
+              </span>
+            ) : null} />
           </div>
           <div className="dp-section">
             <div className="dp-section-title">Felhasznált alkatrészek</div>

@@ -25,6 +25,9 @@ export default function ProductDetailPanel({ product, locName, onClose, onSell, 
             <Row k="Szín" v={product.color} />
             <Row k="IMEI" v={product.imei ? <span className="mono">{product.imei}</span> : null} />
             <Row k="Helyszín" v={locName(product.locationId)} />
+            <Row k="Garancia" v={product.warranty ? <span className="gar-pill">{product.warranty}</span> : null} />
+            <Row k="Forrás" v={product.source} />
+            {product.condition === "Refurbished" && <Row k="Akkuállapot" v={product.batteryHealth != null ? `${product.batteryHealth}%` : null} />}
           </div>
           <div className="dp-section">
             <div className="dp-section-title">Pénzügyek</div>

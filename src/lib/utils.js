@@ -29,9 +29,21 @@ export const SUB_STATUSES = {
 export const subStatusCls = (status, sub) => (SUB_STATUSES[status] || []).find((s) => s.key === sub)?.cls || "st-beveve";
 export const subStatusLabel = (status, sub) => (SUB_STATUSES[status] || []).find((s) => s.key === sub)?.label || sub || "";
 
+// SLA: munkalapok, amik "lezártnak" számítanak, nincs értelme határidőt figyelni rájuk
+const SLA_CLOSED_SUB_STATUSES = ["Átadva", "Sikertelen"];
+export function slaInfo(ticket) {
+  if (!ticket?.dueDate || SLA_CLOSED_SUB_STATUSES.includes(ticket.subStatus)) return null;
+  const days = Math.round((new Date(ticket.dueDate + "T00:00:00") - new Date(today() + "T00:00:00")) / 86400000);
+  if (days < 0) return { level: "overdue", days, label: `${Math.abs(days)} napja lejárt` };
+  if (days === 0) return { level: "warn", days, label: "Ma jár le" };
+  if (days === 1) return { level: "warn", days, label: "Holnap jár le" };
+  return { level: "ok", days, label: `${days} nap van hátra` };
+}
+
 export const PROBLEM_TAGS = ["LCD", "FRP", "Csatlakozó", "Akku", "Kamera", "Szoftver", "Egyéb"];
 export const PART_CATEGORIES = ["Kijelző", "Akkumulátor"];
-export const WARRANTIES = ["1 hó", "3 hó", "6 hó", "1 év"];
+export const WARRANTIES = ["1 hó", "3 hó", "6 hó", "1 év", "2 év"];
+export const SOURCES = ["Konszignáció", "Számla"];
 export const PAYMENTS = ["Készpénz", "Kártya", "Átutalás"];
 export const CATEGORIES = ["Fix", "Készlet", "Marketing", "Eszköz", "Szerviz", "Egyéb"];
 

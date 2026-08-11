@@ -19,6 +19,8 @@ export const pFromApi = (r) => ({
   salePrice: r.sale_price,
   status: r.status,
   warranty: r.warranty,
+  source: r.source,
+  batteryHealth: r.battery_health,
   locationId: r.location_id,
 });
 
@@ -33,6 +35,8 @@ export const pToApi = (p, locId) => ({
   cost_price: Number(p.costPrice) || 0,
   sale_price: Number(p.salePrice) || 0,
   warranty: p.warranty || null,
+  source: p.source || null,
+  battery_health: p.batteryHealth === "" || p.batteryHealth == null ? null : Number(p.batteryHealth),
   location_id: locId,
 });
 
@@ -82,6 +86,7 @@ export const tFromApi = (r) => ({
   matCost: r.mat_cost,
   folia: r.folia,
   handoverDate: r.handover_date,
+  dueDate: r.due_date,
   status: r.status,
   subStatus: r.sub_status,
   dateIn: r.date_in,
@@ -100,6 +105,7 @@ export const tToApi = (t, locId) => ({
   mat_cost: Number(t.matCost) || 0,
   folia: !!t.folia,
   handover_date: t.handoverDate || null,
+  due_date: t.dueDate || null,
   status: t.status || "Átvett",
   sub_status: t.subStatus || null,
   location_id: locId,

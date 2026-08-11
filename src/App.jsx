@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap } from "./lib/supabaseClient";
 import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi } from "./lib/mappers";
-import { money, today, STATUSES, PART_CATEGORIES } from "./lib/utils";
+import { money, today, STATUSES, PART_CATEGORIES, warrantyExpiry, isWarrantyActive } from "./lib/utils";
 import Login from "./Login";
 import StockModal from "./components/StockModal";
 import SellModal from "./components/SellModal";
@@ -20,7 +20,10 @@ import CustomerDetailPanel from "./components/CustomerDetailPanel";
 import PrintSlip from "./components/PrintSlip";
 import SaleReceiptPanel from "./components/SaleReceiptPanel";
 import PrintReceiptSlip from "./components/PrintReceiptSlip";
-import { SearchIcon, EditIcon } from "./components/icons";
+import {
+  SearchIcon, EditIcon, LogoIcon, DashboardIcon, ServiceIcon, PhoneCaseIcon,
+  PartsIcon, FinanceIcon, CustomersIcon, WarrantyIcon, UsersNavIcon, TrashNavIcon, LogoutIcon,
+} from "./components/icons";
 import ConfirmDelete from "./components/ConfirmDelete";
 
 export default function App() {
@@ -367,7 +370,7 @@ function AppShell() {
     if (effectiveLocFilter !== "all") s = s.filter((i) => i.locationId === effectiveLocFilter || i.locationId === reserveLocId);
     const q = search.trim().toLowerCase();
     if (q) s = s.filter((i) => [i.brand, i.model, i.imei, i.color].join(" ").toLowerCase().includes(q));
-    return s;
+    return [...s].sort((a, b) => (a.brand || "").localeCompare(b.brand || "", "hu") || (a.model || "").localeCompare(b.model || "", "hu"));
   }, [stock, effectiveLocFilter, search, reserveLocId]);
 
   const filteredTransactions = useMemo(() => {
@@ -417,7 +420,9 @@ function AppShell() {
   }), [filteredTickets, handedOverTickets]);
 
   const customers = useMemo(() => {
-    const norm = (p) => (p || "").replace(/\D/g, "");
+    // RO telefonszámok 9 érdemi számjegyből állnak, akár "0" (10 jegy), akár "+40"/"40" (11 jegy)
+    // előtaggal írjuk — az utolsó 9 jegyre normalizálva ugyanaz a szám mindig ugyanoda kulcsolódik.
+    const norm = (p) => (p || "").replace(/\D/g, "").slice(-9);
     const map = new Map();
     function addEntry(name, phone, kind, record) {
       const key = norm(phone) || (name ? `name:${name.trim().toLowerCase()}` : null);
@@ -448,6 +453,22 @@ function AppShell() {
     avg: customers.length ? customers.reduce((s, c) => s + c.purchaseTotal + c.ticketTotal, 0) / customers.length : 0,
   }), [customers]);
 
+  const activeWarranties = useMemo(() => {
+    const saleItems = transactions
+      .filter((t) => t.category === "Készlet" && t.warranty && isWarrantyActive(t.date, t.warranty))
+      .map((t) => ({
+        key: `sale-${t.id}`, kind: "sale", customerName: t.customerName, customerPhone: t.customerPhone,
+        label: t.description, warranty: t.warranty, from: t.date, expiry: warrantyExpiry(t.date, t.warranty), locationId: t.locationId,
+      }));
+    const serviceItems = tickets
+      .filter((t) => t.subStatus === "Átadva" && t.warranty && isWarrantyActive(t.dateOut, t.warranty))
+      .map((t) => ({
+        key: `svc-${t.id}`, kind: "service", customerName: t.customerName, customerPhone: t.customerPhone,
+        label: [t.brand, t.model].filter(Boolean).join(" "), warranty: t.warranty, from: t.dateOut, expiry: warrantyExpiry(t.dateOut, t.warranty), locationId: t.locationId,
+      }));
+    return [...saleItems, ...serviceItems].sort((a, b) => (a.expiry || "").localeCompare(b.expiry || ""));
+  }, [transactions, tickets]);
+
   const detailCustomer = customerKey ? customers.find((c) => c.key === customerKey) : null;
   const receiptTx = receiptTxId ? transactions.find((t) => t.id === receiptTxId) : null;
 
@@ -463,30 +484,27 @@ function AppShell() {
       <div className="sidebar">
         <div className="sidebar-inner">
           <div className="brand">
-            <div className="brand-icon"><svg viewBox="0 0 24 24"><path d="M17 2H7a2 2 0 00-2 2v16a2 2 0 002 2h10a2 2 0 002-2V4a2 2 0 00-2-2zm-5 15a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm3-7H9V5h6v5z" /></svg></div>
-            <div className="brand-name">TELEF<span>O</span>NOS</div>
+            <div className="brand-mark"><LogoIcon className="nav-ic" /></div>
+            <div className="brand-word">TELEF<span>O</span>NOS</div>
           </div>
-          <button className={`navbtn ${tab === "dashboard" ? "active" : ""}`} onClick={() => setTab("dashboard")}>📊 Áttekintés</button>
 
-          <div className="nav-lbl">Működés</div>
+          <div className="nav-lbl">Napi munka</div>
+          <button className={`navbtn ${tab === "dashboard" ? "active" : ""}`} onClick={() => setTab("dashboard")}><DashboardIcon className="nav-ic" />Áttekintés</button>
           <div className="navrow">
-            <button className={`navbtn ${tab === "service" ? "active" : ""}`} onClick={() => setTab("service")}>🔧 Szerviz</button>
+            <button className={`navbtn ${tab === "service" ? "active" : ""}`} onClick={() => setTab("service")}><ServiceIcon className="nav-ic" />Szerviz</button>
             <button type="button" className="nav-quick-add" title="Új munkalap" onClick={() => { setTab("service"); setTicketModal("add"); }}>+</button>
           </div>
-          <button className={`navbtn ${tab === "stock" ? "active" : ""}`} onClick={() => setTab("stock")}>📱 Telefonok</button>
-          <button className={`navbtn ${tab === "parts" ? "active" : ""}`} onClick={() => setTab("parts")}>🔩 Alkatrészek</button>
+          <button className={`navbtn ${tab === "stock" ? "active" : ""}`} onClick={() => setTab("stock")}><PhoneCaseIcon className="nav-ic" />Telefonok</button>
+          <button className={`navbtn ${tab === "parts" ? "active" : ""}`} onClick={() => setTab("parts")}><PartsIcon className="nav-ic" />Alkatrészek</button>
+          <button className={`navbtn ${tab === "finance" ? "active" : ""}`} onClick={() => setTab("finance")}><FinanceIcon className="nav-ic" />Bevételek &amp; Kiadások</button>
+          <button className={`navbtn ${tab === "customers" ? "active" : ""}`} onClick={() => setTab("customers")}><CustomersIcon className="nav-ic" />Kliensek</button>
+          <button className={`navbtn ${tab === "warranty" ? "active" : ""}`} onClick={() => setTab("warranty")}><WarrantyIcon className="nav-ic" />Garanciális</button>
 
-          <div className="nav-lbl">Pénzügy</div>
-          <button className={`navbtn ${tab === "finance" ? "active" : ""}`} onClick={() => setTab("finance")}>💰 Bevételek &amp; Kiadások</button>
-
-          <div className="nav-lbl">Ügyfelek</div>
-          <button className={`navbtn ${tab === "customers" ? "active" : ""}`} onClick={() => setTab("customers")}>👤 Kliensek</button>
-
-          <div className="nav-lbl">Adminisztráció</div>
+          <div className="nav-lbl">Admin</div>
           {isAdmin && (
-            <button className={`navbtn ${tab === "users" ? "active" : ""}`} onClick={() => setTab("users")}>👥 Felhasználók</button>
+            <button className={`navbtn ${tab === "users" ? "active" : ""}`} onClick={() => setTab("users")}><UsersNavIcon className="nav-ic" />Felhasználók</button>
           )}
-          <button className={`navbtn ${tab === "trash" ? "active" : ""}`} onClick={() => setTab("trash")}>🗑️ Kuka</button>
+          <button className={`navbtn ${tab === "trash" ? "active" : ""}`} onClick={() => setTab("trash")}><TrashNavIcon className="nav-ic" />Kuka</button>
         </div>
         <div className="sidebar-bottom">
           {isAdmin ? (
@@ -506,7 +524,7 @@ function AppShell() {
               <div className="user-role">{isAdmin ? "Admin" : "Alkalmazott"}</div>
             </div>
             <button className="logout-btn" title="Kijelentkezés" onClick={signOut}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+              <LogoutIcon />
             </button>
           </div>
         </div>
@@ -764,6 +782,41 @@ function AppShell() {
                         <td className="mono" style={{ color: "#6B7280" }}>{c.lastActivity || "—"}</td>
                       </tr>
                     ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </>
+        )}
+
+        {!noLocationAssigned && tab === "warranty" && (
+          <>
+            <div className="topbar">
+              <div><div className="page-title">Garanciális</div><div className="page-sub">Aktív garanciák — telefoneladás és szerviz, lejárat szerint</div></div>
+            </div>
+            <div className="statrow c1">
+              <div className="statcard accent"><div className="lbl">Aktív garancia</div><div className="val">{activeWarranties.length} db</div></div>
+            </div>
+            <div className="tw">
+              {loadingData ? <div className="empty">Betöltés...</div> : activeWarranties.length === 0 ? <div className="empty">Nincs aktív garancia.</div> : (
+                <table>
+                  <thead><tr><th>Típus</th><th>Ügyfél</th><th>Termék / Eszköz</th><th>Garancia</th><th>Lejárat</th><th>Helyszín</th></tr></thead>
+                  <tbody>
+                    {activeWarranties.map((w) => {
+                      const daysLeft = w.expiry ? Math.ceil((new Date(w.expiry) - new Date(today())) / 86400000) : null;
+                      return (
+                        <tr key={w.key}>
+                          <td>{w.kind === "sale" ? <span className="badge-income">Eladás</span> : <span className="badge-loc">Szerviz</span>}</td>
+                          <td style={{ fontWeight: 600 }}>{w.customerName || "—"}</td>
+                          <td>{w.label || "—"}</td>
+                          <td><span className="gar-pill">{w.warranty}</span></td>
+                          <td className="mono" style={{ fontWeight: 700, color: daysLeft != null && daysLeft <= 14 ? "#DC2626" : "#111827" }}>
+                            {w.expiry} {daysLeft != null && <span style={{ fontWeight: 500, color: "#9CA3AF" }}>({daysLeft} nap)</span>}
+                          </td>
+                          <td><span className="badge-loc">{locName(w.locationId)}</span></td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               )}

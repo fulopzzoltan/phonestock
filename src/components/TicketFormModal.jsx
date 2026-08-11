@@ -22,6 +22,7 @@ export default function TicketFormModal({ ticket, locations, defaultLocId, onClo
     matCost: ticket?.matCost ?? "",
     warranty: ticket?.warranty || "",
     handoverDate: ticket?.handoverDate || "",
+    dueDate: ticket?.dueDate || "",
     folia: ticket?.folia || false,
     status: ticket?.status || "Átvett",
     subStatus: ticket?.subStatus ?? null,
@@ -85,12 +86,13 @@ export default function TicketFormModal({ ticket, locations, defaultLocId, onClo
           </div>
         </div>
         <div className="row2">
+          <div className="field"><label>Határidő (SLA)</label><input type="date" value={f.dueDate} onChange={set("dueDate")} /></div>
           <div className="field"><label>Átadás dátuma</label><input type="date" value={f.handoverDate} onChange={set("handoverDate")} /></div>
-          <div className="field" style={{ display: "flex", alignItems: "flex-end", paddingBottom: 3 }}>
-            <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#374151", fontWeight: 500, textTransform: "none", letterSpacing: 0, cursor: "pointer" }}>
-              <input type="checkbox" className="chk" checked={f.folia} onChange={(e) => setF({ ...f, folia: e.target.checked })} /> Fólia felhelyezve
-            </label>
-          </div>
+        </div>
+        <div className="field">
+          <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#374151", fontWeight: 500, textTransform: "none", letterSpacing: 0, cursor: "pointer" }}>
+            <input type="checkbox" className="chk" checked={f.folia} onChange={(e) => setF({ ...f, folia: e.target.checked })} /> Fólia felhelyezve
+          </label>
         </div>
         <div className="modal-actions">
           <button className="btn sec" onClick={onClose}>Mégse</button>
