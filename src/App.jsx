@@ -26,6 +26,7 @@ import {
   PartsIcon, FinanceIcon, CustomersIcon, WarrantyIcon, UsersNavIcon, TrashNavIcon, LogoutIcon,
 } from "./components/icons";
 import ConfirmDelete from "./components/ConfirmDelete";
+import CallLink from "./components/CallLink";
 
 export default function App() {
   const { session, loading } = useAuth();
@@ -822,10 +823,16 @@ function AppShell() {
             <div className="tw">
               {loadingData ? <div className="empty">Betöltés...</div> : activeWarranties.length === 0 ? <div className="empty">Nincs aktív garancia.</div> : (
                 <table>
-                  <thead><tr><th>Típus</th><th>Ügyfél</th><th>Termék / Eszköz</th><th>Garancia</th><th>Lejárat</th><th>Helyszín</th></tr></thead>
+                  <thead><tr><th>Típus</th><th>Ügyfél</th><th>Termék / Eszköz</th><th>Garancia</th><th>Lejárat</th><th>Helyszín</th><th>Művelet</th></tr></thead>
                   <tbody>
                     {activeWarranties.map((w) => {
                       const daysLeft = w.expiry ? Math.ceil((new Date(w.expiry) - new Date(today())) / 86400000) : null;
+                      function sendReminder() {
+                        const message = stripAccents(`Szia! A(z) ${w.label} garanciája hamarosan lejár (${w.expiry}). Ha bármi gond van a készülékkel, keress minket!`);
+                        supabase.functions.invoke("send-sms", { body: { phone: w.customerPhone, message } })
+                          .then(() => alert("SMS elküldve."))
+                          .catch((err) => { console.error(err); setError("Az SMS nem ment ki."); });
+                      }
                       return (
                         <tr key={w.key}>
                           <td>{w.kind === "sale" ? <span className="badge-income">Eladás</span> : <span className="badge-loc">Szerviz</span>}</td>
@@ -836,6 +843,10 @@ function AppShell() {
                             {w.expiry} {daysLeft != null && <span style={{ fontWeight: 500, color: "#9CA3AF" }}>({daysLeft} nap)</span>}
                           </td>
                           <td><span className="badge-loc">{locName(w.locationId)}</span></td>
+                          <td style={{ display: "flex", gap: 6 }}>
+                            <CallLink phone={w.customerPhone} />
+                            <button type="button" className="btn sec sm" disabled={!w.customerPhone} onClick={sendReminder}>Emlékeztető SMS</button>
+                          </td>
                         </tr>
                       );
                     })}
