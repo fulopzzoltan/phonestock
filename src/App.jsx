@@ -13,6 +13,7 @@ import ProductDetailPanel from "./components/ProductDetailPanel";
 import PartDetailPanel from "./components/PartDetailPanel";
 import StockValueChart from "./components/StockValueChart";
 import TicketFormModal from "./components/TicketFormModal";
+import QuickSaleButtons from "./components/QuickSaleButtons";
 import TransactionQuickAdd from "./components/TransactionQuickAdd";
 import TransactionsPeriodList from "./components/TransactionsPeriodList";
 import TransactionModal from "./components/TransactionModal";
@@ -647,6 +648,7 @@ function AppShell() {
                 <button type="button" className={period === "month" ? "active" : ""} onClick={() => setPeriod("month")}>Havi</button>
               </div>
             </div>
+            <QuickSaleButtons locations={allowedLocations} defaultLocId={defaultLocId} onAdd={addTransaction} busy={busy} />
             <TransactionQuickAdd locations={allowedLocations} defaultLocId={defaultLocId} onAdd={addTransaction} busy={busy} />
             {loadingData ? <div className="tw"><div className="empty">Betöltés...</div></div> : (
               <TransactionsPeriodList transactions={filteredTransactions} period={period} locName={locName} onEdit={setTxModal} onDelete={deleteTransaction} onOpenReceipt={setReceiptTxId} busy={busy} />

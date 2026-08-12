@@ -47,6 +47,14 @@ export const SOURCES = ["Konszignáció", "Számla"];
 export const PAYMENTS = ["Készpénz", "Kártya", "Átutalás"];
 export const CATEGORIES = ["Fix", "Készlet", "Marketing", "Eszköz", "Szerviz", "Egyéb"];
 
+// Gyakran eladott kiegészítők — egy kattintással rögzíthető bevétel (eladási ár + beszerzési ár)
+export const QUICK_SALES = [
+  { label: "Devia fólia", amount: 49, cost: 10 },
+  { label: "MagicBox üvegfólia", amount: 49, cost: 7 },
+  { label: "Töltőkábel", amount: 25, cost: 4 },
+  { label: "Tok", amount: 49, cost: 10 },
+];
+
 export const SERVICE_WARRANTY_TERMS = `Szerviz Garancia Feltételek és a Javítás Menete
 
 Fontos tudnivaló: A Telefonos által biztosított szervizgarancia kizárólag a javítás során kicserélt alkatrészekre és az általunk elvégzett munkára vonatkozik, nem pedig a készülék teljes egészére!

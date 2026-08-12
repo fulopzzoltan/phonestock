@@ -6,6 +6,7 @@ export default function TransactionQuickAdd({ locations, defaultLocId, onAdd, bu
   const [type, setType] = useState("income");
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
+  const [costPrice, setCostPrice] = useState("");
   const [category, setCategory] = useState("Készlet");
   const [payment, setPayment] = useState("Készpénz");
   const [locId, setLocId] = useState(defaultLocId || locations[0]?.id || "");
@@ -14,9 +15,10 @@ export default function TransactionQuickAdd({ locations, defaultLocId, onAdd, bu
   function submit() {
     if (!description.trim() || !amount) { setErr("Leírás és összeg kötelező!"); return; }
     setErr("");
-    onAdd({ type, description: description.trim(), amount, category, payment, locationId: locId }, locId);
+    onAdd({ type, description: description.trim(), amount, costPrice: type === "income" ? (costPrice || 0) : 0, category, payment, locationId: locId }, locId);
     setDescription("");
     setAmount("");
+    setCostPrice("");
   }
 
   return (
@@ -29,7 +31,7 @@ export default function TransactionQuickAdd({ locations, defaultLocId, onAdd, bu
         </div>
       </div>
       {err && <div className="errbar">{err}</div>}
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr auto", gap: 8, alignItems: "flex-end" }}>
+      <div style={{ display: "grid", gridTemplateColumns: type === "income" ? "1.6fr 1fr 1fr 1fr 1fr 1fr auto" : "2fr 1fr 1fr 1fr 1fr auto", gap: 8, alignItems: "flex-end" }}>
         <div className="field" style={{ margin: 0 }}>
           <label>Leírás</label>
           <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="pl. bérleti díj, tok eladás, hirdetés..." />
@@ -38,6 +40,12 @@ export default function TransactionQuickAdd({ locations, defaultLocId, onAdd, bu
           <label>Összeg (Lei)</label>
           <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0" />
         </div>
+        {type === "income" && (
+          <div className="field" style={{ margin: 0 }}>
+            <label>Besz. ár (Lei)</label>
+            <input type="number" value={costPrice} onChange={(e) => setCostPrice(e.target.value)} placeholder="0" />
+          </div>
+        )}
         <div className="field" style={{ margin: 0 }}>
           <label>Kategória</label>
           <select value={category} onChange={(e) => setCategory(e.target.value)}>

@@ -102,6 +102,9 @@ tr:hover td{background:#FAFAFA}
 .seg button.active{background:#fff;color:var(--accent-dark);box-shadow:0 1px 3px rgba(0,0,0,.1)}
 .toggle-link{color:#6B7280;font-size:12px;cursor:pointer;text-decoration:underline;margin-top:14px;display:inline-block}
 .toggle-link:hover{color:var(--accent-dark)}
+.quick-sale-btn{display:inline-flex;align-items:center;gap:6px;background:#F7F8FA;border:1px solid #E5E7EB;border-radius:999px;padding:9px 15px;font-family:inherit;font-size:12.5px;font-weight:600;color:#374151;cursor:pointer;transition:background .12s,border-color .12s,color .12s}
+.quick-sale-btn:hover{background:#F0FDF4;border-color:#BBF7D0;color:var(--accent-dark)}
+.quick-sale-btn:disabled{opacity:.6;cursor:default}
 
 /* BADGES */
 .st{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:600}
@@ -211,4 +214,56 @@ tr:hover td{background:#FAFAFA}
   .sidebar{width:100%;height:auto;position:static}
   .row2,.row3{grid-template-columns:1fr}
   .statrow.c3,.statrow.c4,.statrow.c5{grid-template-columns:1fr 1fr}
+}
+
+/* ====== PUBLIKUS KÉSZLETOLDAL (/keszlet) ====== */
+.pub-shop{
+  --pub-ink:#12181A; --pub-ink-soft:#5B6472; --pub-paper:#F4F6F3; --pub-paper-raised:#fff;
+  --pub-line:#DEE4DF; --pub-accent:var(--accent); --pub-accent-ink:#0A5A40; --pub-accent-soft:#DCEEE5;
+  --pub-new:#A5722A; --pub-new-soft:#F3E6D4;
+  background:var(--pub-paper); color:var(--pub-ink); min-height:100vh; font-family:'Inter',sans-serif;
+}
+.pub-header{position:sticky;top:0;z-index:5;background:var(--pub-paper);border-bottom:1px solid var(--pub-line)}
+.pub-header-inner{max-width:1180px;margin:0 auto;padding:18px 24px 14px;display:flex;flex-direction:column;gap:14px}
+.pub-brand-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.pub-wordmark{display:flex;align-items:center;gap:10px}
+.pub-mark{width:34px;height:34px;border-radius:9px;background:var(--pub-accent);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pub-name{font-size:19px;font-weight:800;letter-spacing:-.02em}
+.pub-name em{font-style:normal;color:var(--pub-accent-ink)}
+.pub-search-box{display:flex;align-items:center;gap:9px;background:var(--pub-paper-raised);border:1px solid var(--pub-line);border-radius:11px;padding:10px 14px;max-width:420px}
+.pub-search-box input{border:none;background:none;outline:none;color:var(--pub-ink);font-size:14px;width:100%;font-family:inherit}
+.pub-chip-row{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.pub-chip{border:1px solid var(--pub-line);background:var(--pub-paper-raised);color:var(--pub-ink-soft);font-size:12.5px;font-weight:600;padding:7px 13px;border-radius:999px;cursor:pointer;font-family:inherit;transition:border-color .12s,color .12s,background .12s;white-space:nowrap}
+.pub-chip.active{border-color:var(--pub-accent);color:var(--pub-accent-ink);background:var(--pub-accent-soft)}
+.pub-sort-select{margin-left:auto;border:1px solid var(--pub-line);background:var(--pub-paper-raised);color:var(--pub-ink);font-size:12.5px;font-weight:600;padding:8px 12px;border-radius:10px;cursor:pointer;font-family:inherit}
+.pub-results-bar{max-width:1180px;margin:0 auto;padding:18px 24px 4px;font-size:13px;color:var(--pub-ink-soft)}
+.pub-results-bar b{color:var(--pub-ink);font-weight:700}
+.pub-main{max-width:1180px;margin:0 auto;padding:14px 24px 64px}
+.pub-empty{text-align:center;padding:64px 20px;color:var(--pub-ink-soft);font-size:13.5px}
+.pub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:14px;margin-top:14px}
+.pub-card{background:var(--pub-paper-raised);border:1px solid var(--pub-line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow-card);transition:transform .14s}
+.pub-card:hover{transform:translateY(-2px)}
+.pub-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.pub-cond-pill{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px}
+.pub-cond-pill.new{background:var(--pub-new-soft);color:var(--pub-new)}
+.pub-cond-pill.refurb{background:var(--pub-accent-soft);color:var(--pub-accent-ink)}
+.pub-device-art{height:92px;display:flex;align-items:center;justify-content:center;color:var(--pub-ink)}
+.pub-device-art svg{height:78px;opacity:.88}
+.pub-card-name{font-size:14.5px;font-weight:700;line-height:1.25}
+.pub-card-specs{font-size:11.5px;color:var(--pub-ink-soft);display:flex;gap:6px;flex-wrap:wrap}
+.pub-card-specs span:not(:last-child)::after{content:"·";margin-left:6px;color:var(--pub-line)}
+.pub-battery-row{display:flex;align-items:center;gap:7px}
+.pub-battery-track{flex:1;height:5px;border-radius:3px;background:var(--pub-line);overflow:hidden}
+.pub-battery-fill{height:100%;background:var(--pub-accent);border-radius:3px}
+.pub-battery-label{font-size:10.5px;color:var(--pub-ink-soft);flex-shrink:0}
+.pub-warranty-tag{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;color:var(--pub-ink-soft)}
+.pub-card-foot{margin-top:auto;padding-top:10px;border-top:1px solid var(--pub-line);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pub-price{font-size:18px;font-weight:700}
+.pub-price .pub-cur{font-size:11px;font-weight:600;color:var(--pub-ink-soft);margin-left:2px}
+.pub-ask-btn{border:1px solid var(--pub-accent);background:var(--pub-accent);color:#fff;font-size:12px;font-weight:700;padding:8px 13px;border-radius:9px;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-flex}
+.pub-ask-btn:hover{opacity:.88;text-decoration:none}
+.pub-footer{border-top:1px solid var(--pub-line);padding:22px 24px 40px}
+.pub-footer-inner{max-width:1180px;margin:0 auto;font-size:12px;color:var(--pub-ink-soft);line-height:1.6}
+@media (max-width:640px){
+  .pub-header-inner,.pub-main,.pub-results-bar,.pub-footer-inner{padding-left:16px;padding-right:16px}
 }

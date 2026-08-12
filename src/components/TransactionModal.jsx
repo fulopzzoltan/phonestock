@@ -12,6 +12,7 @@ export default function TransactionModal({ tx, locations, defaultLocId, onClose,
     payment: tx.payment || "Készpénz",
     customerName: tx.customerName || "",
     customerPhone: tx.customerPhone || "",
+    costPrice: tx.costPrice ?? "",
   });
   const [locId, setLocId] = useState(tx.locationId || defaultLocId || locations[0]?.id || "");
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
@@ -42,6 +43,9 @@ export default function TransactionModal({ tx, locations, defaultLocId, onClose,
             </select>
           </div>
         </div>
+        {f.type === "income" && (
+          <div className="field"><label>Beszerzési ár (Lei)</label><input type="number" value={f.costPrice} onChange={set("costPrice")} placeholder="0" /></div>
+        )}
         <div className="row2">
           <div className="field"><label>Vevő neve</label><input value={f.customerName} onChange={set("customerName")} placeholder="Opcionális" /></div>
           <div className="field"><label>Telefonszám</label><input value={f.customerPhone} onChange={set("customerPhone")} placeholder="Opcionális" /></div>
@@ -49,7 +53,7 @@ export default function TransactionModal({ tx, locations, defaultLocId, onClose,
         <LocationField locations={locations} value={locId} onChange={setLocId} />
         <div className="modal-actions">
           <button className="btn sec" onClick={onClose}>Mégse</button>
-          <button className="btn" disabled={!valid || busy} onClick={() => valid && onSave({ ...f, productId: tx.productId, costPrice: tx.costPrice }, locId)}>{busy ? "Mentés..." : "Mentés"}</button>
+          <button className="btn" disabled={!valid || busy} onClick={() => valid && onSave({ ...f, productId: tx.productId, costPrice: f.type === "income" ? (f.costPrice || 0) : 0 }, locId)}>{busy ? "Mentés..." : "Mentés"}</button>
         </div>
       </div>
     </div>
