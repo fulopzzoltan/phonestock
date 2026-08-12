@@ -113,6 +113,11 @@ export default function StatusLookup({ token }) {
           </div>
         )}
         {!token && !result && <div className="login-note">Írd be a munkalapszámot (pl. #1102 esetén 1102) és a leadáskor megadott telefonszámot.</div>}
+        {!token && (
+          <div className="login-note" style={{ marginTop: 6 }}>
+            Telefonvásárlás bizonylatát keresed? <a href="/receipt">Kattints ide</a>. Vissza a <a href="/">készlethez</a>.
+          </div>
+        )}
       </div>
     </div>
   );

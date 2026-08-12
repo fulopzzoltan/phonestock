@@ -9,11 +9,19 @@ import "./index.css";
 
 const statusMatch = window.location.pathname.match(/^\/status\/?([0-9a-f-]{36})?$/i);
 const receiptMatch = window.location.pathname.match(/^\/receipt\/?([0-9a-f-]{36})?$/i);
-const stockMatch = window.location.pathname.match(/^\/keszlet\/?$/i);
+const adminMatch = window.location.pathname.match(/^\/admin\/?$/i);
+// "/" és "/keszlet" is a nyilvános készletoldalt mutatja — ez az, amit valaki
+// a Netlify domain-re érkezve először lát, nem a bejelentkezés.
+const stockMatch = window.location.pathname.match(/^\/(keszlet\/?)?$/i);
 
 function Root() {
   if (statusMatch) return <StatusLookup token={statusMatch[1] || null} />;
   if (receiptMatch) return <ReceiptLookup token={receiptMatch[1] || null} />;
+  if (adminMatch) return (
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+  );
   if (stockMatch) return <StockShowcase />;
   return (
     <AuthProvider>

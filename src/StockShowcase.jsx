@@ -61,6 +61,11 @@ export default function StockShowcase() {
               </div>
               <div className="pub-name">TELEF<em>O</em>NOS</div>
             </div>
+            <nav className="pub-nav">
+              <a className="pub-nav-link active" href="/">Készlet</a>
+              <a className="pub-nav-link" href="/status">Szerviz / vásárlás státusz</a>
+              <a className="pub-nav-link pub-nav-login" href="/admin">Bejelentkezés</a>
+            </nav>
           </div>
           <div className="pub-search-row">
             <div className="pub-search-box">

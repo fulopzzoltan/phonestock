@@ -97,6 +97,11 @@ export default function ReceiptLookup({ token }) {
           </div>
         )}
         {!token && !result && <div className="login-note">Írd be a bizonylatszámot és a vásárláskor megadott telefonszámot.</div>}
+        {!token && (
+          <div className="login-note" style={{ marginTop: 6 }}>
+            Szerviz munkalapot keresel? <a href="/status">Kattints ide</a>. Vissza a <a href="/">készlethez</a>.
+          </div>
+        )}
       </div>
     </div>
   );
