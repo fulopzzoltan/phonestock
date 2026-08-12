@@ -11,10 +11,13 @@ function parseIssue(issue) {
   return { tags, extra };
 }
 
-export default function TicketFormModal({ ticket, locations, users = [], customers = [], defaultLocId, onClose, onSave, busy }) {
+export default function TicketFormModal({ ticket, locations, users = [], customers = [], stock = [], defaultLocId, onClose, onSave, busy }) {
   const isEdit = !!ticket;
   const parsed = parseIssue(ticket?.issue);
+  const [productQuery, setProductQuery] = useState("");
   const [f, setF] = useState({
+    ticketKind: ticket?.ticketKind || "Ügyfél",
+    productId: ticket?.productId || null,
     customerName: ticket?.customerName || "",
     customerPhone: ticket?.customerPhone || "",
     customerId: ticket?.customerId || null,
@@ -38,7 +41,16 @@ export default function TicketFormModal({ ticket, locations, users = [], custome
   const [locId, setLocId] = useState(ticket?.locationId || defaultLocId || locations[0]?.id || "");
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const toggleTag = (tag) => setTags((t) => (t.includes(tag) ? t.filter((x) => x !== tag) : [...t, tag]));
-  const valid = f.customerName.trim() && f.brand.trim() && locId;
+  const isOwnStock = f.ticketKind !== "Ügyfél";
+  const hasIssue = tags.length > 0 || f.extra.trim();
+  const valid = (isOwnStock ? !!f.productId : f.customerName.trim()) && f.brand.trim() && locId && hasIssue;
+  const productMatches = isOwnStock && productQuery.trim()
+    ? stock.filter((p) => {
+        const q = productQuery.trim().toLowerCase();
+        const hay = [p.imei, p.brand, p.model].filter(Boolean).join(" ").toLowerCase();
+        return hay.includes(q);
+      }).slice(0, 8)
+    : [];
 
   function submit() {
     if (!valid) return;
@@ -51,6 +63,17 @@ export default function TicketFormModal({ ticket, locations, users = [], custome
     <div className="overlay" onClick={onClose}>
       <div className="modal" style={{ maxWidth: 560 }} onClick={(e) => e.stopPropagation()}>
         <h2>{isEdit ? "Munkalap szerkesztése" : "Új szerviz munkalap"} <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
+        <div className="field">
+          <label>Kinek?</label>
+          <select
+            value={f.ticketKind}
+            onChange={(e) => setF({ ...f, ticketKind: e.target.value, customerName: e.target.value === "Ügyfél" ? f.customerName : "Saját készlet", productId: e.target.value === "Ügyfél" ? null : f.productId })}
+          >
+            <option value="Ügyfél">Ügyfél</option>
+            <option value="Saját készlet - előkészítés">Saját készlet — előkészítés eladás előtt</option>
+            <option value="Saját készlet - garanciális">Saját készlet — garanciális visszahozás</option>
+          </select>
+        </div>
         <div className="row2">
           <LocationField locations={locations} value={locId} onChange={setLocId} />
           <div className="field"><label>Státusz</label>
@@ -66,17 +89,46 @@ export default function TicketFormModal({ ticket, locations, users = [], custome
             </select>
           </div>
         )}
-        <div className="row2">
-          <div className="field"><label>Kliens neve</label>
-            <CustomerAutocomplete
-              customers={customers}
-              name={f.customerName}
-              onChangeName={(name) => setF({ ...f, customerName: name, customerId: null })}
-              onSelect={(c) => setF({ ...f, customerName: c.name, customerPhone: c.phone || f.customerPhone, customerId: c.id })}
-            />
+        {isOwnStock ? (
+          <div className="field">
+            <label>Termék (saját készlet)</label>
+            {f.productId ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", border: "1px solid #E5E7EB", borderRadius: 8 }}>
+                <span style={{ flex: 1 }}>{f.brand} {f.model}{stock.find((p) => p.id === f.productId)?.imei ? ` — IMEI ${stock.find((p) => p.id === f.productId).imei}` : ""}</span>
+                <button type="button" className="btn sec" onClick={() => setF({ ...f, productId: null, brand: "", model: "" })}>Csere</button>
+              </div>
+            ) : (
+              <>
+                <input value={productQuery} onChange={(e) => setProductQuery(e.target.value)} placeholder="Keresés IMEI / márka / modell szerint..." />
+                {productMatches.length > 0 && (
+                  <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 4 }}>
+                    {productMatches.map((p) => (
+                      <div
+                        key={p.id}
+                        onClick={() => { setF({ ...f, productId: p.id, brand: p.brand, model: p.model }); setProductQuery(""); }}
+                        style={{ padding: "8px 10px", border: "1px solid #E5E7EB", borderRadius: 8, cursor: "pointer" }}
+                      >
+                        {p.brand} {p.model}{p.imei ? ` — IMEI ${p.imei}` : ""}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
           </div>
-          <div className="field"><label>Telefonszám</label><input value={f.customerPhone} onChange={set("customerPhone")} placeholder="07xx xxx xxx" /></div>
-        </div>
+        ) : (
+          <div className="row2">
+            <div className="field"><label>Kliens neve</label>
+              <CustomerAutocomplete
+                customers={customers}
+                name={f.customerName}
+                onChangeName={(name) => setF({ ...f, customerName: name, customerId: null })}
+                onSelect={(c) => setF({ ...f, customerName: c.name, customerPhone: c.phone || f.customerPhone, customerId: c.id })}
+              />
+            </div>
+            <div className="field"><label>Telefonszám</label><input value={f.customerPhone} onChange={set("customerPhone")} placeholder="07xx xxx xxx" /></div>
+          </div>
+        )}
         <div className="row2">
           <div className="field"><label>Márka</label><input value={f.brand} onChange={set("brand")} placeholder="Samsung, Apple..." /></div>
           <div className="field"><label>Modell</label><input value={f.model} onChange={set("model")} placeholder="S22, iPhone 12..." /></div>
@@ -90,7 +142,7 @@ export default function TicketFormModal({ ticket, locations, users = [], custome
             </select>
           </div>
         </div>
-        <div className="field"><label>Probléma</label>
+        <div className="field"><label>Probléma {!hasIssue && <span style={{ color: "#DC2626", fontWeight: 400, textTransform: "none" }}>— válassz egy tag-et vagy írj leírást</span>}</label>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
             {PROBLEM_TAGS.map((tag) => (
               <button key={tag} type="button" className={`prob-tag${tags.includes(tag) ? " active" : ""}`} onClick={() => toggleTag(tag)}>{tag}</button>

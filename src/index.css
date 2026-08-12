@@ -68,6 +68,7 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
 .statrow.c3{grid-template-columns:repeat(3,1fr)}
 .statrow.c4{grid-template-columns:repeat(4,1fr)}
 .statrow.c5{grid-template-columns:repeat(5,1fr)}
+.statrow.c6{grid-template-columns:repeat(6,1fr)}
 .statcard{background:#fff;border-radius:18px;padding:16px 18px;border:1px solid #EEF0F2;box-shadow:var(--shadow-card)}
 .statcard.accent{background:var(--sidebar-bg);border-color:var(--sidebar-bg)}
 .statcard .lbl{font-size:10px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
@@ -140,6 +141,11 @@ tr:hover td{background:#FAFAFA}
 .t-card:hover{box-shadow:0 4px 16px rgba(16,24,40,.1);border-color:#D1D5DB}
 .t-card-sla-warn{border-color:#FDE68A;background:#FFFDF7}
 .t-card-sla-overdue{border-color:#FCA5A5;background:#FFFBFB}
+.t-card-kind-prep{background:#F8FAFC;border-left:3px solid #64748B}
+.t-card-kind-prep .t-kind-pill{background:#F1F5F9;color:#475569}
+.t-card-kind-warranty{background:#FDF2F8;border-left:3px solid #DB2777}
+.t-card-kind-warranty .t-kind-pill{background:#FCE7F3;color:#BE185D}
+.t-kind-pill{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;margin-bottom:4px}
 .t-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .t-sn{font-size:10px;font-weight:700;color:#9CA3AF;font-family:'JetBrains Mono',monospace}
 .t-loc{font-size:10px;padding:1px 6px;border-radius:999px;background:#F0FDF4;color:#15803D;font-weight:600;border:1px solid #BBF7D0}
@@ -213,13 +219,13 @@ tr:hover td{background:#FAFAFA}
 }
 
 @media (max-width:900px){
-  .statrow.c4,.statrow.c5{grid-template-columns:repeat(2,1fr)}
+  .statrow.c4,.statrow.c5,.statrow.c6{grid-template-columns:repeat(2,1fr)}
 }
 @media (max-width:640px){
   .shell{flex-direction:column}
   .sidebar{width:100%;height:auto;position:static}
   .row2,.row3{grid-template-columns:1fr}
-  .statrow.c3,.statrow.c4,.statrow.c5{grid-template-columns:1fr 1fr}
+  .statrow.c3,.statrow.c4,.statrow.c5,.statrow.c6{grid-template-columns:1fr 1fr}
 }
 
 /* ====== TERMÉKFOTÓK ====== */

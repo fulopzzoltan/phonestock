@@ -30,6 +30,9 @@ import {
 import ConfirmDelete from "./components/ConfirmDelete";
 import CallLink from "./components/CallLink";
 
+// TODO: ideiglenesen kikapcsolva munkalap-felvételnél a saját-szerviz feature tesztelése alatt — a felhasználó kérésére.
+const SMS_ON_TICKET_CREATE = false;
+
 export default function App() {
   const { session, loading } = useAuth();
   if (loading) return <div className="login-shell"><div style={{ color: "#6B7280", fontSize: 13 }}>Betöltés...</div></div>;
@@ -57,6 +60,7 @@ function AppShell() {
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [svcSearch, setSvcSearch] = useState("");
+  const [svcKindFilter, setSvcKindFilter] = useState("all"); // all | customer | own
   const [partSearch, setPartSearch] = useState("");
   const [custSearch, setCustSearch] = useState("");
   const [period, setPeriod] = useState("day");
@@ -380,7 +384,7 @@ function AppShell() {
       setTickets([newTicket, ...tickets]);
       setTicketModal(null);
 
-      if (newTicket.customerPhone) {
+      if (SMS_ON_TICKET_CREATE && newTicket.customerPhone) {
         const device = [newTicket.brand, newTicket.model].filter(Boolean).join(" ");
         const message = stripAccents(`Szia! Atvettuk a keszulekedet (${device}), munkalapszam: #${newTicket.ticketNo}. A javitas allapotat itt kovetheted nyomon: ${SITE_URL}/s/${newTicket.shortCode}`);
         supabase.functions.invoke("send-sms", { body: { phone: newTicket.customerPhone, message } }).catch((err) => {
@@ -427,6 +431,18 @@ function AppShell() {
         }, ticket.locationId)).select());
         setTransactions((prev) => [txFromApi(r[0]), ...prev]);
       }
+
+      if (subStatus === "Átadva" && ticket && ticket.subStatus !== "Átadva" && ticket.ticketKind === "Saját készlet - garanciális" && (Number(ticket.matCost) || 0) > 0) {
+        const product = stock.find((p) => p.id === ticket.productId);
+        const r2 = unwrap(await supabase.from("transactions").insert(txToApi({
+          type: "expense",
+          category: "Szerviz",
+          description: `Garanciális javítás — ${product ? `${product.brand} ${product.model}` : [ticket.brand, ticket.model].filter(Boolean).join(" ")}`,
+          amount: ticket.matCost,
+          productId: ticket.productId,
+        }, ticket.locationId)).select());
+        setTransactions((prev) => [txFromApi(r2[0]), ...prev]);
+      }
     });
   }
   async function completeQc(id, qcByUserId) {
@@ -455,6 +471,15 @@ function AppShell() {
       unwrap(await supabase.from("parts").update({ quantity: newQty }).eq("id", part.id));
       const newMatCost = (Number(ticket.matCost) || 0) + unitCost * qty;
       unwrap(await supabase.from("service_tickets").update({ mat_cost: newMatCost }).eq("id", ticketId));
+
+      if (ticket.ticketKind === "Saját készlet - előkészítés" && ticket.productId) {
+        const product = stock.find((p) => p.id === ticket.productId);
+        if (product) {
+          const newCostPrice = (Number(product.costPrice) || 0) + unitCost * qty;
+          unwrap(await supabase.from("products").update({ cost_price: newCostPrice }).eq("id", ticket.productId));
+          setStock(stock.map((p) => (p.id === ticket.productId ? { ...p, costPrice: newCostPrice } : p)));
+        }
+      }
 
       setParts(parts.map((p) => (p.id === part.id ? { ...p, quantity: newQty } : p)));
       setTickets(tickets.map((t) => (t.id === ticketId ? { ...t, matCost: newMatCost, usedParts: [...(t.usedParts || []), spFromApi(r[0])] } : t)));
@@ -494,8 +519,10 @@ function AppShell() {
     let t = effectiveLocFilter === "all" ? tickets : tickets.filter((x) => x.locationId === effectiveLocFilter);
     const q = svcSearch.trim().toLowerCase();
     if (q) t = t.filter((x) => [x.customerName, x.brand, x.model].join(" ").toLowerCase().includes(q));
+    if (svcKindFilter === "customer") t = t.filter((x) => x.ticketKind === "Ügyfél");
+    if (svcKindFilter === "own") t = t.filter((x) => x.ticketKind !== "Ügyfél");
     return t;
-  }, [tickets, effectiveLocFilter, svcSearch]);
+  }, [tickets, effectiveLocFilter, svcSearch, svcKindFilter]);
 
   const stockStats = useMemo(() => ({
     count: filteredStock.length,
@@ -553,13 +580,17 @@ function AppShell() {
   const activeTickets = useMemo(() => filteredTickets.filter((t) => t.subStatus !== "Átadva"), [filteredTickets]);
   const handedOverTickets = useMemo(() => filteredTickets.filter((t) => t.subStatus === "Átadva"), [filteredTickets]);
 
-  const svcStats = useMemo(() => ({
-    total: filteredTickets.length,
-    active: filteredTickets.filter((t) => t.status !== "Átadásra").length,
-    kesz: filteredTickets.filter((t) => t.status === "Átadásra" && !t.subStatus).length,
-    sikertelen: filteredTickets.filter((t) => t.subStatus === "Sikertelen").length,
-    kiadva: handedOverTickets.length,
-  }), [filteredTickets, handedOverTickets]);
+  const svcStats = useMemo(() => {
+    const customerTickets = filteredTickets.filter((t) => t.ticketKind === "Ügyfél");
+    return {
+      total: filteredTickets.length,
+      active: customerTickets.filter((t) => t.status !== "Átadásra").length,
+      kesz: customerTickets.filter((t) => t.status === "Átadásra" && !t.subStatus).length,
+      sikertelen: customerTickets.filter((t) => t.subStatus === "Sikertelen").length,
+      kiadva: handedOverTickets.length,
+      ownStock: filteredTickets.filter((t) => t.ticketKind !== "Ügyfél" && t.subStatus !== "Átadva").length,
+    };
+  }, [filteredTickets, handedOverTickets]);
 
   const customers = useMemo(() => {
     return customersTable.map((c) => {
@@ -689,12 +720,15 @@ function AppShell() {
             </div>
 
             <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>🔧 Szerviz</div>
-            <div className="statrow c5" style={{ marginBottom: 26 }}>
+            <div className={`statrow ${svcStats.ownStock > 0 ? "c6" : "c5"}`} style={{ marginBottom: 26 }}>
               <div className="statcard accent"><div className="lbl">Összes</div><div className="val">{svcStats.total}</div></div>
-              <div className="statcard"><div className="lbl">Aktív</div><div className="val">{svcStats.active}</div></div>
-              <div className="statcard"><div className="lbl">Kész</div><div className="val" style={{ color: "#15803D" }}>{svcStats.kesz}</div></div>
-              <div className="statcard"><div className="lbl">Sikertelen</div><div className="val" style={{ color: "#9D174D" }}>{svcStats.sikertelen}</div></div>
+              <div className="statcard"><div className="lbl">Aktív (ügyfél)</div><div className="val">{svcStats.active}</div></div>
+              <div className="statcard"><div className="lbl">Kész (ügyfél)</div><div className="val" style={{ color: "#15803D" }}>{svcStats.kesz}</div></div>
+              <div className="statcard"><div className="lbl">Sikertelen (ügyfél)</div><div className="val" style={{ color: "#9D174D" }}>{svcStats.sikertelen}</div></div>
               <div className="statcard"><div className="lbl">Kiadva</div><div className="val">{svcStats.kiadva}</div></div>
+              {svcStats.ownStock > 0 && (
+                <div className="statcard"><div className="lbl">Saját készlet szervizben</div><div className="val">{svcStats.ownStock}</div></div>
+              )}
             </div>
 
             <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>💰 Bevételek &amp; Kiadások</div>
@@ -807,6 +841,11 @@ function AppShell() {
             </div>
             <div className="filter-row">
               <div className="searchbar"><SearchIcon /><input placeholder="Keresés vevő, márka, modell..." value={svcSearch} onChange={(e) => setSvcSearch(e.target.value)} /></div>
+              <div className="seg">
+                <button type="button" className={svcKindFilter === "all" ? "active" : ""} onClick={() => setSvcKindFilter("all")}>Mind</button>
+                <button type="button" className={svcKindFilter === "customer" ? "active" : ""} onClick={() => setSvcKindFilter("customer")}>Csak ügyfél</button>
+                <button type="button" className={svcKindFilter === "own" ? "active" : ""} onClick={() => setSvcKindFilter("own")}>Csak saját készlet</button>
+              </div>
             </div>
             {loadingData ? <div className="empty">Betöltés...</div> : (
               <div className="kanban-wrap">
@@ -1159,6 +1198,7 @@ function AppShell() {
           locations={allowedLocations}
           users={users}
           customers={customersTable}
+          stock={stock}
           defaultLocId={defaultLocId}
           onClose={() => setTicketModal(null)}
           busy={busy}

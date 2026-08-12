@@ -5,12 +5,17 @@ import CallLink from "./CallLink";
 export default function TicketCard({ ticket, locName, onOpen }) {
   const probs = (ticket.issue || "").split(",").map((p) => p.trim()).filter(Boolean);
   const sla = slaInfo(ticket);
+  const kindCls = ticket.ticketKind === "Saját készlet - előkészítés" ? " t-card-kind-prep"
+    : ticket.ticketKind === "Saját készlet - garanciális" ? " t-card-kind-warranty" : "";
   return (
-    <div className={`t-card${sla && sla.level !== "ok" ? ` t-card-sla-${sla.level}` : ""}`} onClick={() => onOpen(ticket.id)}>
+    <div className={`t-card${kindCls}${sla && sla.level !== "ok" ? ` t-card-sla-${sla.level}` : ""}`} onClick={() => onOpen(ticket.id)}>
       <div className="t-card-top">
         <span className="t-sn">#{ticket.ticketNo}</span>
         <span className="t-loc">{locName(ticket.locationId)}</span>
       </div>
+      {ticket.ticketKind !== "Ügyfél" && (
+        <span className="t-kind-pill">{ticket.ticketKind === "Saját készlet - előkészítés" ? "🔧 Saját — előkészítés" : "↩️ Saját — garanciális"}</span>
+      )}
       {sla && (sla.level === "warn" || sla.level === "overdue") && (
         <div style={{ marginBottom: 4 }}>
           <span className={`sla-badge sla-${sla.level}`}><ClockIcon width={11} height={11} />{sla.label}</span>

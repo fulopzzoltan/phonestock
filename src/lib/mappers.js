@@ -100,6 +100,8 @@ export const tFromApi = (r) => ({
   assignedTo: r.assigned_to,
   consentAt: r.consent_at,
   customerId: r.customer_id,
+  ticketKind: r.ticket_kind,
+  productId: r.product_id,
 });
 
 export const tToApi = (t, locId) => ({
@@ -120,6 +122,8 @@ export const tToApi = (t, locId) => ({
   imei: t.imei || null,
   assigned_to: t.assignedTo || null,
   consent_at: t.consentAt || null,
+  ticket_kind: t.ticketKind || "Ügyfél",
+  product_id: t.productId || null,
 });
 
 export const customerFromApi = (r) => ({
