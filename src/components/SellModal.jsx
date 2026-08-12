@@ -4,7 +4,9 @@ import { PAYMENTS } from "../lib/utils";
 
 export default function SellModal({ item, locName, onClose, onSave, busy }) {
   const [f, setF] = useState({ price: item.salePrice || "", customerName: "", customerPhone: "", payment: "Készpénz" });
+  const [phoneTouched, setPhoneTouched] = useState(false);
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+  const valid = f.customerPhone.trim().length > 0;
   return (
     <div className="overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -14,7 +16,16 @@ export default function SellModal({ item, locName, onClose, onSave, busy }) {
         <div className="field"><label>Garancia</label><input disabled value={item.warranty || "Nincs"} /></div>
         <div className="row2">
           <div className="field"><label>Vevő neve</label><input value={f.customerName} onChange={set("customerName")} placeholder="Kovács János" /></div>
-          <div className="field"><label>Telefonszám</label><input value={f.customerPhone} onChange={set("customerPhone")} placeholder="07xx xxx xxx" /></div>
+          <div className="field">
+            <label>Telefonszám *</label>
+            <input
+              value={f.customerPhone}
+              onChange={set("customerPhone")}
+              onBlur={() => setPhoneTouched(true)}
+              placeholder="07xx xxx xxx"
+              style={phoneTouched && !valid ? { borderColor: "#FCA5A5" } : undefined}
+            />
+          </div>
         </div>
         <div className="row2">
           <div className="field"><label>Eladási ár (Lei)</label><input type="number" value={f.price} onChange={set("price")} /></div>
@@ -28,7 +39,7 @@ export default function SellModal({ item, locName, onClose, onSave, busy }) {
           <button className="btn sec" onClick={onClose}>Mégse</button>
           <button
             className="btn"
-            disabled={busy}
+            disabled={busy || !valid}
             onClick={() => onSave({
               type: "income",
               category: "Készlet",
