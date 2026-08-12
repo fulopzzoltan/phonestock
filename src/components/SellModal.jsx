@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { CloseIcon } from "./icons";
 import { PAYMENTS } from "../lib/utils";
+import CustomerAutocomplete from "./CustomerAutocomplete";
 
-export default function SellModal({ item, locName, onClose, onSave, busy }) {
-  const [f, setF] = useState({ price: item.salePrice || "", customerName: "", customerPhone: "", payment: "Készpénz", marketingConsent: false });
+export default function SellModal({ item, locName, customers = [], onClose, onSave, busy }) {
+  const [f, setF] = useState({ price: item.salePrice || "", customerName: "", customerPhone: "", customerId: null, payment: "Készpénz", marketingConsent: false });
   const [phoneTouched, setPhoneTouched] = useState(false);
-  const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+  const set = (k) => (e) => setF({ ...f, [k]: e.target.value, ...(k === "customerName" ? { customerId: null } : {}) });
   const valid = f.customerPhone.trim().length > 0;
   return (
     <div className="overlay" onClick={onClose}>
@@ -15,7 +16,14 @@ export default function SellModal({ item, locName, onClose, onSave, busy }) {
         <div className="field"><label>Termék</label><input disabled value={`${item.brand} ${item.model}`} /></div>
         <div className="field"><label>Garancia</label><input disabled value={item.warranty || "Nincs"} /></div>
         <div className="row2">
-          <div className="field"><label>Vevő neve</label><input value={f.customerName} onChange={set("customerName")} placeholder="Kovács János" /></div>
+          <div className="field"><label>Vevő neve</label>
+            <CustomerAutocomplete
+              customers={customers}
+              name={f.customerName}
+              onChangeName={(name) => setF({ ...f, customerName: name, customerId: null })}
+              onSelect={(c) => setF({ ...f, customerName: c.name, customerPhone: c.phone || f.customerPhone, customerId: c.id })}
+            />
+          </div>
           <div className="field">
             <label>Telefonszám *</label>
             <input
@@ -56,6 +64,7 @@ export default function SellModal({ item, locName, onClose, onSave, busy }) {
               productId: item.id,
               customerName: f.customerName,
               customerPhone: f.customerPhone,
+              customerId: f.customerId,
               payment: f.payment,
               marketingConsent: f.marketingConsent,
             }, item.locationId)}

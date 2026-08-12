@@ -2,6 +2,7 @@ import { useState } from "react";
 import LocationField from "./LocationField";
 import { CloseIcon } from "./icons";
 import { PROBLEM_TAGS, WARRANTIES, STATUSES, SUB_STATUSES, statusLabel } from "../lib/utils";
+import CustomerAutocomplete from "./CustomerAutocomplete";
 
 function parseIssue(issue) {
   const parts = (issue || "").split(",").map((p) => p.trim()).filter(Boolean);
@@ -10,12 +11,13 @@ function parseIssue(issue) {
   return { tags, extra };
 }
 
-export default function TicketFormModal({ ticket, locations, users = [], defaultLocId, onClose, onSave, busy }) {
+export default function TicketFormModal({ ticket, locations, users = [], customers = [], defaultLocId, onClose, onSave, busy }) {
   const isEdit = !!ticket;
   const parsed = parseIssue(ticket?.issue);
   const [f, setF] = useState({
     customerName: ticket?.customerName || "",
     customerPhone: ticket?.customerPhone || "",
+    customerId: ticket?.customerId || null,
     brand: ticket?.brand || "",
     model: ticket?.model || "",
     imei: ticket?.imei || "",
@@ -65,7 +67,14 @@ export default function TicketFormModal({ ticket, locations, users = [], default
           </div>
         )}
         <div className="row2">
-          <div className="field"><label>Kliens neve</label><input value={f.customerName} onChange={set("customerName")} placeholder="Kovács János" /></div>
+          <div className="field"><label>Kliens neve</label>
+            <CustomerAutocomplete
+              customers={customers}
+              name={f.customerName}
+              onChangeName={(name) => setF({ ...f, customerName: name, customerId: null })}
+              onSelect={(c) => setF({ ...f, customerName: c.name, customerPhone: c.phone || f.customerPhone, customerId: c.id })}
+            />
+          </div>
           <div className="field"><label>Telefonszám</label><input value={f.customerPhone} onChange={set("customerPhone")} placeholder="07xx xxx xxx" /></div>
         </div>
         <div className="row2">

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap } from "./lib/supabaseClient";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi } from "./lib/mappers";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi } from "./lib/mappers";
 import { money, today, STATUSES, PART_CATEGORIES, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, statusLabel } from "./lib/utils";
 import Login from "./Login";
 import StockModal from "./components/StockModal";
@@ -12,6 +12,7 @@ import DetailPanel from "./components/DetailPanel";
 import ProductDetailPanel from "./components/ProductDetailPanel";
 import PartDetailPanel from "./components/PartDetailPanel";
 import StockValueChart from "./components/StockValueChart";
+import MonthlyTrendChart from "./components/MonthlyTrendChart";
 import TicketFormModal from "./components/TicketFormModal";
 import QuickSaleButtons from "./components/QuickSaleButtons";
 import TransactionQuickAdd from "./components/TransactionQuickAdd";
@@ -50,6 +51,7 @@ function AppShell() {
   const [parts, setParts] = useState([]);
   const [users, setUsers] = useState([]);
   const [customersTable, setCustomersTable] = useState([]);
+  const [monthlySummaries, setMonthlySummaries] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -93,7 +95,7 @@ function AppShell() {
   async function loadAll() {
     setLoadingData(true);
     try {
-      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs] = await Promise.all([
+      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false }),
         supabase.from("transactions").select("*").is("deleted_at", null).order("date", { ascending: false }),
@@ -103,6 +105,7 @@ function AppShell() {
         supabase.from("profiles").select("*").order("full_name", { ascending: true }),
         supabase.from("stock_value_history").select("*").order("date", { ascending: true }),
         supabase.from("customers").select("*").is("deleted_at", null),
+        supabase.from("monthly_summaries").select("*").order("year").order("month"),
       ]);
       setLocations(unwrap(locs) || []);
       const prodRows = unwrap(prods) || [];
@@ -116,6 +119,7 @@ function AppShell() {
       setParts((unwrap(prs) || []).map(partFromApi));
       setUsers((unwrap(usrs) || []).map(profileFromApi));
       setCustomersTable((unwrap(custs) || []).map(customerFromApi));
+      setMonthlySummaries((unwrap(msums) || []).map(monthlySummaryFromApi));
       const historyRows = unwrap(hist) || [];
       setStockHistory(historyRows.map((r) => ({ date: r.date, value: Number(r.value) || 0 })));
       maybeSnapshotStockValue(prodRows, historyRows);
@@ -269,8 +273,16 @@ function AppShell() {
   }
   async function sellProduct(txData, locId) {
     await withBusy(async () => {
+      let customerId = txData.customerId || null;
+      if (!customerId && txData.customerPhone) {
+        const { data: cid } = await supabase.rpc("upsert_customer", { p_name: txData.customerName, p_phone: txData.customerPhone });
+        customerId = cid;
+      }
+      if (txData.marketingConsent && customerId) {
+        await supabase.from("customers").update({ marketing_consent: true, marketing_consent_at: new Date().toISOString() }).eq("id", customerId);
+      }
       unwrap(await supabase.from("products").update({ status: "sold" }).eq("id", txData.productId));
-      const r = unwrap(await supabase.from("transactions").insert(txToApi(txData, locId)).select());
+      const r = unwrap(await supabase.from("transactions").insert({ ...txToApi(txData, locId), customer_id: customerId }).select());
       setStock(stock.map((i) => (i.id === txData.productId ? { ...i, status: "sold" } : i)));
       setTransactions([txFromApi(r[0]), ...transactions]);
       setSellModal(null);
@@ -326,13 +338,13 @@ function AppShell() {
   // TRANSACTIONS
   async function addTransaction(data, locId) {
     await withBusy(async () => {
-      let customerId = null;
-      if (data.customerPhone) {
+      let customerId = data.customerId || null;
+      if (!customerId && data.customerPhone) {
         const { data: cid } = await supabase.rpc("upsert_customer", { p_name: data.customerName, p_phone: data.customerPhone });
         customerId = cid;
-        if (data.marketingConsent && customerId) {
-          await supabase.from("customers").update({ marketing_consent: true, marketing_consent_at: new Date().toISOString() }).eq("id", customerId);
-        }
+      }
+      if (data.marketingConsent && customerId) {
+        await supabase.from("customers").update({ marketing_consent: true, marketing_consent_at: new Date().toISOString() }).eq("id", customerId);
       }
       const r = unwrap(await supabase.from("transactions").insert({ ...txToApi(data, locId), customer_id: customerId }).select());
       setTransactions([txFromApi(r[0]), ...transactions]);
@@ -355,13 +367,13 @@ function AppShell() {
   // SERVICE
   async function addTicket(data, locId) {
     await withBusy(async () => {
-      let customerId = null;
-      if (data.customerPhone) {
+      let customerId = data.customerId || null;
+      if (!customerId && data.customerPhone) {
         const { data: cid } = await supabase.rpc("upsert_customer", { p_name: data.customerName, p_phone: data.customerPhone });
         customerId = cid;
-        if (data.marketingConsent && customerId) {
-          await supabase.from("customers").update({ marketing_consent: true, marketing_consent_at: new Date().toISOString() }).eq("id", customerId);
-        }
+      }
+      if (data.marketingConsent && customerId) {
+        await supabase.from("customers").update({ marketing_consent: true, marketing_consent_at: new Date().toISOString() }).eq("id", customerId);
       }
       const r = unwrap(await supabase.from("service_tickets").insert({ ...tToApi(data, locId), customer_id: customerId }).select());
       const newTicket = tFromApi(r[0]);
@@ -497,6 +509,36 @@ function AppShell() {
     const expense = filteredTransactions.filter((t) => t.type === "expense").reduce((a, t) => a + (Number(t.amount) || 0), 0);
     return { count: filteredTransactions.length, income, expense, net: income - expense };
   }, [filteredTransactions]);
+
+  // a folyó, még nyitott hónap élő adata a monthly_summaries mellé — a trend ne szakadjon meg a jelennél
+  const currentMonthLive = useMemo(() => {
+    const now = new Date();
+    const y = now.getFullYear(), m = now.getMonth() + 1;
+    const inMonth = (t) => {
+      const d = new Date(t.date + "T00:00:00");
+      return d.getFullYear() === y && d.getMonth() + 1 === m;
+    };
+    const rows = filteredTransactions.filter(inMonth);
+    const revenue = rows.filter((t) => t.type === "income").reduce((s, t) => s + (Number(t.amount) || 0), 0);
+    const expenses = rows.filter((t) => t.type === "expense").reduce((s, t) => s + (Number(t.amount) || 0), 0);
+    const margin = rows.filter((t) => t.type === "income").reduce((s, t) => s + (Number(t.amount) || 0) - (Number(t.costPrice) || 0), 0);
+    return { year: y, month: m, revenue, expenses, margin, profit: revenue - expenses, isLive: true };
+  }, [filteredTransactions]);
+
+  // "ez a hónap eddig vs. múlt hónap ilyenkor (ugyanannyi nyitvatartási napra vetítve)"
+  const monthlyTrendSummary = useMemo(() => {
+    const dayOfMonth = new Date().getDate();
+    let prevY = currentMonthLive.year, prevM = currentMonthLive.month - 1;
+    if (prevM === 0) { prevM = 12; prevY -= 1; }
+    const relevant = monthlySummaries.filter((s) => s.year === prevY && s.month === prevM && (effectiveLocFilter === "all" || s.locationId === effectiveLocFilter));
+    if (relevant.length === 0) return null;
+    const prevRevenue = relevant.reduce((s, r) => s + r.revenue, 0);
+    const prevDaysOpen = relevant.reduce((s, r) => s + (r.daysOpen || 0), 0) / relevant.length;
+    if (!prevDaysOpen) return null;
+    const projected = (prevRevenue / prevDaysOpen) * dayOfMonth;
+    const pct = projected > 0 ? Math.round(((currentMonthLive.revenue - projected) / projected) * 100) : null;
+    return { dayOfMonth, projected, pct };
+  }, [monthlySummaries, currentMonthLive, effectiveLocFilter]);
 
   const partsStats = useMemo(() => ({
     value: parts.reduce((a, p) => a + (Number(p.costPrice) || 0) * (Number(p.quantity) || 0), 0),
@@ -656,6 +698,15 @@ function AppShell() {
             </div>
 
             <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>💰 Bevételek &amp; Kiadások</div>
+            {monthlyTrendSummary && (
+              <div style={{ fontSize: 13, color: "#374151", margin: "0 0 10px 2px", lineHeight: 1.6 }}>
+                Ez a hónap eddig: <b>{money(currentMonthLive.revenue)}</b> — {monthlyTrendSummary.dayOfMonth} nap alatt. Múlt hónap ilyenkor ({monthlyTrendSummary.dayOfMonth}. napon): {money(monthlyTrendSummary.projected)} volt →{" "}
+                <b style={{ color: monthlyTrendSummary.pct >= 0 ? "#15803D" : "#B91C1C" }}>{monthlyTrendSummary.pct >= 0 ? "+" : ""}{monthlyTrendSummary.pct}%</b>
+              </div>
+            )}
+            <div style={{ marginBottom: 14 }}>
+              <MonthlyTrendChart summaries={monthlySummaries} liveMonth={currentMonthLive} locations={locations} locFilter={effectiveLocFilter} locName={locName} />
+            </div>
             <div className="statrow c4" style={{ marginBottom: 26 }}>
               <div className="statcard accent"><div className="lbl">Tranzakciók</div><div className="val">{txStats.count}</div></div>
               <div className="statcard"><div className="lbl">Bevétel</div><div className="val" style={{ color: "#15803D" }}>{money(txStats.income)}</div></div>
@@ -1083,7 +1134,7 @@ function AppShell() {
           onSave={(data, locId) => (stockModal !== "add" ? editProduct(stockModal.id, data, locId) : addProduct(data, locId))}
         />
       )}
-      {sellModal && <SellModal item={sellModal} locName={locName} onClose={() => setSellModal(null)} onSave={sellProduct} busy={busy} />}
+      {sellModal && <SellModal item={sellModal} locName={locName} customers={customersTable} onClose={() => setSellModal(null)} onSave={sellProduct} busy={busy} />}
       {partModal && (
         <PartModal
           part={partModal !== "add" ? partModal : null}
@@ -1107,6 +1158,7 @@ function AppShell() {
           ticket={editingTicket}
           locations={allowedLocations}
           users={users}
+          customers={customersTable}
           defaultLocId={defaultLocId}
           onClose={() => setTicketModal(null)}
           busy={busy}

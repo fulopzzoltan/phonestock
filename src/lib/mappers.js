@@ -169,6 +169,21 @@ export const partToApi = (p) => ({
   supplier_sku: p.supplierSku || null,
 });
 
+export const monthlySummaryFromApi = (r) => ({
+  id: r.id,
+  locationId: r.location_id,
+  year: r.year,
+  month: r.month,
+  revenue: Number(r.revenue) || 0,
+  margin: Number(r.margin) || 0,
+  daysOpen: r.days_open,
+  expenses: r.expenses != null ? Number(r.expenses) : null,
+  profit: r.profit != null ? Number(r.profit) : null,
+  phonesButton: r.phones_button,
+  phonesRefurbished: r.phones_refurbished,
+  phonesNew: r.phones_new,
+});
+
 export const spFromApi = (r) => ({
   id: r.id,
   ticketId: r.service_ticket_id,
