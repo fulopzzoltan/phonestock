@@ -193,6 +193,39 @@ function AppShell() {
     });
   }
 
+  async function hardDeleteProduct(id) {
+    await withBusy(async () => {
+      const { data: photos } = await supabase.from("product_photos").select("storage_path").eq("product_id", id);
+      if (photos && photos.length > 0) {
+        await supabase.storage.from("product-photos").remove(photos.map((p) => p.storage_path)).catch(() => {});
+      }
+      unwrap(await supabase.from("products").delete().eq("id", id));
+      setTrash((t) => ({ ...t, products: t.products.filter((p) => p.id !== id) }));
+    });
+  }
+  async function hardDeletePart(id) {
+    await withBusy(async () => {
+      const { error } = await supabase.from("parts").delete().eq("id", id);
+      if (error) {
+        if (error.code === "23503") throw new Error("Ez az alkatrész nem törölhető véglegesen, mert szerviz munkalapokhoz van kötve.");
+        throw new Error(error.message);
+      }
+      setTrash((t) => ({ ...t, parts: t.parts.filter((p) => p.id !== id) }));
+    });
+  }
+  async function hardDeleteTransaction(id) {
+    await withBusy(async () => {
+      unwrap(await supabase.from("transactions").delete().eq("id", id));
+      setTrash((t) => ({ ...t, transactions: t.transactions.filter((x) => x.id !== id) }));
+    });
+  }
+  async function hardDeleteTicket(id) {
+    await withBusy(async () => {
+      unwrap(await supabase.from("service_tickets").delete().eq("id", id));
+      setTrash((t) => ({ ...t, tickets: t.tickets.filter((x) => x.id !== id) }));
+    });
+  }
+
   async function withBusy(fn) {
     setBusy(true);
     try { await fn(); setError(""); }
@@ -914,7 +947,10 @@ function AppShell() {
                               <td style={{ fontWeight: 600 }}>{p.brand} {p.model}</td>
                               <td className="mono" style={{ color: "#9CA3AF" }}>{p.imei || "—"}</td>
                               <td className="mono" style={{ fontWeight: 700 }}>{money(p.salePrice)}</td>
-                              <td><button className="btn sec sm" disabled={busy} onClick={() => restoreProduct(p.id)}>Visszaállítás</button></td>
+                              <td style={{ display: "flex", gap: 6 }}>
+                                <button className="btn sec sm" disabled={busy} onClick={() => restoreProduct(p.id)}>Visszaállítás</button>
+                                <ConfirmDelete variant="full" disabled={busy} onConfirm={() => hardDeleteProduct(p.id)} />
+                              </td>
                             </tr>
                           ))}
                         </tbody>
@@ -934,7 +970,10 @@ function AppShell() {
                               <td style={{ fontWeight: 600 }}>{p.name}</td>
                               <td style={{ color: "#6B7280", fontSize: 12 }}>{p.category || "—"}</td>
                               <td style={{ fontWeight: 700 }}>{p.quantity} db</td>
-                              <td><button className="btn sec sm" disabled={busy} onClick={() => restorePart(p.id)}>Visszaállítás</button></td>
+                              <td style={{ display: "flex", gap: 6 }}>
+                                <button className="btn sec sm" disabled={busy} onClick={() => restorePart(p.id)}>Visszaállítás</button>
+                                <ConfirmDelete variant="full" disabled={busy} onConfirm={() => hardDeletePart(p.id)} />
+                              </td>
                             </tr>
                           ))}
                         </tbody>
@@ -954,7 +993,10 @@ function AppShell() {
                               <td style={{ fontWeight: 600 }}>{t.description}</td>
                               <td className="mono" style={{ fontWeight: 700, color: t.type === "income" ? "#15803D" : "#B91C1C" }}>{t.type === "income" ? "+" : "-"}{money(t.amount)}</td>
                               <td style={{ color: "#6B7280" }}>{t.date}</td>
-                              <td><button className="btn sec sm" disabled={busy} onClick={() => restoreTransaction(t.id)}>Visszaállítás</button></td>
+                              <td style={{ display: "flex", gap: 6 }}>
+                                <button className="btn sec sm" disabled={busy} onClick={() => restoreTransaction(t.id)}>Visszaállítás</button>
+                                <ConfirmDelete variant="full" disabled={busy} onConfirm={() => hardDeleteTransaction(t.id)} />
+                              </td>
                             </tr>
                           ))}
                         </tbody>
@@ -974,7 +1016,10 @@ function AppShell() {
                               <td className="mono" style={{ color: "#9CA3AF" }}>{t.ticketNo}</td>
                               <td style={{ fontWeight: 600 }}>{t.customerName}</td>
                               <td style={{ color: "#6B7280" }}>{[t.brand, t.model].filter(Boolean).join(" ")}</td>
-                              <td><button className="btn sec sm" disabled={busy} onClick={() => restoreTicket(t.id)}>Visszaállítás</button></td>
+                              <td style={{ display: "flex", gap: 6 }}>
+                                <button className="btn sec sm" disabled={busy} onClick={() => restoreTicket(t.id)}>Visszaállítás</button>
+                                <ConfirmDelete variant="full" disabled={busy} onConfirm={() => hardDeleteTicket(t.id)} />
+                              </td>
                             </tr>
                           ))}
                         </tbody>
