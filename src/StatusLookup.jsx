@@ -2,18 +2,20 @@ import { useState, useEffect } from "react";
 import { supabase } from "./lib/supabaseClient";
 import { money, statusCls, subStatusLabel, warrantyExpiry, isWarrantyActive, SERVICE_WARRANTY_TERMS } from "./lib/utils";
 
-export default function StatusLookup({ token }) {
+export default function StatusLookup({ token, shortCode }) {
   const [ticketNo, setTicketNo] = useState("");
   const [phone, setPhone] = useState("");
-  const [busy, setBusy] = useState(!!token);
+  const [busy, setBusy] = useState(!!token || !!shortCode);
   const [error, setError] = useState("");
   const [result, setResult] = useState(null);
 
   useEffect(() => {
-    if (!token) return;
+    if (!token && !shortCode) return;
     (async () => {
       try {
-        const { data, error: err } = await supabase.rpc("get_ticket_status_by_token", { p_token: token });
+        const { data, error: err } = shortCode
+          ? await supabase.rpc("get_ticket_status_by_short_code", { p_code: shortCode })
+          : await supabase.rpc("get_ticket_status_by_token", { p_token: token });
         if (err) throw err;
         if (!data || data.length === 0) setError("Érvénytelen vagy lejárt link.");
         else setResult(data[0]);
@@ -23,7 +25,7 @@ export default function StatusLookup({ token }) {
         setBusy(false);
       }
     })();
-  }, [token]);
+  }, [token, shortCode]);
 
   async function submit(e) {
     e.preventDefault();
@@ -64,7 +66,7 @@ export default function StatusLookup({ token }) {
         {!result && <div className="login-title">Javítás állapota</div>}
         {error && <div className="errbar">{error}</div>}
         {busy && !result && <div style={{ textAlign: "center", color: "#6B7280", fontSize: 13, padding: "10px 0" }}>Betöltés...</div>}
-        {!token && !result && !busy && (
+        {!token && !shortCode && !result && !busy && (
           <form onSubmit={submit}>
             <div className="field"><label>Munkalapszám</label><input type="number" required value={ticketNo} onChange={(e) => setTicketNo(e.target.value)} placeholder="pl. 1102" /></div>
             <div className="field"><label>Telefonszám</label><input required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="07xx xxx xxx" /></div>
@@ -107,13 +109,13 @@ export default function StatusLookup({ token }) {
             <div style={{ background: "#F9FAFB", border: "1px solid #EEF0F2", borderRadius: 12, padding: 14, fontSize: 11, color: "#6B7280", lineHeight: 1.6, whiteSpace: "pre-line", marginBottom: 14 }}>
               {SERVICE_WARRANTY_TERMS}
             </div>
-            {!token && (
+            {!token && !shortCode && (
               <button className="btn sec" style={{ width: "100%", justifyContent: "center" }} onClick={() => { setResult(null); setTicketNo(""); setPhone(""); }}>Új keresés</button>
             )}
           </div>
         )}
-        {!token && !result && <div className="login-note">Írd be a munkalapszámot (pl. #1102 esetén 1102) és a leadáskor megadott telefonszámot.</div>}
-        {!token && (
+        {!token && !shortCode && !result && <div className="login-note">Írd be a munkalapszámot (pl. #1102 esetén 1102) és a leadáskor megadott telefonszámot.</div>}
+        {!token && !shortCode && (
           <div className="login-note" style={{ marginTop: 6 }}>
             Telefonvásárlás bizonylatát keresed? <a href="/receipt">Kattints ide</a>. Vissza a <a href="/">készlethez</a>.
           </div>

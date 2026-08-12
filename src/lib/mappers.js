@@ -76,6 +76,7 @@ export const tFromApi = (r) => ({
   id: r.id,
   ticketNo: r.ticket_no,
   publicToken: r.public_token,
+  shortCode: r.short_code,
   customerName: r.customer_name,
   customerPhone: r.customer_phone,
   brand: r.brand,

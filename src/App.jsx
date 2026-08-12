@@ -299,7 +299,7 @@ function AppShell() {
 
       if (newTicket.customerPhone) {
         const device = [newTicket.brand, newTicket.model].filter(Boolean).join(" ");
-        const message = stripAccents(`Szia! Atvettuk a keszulekedet (${device}), munkalapszam: #${newTicket.ticketNo}. A javitas allapotat itt kovetheted nyomon: ${window.location.origin}/status/${newTicket.publicToken}`);
+        const message = stripAccents(`Szia! Atvettuk a keszulekedet (${device}), munkalapszam: #${newTicket.ticketNo}. A javitas allapotat itt kovetheted nyomon: ${window.location.origin}/s/${newTicket.shortCode}`);
         supabase.functions.invoke("send-sms", { body: { phone: newTicket.customerPhone, message } }).catch(() => {});
       }
     });
@@ -322,7 +322,7 @@ function AppShell() {
       const becameReady = status === "Átadásra" && subStatus === null && !(ticket && ticket.status === "Átadásra" && ticket.subStatus === null);
       if (becameReady && ticket && ticket.customerPhone) {
         const device = [ticket.brand, ticket.model].filter(Boolean).join(" ");
-        const message = stripAccents(`Szia! A(z) ${device} javítása elkészült, átveheted nálunk (${locName(ticket.locationId)}). Részletek: ${window.location.origin}/status/${ticket.publicToken}`);
+        const message = stripAccents(`Szia! A(z) ${device} javítása elkészült, átveheted nálunk (${locName(ticket.locationId)}). Részletek: ${window.location.origin}/s/${ticket.shortCode}`);
         supabase.functions.invoke("send-sms", { body: { phone: ticket.customerPhone, message } }).catch(() => {});
       }
 
