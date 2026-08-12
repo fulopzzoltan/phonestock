@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { money, warrantyExpiry, isWarrantyActive } from "../lib/utils";
+import { money, warrantyExpiry, isWarrantyActive, SITE_URL } from "../lib/utils";
 import { CloseIcon } from "./icons";
 import Row from "./DetailRow";
 import CallLink from "./CallLink";
@@ -8,7 +8,7 @@ export default function SaleReceiptPanel({ tx, locName, onClose, onPrint }) {
   const [copied, setCopied] = useState(false);
   const expiry = warrantyExpiry(tx.date, tx.warranty);
   const active = isWarrantyActive(tx.date, tx.warranty);
-  const receiptLink = `${window.location.origin}/receipt/${tx.publicToken}`;
+  const receiptLink = `${SITE_URL}/receipt/${tx.publicToken}`;
 
   function copyLink() {
     navigator.clipboard.writeText(receiptLink);

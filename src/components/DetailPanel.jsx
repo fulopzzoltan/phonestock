@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { money, STATUSES, SUB_STATUSES, slaInfo } from "../lib/utils";
+import { money, STATUSES, SUB_STATUSES, slaInfo, SITE_URL } from "../lib/utils";
 import { CloseIcon } from "./icons";
 import Row from "./DetailRow";
 import CallLink from "./CallLink";
@@ -15,7 +15,7 @@ export default function DetailPanel({ ticket, locName, parts, onClose, onStatusC
   const selPart = availableParts.find((p) => p.id === selPartId);
   const probs = (ticket.issue || "").split(",").map((p) => p.trim()).filter(Boolean);
   const profit = (Number(ticket.price) || 0) - (Number(ticket.matCost) || 0);
-  const statusLink = `${window.location.origin}/status/${ticket.publicToken}`;
+  const statusLink = `${SITE_URL}/status/${ticket.publicToken}`;
   const sla = slaInfo(ticket);
 
   function copyStatusLink() {

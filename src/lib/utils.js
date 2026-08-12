@@ -1,4 +1,8 @@
 export const money = (n) => Math.round(Number(n) || 0).toLocaleString("hu-HU") + " Lei";
+// mindig az éles domaint tegyük ügyfélnek küldött linkekbe (SMS, garanciajegy-link),
+// sose window.location.origin-t — az localhost lenne, ha valaki fejlesztés közben
+// (npm run dev) hoz létre/módosít egy valós tételt, az ügyfél meg nem tudná megnyitni
+export const SITE_URL = "https://phonestock-manager.netlify.app";
 // ékezetek eltávolítása — SMS-eknél 1 szegmensben (160 karakter) marad az üzenet,
 // ékezetekkel a GSM-7 kódolás elesik és 70 karakterenként darabolódik (2x drágább)
 export const stripAccents = (str) => (str || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
