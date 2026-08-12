@@ -293,8 +293,15 @@ function AppShell() {
   async function addTicket(data, locId) {
     await withBusy(async () => {
       const r = unwrap(await supabase.from("service_tickets").insert(tToApi(data, locId)).select());
-      setTickets([tFromApi(r[0]), ...tickets]);
+      const newTicket = tFromApi(r[0]);
+      setTickets([newTicket, ...tickets]);
       setTicketModal(null);
+
+      if (newTicket.customerPhone) {
+        const device = [newTicket.brand, newTicket.model].filter(Boolean).join(" ");
+        const message = stripAccents(`Szia! Atvettuk a keszulekedet (${device}), munkalapszam: #${newTicket.ticketNo}. A javitas allapotat itt kovetheted nyomon: ${window.location.origin}/status/${newTicket.publicToken}`);
+        supabase.functions.invoke("send-sms", { body: { phone: newTicket.customerPhone, message } }).catch(() => {});
+      }
     });
   }
   async function saveTicketEdit(id, data, locId) {
