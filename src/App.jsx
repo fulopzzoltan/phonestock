@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap } from "./lib/supabaseClient";
 import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi } from "./lib/mappers";
-import { money, today, STATUSES, PART_CATEGORIES, warrantyExpiry, isWarrantyActive } from "./lib/utils";
+import { money, today, STATUSES, PART_CATEGORIES, warrantyExpiry, isWarrantyActive, stripAccents } from "./lib/utils";
 import Login from "./Login";
 import StockModal from "./components/StockModal";
 import SellModal from "./components/SellModal";
@@ -311,6 +311,13 @@ function AppShell() {
       if (subStatus === "Átadva") patch.date_out = today();
       unwrap(await supabase.from("service_tickets").update(patch).eq("id", id));
       setTickets(tickets.map((t) => (t.id === id ? { ...t, status, subStatus, dateOut: subStatus === "Átadva" ? today() : t.dateOut } : t)));
+
+      const becameReady = status === "Átadásra" && subStatus === null && !(ticket && ticket.status === "Átadásra" && ticket.subStatus === null);
+      if (becameReady && ticket && ticket.customerPhone) {
+        const device = [ticket.brand, ticket.model].filter(Boolean).join(" ");
+        const message = stripAccents(`Szia! A(z) ${device} javítása elkészült, átveheted nálunk (${locName(ticket.locationId)}). Részletek: ${window.location.origin}/status/${ticket.publicToken}`);
+        supabase.functions.invoke("send-sms", { body: { phone: ticket.customerPhone, message } }).catch(() => {});
+      }
 
       if (subStatus === "Átadva" && ticket && ticket.subStatus !== "Átadva" && (Number(ticket.price) || 0) > 0) {
         const r = unwrap(await supabase.from("transactions").insert(txToApi({

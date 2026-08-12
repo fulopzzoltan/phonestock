@@ -1,4 +1,7 @@
 export const money = (n) => Math.round(Number(n) || 0).toLocaleString("hu-HU") + " Lei";
+// ékezetek eltávolítása — SMS-eknél 1 szegmensben (160 karakter) marad az üzenet,
+// ékezetekkel a GSM-7 kódolás elesik és 70 karakterenként darabolódik (2x drágább)
+export const stripAccents = (str) => (str || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 export const today = () => new Date().toISOString().slice(0, 10);
 
 export const LOCS = { gyimes: "Gyimes", szentgy: "Szentgyörgy" };
