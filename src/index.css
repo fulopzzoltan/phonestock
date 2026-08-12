@@ -217,6 +217,16 @@ tr:hover td{background:#FAFAFA}
   .statrow.c3,.statrow.c4,.statrow.c5{grid-template-columns:1fr 1fr}
 }
 
+/* ====== TERMÉKFOTÓK ====== */
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.photo-thumb{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;border:1px solid #E5E7EB;background:#F3F4F6}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.photo-thumb-del{position:absolute;top:5px;right:5px;background:rgba(17,24,39,.65);color:#fff;border:none;border-radius:7px;padding:5px;display:flex;cursor:pointer}
+.photo-thumb-del:hover{background:#DC2626}
+.photo-add-btn{aspect-ratio:1;border-radius:10px;border:1.5px dashed #D1D5DB;background:#F9FAFB;color:#6B7280;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;text-align:center;padding:6px}
+.photo-add-btn:hover{border-color:var(--accent);color:var(--accent-dark);background:var(--sidebar-accent-soft)}
+.photo-add-btn:disabled{opacity:.6;cursor:default}
+
 /* ====== PUBLIKUS KÉSZLETOLDAL (/keszlet) ====== */
 .pub-shop{
   --pub-ink:#12181A; --pub-ink-soft:#5B6472; --pub-paper:#F4F6F3; --pub-paper-raised:#fff;
@@ -257,8 +267,9 @@ tr:hover td{background:#FAFAFA}
 .pub-cond-pill{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px}
 .pub-cond-pill.new{background:var(--pub-new-soft);color:var(--pub-new)}
 .pub-cond-pill.refurb{background:var(--pub-accent-soft);color:var(--pub-accent-ink)}
-.pub-device-art{height:92px;display:flex;align-items:center;justify-content:center;color:var(--pub-ink)}
+.pub-device-art{height:132px;display:flex;align-items:center;justify-content:center;color:var(--pub-ink);border-radius:10px;overflow:hidden;background:var(--pub-paper)}
 .pub-device-art svg{height:78px;opacity:.88}
+.pub-device-photo{width:100%;height:100%;object-fit:cover;display:block}
 .pub-card-name{font-size:14.5px;font-weight:700;line-height:1.25}
 .pub-card-specs{font-size:11.5px;color:var(--pub-ink-soft);display:flex;gap:6px;flex-wrap:wrap}
 .pub-card-specs span:not(:last-child)::after{content:"·";margin-left:6px;color:var(--pub-line)}

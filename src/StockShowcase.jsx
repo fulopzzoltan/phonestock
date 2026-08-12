@@ -8,6 +8,10 @@ const deviceSvg = (
   </svg>
 );
 
+function photoUrl(path) {
+  return supabase.storage.from("product-photos").getPublicUrl(path).data.publicUrl;
+}
+
 export default function StockShowcase() {
   const [phones, setPhones] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -108,7 +112,11 @@ export default function StockShowcase() {
                 <div className="pub-card-top">
                   <span className={`pub-cond-pill ${p.condition === "New" ? "new" : "refurb"}`}>{p.condition === "New" ? "Új" : "Felújított"}</span>
                 </div>
-                <div className="pub-device-art">{deviceSvg}</div>
+                <div className="pub-device-art">
+                  {p.photo_paths && p.photo_paths.length > 0 ? (
+                    <img src={photoUrl(p.photo_paths[0])} alt={`${p.brand} ${p.model}`} className="pub-device-photo" />
+                  ) : deviceSvg}
+                </div>
                 <div className="pub-card-name">{p.brand} {p.model}</div>
                 <div className="pub-card-specs">
                   {p.storage && <span>{p.storage}</span>}

@@ -2,6 +2,7 @@ import { money } from "../lib/utils";
 import { CloseIcon } from "./icons";
 import Row from "./DetailRow";
 import ConfirmDelete from "./ConfirmDelete";
+import ProductPhotos from "./ProductPhotos";
 
 export default function ProductDetailPanel({ product, locName, onClose, onSell, onEdit, onDelete, busy }) {
   const profit = (Number(product.salePrice) || 0) - (Number(product.costPrice) || 0);
@@ -16,6 +17,7 @@ export default function ProductDetailPanel({ product, locName, onClose, onSell, 
           <button className="iconbtn" onClick={onClose}><CloseIcon /></button>
         </div>
         <div className="dp-body">
+          <ProductPhotos productId={product.id} />
           <div className="dp-section">
             <div className="dp-section-title">Termék adatok</div>
             <Row k="Márka" v={product.brand} />
