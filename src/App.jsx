@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap } from "./lib/supabaseClient";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi } from "./lib/mappers";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi } from "./lib/mappers";
 import { money, today, STATUSES, PART_CATEGORIES, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, statusLabel } from "./lib/utils";
 import Login from "./Login";
 import StockModal from "./components/StockModal";
@@ -18,6 +18,7 @@ import TransactionQuickAdd from "./components/TransactionQuickAdd";
 import TransactionsPeriodList from "./components/TransactionsPeriodList";
 import TransactionModal from "./components/TransactionModal";
 import CustomerDetailPanel from "./components/CustomerDetailPanel";
+import CustomerModal from "./components/CustomerModal";
 import PrintSlip from "./components/PrintSlip";
 import SaleReceiptPanel from "./components/SaleReceiptPanel";
 import PrintReceiptSlip from "./components/PrintReceiptSlip";
@@ -48,6 +49,7 @@ function AppShell() {
   const [tickets, setTickets] = useState([]);
   const [parts, setParts] = useState([]);
   const [users, setUsers] = useState([]);
+  const [customersTable, setCustomersTable] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -67,6 +69,7 @@ function AppShell() {
   const [partDetailId, setPartDetailId] = useState(null);
   const [showHandedOver, setShowHandedOver] = useState(false);
   const [customerKey, setCustomerKey] = useState(null);
+  const [customerModal, setCustomerModal] = useState(null);
   const [printTicket, setPrintTicket] = useState(null);
   const [receiptTxId, setReceiptTxId] = useState(null);
   const [printReceipt, setPrintReceipt] = useState(null);
@@ -90,7 +93,7 @@ function AppShell() {
   async function loadAll() {
     setLoadingData(true);
     try {
-      const [locs, prods, txs, tcks, prs, sps, usrs, hist] = await Promise.all([
+      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false }),
         supabase.from("transactions").select("*").is("deleted_at", null).order("date", { ascending: false }),
@@ -99,6 +102,7 @@ function AppShell() {
         supabase.from("service_parts").select("*"),
         supabase.from("profiles").select("*").order("full_name", { ascending: true }),
         supabase.from("stock_value_history").select("*").order("date", { ascending: true }),
+        supabase.from("customers").select("*").is("deleted_at", null),
       ]);
       setLocations(unwrap(locs) || []);
       const prodRows = unwrap(prods) || [];
@@ -111,6 +115,7 @@ function AppShell() {
       setTickets((unwrap(tcks) || []).map((r) => ({ ...tFromApi(r), usedParts: spByTicket[r.id] || [] })));
       setParts((unwrap(prs) || []).map(partFromApi));
       setUsers((unwrap(usrs) || []).map(profileFromApi));
+      setCustomersTable((unwrap(custs) || []).map(customerFromApi));
       const historyRows = unwrap(hist) || [];
       setStockHistory(historyRows.map((r) => ({ date: r.date, value: Number(r.value) || 0 })));
       maybeSnapshotStockValue(prodRows, historyRows);
@@ -302,10 +307,34 @@ function AppShell() {
     });
   }
 
+  // CUSTOMERS
+  async function createCustomer(data) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("customers").insert(customerToApi(data)).select());
+      setCustomersTable((prev) => [...prev, customerFromApi(r[0])]);
+      setCustomerModal(null);
+    });
+  }
+  async function updateCustomer(id, data) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("customers").update(customerToApi(data)).eq("id", id).select());
+      setCustomersTable((prev) => prev.map((c) => (c.id === id ? customerFromApi(r[0]) : c)));
+      setCustomerModal(null);
+    });
+  }
+
   // TRANSACTIONS
   async function addTransaction(data, locId) {
     await withBusy(async () => {
-      const r = unwrap(await supabase.from("transactions").insert(txToApi(data, locId)).select());
+      let customerId = null;
+      if (data.customerPhone) {
+        const { data: cid } = await supabase.rpc("upsert_customer", { p_name: data.customerName, p_phone: data.customerPhone });
+        customerId = cid;
+        if (data.marketingConsent && customerId) {
+          await supabase.from("customers").update({ marketing_consent: true, marketing_consent_at: new Date().toISOString() }).eq("id", customerId);
+        }
+      }
+      const r = unwrap(await supabase.from("transactions").insert({ ...txToApi(data, locId), customer_id: customerId }).select());
       setTransactions([txFromApi(r[0]), ...transactions]);
     });
   }
@@ -326,7 +355,15 @@ function AppShell() {
   // SERVICE
   async function addTicket(data, locId) {
     await withBusy(async () => {
-      const r = unwrap(await supabase.from("service_tickets").insert(tToApi(data, locId)).select());
+      let customerId = null;
+      if (data.customerPhone) {
+        const { data: cid } = await supabase.rpc("upsert_customer", { p_name: data.customerName, p_phone: data.customerPhone });
+        customerId = cid;
+        if (data.marketingConsent && customerId) {
+          await supabase.from("customers").update({ marketing_consent: true, marketing_consent_at: new Date().toISOString() }).eq("id", customerId);
+        }
+      }
+      const r = unwrap(await supabase.from("service_tickets").insert({ ...tToApi(data, locId), customer_id: customerId }).select());
       const newTicket = tFromApi(r[0]);
       setTickets([newTicket, ...tickets]);
       setTicketModal(null);
@@ -483,32 +520,25 @@ function AppShell() {
   }), [filteredTickets, handedOverTickets]);
 
   const customers = useMemo(() => {
-    // RO telefonszámok 9 érdemi számjegyből állnak, akár "0" (10 jegy), akár "+40"/"40" (11 jegy)
-    // előtaggal írjuk — az utolsó 9 jegyre normalizálva ugyanaz a szám mindig ugyanoda kulcsolódik.
-    const norm = (p) => (p || "").replace(/\D/g, "").slice(-9);
-    const map = new Map();
-    function addEntry(name, phone, kind, record) {
-      const key = norm(phone) || (name ? `name:${name.trim().toLowerCase()}` : null);
-      if (!key) return;
-      if (!map.has(key)) map.set(key, { key, name: "", phone: "", purchases: [], tickets: [] });
-      const c = map.get(key);
-      if (name && !c.name) c.name = name;
-      if (phone && !c.phone) c.phone = phone;
-      if (kind === "purchase") c.purchases.push(record);
-      else c.tickets.push(record);
-    }
-    filteredTransactions.filter((t) => t.type === "income" && t.customerName).forEach((t) => addEntry(t.customerName, t.customerPhone, "purchase", t));
-    filteredTickets.forEach((t) => addEntry(t.customerName, t.customerPhone, "ticket", t));
-    let list = [...map.values()].map((c) => ({
-      ...c,
-      purchaseTotal: c.purchases.reduce((s, p) => s + (Number(p.amount) || 0), 0),
-      ticketTotal: c.tickets.reduce((s, t) => s + (Number(t.price) || 0), 0),
-      lastActivity: [...c.purchases.map((p) => p.date), ...c.tickets.map((t) => t.dateIn)].filter(Boolean).sort().reverse()[0] || "",
-    }));
-    const q = custSearch.trim().toLowerCase();
-    if (q) list = list.filter((c) => [c.name, c.phone].join(" ").toLowerCase().includes(q));
-    return list.sort((a, b) => b.lastActivity.localeCompare(a.lastActivity));
-  }, [filteredTransactions, filteredTickets, custSearch]);
+    return customersTable.map((c) => {
+      const purchases = filteredTransactions.filter((t) => t.type === "income" && t.customerId === c.id);
+      const tickets = filteredTickets.filter((t) => t.customerId === c.id);
+      const visits = purchases.length + tickets.length;
+      return {
+        ...c,
+        key: c.id,
+        purchases,
+        tickets,
+        isNew: visits <= 1,
+        purchaseTotal: purchases.reduce((s, p) => s + (Number(p.amount) || 0), 0),
+        ticketTotal: tickets.reduce((s, t) => s + (Number(t.price) || 0), 0),
+        lastActivity: [...purchases.map((p) => p.date), ...tickets.map((t) => t.dateIn)].filter(Boolean).sort().reverse()[0] || "",
+      };
+    }).filter((c) => {
+      const q = custSearch.trim().toLowerCase();
+      return !q || [c.name, c.phone].join(" ").toLowerCase().includes(q);
+    }).sort((a, b) => b.lastActivity.localeCompare(a.lastActivity));
+  }, [customersTable, filteredTransactions, filteredTickets, custSearch]);
 
   const customerStats = useMemo(() => ({
     count: customers.length,
@@ -828,6 +858,7 @@ function AppShell() {
           <>
             <div className="topbar">
               <div><div className="page-title">Kliensek</div><div className="page-sub">{effectiveLocFilter === "all" ? "Mindkét helyszín" : locName(effectiveLocFilter)}</div></div>
+              <button className="btn" disabled={busy} onClick={() => setCustomerModal("add")}>+ Új ügyfél</button>
             </div>
             <div className="filter-row">
               <div className="searchbar"><SearchIcon /><input placeholder="Keresés név vagy telefonszám..." value={custSearch} onChange={(e) => setCustSearch(e.target.value)} /></div>
@@ -835,12 +866,13 @@ function AppShell() {
             <div className="tw">
               {loadingData ? <div className="empty">Betöltés...</div> : customers.length === 0 ? <div className="empty">Nincs ügyfél.</div> : (
                 <table>
-                  <thead><tr><th>Név</th><th>Telefonszám</th><th>Vásárlások</th><th>Szerviz</th><th>Utolsó aktivitás</th></tr></thead>
+                  <thead><tr><th>Név</th><th>Telefonszám</th><th>Típus</th><th>Vásárlások</th><th>Szerviz</th><th>Utolsó aktivitás</th></tr></thead>
                   <tbody>
                     {customers.map((c) => (
                       <tr key={c.key} style={{ cursor: "pointer" }} onClick={() => setCustomerKey(c.key)}>
                         <td style={{ fontWeight: 600 }}>{c.name || "Névtelen"}</td>
                         <td className="mono">{c.phone || "—"}</td>
+                        <td>{c.isNew ? <span className="badge-loc">Új</span> : <span className="badge-income">Visszatérő</span>}</td>
                         <td>{c.purchases.length} db · <span className="mono">{money(c.purchaseTotal)}</span></td>
                         <td>{c.tickets.length} db · <span className="mono">{money(c.ticketTotal)}</span></td>
                         <td className="mono" style={{ color: "#6B7280" }}>{c.lastActivity || "—"}</td>
@@ -1119,7 +1151,21 @@ function AppShell() {
         />
       )}
       {detailCustomer && (
-        <CustomerDetailPanel customer={detailCustomer} locName={locName} onClose={() => setCustomerKey(null)} />
+        <CustomerDetailPanel
+          customer={detailCustomer}
+          locName={locName}
+          busy={busy}
+          onClose={() => setCustomerKey(null)}
+          onEdit={(c) => { setCustomerKey(null); setCustomerModal(c); }}
+        />
+      )}
+      {customerModal && (
+        <CustomerModal
+          customer={customerModal === "add" ? null : customerModal}
+          busy={busy}
+          onClose={() => setCustomerModal(null)}
+          onSave={(data) => (customerModal === "add" ? createCustomer(data) : updateCustomer(customerModal.id, data))}
+        />
       )}
       {receiptTx && (
         <SaleReceiptPanel tx={receiptTx} locName={locName} onClose={() => setReceiptTxId(null)} onPrint={printReceiptSlip} />

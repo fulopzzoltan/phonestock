@@ -1,9 +1,9 @@
 import { money, statusCls, subStatusLabel } from "../lib/utils";
-import { CloseIcon } from "./icons";
+import { CloseIcon, EditIcon } from "./icons";
 import Row from "./DetailRow";
 import CallLink from "./CallLink";
 
-export default function CustomerDetailPanel({ customer, locName, onClose }) {
+export default function CustomerDetailPanel({ customer, locName, onClose, onEdit }) {
   const events = [
     ...customer.purchases.map((p) => ({ kind: "purchase", date: p.date, record: p })),
     ...customer.tickets.map((t) => ({ kind: "ticket", date: t.dateIn, record: t })),
@@ -14,10 +14,17 @@ export default function CustomerDetailPanel({ customer, locName, onClose }) {
       <div className="detail-panel">
         <div className="dp-head">
           <div>
-            <div className="dp-sn">Ügyfél</div>
+            <div className="dp-sn" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              Ügyfél
+              {customer.isNew ? <span className="badge-loc">Új</span> : <span className="badge-income">Visszatérő</span>}
+              {customer.marketingConsent && <span className="gar-pill">Feliratkozott</span>}
+            </div>
             <div className="dp-name">{customer.name || "Névtelen"}</div>
           </div>
-          <button className="iconbtn" onClick={onClose}><CloseIcon /></button>
+          <div style={{ display: "flex", gap: 6 }}>
+            <button className="iconbtn" onClick={() => onEdit(customer)}><EditIcon /></button>
+            <button className="iconbtn" onClick={onClose}><CloseIcon /></button>
+          </div>
         </div>
         <div className="dp-body">
           <div className="dp-section">
@@ -27,6 +34,8 @@ export default function CustomerDetailPanel({ customer, locName, onClose }) {
                 <CallLink phone={customer.phone} />
               </span>
             ) : null} />
+            <Row k="Email" v={customer.email} />
+            <Row k="Jegyzet" v={customer.notes} />
             <Row k="Vásárlások" v={`${customer.purchases.length} db — ${money(customer.purchaseTotal)}`} />
             <Row k="Szerviz munkalapok" v={`${customer.tickets.length} db — ${money(customer.ticketTotal)}`} />
             <Row k="Utolsó aktivitás" v={customer.lastActivity} />

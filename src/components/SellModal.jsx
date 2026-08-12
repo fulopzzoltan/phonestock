@@ -3,7 +3,7 @@ import { CloseIcon } from "./icons";
 import { PAYMENTS } from "../lib/utils";
 
 export default function SellModal({ item, locName, onClose, onSave, busy }) {
-  const [f, setF] = useState({ price: item.salePrice || "", customerName: "", customerPhone: "", payment: "Készpénz" });
+  const [f, setF] = useState({ price: item.salePrice || "", customerName: "", customerPhone: "", payment: "Készpénz", marketingConsent: false });
   const [phoneTouched, setPhoneTouched] = useState(false);
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const valid = f.customerPhone.trim().length > 0;
@@ -35,6 +35,12 @@ export default function SellModal({ item, locName, onClose, onSave, busy }) {
             </select>
           </div>
         </div>
+        <div className="field">
+          <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#374151", fontWeight: 500, textTransform: "none", letterSpacing: 0, cursor: "pointer" }}>
+            <input type="checkbox" className="chk" checked={f.marketingConsent} onChange={(e) => setF({ ...f, marketingConsent: e.target.checked })} />
+            Hozzájárul, hogy akciókról/emlékeztetőkről SMS-ben értesítsük
+          </label>
+        </div>
         <div className="modal-actions">
           <button className="btn sec" onClick={onClose}>Mégse</button>
           <button
@@ -51,6 +57,7 @@ export default function SellModal({ item, locName, onClose, onSave, busy }) {
               customerName: f.customerName,
               customerPhone: f.customerPhone,
               payment: f.payment,
+              marketingConsent: f.marketingConsent,
             }, item.locationId)}
           >
             {busy ? "Mentés..." : "Rögzítés"}

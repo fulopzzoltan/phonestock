@@ -29,6 +29,7 @@ export default function TicketFormModal({ ticket, locations, users = [], default
     subStatus: ticket?.subStatus ?? null,
     assignedTo: ticket?.assignedTo || "",
     consentGiven: !!ticket?.consentAt,
+    marketingConsent: false,
     extra: parsed.extra,
   });
   const [tags, setTags] = useState(parsed.tags);
@@ -108,6 +109,9 @@ export default function TicketFormModal({ ticket, locations, users = [], default
           </label>
           <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#374151", fontWeight: 500, textTransform: "none", letterSpacing: 0, cursor: "pointer" }}>
             <input type="checkbox" className="chk" checked={f.consentGiven} onChange={(e) => setF({ ...f, consentGiven: e.target.checked })} /> Az ügyfél elfogadta a szervizgarancia feltételeket
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#374151", fontWeight: 500, textTransform: "none", letterSpacing: 0, cursor: "pointer" }}>
+            <input type="checkbox" className="chk" checked={f.marketingConsent} onChange={(e) => setF({ ...f, marketingConsent: e.target.checked })} /> Hozzájárul, hogy akciókról/emlékeztetőkről SMS-ben értesítsük
           </label>
         </div>
         <div className="modal-actions">

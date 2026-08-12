@@ -54,6 +54,7 @@ export const txFromApi = (r) => ({
   warranty: r.warranty,
   customerName: r.customer_name,
   customerPhone: r.customer_phone,
+  customerId: r.customer_id,
   locationId: r.location_id,
   date: r.date,
 });
@@ -98,6 +99,7 @@ export const tFromApi = (r) => ({
   qcAt: r.qc_at,
   assignedTo: r.assigned_to,
   consentAt: r.consent_at,
+  customerId: r.customer_id,
 });
 
 export const tToApi = (t, locId) => ({
@@ -118,6 +120,23 @@ export const tToApi = (t, locId) => ({
   imei: t.imei || null,
   assigned_to: t.assignedTo || null,
   consent_at: t.consentAt || null,
+});
+
+export const customerFromApi = (r) => ({
+  id: r.id,
+  name: r.name || "",
+  phone: r.phone || "",
+  email: r.email || "",
+  notes: r.notes || "",
+  marketingConsent: !!r.marketing_consent,
+  marketingConsentAt: r.marketing_consent_at,
+  createdAt: r.created_at,
+});
+export const customerToApi = (c) => ({
+  name: c.name || null,
+  phone: c.phone || null,
+  email: c.email || null,
+  notes: c.notes || null,
 });
 
 export const partFromApi = (r) => ({
