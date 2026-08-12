@@ -300,7 +300,10 @@ function AppShell() {
       if (newTicket.customerPhone) {
         const device = [newTicket.brand, newTicket.model].filter(Boolean).join(" ");
         const message = stripAccents(`Szia! Atvettuk a keszulekedet (${device}), munkalapszam: #${newTicket.ticketNo}. A javitas allapotat itt kovetheted nyomon: ${window.location.origin}/s/${newTicket.shortCode}`);
-        supabase.functions.invoke("send-sms", { body: { phone: newTicket.customerPhone, message } }).catch(() => {});
+        supabase.functions.invoke("send-sms", { body: { phone: newTicket.customerPhone, message } }).catch((err) => {
+          console.error("SMS küldés sikertelen:", err);
+          setError("Az SMS nem ment ki (a mentés egyébként sikeres volt) — nézd meg a konzolt vagy próbáld újra.");
+        });
       }
     });
   }
@@ -323,7 +326,10 @@ function AppShell() {
       if (becameReady && ticket && ticket.customerPhone) {
         const device = [ticket.brand, ticket.model].filter(Boolean).join(" ");
         const message = stripAccents(`Szia! A(z) ${device} javítása elkészült, átveheted nálunk (${locName(ticket.locationId)}). Részletek: ${window.location.origin}/s/${ticket.shortCode}`);
-        supabase.functions.invoke("send-sms", { body: { phone: ticket.customerPhone, message } }).catch(() => {});
+        supabase.functions.invoke("send-sms", { body: { phone: ticket.customerPhone, message } }).catch((err) => {
+          console.error("SMS küldés sikertelen:", err);
+          setError("Az SMS nem ment ki (a mentés egyébként sikeres volt) — nézd meg a konzolt vagy próbáld újra.");
+        });
       }
 
       if (subStatus === "Átadva" && ticket && ticket.subStatus !== "Átadva" && (Number(ticket.price) || 0) > 0) {
