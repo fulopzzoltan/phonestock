@@ -93,6 +93,11 @@ export const tFromApi = (r) => ({
   dateIn: r.date_in,
   dateOut: r.date_out,
   locationId: r.location_id,
+  imei: r.imei,
+  qcBy: r.qc_by,
+  qcAt: r.qc_at,
+  assignedTo: r.assigned_to,
+  consentAt: r.consent_at,
 });
 
 export const tToApi = (t, locId) => ({
@@ -110,6 +115,9 @@ export const tToApi = (t, locId) => ({
   status: t.status || "Átvett",
   sub_status: t.subStatus || null,
   location_id: locId,
+  imei: t.imei || null,
+  assigned_to: t.assignedTo || null,
+  consent_at: t.consentAt || null,
 });
 
 export const partFromApi = (r) => ({
@@ -122,6 +130,8 @@ export const partFromApi = (r) => ({
   costPrice: r.cost_price,
   source: r.source,
   category: r.category,
+  origin: r.origin,
+  supplierSku: r.supplier_sku,
 });
 
 export const partToApi = (p) => ({
@@ -132,6 +142,8 @@ export const partToApi = (p) => ({
   cost_price: Number(p.costPrice) || 0,
   source: p.source || null,
   category: p.category || null,
+  origin: p.origin || null,
+  supplier_sku: p.supplierSku || null,
 });
 
 export const spFromApi = (r) => ({

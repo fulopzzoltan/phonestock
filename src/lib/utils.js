@@ -10,12 +10,16 @@ export const today = () => new Date().toISOString().slice(0, 10);
 
 export const LOCS = { gyimes: "Gyimes", szentgy: "Szentgyörgy" };
 
+// "key" = adatbázisban tárolt érték (ne változtasd, meglévő sorok erre hivatkoznak),
+// "label" = amit a kanban/UI mutat — ez bármikor finomítható a key érintése nélkül
 export const STATUSES = [
-  { key: "Átvett", color: "#F59E0B", cls: "st-beveve" },
-  { key: "Javítás alatt", color: "#F97316", cls: "st-javitas" },
-  { key: "Átadásra", color: "#22C55E", cls: "st-kesz" },
+  { key: "Átvett", label: "Átvéve", color: "#F59E0B", cls: "st-beveve" },
+  { key: "Javítás alatt", label: "Szerelés alatt", color: "#F97316", cls: "st-javitas" },
+  { key: "Minőségellenőrzés", label: "Tesztelés", color: "#0EA5E9", cls: "st-qc" },
+  { key: "Átadásra", label: "Átvehető", color: "#22C55E", cls: "st-kesz" },
 ];
 export const statusCls = (s) => STATUSES.find((c) => c.key === s)?.cls || "st-beveve";
+export const statusLabel = (s) => STATUSES.find((c) => c.key === s)?.label || s;
 
 // sub_status options available within each main status ("null" entry = plain/no tag)
 export const SUB_STATUSES = {
@@ -26,6 +30,9 @@ export const SUB_STATUSES = {
   ],
   "Javítás alatt": [
     { key: null, label: "Javítás alatt", cls: "st-javitas" },
+  ],
+  "Minőségellenőrzés": [
+    { key: null, label: "Tesztelés alatt", cls: "st-qc" },
   ],
   "Átadásra": [
     { key: null, label: "Kész, átvehető", cls: "st-kesz" },
@@ -49,6 +56,7 @@ export function slaInfo(ticket) {
 
 export const PROBLEM_TAGS = ["LCD", "FRP", "Csatlakozó", "Akku", "Kamera", "Szoftver", "Egyéb"];
 export const PART_CATEGORIES = ["Kijelző", "Akkumulátor"];
+export const PART_ORIGINS = ["OEM", "Utángyártott"];
 export const WARRANTIES = ["1 hó", "3 hó", "6 hó", "1 év", "2 év"];
 export const SOURCES = ["Konszignáció", "Számla"];
 export const PAYMENTS = ["Készpénz", "Kártya", "Átutalás"];

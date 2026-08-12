@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { CloseIcon } from "./icons";
-import { PART_CATEGORIES } from "../lib/utils";
+import { PART_CATEGORIES, PART_ORIGINS } from "../lib/utils";
 
 export default function PartModal({ part, onClose, onSave, busy }) {
   const isEdit = !!part;
@@ -12,6 +12,8 @@ export default function PartModal({ part, onClose, onSave, busy }) {
     quantity: part?.quantity ?? "",
     costPrice: part?.costPrice ?? "",
     source: part?.source || "",
+    origin: part?.origin || "",
+    supplierSku: part?.supplierSku || "",
   });
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const valid = f.name.trim() && f.quantity !== "";
@@ -34,6 +36,15 @@ export default function PartModal({ part, onClose, onSave, busy }) {
           <div className="field"><label>Mennyiség</label><input type="number" value={f.quantity} onChange={set("quantity")} placeholder="0" /></div>
           <div className="field"><label>Beérkezési ár (Lei)</label><input type="number" value={f.costPrice} onChange={set("costPrice")} placeholder="0" /></div>
           <div className="field"><label>Forrás</label><input value={f.source} onChange={set("source")} placeholder="SEP, GSMNet..." /></div>
+        </div>
+        <div className="row2">
+          <div className="field"><label>Eredet</label>
+            <select value={f.origin} onChange={set("origin")}>
+              <option value="">—</option>
+              {PART_ORIGINS.map((o) => <option key={o} value={o}>{o}</option>)}
+            </select>
+          </div>
+          <div className="field"><label>Beszállítói cikkszám</label><input value={f.supplierSku} onChange={set("supplierSku")} placeholder="Opcionális" /></div>
         </div>
         <div className="modal-actions">
           <button className="btn sec" onClick={onClose}>Mégse</button>

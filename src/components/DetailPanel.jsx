@@ -1,15 +1,18 @@
 import { useState } from "react";
-import { money, STATUSES, SUB_STATUSES, slaInfo, SITE_URL } from "../lib/utils";
+import { money, STATUSES, SUB_STATUSES, slaInfo, SITE_URL, statusLabel } from "../lib/utils";
 import { CloseIcon } from "./icons";
 import Row from "./DetailRow";
 import CallLink from "./CallLink";
 import ConfirmDelete from "./ConfirmDelete";
+import TicketPhotos from "./TicketPhotos";
 
-export default function DetailPanel({ ticket, locName, parts, onClose, onStatusChange, onEdit, onDelete, busy, onAddPart, onRemovePart, onPrint }) {
+export default function DetailPanel({ ticket, locName, parts, users = [], onClose, onStatusChange, onCompleteQc, onEdit, onDelete, busy, onAddPart, onRemovePart, onPrint }) {
   const [copied, setCopied] = useState(false);
   const [showAddPart, setShowAddPart] = useState(false);
   const [selPartId, setSelPartId] = useState("");
   const [qty, setQty] = useState(1);
+  const [qcUserId, setQcUserId] = useState("");
+  const userName = (id) => users.find((u) => u.id === id)?.fullName || users.find((u) => u.id === id)?.email || "—";
   const usedParts = ticket.usedParts || [];
   const availableParts = (parts || []).filter((p) => Number(p.quantity) > 0);
   const selPart = availableParts.find((p) => p.id === selPartId);
@@ -34,12 +37,13 @@ export default function DetailPanel({ ticket, locName, parts, onClose, onStatusC
           <button className="iconbtn" onClick={onClose}><CloseIcon /></button>
         </div>
         <div className="dp-body">
+          <TicketPhotos ticketId={ticket.id} />
           <div className="dp-section">
             <div className="dp-section-title">Státusz módosítás</div>
             <div className="dp-status-row">
               {STATUSES.map((c) => (
                 <button key={c.key} className={`dp-st-btn${ticket.status === c.key ? " active" : ""}`} disabled={busy}
-                  onClick={() => onStatusChange(ticket.id, c.key, SUB_STATUSES[c.key]?.[0]?.key ?? null)}>{c.key}</button>
+                  onClick={() => onStatusChange(ticket.id, c.key, SUB_STATUSES[c.key]?.[0]?.key ?? null)}>{statusLabel(c.key)}</button>
               ))}
             </div>
             {(SUB_STATUSES[ticket.status] || []).length > 1 && (
@@ -73,6 +77,7 @@ export default function DetailPanel({ ticket, locName, parts, onClose, onStatusC
             <div className="dp-section-title">Eszköz & Javítás</div>
             <Row k="Márka" v={ticket.brand} />
             <Row k="Modell" v={ticket.model} />
+            <Row k="IMEI" v={ticket.imei ? <span className="mono">{ticket.imei}</span> : null} />
             <Row k="Probléma" v={probs.length ? probs.map((p, i) => <span key={i} className="prob-pill">{p}</span>) : null} />
             <Row k="Garancia" v={ticket.warranty ? <span className="gar-pill">{ticket.warranty}</span> : null} />
             <Row k="Fólia" v={ticket.folia ? <span style={{ color: "#22C55E", fontWeight: 700 }}>✓ Igen</span> : "Nem"} />
@@ -86,6 +91,24 @@ export default function DetailPanel({ ticket, locName, parts, onClose, onStatusC
                 )}
               </span>
             ) : null} />
+          </div>
+          <div className="dp-section">
+            <div className="dp-section-title">Minőség &amp; nyomon követhetőség</div>
+            <Row k="Technikus" v={ticket.assignedTo ? userName(ticket.assignedTo) : null} />
+            <Row k="Ügyfél beleegyezése" v={ticket.consentAt ? <span style={{ color: "#22C55E", fontWeight: 700 }}>✓ Elfogadva ({ticket.consentAt.slice(0, 10)})</span> : <span style={{ color: "#DC2626" }}>Nincs rögzítve</span>} />
+            <Row k="Minőségellenőrzés" v={ticket.qcAt ? <span style={{ color: "#22C55E", fontWeight: 700 }}>✓ {userName(ticket.qcBy)} ({ticket.qcAt.slice(0, 10)})</span> : null} />
+            {ticket.status === "Minőségellenőrzés" && (
+              <div className="row2" style={{ marginTop: 8, alignItems: "flex-end" }}>
+                <div className="field" style={{ margin: 0 }}>
+                  <label>Tesztelte</label>
+                  <select value={qcUserId} onChange={(e) => setQcUserId(e.target.value)}>
+                    <option value="">— válassz —</option>
+                    {users.map((u) => <option key={u.id} value={u.id}>{u.fullName || u.email}</option>)}
+                  </select>
+                </div>
+                <button className="btn sm" disabled={busy} onClick={() => onCompleteQc(ticket.id, qcUserId || null)}>QC lezárva → Átvehető</button>
+              </div>
+            )}
           </div>
           <div className="dp-section">
             <div className="dp-section-title">Felhasznált alkatrészek</div>

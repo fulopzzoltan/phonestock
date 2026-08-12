@@ -1,7 +1,7 @@
 import { useState } from "react";
 import LocationField from "./LocationField";
 import { CloseIcon } from "./icons";
-import { PROBLEM_TAGS, WARRANTIES, STATUSES, SUB_STATUSES } from "../lib/utils";
+import { PROBLEM_TAGS, WARRANTIES, STATUSES, SUB_STATUSES, statusLabel } from "../lib/utils";
 
 function parseIssue(issue) {
   const parts = (issue || "").split(",").map((p) => p.trim()).filter(Boolean);
@@ -10,7 +10,7 @@ function parseIssue(issue) {
   return { tags, extra };
 }
 
-export default function TicketFormModal({ ticket, locations, defaultLocId, onClose, onSave, busy }) {
+export default function TicketFormModal({ ticket, locations, users = [], defaultLocId, onClose, onSave, busy }) {
   const isEdit = !!ticket;
   const parsed = parseIssue(ticket?.issue);
   const [f, setF] = useState({
@@ -18,6 +18,7 @@ export default function TicketFormModal({ ticket, locations, defaultLocId, onClo
     customerPhone: ticket?.customerPhone || "",
     brand: ticket?.brand || "",
     model: ticket?.model || "",
+    imei: ticket?.imei || "",
     price: ticket?.price ?? "",
     matCost: ticket?.matCost ?? "",
     warranty: ticket?.warranty || "",
@@ -26,6 +27,8 @@ export default function TicketFormModal({ ticket, locations, defaultLocId, onClo
     folia: ticket?.folia || false,
     status: ticket?.status || "Átvett",
     subStatus: ticket?.subStatus ?? null,
+    assignedTo: ticket?.assignedTo || "",
+    consentGiven: !!ticket?.consentAt,
     extra: parsed.extra,
   });
   const [tags, setTags] = useState(parsed.tags);
@@ -37,7 +40,8 @@ export default function TicketFormModal({ ticket, locations, defaultLocId, onClo
   function submit() {
     if (!valid) return;
     const issue = [tags.join(","), f.extra.trim()].filter(Boolean).join(",");
-    onSave({ ...f, issue }, locId);
+    const consentAt = f.consentGiven ? (ticket?.consentAt || new Date().toISOString()) : null;
+    onSave({ ...f, issue, assignedTo: f.assignedTo || null, consentAt }, locId);
   }
 
   return (
@@ -48,7 +52,7 @@ export default function TicketFormModal({ ticket, locations, defaultLocId, onClo
           <LocationField locations={locations} value={locId} onChange={setLocId} />
           <div className="field"><label>Státusz</label>
             <select value={f.status} onChange={(e) => setF({ ...f, status: e.target.value, subStatus: SUB_STATUSES[e.target.value]?.[0]?.key ?? null })}>
-              {STATUSES.map((s) => <option key={s.key} value={s.key}>{s.key}</option>)}
+              {STATUSES.map((s) => <option key={s.key} value={s.key}>{statusLabel(s.key)}</option>)}
             </select>
           </div>
         </div>
@@ -66,6 +70,15 @@ export default function TicketFormModal({ ticket, locations, defaultLocId, onClo
         <div className="row2">
           <div className="field"><label>Márka</label><input value={f.brand} onChange={set("brand")} placeholder="Samsung, Apple..." /></div>
           <div className="field"><label>Modell</label><input value={f.model} onChange={set("model")} placeholder="S22, iPhone 12..." /></div>
+        </div>
+        <div className="row2">
+          <div className="field"><label>IMEI</label><input value={f.imei} onChange={set("imei")} placeholder="35xxxxxxxxxxxxx" /></div>
+          <div className="field"><label>Technikus</label>
+            <select value={f.assignedTo} onChange={set("assignedTo")}>
+              <option value="">— nincs hozzárendelve —</option>
+              {users.map((u) => <option key={u.id} value={u.id}>{u.fullName || u.email}</option>)}
+            </select>
+          </div>
         </div>
         <div className="field"><label>Probléma</label>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
@@ -89,9 +102,12 @@ export default function TicketFormModal({ ticket, locations, defaultLocId, onClo
           <div className="field"><label>Határidő (SLA)</label><input type="date" value={f.dueDate} onChange={set("dueDate")} /></div>
           <div className="field"><label>Átadás dátuma</label><input type="date" value={f.handoverDate} onChange={set("handoverDate")} /></div>
         </div>
-        <div className="field">
+        <div className="field" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#374151", fontWeight: 500, textTransform: "none", letterSpacing: 0, cursor: "pointer" }}>
             <input type="checkbox" className="chk" checked={f.folia} onChange={(e) => setF({ ...f, folia: e.target.checked })} /> Fólia felhelyezve
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#374151", fontWeight: 500, textTransform: "none", letterSpacing: 0, cursor: "pointer" }}>
+            <input type="checkbox" className="chk" checked={f.consentGiven} onChange={(e) => setF({ ...f, consentGiven: e.target.checked })} /> Az ügyfél elfogadta a szervizgarancia feltételeket
           </label>
         </div>
         <div className="modal-actions">

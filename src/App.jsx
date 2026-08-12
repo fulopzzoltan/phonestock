@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap } from "./lib/supabaseClient";
 import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi } from "./lib/mappers";
-import { money, today, STATUSES, PART_CATEGORIES, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL } from "./lib/utils";
+import { money, today, STATUSES, PART_CATEGORIES, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, statusLabel } from "./lib/utils";
 import Login from "./Login";
 import StockModal from "./components/StockModal";
 import SellModal from "./components/SellModal";
@@ -380,6 +380,14 @@ function AppShell() {
       }
     });
   }
+  async function completeQc(id, qcByUserId) {
+    const patch = { qc_by: qcByUserId || null, qc_at: new Date().toISOString() };
+    await withBusy(async () => {
+      unwrap(await supabase.from("service_tickets").update(patch).eq("id", id));
+      setTickets(tickets.map((t) => (t.id === id ? { ...t, qcBy: patch.qc_by, qcAt: patch.qc_at } : t)));
+    });
+    await setTicketStatus(id, "Átadásra", null);
+  }
   async function deleteTicket(id) {
     await withBusy(async () => {
       unwrap(await supabase.from("service_tickets").update({ deleted_at: new Date().toISOString() }).eq("id", id));
@@ -727,7 +735,7 @@ function AppShell() {
                     return (
                       <div className="k-col" key={col.key} style={{ "--col-color": col.color }}>
                         <div className="k-col-head">
-                          <div className="k-col-title"><span className="k-dot"></span>{col.key}</div>
+                          <div className="k-col-title"><span className="k-dot"></span>{statusLabel(col.key)}</div>
                           <span className="k-count">{items.length}</span>
                         </div>
                         <div className="k-col-body">
@@ -1066,6 +1074,7 @@ function AppShell() {
         <TicketFormModal
           ticket={editingTicket}
           locations={allowedLocations}
+          users={users}
           defaultLocId={defaultLocId}
           onClose={() => setTicketModal(null)}
           busy={busy}
@@ -1078,8 +1087,10 @@ function AppShell() {
           locName={locName}
           busy={busy}
           parts={parts}
+          users={users}
           onClose={() => setDetailId(null)}
           onStatusChange={setTicketStatus}
+          onCompleteQc={completeQc}
           onEdit={(t) => { setDetailId(null); setTicketModal(t); }}
           onDelete={deleteTicket}
           onAddPart={addPartToTicket}

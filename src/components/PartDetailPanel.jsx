@@ -22,6 +22,8 @@ export default function PartDetailPanel({ part, onClose, onEdit, onDelete, busy 
             <Row k="Mire illik" v={part.modelFit} />
             <Row k="Készlet" v={`${part.quantity} db`} />
             <Row k="Forrás" v={part.source} />
+            <Row k="Eredet" v={part.origin} />
+            <Row k="Beszállítói cikkszám" v={part.supplierSku ? <span className="mono">{part.supplierSku}</span> : null} />
           </div>
           <div className="dp-section">
             <div className="dp-section-title">Pénzügyek</div>
