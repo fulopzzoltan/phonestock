@@ -35,6 +35,8 @@ export default function CustomerDetailPanel({ customer, locName, onClose, onEdit
               </span>
             ) : null} />
             <Row k="Email" v={customer.email} />
+            <Row k="CNP" v={customer.cnp ? <span className="mono">{customer.cnp}</span> : null} />
+            <Row k="Cím" v={customer.address} />
             <Row k="Jegyzet" v={customer.notes} />
             <Row k="Vásárlások" v={`${customer.purchases.length} db — ${money(customer.purchaseTotal)}`} />
             <Row k="Szerviz munkalapok" v={`${customer.tickets.length} db — ${money(customer.ticketTotal)}`} />

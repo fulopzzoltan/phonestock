@@ -7,6 +7,8 @@ export default function CustomerModal({ customer, onClose, onSave, busy }) {
     name: customer?.name || "",
     phone: customer?.phone || "",
     email: customer?.email || "",
+    cnp: customer?.cnp || "",
+    address: customer?.address || "",
     notes: customer?.notes || "",
     marketingConsent: customer?.marketingConsent || false,
   });
@@ -21,7 +23,11 @@ export default function CustomerModal({ customer, onClose, onSave, busy }) {
           <div className="field"><label>Név</label><input value={f.name} onChange={set("name")} placeholder="Kovács János" /></div>
           <div className="field"><label>Telefonszám</label><input value={f.phone} onChange={set("phone")} placeholder="07xx xxx xxx" /></div>
         </div>
-        <div className="field"><label>Email</label><input value={f.email} onChange={set("email")} placeholder="Opcionális" /></div>
+        <div className="row2">
+          <div className="field"><label>Email</label><input value={f.email} onChange={set("email")} placeholder="Opcionális" /></div>
+          <div className="field"><label>CNP</label><input value={f.cnp} onChange={set("cnp")} placeholder="Opcionális" maxLength={13} /></div>
+        </div>
+        <div className="field"><label>Cím</label><input value={f.address} onChange={set("address")} placeholder="Utca, házszám, város, megye, irányítószám" /></div>
         <div className="field"><label>Jegyzet</label>
           <textarea
             value={f.notes}

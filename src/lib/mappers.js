@@ -127,6 +127,8 @@ export const customerFromApi = (r) => ({
   name: r.name || "",
   phone: r.phone || "",
   email: r.email || "",
+  cnp: r.cnp || "",
+  address: r.address || "",
   notes: r.notes || "",
   marketingConsent: !!r.marketing_consent,
   marketingConsentAt: r.marketing_consent_at,
@@ -136,6 +138,8 @@ export const customerToApi = (c) => ({
   name: c.name || null,
   phone: c.phone || null,
   email: c.email || null,
+  cnp: c.cnp || null,
+  address: c.address || null,
   notes: c.notes || null,
 });
 
