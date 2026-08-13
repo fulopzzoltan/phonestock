@@ -50,6 +50,9 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
 .main{flex:1;padding:26px 30px;overflow-y:auto;min-width:0}
 .banner{border-radius:14px;padding:10px 16px;font-size:12px;margin-bottom:18px;display:flex;align-items:center;gap:7px;font-weight:500}
 .banner.warn{background:#FFFBEB;border:1px solid #FDE68A;color:#92400E}
+.banner.ok{background:#ECFDF5;border:1px solid #BBF7D0;color:#15803D}
+.banner-close{margin-left:auto;border:none;background:none;cursor:pointer;color:inherit;opacity:.6;display:flex}
+.banner-close:hover{opacity:1}
 .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;gap:12px;flex-wrap:wrap}
 .page-title{font-size:23px;font-weight:800;letter-spacing:-.4px}
 .page-sub{font-size:12.5px;color:#6B7280;margin-top:2px}

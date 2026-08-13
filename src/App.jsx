@@ -25,11 +25,13 @@ import SaleReceiptPanel from "./components/SaleReceiptPanel";
 import PrintReceiptSlip from "./components/PrintReceiptSlip";
 import {
   SearchIcon, EditIcon, LogoIcon, DashboardIcon, ServiceIcon, PhoneCaseIcon,
-  PartsIcon, FinanceIcon, CustomersIcon, WarrantyIcon, UsersNavIcon, TrashNavIcon, LogoutIcon,
+  PartsIcon, FinanceIcon, CustomersIcon, WarrantyIcon, UsersNavIcon, TrashNavIcon, LogoutIcon, CloseIcon,
 } from "./components/icons";
 import ConfirmDelete from "./components/ConfirmDelete";
 import CallLink from "./components/CallLink";
 import TeamChatPanel from "./components/TeamChatPanel";
+import InviteEmployeeModal from "./components/InviteEmployeeModal";
+import ChangePasswordModal from "./components/ChangePasswordModal";
 import { useInternalChat } from "./lib/useInternalChat";
 
 // TODO: ideiglenesen kikapcsolva munkalap-felvételnél a saját-szerviz feature tesztelése alatt — a felhasználó kérésére.
@@ -60,7 +62,11 @@ function AppShell() {
   const [loadingData, setLoadingData] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
   const [chatOpen, setChatOpen] = useState(false);
+  const [inviteModal, setInviteModal] = useState(false);
+  const [inviteError, setInviteError] = useState("");
+  const [changePasswordModal, setChangePasswordModal] = useState(false);
   const { messages: chatMessages, unreadCount: chatUnread, send: sendChatMessage, markRead: markChatRead } = useInternalChat(profile);
   const [search, setSearch] = useState("");
   const [svcSearch, setSvcSearch] = useState("");
@@ -325,6 +331,64 @@ function AppShell() {
       const r = unwrap(await supabase.from("profiles").update(patch).eq("id", id).select());
       setUsers(users.map((u) => (u.id === id ? profileFromApi(r[0]) : u)));
     });
+  }
+  async function inviteEmployee({ email, fullName, locationId }) {
+    setInviteError("");
+    await withBusy(async () => {
+      const { data, error: fnError } = await supabase.functions.invoke("invite-employee", {
+        body: { email, fullName, locationId },
+      });
+      if (fnError || data?.error) {
+        let msg = data?.error || fnError?.message || "Meghívás sikertelen.";
+        if (fnError?.context) {
+          const body = await fnError.context.json().catch(() => null);
+          if (body?.error) msg = body.error;
+        }
+        setInviteError(msg);
+        return;
+      }
+      setInviteModal(false);
+      setInfo(`Meghívó elküldve — ${email} emailben kap egy linket a jelszó beállításához.`);
+      const usrs = unwrap(await supabase.from("profiles").select("*").order("created_at"));
+      setUsers(usrs.map(profileFromApi));
+    });
+  }
+  async function callManageEmployee(action, userId) {
+    let ok = false;
+    await withBusy(async () => {
+      const { data, error: fnError } = await supabase.functions.invoke("manage-employee", {
+        body: { action, userId },
+      });
+      if (fnError || data?.error) {
+        let msg = data?.error || fnError?.message || "Művelet sikertelen.";
+        if (fnError?.context) {
+          const body = await fnError.context.json().catch(() => null);
+          if (body?.error) msg = body.error;
+        }
+        throw new Error(msg);
+      }
+      ok = true;
+    });
+    return ok;
+  }
+  async function changeOwnPassword(newPassword) {
+    await withBusy(async () => {
+      const { error: pwError } = await supabase.auth.updateUser({ password: newPassword });
+      if (pwError) throw new Error(pwError.message);
+      setChangePasswordModal(false);
+      setInfo("Jelszó módosítva.");
+    });
+  }
+  async function resetEmployeePassword(userId, email) {
+    const ok = await callManageEmployee("reset_password", userId);
+    if (ok) setInfo(`Jelszó-visszaállító email elküldve — ${email}.`);
+  }
+  async function deleteEmployee(userId) {
+    const ok = await callManageEmployee("delete", userId);
+    if (ok) {
+      setUsers(users.filter((u) => u.id !== userId));
+      setInfo("Felhasználó eltávolítva.");
+    }
   }
 
   // CUSTOMERS
@@ -693,6 +757,9 @@ function AppShell() {
               <div className="user-name">{profile?.fullName || user?.email}</div>
               <div className="user-role">{isAdmin ? "Admin" : "Alkalmazott"}</div>
             </div>
+            <button className="logout-btn" title="Jelszó módosítása" onClick={() => setChangePasswordModal(true)}>
+              <EditIcon />
+            </button>
             <button className="logout-btn" title="Kijelentkezés" onClick={signOut}>
               <LogoutIcon />
             </button>
@@ -702,6 +769,7 @@ function AppShell() {
 
       <div className="main">
         {error && <div className="errbar">{error}</div>}
+        {info && <div className="banner ok">{info} <button type="button" className="banner-close" onClick={() => setInfo("")}><CloseIcon width={12} height={12} /></button></div>}
         {noLocationAssigned && (
           <div className="banner warn">Nincs helyszín hozzárendelve a fiókodhoz. Kérj meg egy adminisztrátort, hogy rendeljen hozzá egy helyszínt, addig nem látsz adatokat.</div>
         )}
@@ -1028,11 +1096,12 @@ function AppShell() {
           <>
             <div className="topbar">
               <div><div className="page-title">Felhasználók</div><div className="page-sub">Szerepkör és helyszín beállítása</div></div>
+              <button className="btn" disabled={busy} onClick={() => { setInviteError(""); setInviteModal(true); }}>+ Új kolléga meghívása</button>
             </div>
             <div className="tw">
               {loadingData ? <div className="empty">Betöltés...</div> : users.length === 0 ? <div className="empty">Nincs felhasználó.</div> : (
                 <table>
-                  <thead><tr><th>Név</th><th>Email</th><th>Szerepkör</th><th>Helyszín</th></tr></thead>
+                  <thead><tr><th>Név</th><th>Email</th><th>Szerepkör</th><th>Helyszín</th><th>Műveletek</th></tr></thead>
                   <tbody>
                     {users.map((u) => (
                       <tr key={u.id}>
@@ -1049,6 +1118,14 @@ function AppShell() {
                             <option value="">— Nincs —</option>
                             {allowedLocations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
                           </select>
+                        </td>
+                        <td style={{ display: "flex", gap: 6 }}>
+                          {u.id !== user.id && (
+                            <>
+                              <button type="button" className="btn sec sm" disabled={busy} onClick={() => resetEmployeePassword(u.id, u.email)}>Jelszó visszaállítása</button>
+                              <ConfirmDelete variant="full" disabled={busy} onConfirm={() => deleteEmployee(u.id)} />
+                            </>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -1270,6 +1347,18 @@ function AppShell() {
         {printTicket && <PrintSlip ticket={printTicket} location={locations.find((l) => l.id === printTicket.locationId)} />}
         {printReceipt && <PrintReceiptSlip tx={printReceipt} location={locations.find((l) => l.id === printReceipt.locationId)} />}
       </div>
+      {changePasswordModal && (
+        <ChangePasswordModal busy={busy} onClose={() => setChangePasswordModal(false)} onChange={changeOwnPassword} />
+      )}
+      {inviteModal && (
+        <InviteEmployeeModal
+          locations={allowedLocations}
+          busy={busy}
+          error={inviteError}
+          onClose={() => setInviteModal(false)}
+          onInvite={inviteEmployee}
+        />
+      )}
       <button
         type="button"
         className="chat-fab"

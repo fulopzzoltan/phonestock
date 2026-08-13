@@ -41,15 +41,6 @@ export function AuthProvider({ children }) {
     if (error) throw new Error(error.message);
   }
 
-  async function signUp(email, password, fullName) {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: fullName || undefined } },
-    });
-    if (error) throw new Error(error.message);
-  }
-
   async function signOut() {
     await supabase.auth.signOut();
   }
@@ -60,7 +51,6 @@ export function AuthProvider({ children }) {
     profile,
     loading: session === undefined || (session && profileLoading && !profile),
     signIn,
-    signUp,
     signOut,
   };
 
