@@ -5,6 +5,7 @@ import StatusLookup from "./StatusLookup.jsx";
 import ReceiptLookup from "./ReceiptLookup.jsx";
 import StockShowcase from "./StockShowcase.jsx";
 import PhoneDetail from "./PhoneDetail.jsx";
+import BuybackFlow from "./BuybackFlow.jsx";
 import { AuthProvider } from "./lib/AuthContext";
 import "./index.css";
 
@@ -14,6 +15,7 @@ const receiptMatch = window.location.pathname.match(/^\/receipt\/?([0-9a-f-]{36}
 const shortMatch = window.location.pathname.match(/^\/s\/([a-f0-9]{8})\/?$/i);
 const adminMatch = window.location.pathname.match(/^\/admin\/?$/i);
 const phoneDetailMatch = window.location.pathname.match(/^\/telefon\/([0-9a-f-]{36})\/?$/i);
+const buybackMatch = window.location.pathname.match(/^\/eladom\/?$/i);
 // "/" és "/keszlet" is a nyilvános készletoldalt mutatja — ez az, amit valaki
 // a Netlify domain-re érkezve először lát, nem a bejelentkezés.
 const stockMatch = window.location.pathname.match(/^\/(keszlet\/?)?$/i);
@@ -28,6 +30,7 @@ function Root() {
     </AuthProvider>
   );
   if (phoneDetailMatch) return <PhoneDetail id={phoneDetailMatch[1]} />;
+  if (buybackMatch) return <BuybackFlow />;
   if (stockMatch) return <StockShowcase />;
   return (
     <AuthProvider>
