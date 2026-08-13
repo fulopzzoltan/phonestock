@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap } from "./lib/supabaseClient";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi } from "./lib/mappers";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi } from "./lib/mappers";
 import { money, today, STATUSES, PART_CATEGORIES, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, statusLabel, BUYBACK_CONDITION_QUESTIONS, countWorkdays, LEAVE_STATUS_CLS } from "./lib/utils";
+import { REPAIR_FAMILIES, PRICED_PROBLEMS, PROBLEM_LABELS } from "./lib/repairCatalog";
 import Login from "./Login";
 import StockModal from "./components/StockModal";
 import SellModal from "./components/SellModal";
@@ -30,9 +31,10 @@ import BuybackModelModal from "./components/BuybackModelModal";
 import BuybackRuleModal from "./components/BuybackRuleModal";
 import LeaveRequestModal from "./components/LeaveRequestModal";
 import LeaveBalanceModal from "./components/LeaveBalanceModal";
+import RepairPriceModal from "./components/RepairPriceModal";
 import {
   SearchIcon, EditIcon, LogoIcon, DashboardIcon, ServiceIcon, PhoneCaseIcon,
-  PartsIcon, FinanceIcon, CustomersIcon, WarrantyIcon, UsersNavIcon, TrashNavIcon, LogoutIcon, CloseIcon, BuybackIcon, LeaveIcon,
+  PartsIcon, FinanceIcon, CustomersIcon, WarrantyIcon, UsersNavIcon, TrashNavIcon, LogoutIcon, CloseIcon, BuybackIcon, LeaveIcon, RepairPriceIcon,
 } from "./components/icons";
 import ConfirmDelete from "./components/ConfirmDelete";
 import CallLink from "./components/CallLink";
@@ -113,6 +115,11 @@ function AppShell() {
   const [leaveRequests, setLeaveRequests] = useState([]);
   const [leaveRequestModal, setLeaveRequestModal] = useState(false);
   const [leaveBalanceModal, setLeaveBalanceModal] = useState(null); // null | user obj
+  const [repairPrices, setRepairPrices] = useState([]);
+  const [repairLeads, setRepairLeads] = useState([]);
+  const [repairPriceModal, setRepairPriceModal] = useState(null); // null | { familyKey, problemTag }
+  const [repairLeadFilter, setRepairLeadFilter] = useState("Új");
+  const [repairLeadConvert, setRepairLeadConvert] = useState(null); // lead obj being converted to a ticket
 
   function printTicketSlip(ticket) {
     setPrintTicket(ticket);
@@ -139,7 +146,7 @@ function AppShell() {
   async function loadAll() {
     setLoadingData(true);
     try {
-      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, lTypes, lBalances, lRequests] = await Promise.all([
+      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, lTypes, lBalances, lRequests, rPrices, rLeads] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false }),
         supabase.from("transactions").select("*").is("deleted_at", null).order("date", { ascending: false }),
@@ -156,6 +163,8 @@ function AppShell() {
         supabase.from("leave_types").select("*"),
         supabase.from("leave_balances").select("*"),
         supabase.from("leave_requests").select("*").order("start_date", { ascending: true }),
+        supabase.from("repair_prices").select("*"),
+        supabase.from("repair_leads").select("*").order("created_at", { ascending: false }),
       ]);
       setLocations(unwrap(locs) || []);
       const prodRows = unwrap(prods) || [];
@@ -176,6 +185,8 @@ function AppShell() {
       setLeaveTypes((unwrap(lTypes) || []).map(leaveTypeFromApi));
       setLeaveBalances((unwrap(lBalances) || []).map(leaveBalanceFromApi));
       setLeaveRequests((unwrap(lRequests) || []).map(leaveRequestFromApi));
+      setRepairPrices((unwrap(rPrices) || []).map(repairPriceFromApi));
+      setRepairLeads((unwrap(rLeads) || []).map(repairLeadFromApi));
       const historyRows = unwrap(hist) || [];
       setStockHistory(historyRows.map((r) => ({ date: r.date, value: Number(r.value) || 0 })));
       maybeSnapshotStockValue(prodRows, historyRows);
@@ -449,6 +460,32 @@ function AppShell() {
     });
   }
 
+  // SZERVIZ ÁRBECSLŐ
+  const PART_CATEGORY_BY_PROBLEM = { LCD: "Kijelző", Akku: "Akkumulátor", "Csatlakozó": null, Kamera: null };
+  async function saveRepairPrice(familyKey, problemTag, data) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("repair_prices").upsert({
+        family_key: familyKey, problem_tag: problemTag,
+        price_oem: data.priceOem, price_after: data.priceAfter, warranty: data.warranty, est_minutes: data.estMinutes,
+        part_category: PART_CATEGORY_BY_PROBLEM[problemTag] ?? null,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "family_key,problem_tag" }).select());
+      const updated = repairPriceFromApi(r[0]);
+      setRepairPrices((prev) => [...prev.filter((p) => !(p.familyKey === familyKey && p.problemTag === problemTag)), updated]);
+      setRepairPriceModal(null);
+    });
+  }
+  async function rejectRepairLead(id) {
+    await withBusy(async () => {
+      unwrap(await supabase.from("repair_leads").update({ status: "Elvetve" }).eq("id", id).select());
+      setRepairLeads(repairLeads.map((l) => (l.id === id ? { ...l, status: "Elvetve" } : l)));
+    });
+  }
+  async function convertRepairLead(id, ticketId) {
+    unwrap(await supabase.from("repair_leads").update({ status: "Feldolgozva", converted_ticket_id: ticketId }).eq("id", id).select());
+    setRepairLeads(repairLeads.map((l) => (l.id === id ? { ...l, status: "Feldolgozva", convertedTicketId: ticketId } : l)));
+  }
+
   // USERS (admin only)
   async function updateUserProfile(id, patch) {
     await withBusy(async () => {
@@ -619,6 +656,10 @@ function AppShell() {
       const newTicket = tFromApi(r[0]);
       setTickets([newTicket, ...tickets]);
       setTicketModal(null);
+      if (repairLeadConvert) {
+        await convertRepairLead(repairLeadConvert.id, newTicket.id);
+        setRepairLeadConvert(null);
+      }
 
       if (SMS_ON_TICKET_CREATE && newTicket.customerPhone) {
         const device = [newTicket.brand, newTicket.model].filter(Boolean).join(" ");
@@ -962,6 +1003,9 @@ function AppShell() {
           )}
           {isAdmin && (
             <button className={`navbtn ${tab === "users" ? "active" : ""}`} onClick={() => setTab("users")}><UsersNavIcon className="nav-ic" />Felhasználók</button>
+          )}
+          {isAdmin && (
+            <button className={`navbtn ${tab === "repair-prices" ? "active" : ""}`} onClick={() => setTab("repair-prices")}><RepairPriceIcon className="nav-ic" />Szerviz árbecslő</button>
           )}
           <button className={`navbtn ${tab === "leave" ? "active" : ""}`} onClick={() => setTab("leave")}><LeaveIcon className="nav-ic" />Szabadság</button>
           <button className={`navbtn ${tab === "trash" ? "active" : ""}`} onClick={() => setTab("trash")}><TrashNavIcon className="nav-ic" />Kuka</button>
@@ -1475,6 +1519,83 @@ function AppShell() {
           </>
         )}
 
+        {!noLocationAssigned && isAdmin && tab === "repair-prices" && (
+          <>
+            <div className="topbar">
+              <div><div className="page-title">Szerviz árbecslő</div><div className="page-sub">A publikus /becsles oldal árazása és a beérkezett érdeklődők</div></div>
+            </div>
+
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>Árazási mátrix</div>
+            <div className="tw" style={{ marginBottom: 22 }}>
+              <table>
+                <thead><tr><th>Modellcsalád</th>{PRICED_PROBLEMS.map((tag) => <th key={tag}>{tag}</th>)}</tr></thead>
+                <tbody>
+                  {Object.entries(REPAIR_FAMILIES).map(([familyKey, familyLabel]) => (
+                    <tr key={familyKey}>
+                      <td style={{ fontWeight: 600 }}>{familyLabel}</td>
+                      {PRICED_PROBLEMS.map((tag) => {
+                        const row = repairPrices.find((p) => p.familyKey === familyKey && p.problemTag === tag);
+                        return (
+                          <td key={tag} style={{ cursor: "pointer" }} onClick={() => setRepairPriceModal({ familyKey, problemTag: tag, price: row })}>
+                            {row?.priceOem != null ? (
+                              <span className="mono" style={{ fontWeight: 700 }}>{money(row.priceOem)}</span>
+                            ) : (
+                              <span style={{ color: "#9CA3AF", fontSize: 12 }}>+ Ár megadása</span>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 0 8px 2px" }}>
+              <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151" }}>Beérkezett érdeklődők <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({repairLeads.filter((l) => repairLeadFilter === "Mind" || l.status === repairLeadFilter).length} db)</span></div>
+              <div style={{ display: "flex", gap: 6 }}>
+                {["Új", "Feldolgozva", "Elvetve", "Mind"].map((f) => (
+                  <button key={f} type="button" className={`btn sec sm${repairLeadFilter === f ? " active" : ""}`}
+                    style={repairLeadFilter === f ? { background: "#111827", color: "#fff", borderColor: "#111827" } : undefined}
+                    onClick={() => setRepairLeadFilter(f)}>{f}</button>
+                ))}
+              </div>
+            </div>
+            <div className="tw">
+              {repairLeads.filter((l) => repairLeadFilter === "Mind" || l.status === repairLeadFilter).length === 0 ? (
+                <div className="empty">Nincs ilyen státuszú érdeklődő.</div>
+              ) : (
+                <table>
+                  <thead><tr><th>Ügyfél</th><th>Telefon</th><th>Eszköz</th><th>Probléma</th><th>Becsült ár</th><th>Helyszín</th><th>Beérkezett</th><th></th></tr></thead>
+                  <tbody>
+                    {repairLeads.filter((l) => repairLeadFilter === "Mind" || l.status === repairLeadFilter).map((l) => (
+                      <tr key={l.id}>
+                        <td style={{ fontWeight: 600 }}>{l.customerName}</td>
+                        <td className="mono">{l.customerPhone}</td>
+                        <td>{[l.brand, l.model].filter(Boolean).join(" ")}</td>
+                        <td>{l.problemTag ? (PROBLEM_LABELS[l.problemTag] || l.problemTag) : (l.note || "—")}</td>
+                        <td className="mono">{l.estimatedPrice != null ? money(l.estimatedPrice) : "—"}</td>
+                        <td><span className="badge-loc">{locName(l.preferredLocationId)}</span></td>
+                        <td className="mono" style={{ color: "#6B7280" }}>{(l.createdAt || "").slice(0, 10)}</td>
+                        <td style={{ display: "flex", gap: 6 }}>
+                          {l.status === "Új" && (
+                            <>
+                              <button className="btn sec sm" disabled={busy} onClick={() => { setRepairLeadConvert(l); setTicketModal("add"); }}>Munkalap létrehozása</button>
+                              <button className="btn sec sm" disabled={busy} onClick={() => rejectRepairLead(l.id)}>Elvetés</button>
+                            </>
+                          )}
+                          {l.status === "Feldolgozva" && <span className="badge-income">Feldolgozva</span>}
+                          {l.status === "Elvetve" && <span style={{ color: "#9CA3AF", fontSize: 12 }}>Elvetve</span>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </>
+        )}
+
         {!noLocationAssigned && isAdmin && tab === "users" && (
           <>
             <div className="topbar">
@@ -1659,12 +1780,21 @@ function AppShell() {
       {ticketModal && (
         <TicketFormModal
           ticket={editingTicket}
+          prefill={!editingTicket && repairLeadConvert ? {
+            customerName: repairLeadConvert.customerName,
+            customerPhone: repairLeadConvert.customerPhone,
+            brand: repairLeadConvert.brand,
+            model: repairLeadConvert.model,
+            price: repairLeadConvert.estimatedPrice ?? "",
+            tags: repairLeadConvert.problemTag ? [repairLeadConvert.problemTag] : [],
+            extra: repairLeadConvert.note || "",
+          } : undefined}
           locations={allowedLocations}
           users={users}
           customers={customersTable}
           stock={stock}
           defaultLocId={defaultLocId}
-          onClose={() => setTicketModal(null)}
+          onClose={() => { setTicketModal(null); setRepairLeadConvert(null); }}
           busy={busy}
           onSave={(data, locId) => (editingTicket ? saveTicketEdit(editingTicket.id, data, locId) : addTicket(data, locId))}
         />
@@ -1781,6 +1911,16 @@ function AppShell() {
           busy={busy}
           onClose={() => setLeaveBalanceModal(null)}
           onSave={(days) => saveLeaveBalance(leaveBalanceModal.id, leaveYear, days)}
+        />
+      )}
+      {repairPriceModal && (
+        <RepairPriceModal
+          familyLabel={REPAIR_FAMILIES[repairPriceModal.familyKey]}
+          problemLabel={repairPriceModal.problemTag}
+          price={repairPriceModal.price}
+          busy={busy}
+          onClose={() => setRepairPriceModal(null)}
+          onSave={(data) => saveRepairPrice(repairPriceModal.familyKey, repairPriceModal.problemTag, data)}
         />
       )}
       <div id="print-slip-root">

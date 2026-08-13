@@ -219,6 +219,20 @@ export const leaveRequestFromApi = (r) => ({
   status: r.status, requestedAt: r.requested_at, decidedBy: r.decided_by, decidedAt: r.decided_at,
 });
 
+export const repairPriceFromApi = (r) => ({
+  familyKey: r.family_key, problemTag: r.problem_tag,
+  priceOem: r.price_oem != null ? Number(r.price_oem) : null,
+  priceAfter: r.price_after != null ? Number(r.price_after) : null,
+  warranty: r.warranty, estMinutes: r.est_minutes, partCategory: r.part_category,
+});
+export const repairLeadFromApi = (r) => ({
+  id: r.id, customerName: r.customer_name, customerPhone: r.customer_phone,
+  brand: r.brand, model: r.model, familyKey: r.family_key, problemTag: r.problem_tag,
+  note: r.note || "", estimatedPrice: r.estimated_price != null ? Number(r.estimated_price) : null,
+  preferredLocationId: r.preferred_location_id,
+  status: r.status, convertedTicketId: r.converted_ticket_id, createdAt: r.created_at,
+});
+
 export const monthlySummaryFromApi = (r) => ({
   id: r.id,
   locationId: r.location_id,

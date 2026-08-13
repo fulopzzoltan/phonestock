@@ -11,20 +11,20 @@ function parseIssue(issue) {
   return { tags, extra };
 }
 
-export default function TicketFormModal({ ticket, locations, users = [], customers = [], stock = [], defaultLocId, onClose, onSave, busy }) {
+export default function TicketFormModal({ ticket, prefill, locations, users = [], customers = [], stock = [], defaultLocId, onClose, onSave, busy }) {
   const isEdit = !!ticket;
   const parsed = parseIssue(ticket?.issue);
   const [productQuery, setProductQuery] = useState("");
   const [f, setF] = useState({
     ticketKind: ticket?.ticketKind || "Ügyfél",
     productId: ticket?.productId || null,
-    customerName: ticket?.customerName || "",
-    customerPhone: ticket?.customerPhone || "",
+    customerName: ticket?.customerName || prefill?.customerName || "",
+    customerPhone: ticket?.customerPhone || prefill?.customerPhone || "",
     customerId: ticket?.customerId || null,
-    brand: ticket?.brand || "",
-    model: ticket?.model || "",
+    brand: ticket?.brand || prefill?.brand || "",
+    model: ticket?.model || prefill?.model || "",
     imei: ticket?.imei || "",
-    price: ticket?.price ?? "",
+    price: ticket?.price ?? prefill?.price ?? "",
     matCost: ticket?.matCost ?? "",
     warranty: ticket?.warranty || "",
     handoverDate: ticket?.handoverDate || "",
@@ -35,9 +35,9 @@ export default function TicketFormModal({ ticket, locations, users = [], custome
     assignedTo: ticket?.assignedTo || "",
     consentGiven: !!ticket?.consentAt,
     marketingConsent: false,
-    extra: parsed.extra,
+    extra: parsed.extra || prefill?.extra || "",
   });
-  const [tags, setTags] = useState(parsed.tags);
+  const [tags, setTags] = useState(parsed.tags.length ? parsed.tags : (prefill?.tags || []));
   const [locId, setLocId] = useState(ticket?.locationId || defaultLocId || locations[0]?.id || "");
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const toggleTag = (tag) => setTags((t) => (t.includes(tag) ? t.filter((x) => x !== tag) : [...t, tag]));
