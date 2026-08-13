@@ -13,9 +13,12 @@ export default function Login() {
 
   async function submit(e) {
     e.preventDefault();
-    setBusy(true);
     setError("");
     setInfo("");
+    if (!email.trim()) { setError("Add meg az email címed."); return; }
+    if (!password) { setError("Add meg a jelszavad."); return; }
+    if (mode === "signup" && password.length < 6) { setError("A jelszónak legalább 6 karakter hosszúnak kell lennie."); return; }
+    setBusy(true);
     try {
       if (mode === "login") {
         await signIn(email, password);
@@ -48,8 +51,12 @@ export default function Login() {
           {mode === "signup" && (
             <div className="field"><label>Név</label><input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Kovács János" /></div>
           )}
-          <div className="field"><label>Email</label><input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="te@pelda.hu" /></div>
-          <div className="field"><label>Jelszó</label><input type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" /></div>
+          <div className="field"><label>Email</label><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="te@pelda.hu" /></div>
+          <div className="field">
+            <label>Jelszó</label>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+            {mode === "signup" && <div className="field-hint">Legalább 6 karakter</div>}
+          </div>
           <button className="btn" style={{ width: "100%", justifyContent: "center", marginTop: 6 }} disabled={busy} type="submit">
             {busy ? "Kérlek várj..." : mode === "login" ? "Bejelentkezés" : "Fiók létrehozása"}
           </button>
