@@ -29,6 +29,8 @@ import {
 } from "./components/icons";
 import ConfirmDelete from "./components/ConfirmDelete";
 import CallLink from "./components/CallLink";
+import TeamChatPanel from "./components/TeamChatPanel";
+import { useInternalChat } from "./lib/useInternalChat";
 
 // TODO: ideiglenesen kikapcsolva munkalap-felvételnél a saját-szerviz feature tesztelése alatt — a felhasználó kérésére.
 const SMS_ON_TICKET_CREATE = false;
@@ -58,6 +60,8 @@ function AppShell() {
   const [loadingData, setLoadingData] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [chatOpen, setChatOpen] = useState(false);
+  const { messages: chatMessages, unreadCount: chatUnread, send: sendChatMessage, markRead: markChatRead } = useInternalChat(profile);
   const [search, setSearch] = useState("");
   const [svcSearch, setSvcSearch] = useState("");
   const [svcKindFilter, setSvcKindFilter] = useState("all"); // all | customer | own
@@ -1266,6 +1270,27 @@ function AppShell() {
         {printTicket && <PrintSlip ticket={printTicket} location={locations.find((l) => l.id === printTicket.locationId)} />}
         {printReceipt && <PrintReceiptSlip tx={printReceipt} location={locations.find((l) => l.id === printReceipt.locationId)} />}
       </div>
+      <button
+        type="button"
+        className="chat-fab"
+        onClick={() => { setChatOpen((o) => !o); if (!chatOpen) markChatRead(); }}
+      >
+        💬
+        {chatUnread > 0 && <span className="chat-fab-badge">{chatUnread > 9 ? "9+" : chatUnread}</span>}
+      </button>
+      {chatOpen && (
+        <TeamChatPanel
+          messages={chatMessages}
+          users={users}
+          tickets={tickets}
+          stock={stock}
+          currentUserId={profile?.id}
+          onSend={sendChatMessage}
+          onOpenTicket={(id) => { setChatOpen(false); setDetailId(id); }}
+          onOpenProduct={(id) => { setChatOpen(false); setProductDetailId(id); }}
+          onClose={() => setChatOpen(false)}
+        />
+      )}
     </div>
   );
 }

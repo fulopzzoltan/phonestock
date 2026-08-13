@@ -188,6 +188,15 @@ export const monthlySummaryFromApi = (r) => ({
   phonesNew: r.phones_new,
 });
 
+export const internalMessageFromApi = (r) => ({
+  id: r.id,
+  senderId: r.sender_id,
+  body: r.body,
+  linkedTicketId: r.linked_ticket_id,
+  linkedProductId: r.linked_product_id,
+  createdAt: r.created_at,
+});
+
 export const spFromApi = (r) => ({
   id: r.id,
   ticketId: r.service_ticket_id,
