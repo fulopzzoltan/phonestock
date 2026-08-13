@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap } from "./lib/supabaseClient";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi } from "./lib/mappers";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi } from "./lib/mappers";
 import { money, today, STATUSES, PART_CATEGORIES, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, statusLabel } from "./lib/utils";
 import Login from "./Login";
 import StockModal from "./components/StockModal";
@@ -23,6 +23,9 @@ import CustomerModal from "./components/CustomerModal";
 import PrintSlip from "./components/PrintSlip";
 import SaleReceiptPanel from "./components/SaleReceiptPanel";
 import PrintReceiptSlip from "./components/PrintReceiptSlip";
+import WarrantyDetailPanel from "./components/WarrantyDetailPanel";
+import WarrantyModal from "./components/WarrantyModal";
+import PrintWarrantySlip from "./components/PrintWarrantySlip";
 import {
   SearchIcon, EditIcon, LogoIcon, DashboardIcon, ServiceIcon, PhoneCaseIcon,
   PartsIcon, FinanceIcon, CustomersIcon, WarrantyIcon, UsersNavIcon, TrashNavIcon, LogoutIcon, CloseIcon,
@@ -89,6 +92,11 @@ function AppShell() {
   const [printTicket, setPrintTicket] = useState(null);
   const [receiptTxId, setReceiptTxId] = useState(null);
   const [printReceipt, setPrintReceipt] = useState(null);
+  const [warranties, setWarranties] = useState([]);
+  const [warrantyModal, setWarrantyModal] = useState(null); // null | "add" | manual warranty object (edit)
+  const [warrantyDetailKey, setWarrantyDetailKey] = useState(null);
+  const [warrantyFilter, setWarrantyFilter] = useState("all"); // all | sale | service
+  const [printWarranty, setPrintWarranty] = useState(null);
   const [stockHistory, setStockHistory] = useState([]);
   const [trash, setTrash] = useState(null); // null = not loaded | { products, parts, transactions, tickets }
   const [trashLoading, setTrashLoading] = useState(false);
@@ -105,11 +113,20 @@ function AppShell() {
       window.print();
     });
   }
+  function printWarrantySlip(w) {
+    if (w.source === "linked") {
+      if (w.kind === "sale") { printReceiptSlip(transactions.find((t) => t.id === w.refId)); return; }
+      printTicketSlip(tickets.find((t) => t.id === w.refId));
+      return;
+    }
+    setPrintWarranty(w);
+    requestAnimationFrame(() => window.print());
+  }
 
   async function loadAll() {
     setLoadingData(true);
     try {
-      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums] = await Promise.all([
+      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false }),
         supabase.from("transactions").select("*").is("deleted_at", null).order("date", { ascending: false }),
@@ -120,6 +137,7 @@ function AppShell() {
         supabase.from("stock_value_history").select("*").order("date", { ascending: true }),
         supabase.from("customers").select("*").is("deleted_at", null),
         supabase.from("monthly_summaries").select("*").order("year").order("month"),
+        supabase.from("warranties").select("*").is("deleted_at", null),
       ]);
       setLocations(unwrap(locs) || []);
       const prodRows = unwrap(prods) || [];
@@ -134,6 +152,7 @@ function AppShell() {
       setUsers((unwrap(usrs) || []).map(profileFromApi));
       setCustomersTable((unwrap(custs) || []).map(customerFromApi));
       setMonthlySummaries((unwrap(msums) || []).map(monthlySummaryFromApi));
+      setWarranties((unwrap(warrs) || []).map(warrantyFromApi));
       const historyRows = unwrap(hist) || [];
       setStockHistory(historyRows.map((r) => ({ date: r.date, value: Number(r.value) || 0 })));
       maybeSnapshotStockValue(prodRows, historyRows);
@@ -389,6 +408,50 @@ function AppShell() {
       setUsers(users.filter((u) => u.id !== userId));
       setInfo("Felhasználó eltávolítva.");
     }
+  }
+
+  // WARRANTIES
+  async function addWarranty(data, locId) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("warranties").insert(warrantyToApi(data, locId)).select());
+      setWarranties([...warranties, warrantyFromApi(r[0])]);
+      setWarrantyModal(null);
+    });
+  }
+  async function editWarranty(id, data, locId) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("warranties").update(warrantyToApi(data, locId)).eq("id", id).select());
+      setWarranties(warranties.map((w) => (w.id === id ? warrantyFromApi(r[0]) : w)));
+      setWarrantyModal(null);
+    });
+  }
+  async function deleteWarranty(id) {
+    await withBusy(async () => {
+      unwrap(await supabase.from("warranties").update({ deleted_at: new Date().toISOString() }).eq("id", id));
+      setWarranties(warranties.filter((w) => w.id !== id));
+    });
+  }
+  async function editLinkedWarranty(kind, refId, warranty, fromDate) {
+    await withBusy(async () => {
+      if (kind === "sale") {
+        unwrap(await supabase.from("transactions").update({ warranty, date: fromDate }).eq("id", refId));
+        setTransactions(transactions.map((t) => (t.id === refId ? { ...t, warranty, date: fromDate } : t)));
+      } else {
+        unwrap(await supabase.from("service_tickets").update({ warranty, date_out: fromDate }).eq("id", refId));
+        setTickets(tickets.map((t) => (t.id === refId ? { ...t, warranty, dateOut: fromDate } : t)));
+      }
+    });
+  }
+  async function clearLinkedWarranty(kind, refId) {
+    await withBusy(async () => {
+      if (kind === "sale") {
+        unwrap(await supabase.from("transactions").update({ warranty: null }).eq("id", refId));
+        setTransactions(transactions.map((t) => (t.id === refId ? { ...t, warranty: null } : t)));
+      } else {
+        unwrap(await supabase.from("service_tickets").update({ warranty: null }).eq("id", refId));
+        setTickets(tickets.map((t) => (t.id === refId ? { ...t, warranty: null } : t)));
+      }
+    });
   }
 
   // CUSTOMERS
@@ -691,17 +754,28 @@ function AppShell() {
     const saleItems = transactions
       .filter((t) => t.category === "Készlet" && t.warranty && isWarrantyActive(t.date, t.warranty))
       .map((t) => ({
-        key: `sale-${t.id}`, kind: "sale", customerName: t.customerName, customerPhone: t.customerPhone,
+        key: `sale-${t.id}`, kind: "sale", source: "linked", refId: t.id,
+        customerName: t.customerName, customerPhone: t.customerPhone,
         label: t.description, warranty: t.warranty, from: t.date, expiry: warrantyExpiry(t.date, t.warranty), locationId: t.locationId,
       }));
     const serviceItems = tickets
       .filter((t) => t.subStatus === "Átadva" && t.warranty && isWarrantyActive(t.dateOut, t.warranty))
       .map((t) => ({
-        key: `svc-${t.id}`, kind: "service", customerName: t.customerName, customerPhone: t.customerPhone,
+        key: `svc-${t.id}`, kind: "service", source: "linked", refId: t.id,
+        customerName: t.customerName, customerPhone: t.customerPhone,
         label: [t.brand, t.model].filter(Boolean).join(" "), warranty: t.warranty, from: t.dateOut, expiry: warrantyExpiry(t.dateOut, t.warranty), locationId: t.locationId,
       }));
-    return [...saleItems, ...serviceItems].sort((a, b) => (a.expiry || "").localeCompare(b.expiry || ""));
-  }, [transactions, tickets]);
+    const manualItems = warranties
+      .filter((w) => isWarrantyActive(w.fromDate, w.warranty))
+      .map((w) => ({
+        key: `manual-${w.id}`, kind: w.kind, source: "manual", refId: w.id,
+        customerName: w.customerName, customerPhone: w.customerPhone,
+        label: w.label, warranty: w.warranty, from: w.fromDate, expiry: warrantyExpiry(w.fromDate, w.warranty), locationId: w.locationId,
+        note: w.note,
+      }));
+    return [...saleItems, ...serviceItems, ...manualItems].sort((a, b) => (a.expiry || "").localeCompare(b.expiry || ""));
+  }, [transactions, tickets, warranties]);
+  const filteredWarranties = warrantyFilter === "all" ? activeWarranties : activeWarranties.filter((w) => w.kind === warrantyFilter);
 
   const detailCustomer = customerKey ? customers.find((c) => c.key === customerKey) : null;
   const receiptTx = receiptTxId ? transactions.find((t) => t.id === receiptTxId) : null;
@@ -732,7 +806,7 @@ function AppShell() {
           <button className={`navbtn ${tab === "parts" ? "active" : ""}`} onClick={() => setTab("parts")}><PartsIcon className="nav-ic" />Alkatrészek</button>
           <button className={`navbtn ${tab === "finance" ? "active" : ""}`} onClick={() => setTab("finance")}><FinanceIcon className="nav-ic" />Bevételek &amp; Kiadások</button>
           <button className={`navbtn ${tab === "customers" ? "active" : ""}`} onClick={() => setTab("customers")}><CustomersIcon className="nav-ic" />Kliensek</button>
-          <button className={`navbtn ${tab === "warranty" ? "active" : ""}`} onClick={() => setTab("warranty")}><WarrantyIcon className="nav-ic" />Garanciális</button>
+          <button className={`navbtn ${tab === "warranty" ? "active" : ""}`} onClick={() => setTab("warranty")}><WarrantyIcon className="nav-ic" />Garancia</button>
 
           <div className="nav-lbl">Admin</div>
           {isAdmin && (
@@ -1050,26 +1124,36 @@ function AppShell() {
         {!noLocationAssigned && tab === "warranty" && (
           <>
             <div className="topbar">
-              <div><div className="page-title">Garanciális</div><div className="page-sub">Aktív garanciák — telefoneladás és szerviz, lejárat szerint</div></div>
+              <div><div className="page-title">Garancia</div><div className="page-sub">Aktív garanciák — telefon és szerviz, kézzel is felvehető</div></div>
+              <button className="btn" disabled={busy} onClick={() => setWarrantyModal("add")}>+ Garancia felvétele</button>
             </div>
             <div className="statrow c1">
               <div className="statcard accent"><div className="lbl">Aktív garancia</div><div className="val">{activeWarranties.length} db</div></div>
             </div>
+            <div style={{ display: "flex", gap: 8, margin: "0 0 14px 2px" }}>
+              {[["all", "Mind"], ["sale", "Telefon garancia"], ["service", "Szerviz garancia"]].map(([key, label]) => (
+                <button key={key} type="button"
+                  className={`btn sec sm${warrantyFilter === key ? " active" : ""}`}
+                  style={warrantyFilter === key ? { background: "#111827", color: "#fff", borderColor: "#111827" } : undefined}
+                  onClick={() => setWarrantyFilter(key)}>{label}</button>
+              ))}
+            </div>
             <div className="tw">
-              {loadingData ? <div className="empty">Betöltés...</div> : activeWarranties.length === 0 ? <div className="empty">Nincs aktív garancia.</div> : (
+              {loadingData ? <div className="empty">Betöltés...</div> : filteredWarranties.length === 0 ? <div className="empty">Nincs aktív garancia.</div> : (
                 <table>
                   <thead><tr><th>Típus</th><th>Ügyfél</th><th>Termék / Eszköz</th><th>Garancia</th><th>Lejárat</th><th>Helyszín</th><th>Művelet</th></tr></thead>
                   <tbody>
-                    {activeWarranties.map((w) => {
+                    {filteredWarranties.map((w) => {
                       const daysLeft = w.expiry ? Math.ceil((new Date(w.expiry) - new Date(today())) / 86400000) : null;
-                      function sendReminder() {
+                      function sendReminder(e) {
+                        e.stopPropagation();
                         const message = stripAccents(`Szia! A(z) ${w.label} garanciája hamarosan lejár (${w.expiry}). Ha bármi gond van a készülékkel, keress minket!`);
                         supabase.functions.invoke("send-sms", { body: { phone: w.customerPhone, message } })
                           .then(() => alert("SMS elküldve."))
                           .catch((err) => { console.error(err); setError("Az SMS nem ment ki."); });
                       }
                       return (
-                        <tr key={w.key}>
+                        <tr key={w.key} style={{ cursor: "pointer" }} onClick={() => setWarrantyDetailKey(w.key)}>
                           <td>{w.kind === "sale" ? <span className="badge-income">Eladás</span> : <span className="badge-loc">Szerviz</span>}</td>
                           <td style={{ fontWeight: 600 }}>{w.customerName || "—"}</td>
                           <td>{w.label || "—"}</td>
@@ -1078,7 +1162,7 @@ function AppShell() {
                             {w.expiry} {daysLeft != null && <span style={{ fontWeight: 500, color: "#9CA3AF" }}>({daysLeft} nap)</span>}
                           </td>
                           <td><span className="badge-loc">{locName(w.locationId)}</span></td>
-                          <td style={{ display: "flex", gap: 6 }}>
+                          <td style={{ display: "flex", gap: 6 }} onClick={(e) => e.stopPropagation()}>
                             <CallLink phone={w.customerPhone} />
                             <button type="button" className="btn sec sm" disabled={!w.customerPhone} onClick={sendReminder}>Emlékeztető SMS</button>
                           </td>
@@ -1343,9 +1427,33 @@ function AppShell() {
       {receiptTx && (
         <SaleReceiptPanel tx={receiptTx} locName={locName} onClose={() => setReceiptTxId(null)} onPrint={printReceiptSlip} />
       )}
+      {warrantyDetailKey && (() => {
+        const w = activeWarranties.find((x) => x.key === warrantyDetailKey);
+        if (!w) return null;
+        return (
+          <WarrantyDetailPanel
+            w={w} locName={locName} busy={busy}
+            onClose={() => setWarrantyDetailKey(null)}
+            onPrint={(w) => printWarrantySlip(w)}
+            onEditLinked={editLinkedWarranty}
+            onEditManual={(w) => { setWarrantyModal(warranties.find((x) => x.id === w.refId)); setWarrantyDetailKey(null); }}
+            onDeleteLinked={(kind, refId) => { clearLinkedWarranty(kind, refId); setWarrantyDetailKey(null); }}
+            onDeleteManual={(id) => { deleteWarranty(id); setWarrantyDetailKey(null); }}
+          />
+        );
+      })()}
+      {warrantyModal && (
+        <WarrantyModal
+          initial={warrantyModal === "add" ? null : warrantyModal}
+          locations={allowedLocations} busy={busy}
+          onClose={() => setWarrantyModal(null)}
+          onSubmit={(data, locId) => (warrantyModal === "add" ? addWarranty(data, locId) : editWarranty(warrantyModal.id, data, locId))}
+        />
+      )}
       <div id="print-slip-root">
         {printTicket && <PrintSlip ticket={printTicket} location={locations.find((l) => l.id === printTicket.locationId)} />}
         {printReceipt && <PrintReceiptSlip tx={printReceipt} location={locations.find((l) => l.id === printReceipt.locationId)} />}
+        {printWarranty && <PrintWarrantySlip w={printWarranty} location={locations.find((l) => l.id === printWarranty.locationId)} />}
       </div>
       {changePasswordModal && (
         <ChangePasswordModal busy={busy} onClose={() => setChangePasswordModal(false)} onChange={changeOwnPassword} />
