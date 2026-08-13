@@ -1,55 +1,10 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "./lib/supabaseClient";
 import { calculateBuybackPrice } from "./lib/buybackPricing";
+import { BUYBACK_CONDITION_QUESTIONS as CONDITION_QUESTIONS } from "./lib/utils";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 import BuybackPriceBar from "./components/BuybackPriceBar";
-
-const CONDITION_QUESTIONS = [
-  {
-    key: "powers_on",
-    question: "Bekapcsol és rendesen működik a készülék?",
-    options: [
-      { key: "yes", label: "Igen, hibátlanul működik" },
-      { key: "no", label: "Nem kapcsol be, vagy hibásan működik" },
-    ],
-  },
-  {
-    key: "screen_condition",
-    question: "Milyen állapotban van a kijelző?",
-    options: [
-      { key: "good", label: "Ép, karcmentes" },
-      { key: "scratched", label: "Enyhén karcos" },
-      { key: "cracked", label: "Repedt vagy törött" },
-    ],
-  },
-  {
-    key: "battery_health",
-    question: "Ha tudod, mennyi az akkuegészség?",
-    options: [
-      { key: "above_90", label: "90% felett" },
-      { key: "between_80_90", label: "80–90%" },
-      { key: "below_80", label: "80% alatt" },
-      { key: "unknown", label: "Nem tudom" },
-    ],
-  },
-  {
-    key: "network_lock",
-    question: "Hálózatfüggetlen a készülék?",
-    options: [
-      { key: "yes", label: "Igen, független" },
-      { key: "no", label: "Nem, egy szolgáltatóhoz van kötve" },
-    ],
-  },
-  {
-    key: "accessories",
-    question: "Megvannak az eredeti tartozékok (doboz, töltő)?",
-    options: [
-      { key: "yes", label: "Igen, megvannak" },
-      { key: "no", label: "Nincsenek meg" },
-    ],
-  },
-];
 
 const COLORS = ["Fekete", "Fehér", "Kék", "Zöld", "Ezüst", "Egyéb"];
 

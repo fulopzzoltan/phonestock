@@ -101,6 +101,12 @@ export const ClockIcon = (props) => (
   </svg>
 );
 
+export const BuybackIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <circle cx="8" cy="12" r="5" /><path d="M13 7.5a5 5 0 010 9M16 9.3l2-1.8-2-1.8M18 15.5l2 1.8-2 1.8" opacity=".55" />
+  </svg>
+);
+
 export const LogoutIcon = (props) => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
     <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />

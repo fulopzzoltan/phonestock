@@ -62,6 +62,54 @@ export const SOURCES = ["Konszignáció", "Számla"];
 export const PAYMENTS = ["Készpénz", "Kártya", "Átutalás"];
 export const CATEGORIES = ["Fix", "Készlet", "Marketing", "Eszköz", "Szerviz", "Egyéb"];
 
+// Felvásárlás állapot-kérdései — a publikus /eladom flow és az admin levonási-szabály
+// szerkesztő is ezt használja, hogy a question_key/answer_key kulcsok ne csúszhassanak szét.
+export const BUYBACK_CONDITION_QUESTIONS = [
+  {
+    key: "powers_on",
+    question: "Bekapcsol és rendesen működik a készülék?",
+    options: [
+      { key: "yes", label: "Igen, hibátlanul működik" },
+      { key: "no", label: "Nem kapcsol be, vagy hibásan működik" },
+    ],
+  },
+  {
+    key: "screen_condition",
+    question: "Milyen állapotban van a kijelző?",
+    options: [
+      { key: "good", label: "Ép, karcmentes" },
+      { key: "scratched", label: "Enyhén karcos" },
+      { key: "cracked", label: "Repedt vagy törött" },
+    ],
+  },
+  {
+    key: "battery_health",
+    question: "Ha tudod, mennyi az akkuegészség?",
+    options: [
+      { key: "above_90", label: "90% felett" },
+      { key: "between_80_90", label: "80–90%" },
+      { key: "below_80", label: "80% alatt" },
+      { key: "unknown", label: "Nem tudom" },
+    ],
+  },
+  {
+    key: "network_lock",
+    question: "Hálózatfüggetlen a készülék?",
+    options: [
+      { key: "yes", label: "Igen, független" },
+      { key: "no", label: "Nem, egy szolgáltatóhoz van kötve" },
+    ],
+  },
+  {
+    key: "accessories",
+    question: "Megvannak az eredeti tartozékok (doboz, töltő)?",
+    options: [
+      { key: "yes", label: "Igen, megvannak" },
+      { key: "no", label: "Nincsenek meg" },
+    ],
+  },
+];
+
 // Gyakran eladott kiegészítők — egy kattintással rögzíthető bevétel (eladási ár + beszerzési ár)
 export const QUICK_SALES = [
   { label: "Devia fólia", amount: 49, cost: 10 },

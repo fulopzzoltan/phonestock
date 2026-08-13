@@ -175,6 +175,42 @@ export const partToApi = (p) => ({
   supplier_sku: p.supplierSku || null,
 });
 
+export const buybackModelFromApi = (r) => ({
+  id: r.id,
+  brand: r.brand,
+  model: r.model,
+  storage: r.storage,
+  basePrice: Number(r.base_price) || 0,
+  active: r.active,
+});
+
+export const buybackModelToApi = (m) => ({
+  brand: m.brand,
+  model: m.model,
+  storage: m.storage || null,
+  base_price: Number(m.basePrice) || 0,
+  active: m.active !== false,
+});
+
+export const buybackRuleFromApi = (r) => ({
+  id: r.id,
+  questionKey: r.question_key,
+  answerKey: r.answer_key,
+  label: r.label,
+  deductionType: r.deduction_type,
+  deductionValue: Number(r.deduction_value) || 0,
+  active: r.active,
+});
+
+export const buybackRuleToApi = (r) => ({
+  question_key: r.questionKey,
+  answer_key: r.answerKey,
+  label: r.label,
+  deduction_type: r.deductionType,
+  deduction_value: Number(r.deductionValue) || 0,
+  active: r.active !== false,
+});
+
 export const monthlySummaryFromApi = (r) => ({
   id: r.id,
   locationId: r.location_id,

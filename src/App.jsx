@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap } from "./lib/supabaseClient";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi } from "./lib/mappers";
-import { money, today, STATUSES, PART_CATEGORIES, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, statusLabel } from "./lib/utils";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi } from "./lib/mappers";
+import { money, today, STATUSES, PART_CATEGORIES, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, statusLabel, BUYBACK_CONDITION_QUESTIONS } from "./lib/utils";
 import Login from "./Login";
 import StockModal from "./components/StockModal";
 import SellModal from "./components/SellModal";
@@ -26,9 +26,11 @@ import PrintReceiptSlip from "./components/PrintReceiptSlip";
 import WarrantyDetailPanel from "./components/WarrantyDetailPanel";
 import WarrantyModal from "./components/WarrantyModal";
 import PrintWarrantySlip from "./components/PrintWarrantySlip";
+import BuybackModelModal from "./components/BuybackModelModal";
+import BuybackRuleModal from "./components/BuybackRuleModal";
 import {
   SearchIcon, EditIcon, LogoIcon, DashboardIcon, ServiceIcon, PhoneCaseIcon,
-  PartsIcon, FinanceIcon, CustomersIcon, WarrantyIcon, UsersNavIcon, TrashNavIcon, LogoutIcon, CloseIcon,
+  PartsIcon, FinanceIcon, CustomersIcon, WarrantyIcon, UsersNavIcon, TrashNavIcon, LogoutIcon, CloseIcon, BuybackIcon,
 } from "./components/icons";
 import ConfirmDelete from "./components/ConfirmDelete";
 import CallLink from "./components/CallLink";
@@ -100,6 +102,10 @@ function AppShell() {
   const [stockHistory, setStockHistory] = useState([]);
   const [trash, setTrash] = useState(null); // null = not loaded | { products, parts, transactions, tickets }
   const [trashLoading, setTrashLoading] = useState(false);
+  const [buybackModels, setBuybackModels] = useState([]);
+  const [buybackRules, setBuybackRules] = useState([]);
+  const [buybackModelModal, setBuybackModelModal] = useState(null); // null | "add" | model obj (edit)
+  const [buybackRuleModal, setBuybackRuleModal] = useState(null); // null | "add" | rule obj (edit)
 
   function printTicketSlip(ticket) {
     setPrintTicket(ticket);
@@ -126,7 +132,7 @@ function AppShell() {
   async function loadAll() {
     setLoadingData(true);
     try {
-      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs] = await Promise.all([
+      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false }),
         supabase.from("transactions").select("*").is("deleted_at", null).order("date", { ascending: false }),
@@ -138,6 +144,8 @@ function AppShell() {
         supabase.from("customers").select("*").is("deleted_at", null),
         supabase.from("monthly_summaries").select("*").order("year").order("month"),
         supabase.from("warranties").select("*").is("deleted_at", null),
+        supabase.from("buyback_models").select("*").is("deleted_at", null).order("brand", { ascending: true }),
+        supabase.from("buyback_deduction_rules").select("*").order("question_key", { ascending: true }),
       ]);
       setLocations(unwrap(locs) || []);
       const prodRows = unwrap(prods) || [];
@@ -153,6 +161,8 @@ function AppShell() {
       setCustomersTable((unwrap(custs) || []).map(customerFromApi));
       setMonthlySummaries((unwrap(msums) || []).map(monthlySummaryFromApi));
       setWarranties((unwrap(warrs) || []).map(warrantyFromApi));
+      setBuybackModels((unwrap(bbModels) || []).map(buybackModelFromApi));
+      setBuybackRules((unwrap(bbRules) || []).map(buybackRuleFromApi));
       const historyRows = unwrap(hist) || [];
       setStockHistory(historyRows.map((r) => ({ date: r.date, value: Number(r.value) || 0 })));
       maybeSnapshotStockValue(prodRows, historyRows);
@@ -341,6 +351,48 @@ function AppShell() {
     await withBusy(async () => {
       unwrap(await supabase.from("parts").update({ deleted_at: new Date().toISOString() }).eq("id", id));
       setParts(parts.filter((p) => p.id !== id));
+    });
+  }
+
+  // BUYBACK — árazás karbantartása (admin only)
+  async function addBuybackModel(data) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("buyback_models").insert(buybackModelToApi(data)).select());
+      setBuybackModels([...buybackModels, buybackModelFromApi(r[0])]);
+      setBuybackModelModal(null);
+    });
+  }
+  async function editBuybackModel(id, data) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("buyback_models").update(buybackModelToApi(data)).eq("id", id).select());
+      setBuybackModels(buybackModels.map((m) => (m.id === id ? buybackModelFromApi(r[0]) : m)));
+      setBuybackModelModal(null);
+    });
+  }
+  async function deleteBuybackModel(id) {
+    await withBusy(async () => {
+      unwrap(await supabase.from("buyback_models").update({ deleted_at: new Date().toISOString() }).eq("id", id));
+      setBuybackModels(buybackModels.filter((m) => m.id !== id));
+    });
+  }
+  async function addBuybackRule(data) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("buyback_deduction_rules").insert(buybackRuleToApi(data)).select());
+      setBuybackRules([...buybackRules, buybackRuleFromApi(r[0])]);
+      setBuybackRuleModal(null);
+    });
+  }
+  async function editBuybackRule(id, data) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("buyback_deduction_rules").update(buybackRuleToApi(data)).eq("id", id).select());
+      setBuybackRules(buybackRules.map((r2) => (r2.id === id ? buybackRuleFromApi(r[0]) : r2)));
+      setBuybackRuleModal(null);
+    });
+  }
+  async function deleteBuybackRule(id) {
+    await withBusy(async () => {
+      unwrap(await supabase.from("buyback_deduction_rules").delete().eq("id", id));
+      setBuybackRules(buybackRules.filter((r) => r.id !== id));
     });
   }
 
@@ -810,6 +862,9 @@ function AppShell() {
 
           <div className="nav-lbl">Admin</div>
           {isAdmin && (
+            <button className={`navbtn ${tab === "buyback" ? "active" : ""}`} onClick={() => setTab("buyback")}><BuybackIcon className="nav-ic" />Felvásárlás</button>
+          )}
+          {isAdmin && (
             <button className={`navbtn ${tab === "users" ? "active" : ""}`} onClick={() => setTab("users")}><UsersNavIcon className="nav-ic" />Felhasználók</button>
           )}
           <button className={`navbtn ${tab === "trash" ? "active" : ""}`} onClick={() => setTab("trash")}><TrashNavIcon className="nav-ic" />Kuka</button>
@@ -1176,6 +1231,78 @@ function AppShell() {
           </>
         )}
 
+        {!noLocationAssigned && isAdmin && tab === "buyback" && (
+          <>
+            <div className="topbar">
+              <div><div className="page-title">Felvásárlás</div><div className="page-sub">A publikus /eladom oldal árazása — modellek és levonási szabályok</div></div>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 0 8px 2px" }}>
+              <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151" }}>Modellek <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({buybackModels.length} db)</span></div>
+              <button className="btn sec sm" disabled={busy} onClick={() => setBuybackModelModal("add")}>+ Új modell</button>
+            </div>
+            <div className="tw" style={{ marginBottom: 22 }}>
+              {buybackModels.length === 0 ? (
+                <div className="empty">Nincs modell felvéve — az /eladom oldal addig üres marad.</div>
+              ) : (
+                <table>
+                  <thead><tr><th>Márka</th><th>Modell</th><th>Tárhely</th><th>Alapár</th><th>Állapot</th><th></th></tr></thead>
+                  <tbody>
+                    {buybackModels.map((m) => (
+                      <tr key={m.id}>
+                        <td style={{ fontWeight: 600 }}>{m.brand}</td>
+                        <td>{m.model}</td>
+                        <td style={{ color: "#6B7280" }}>{m.storage || "—"}</td>
+                        <td className="mono" style={{ fontWeight: 700 }}>{money(m.basePrice)}</td>
+                        <td>{m.active ? <span className="badge-income">Aktív</span> : <span style={{ color: "#9CA3AF", fontSize: 12 }}>Inaktív</span>}</td>
+                        <td style={{ display: "flex", gap: 5 }}>
+                          <button className="iconbtn" disabled={busy} onClick={() => setBuybackModelModal(m)}><EditIcon /></button>
+                          <ConfirmDelete disabled={busy} onConfirm={() => deleteBuybackModel(m.id)} />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 0 8px 2px" }}>
+              <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151" }}>Levonási szabályok <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({buybackRules.length} db)</span></div>
+              <button className="btn sec sm" disabled={busy} onClick={() => setBuybackRuleModal("add")}>+ Új szabály</button>
+            </div>
+            <div className="tw">
+              {buybackRules.length === 0 ? (
+                <div className="empty">Nincs levonási szabály — minden készülék az alapáron kerül felajánlásra, függetlenül az állapottól.</div>
+              ) : (
+                <table>
+                  <thead><tr><th>Kérdés</th><th>Válasz</th><th>Szöveg</th><th>Levonás</th><th>Állapot</th><th></th></tr></thead>
+                  <tbody>
+                    {buybackRules.map((r) => {
+                      const q = BUYBACK_CONDITION_QUESTIONS.find((x) => x.key === r.questionKey);
+                      const opt = q?.options.find((o) => o.key === r.answerKey);
+                      return (
+                        <tr key={r.id}>
+                          <td style={{ color: "#6B7280", fontSize: 12.5 }}>{q?.question || r.questionKey}</td>
+                          <td style={{ fontSize: 12.5 }}>{opt?.label || r.answerKey}</td>
+                          <td style={{ fontWeight: 600 }}>{r.label}</td>
+                          <td className="mono" style={{ fontWeight: 700, color: "#DC2626" }}>
+                            −{r.deductionType === "percent" ? `${r.deductionValue}%` : money(r.deductionValue)}
+                          </td>
+                          <td>{r.active ? <span className="badge-income">Aktív</span> : <span style={{ color: "#9CA3AF", fontSize: 12 }}>Inaktív</span>}</td>
+                          <td style={{ display: "flex", gap: 5 }}>
+                            <button className="iconbtn" disabled={busy} onClick={() => setBuybackRuleModal(r)}><EditIcon /></button>
+                            <ConfirmDelete disabled={busy} onConfirm={() => deleteBuybackRule(r.id)} />
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </>
+        )}
+
         {!noLocationAssigned && isAdmin && tab === "users" && (
           <>
             <div className="topbar">
@@ -1448,6 +1575,22 @@ function AppShell() {
           locations={allowedLocations} busy={busy}
           onClose={() => setWarrantyModal(null)}
           onSubmit={(data, locId) => (warrantyModal === "add" ? addWarranty(data, locId) : editWarranty(warrantyModal.id, data, locId))}
+        />
+      )}
+      {buybackModelModal && (
+        <BuybackModelModal
+          model={buybackModelModal !== "add" ? buybackModelModal : null}
+          onClose={() => setBuybackModelModal(null)}
+          busy={busy}
+          onSave={(data) => (buybackModelModal !== "add" ? editBuybackModel(buybackModelModal.id, data) : addBuybackModel(data))}
+        />
+      )}
+      {buybackRuleModal && (
+        <BuybackRuleModal
+          rule={buybackRuleModal !== "add" ? buybackRuleModal : null}
+          onClose={() => setBuybackRuleModal(null)}
+          busy={busy}
+          onSave={(data) => (buybackRuleModal !== "add" ? editBuybackRule(buybackRuleModal.id, data) : addBuybackRule(data))}
         />
       )}
       <div id="print-slip-root">
