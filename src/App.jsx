@@ -2,19 +2,28 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap } from "./lib/supabaseClient";
 import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi } from "./lib/mappers";
-import { money, today, STATUSES, PART_CATEGORIES, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, statusLabel, BUYBACK_CONDITION_QUESTIONS, countWorkdays, LEAVE_STATUS_CLS } from "./lib/utils";
-import { REPAIR_FAMILIES, PRICED_PROBLEMS, PROBLEM_LABELS } from "./lib/repairCatalog";
+import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays } from "./lib/utils";
+import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
 import StockModal from "./components/StockModal";
 import SellModal from "./components/SellModal";
 import PartModal from "./components/PartModal";
-import TicketCard from "./components/TicketCard";
 import DetailPanel from "./components/DetailPanel";
 import ProductDetailPanel from "./components/ProductDetailPanel";
 import PartDetailPanel from "./components/PartDetailPanel";
-import StockValueChart from "./components/StockValueChart";
-import MonthlyTrendChart from "./components/MonthlyTrendChart";
 import TicketFormModal from "./components/TicketFormModal";
+import DashboardTab from "./tabs/DashboardTab";
+import StockTab from "./tabs/StockTab";
+import FinanceTab from "./tabs/FinanceTab";
+import ServiceTab from "./tabs/ServiceTab";
+import PartsTab from "./tabs/PartsTab";
+import CustomersTab from "./tabs/CustomersTab";
+import WarrantyTab from "./tabs/WarrantyTab";
+import LeaveTab from "./tabs/LeaveTab";
+import BuybackTab from "./tabs/BuybackTab";
+import RepairPricesTab from "./tabs/RepairPricesTab";
+import UsersTab from "./tabs/UsersTab";
+import TrashTab from "./tabs/TrashTab";
 import QuickSaleButtons from "./components/QuickSaleButtons";
 import TransactionQuickAdd from "./components/TransactionQuickAdd";
 import TransactionsPeriodList from "./components/TransactionsPeriodList";
@@ -33,11 +42,9 @@ import LeaveRequestModal from "./components/LeaveRequestModal";
 import LeaveBalanceModal from "./components/LeaveBalanceModal";
 import RepairPriceModal from "./components/RepairPriceModal";
 import {
-  SearchIcon, EditIcon, LogoIcon, DashboardIcon, ServiceIcon, PhoneCaseIcon,
+  EditIcon, LogoIcon, DashboardIcon, ServiceIcon, PhoneCaseIcon,
   PartsIcon, FinanceIcon, CustomersIcon, WarrantyIcon, UsersNavIcon, TrashNavIcon, LogoutIcon, CloseIcon, BuybackIcon, LeaveIcon, RepairPriceIcon,
 } from "./components/icons";
-import ConfirmDelete from "./components/ConfirmDelete";
-import CallLink from "./components/CallLink";
 import TeamChatPanel from "./components/TeamChatPanel";
 import InviteEmployeeModal from "./components/InviteEmployeeModal";
 import ChangePasswordModal from "./components/ChangePasswordModal";
@@ -1045,706 +1052,100 @@ function AppShell() {
         )}
 
         {!noLocationAssigned && tab === "dashboard" && (
-          <>
-            <div className="topbar">
-              <div><div className="page-title">Áttekintés</div><div className="page-sub">{effectiveLocFilter === "all" ? "Mindkét helyszín" : locName(effectiveLocFilter)}</div></div>
-            </div>
-
-            <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>📱 Telefonok</div>
-            <div className="statrow c4">
-              <div className="statcard accent"><div className="lbl">Raktáron</div><div className="val">{stockStats.count} db</div></div>
-              <div className="statcard"><div className="lbl">Készlet értéke</div><div className="val">{money(stockStats.value)}</div></div>
-              <div className="statcard"><div className="lbl">Besz. érték</div><div className="val">{money(stockStats.cost)}</div></div>
-              <div className="statcard"><div className="lbl">Várható profit</div><div className="val" style={{ color: "#22C55E" }}>{money(stockStats.profit)}</div></div>
-            </div>
-            <div style={{ marginBottom: 26 }}>
-              <StockValueChart history={stockHistory} />
-            </div>
-
-            <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>🔧 Szerviz</div>
-            <div className={`statrow ${svcStats.ownStock > 0 ? "c6" : "c5"}`} style={{ marginBottom: 26 }}>
-              <div className="statcard accent"><div className="lbl">Összes</div><div className="val">{svcStats.total}</div></div>
-              <div className="statcard"><div className="lbl">Aktív (ügyfél)</div><div className="val">{svcStats.active}</div></div>
-              <div className="statcard"><div className="lbl">Kész (ügyfél)</div><div className="val" style={{ color: "#15803D" }}>{svcStats.kesz}</div></div>
-              <div className="statcard"><div className="lbl">Sikertelen (ügyfél)</div><div className="val" style={{ color: "#9D174D" }}>{svcStats.sikertelen}</div></div>
-              <div className="statcard"><div className="lbl">Kiadva</div><div className="val">{svcStats.kiadva}</div></div>
-              {svcStats.ownStock > 0 && (
-                <div className="statcard"><div className="lbl">Saját készlet szervizben</div><div className="val">{svcStats.ownStock}</div></div>
-              )}
-            </div>
-
-            <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>💰 Bevételek &amp; Kiadások</div>
-            {monthlyTrendSummary && (
-              <div style={{ fontSize: 13, color: "#374151", margin: "0 0 10px 2px", lineHeight: 1.6 }}>
-                Ez a hónap eddig: <b>{money(currentMonthLive.revenue)}</b> — {monthlyTrendSummary.dayOfMonth} nap alatt. Múlt hónap ilyenkor ({monthlyTrendSummary.dayOfMonth}. napon): {money(monthlyTrendSummary.projected)} volt →{" "}
-                <b style={{ color: monthlyTrendSummary.pct >= 0 ? "#15803D" : "#B91C1C" }}>{monthlyTrendSummary.pct >= 0 ? "+" : ""}{monthlyTrendSummary.pct}%</b>
-              </div>
-            )}
-            <div style={{ marginBottom: 14 }}>
-              <MonthlyTrendChart summaries={monthlySummaries} liveMonth={currentMonthLive} locations={locations} locFilter={effectiveLocFilter} locName={locName} />
-            </div>
-            <div className="statrow c4" style={{ marginBottom: 26 }}>
-              <div className="statcard accent"><div className="lbl">Tranzakciók</div><div className="val">{txStats.count}</div></div>
-              <div className="statcard"><div className="lbl">Bevétel</div><div className="val" style={{ color: "#15803D" }}>{money(txStats.income)}</div></div>
-              <div className="statcard"><div className="lbl">Kiadás</div><div className="val" style={{ color: "#B91C1C" }}>{money(txStats.expense)}</div></div>
-              <div className="statcard"><div className="lbl">Nettó eredmény</div><div className="val">{money(txStats.net)}</div></div>
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
-              <div>
-                <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>🔩 Alkatrészek</div>
-                <div className="statrow c1">
-                  <div className="statcard accent"><div className="lbl">Raktár értéke</div><div className="val">{money(partsStats.value)}</div></div>
-                </div>
-              </div>
-              <div>
-                <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>👤 Kliensek</div>
-                <div className="statrow c3">
-                  <div className="statcard accent"><div className="lbl">Ügyfelek</div><div className="val">{customerStats.count}</div></div>
-                  <div className="statcard"><div className="lbl">Bevétel tőlük</div><div className="val" style={{ color: "#15803D" }}>{money(customerStats.revenue)}</div></div>
-                </div>
-              </div>
-            </div>
-          </>
+          <DashboardTab
+            effectiveLocFilter={effectiveLocFilter} locName={locName} stockStats={stockStats} stockHistory={stockHistory}
+            svcStats={svcStats} monthlyTrendSummary={monthlyTrendSummary} currentMonthLive={currentMonthLive}
+            monthlySummaries={monthlySummaries} locations={locations} txStats={txStats} partsStats={partsStats} customerStats={customerStats}
+          />
         )}
 
         {!noLocationAssigned && tab === "stock" && (
-          <>
-            <div className="topbar">
-              <div><div className="page-title">Telefonok</div><div className="page-sub">{effectiveLocFilter === "all" ? "Mindkét helyszín" : locName(effectiveLocFilter)}</div></div>
-              <button className="btn" disabled={busy} onClick={() => setStockModal("add")}>+ Új termék</button>
-            </div>
-            <div className="filter-row">
-              <div className="searchbar"><SearchIcon /><input placeholder="Keresés..." value={search} onChange={(e) => setSearch(e.target.value)} /></div>
-            </div>
-            {loadingData ? <div className="empty">Betöltés...</div> : filteredStock.length === 0 ? <div className="empty">Nincs termék raktáron.</div> : (
-              (effectiveLocFilter === "all" ? locations : locations.filter((l) => l.id === effectiveLocFilter || l.id === reserveLocId)).map((loc) => {
-                const items = filteredStock.filter((i) => i.locationId === loc.id);
-                if (items.length === 0) return null;
-                return (
-                  <div key={loc.id} style={{ marginBottom: 18 }}>
-                    <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>
-                      {loc.name} <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({items.length} db)</span>
-                    </div>
-                    <div className="tw">
-                      {items.length === 0 ? <div className="empty">Nincs termék ezen a helyszínen.</div> : (
-                        <table>
-                          <thead><tr><th>Termék</th><th>Állapot</th><th>Tárhely/Szín</th><th>IMEI</th><th>Besz.</th><th>Ár</th><th></th></tr></thead>
-                          <tbody>
-                            {items.map((i) => (
-                              <tr key={i.id} style={{ cursor: "pointer" }} onClick={() => setProductDetailId(i.id)}>
-                                <td style={{ fontWeight: 600 }}>{i.brand} {i.model}</td>
-                                <td><span className={`st ${i.condition === "New" ? "st-kesz" : "st-beveve"}`}>{i.condition === "New" ? "Új" : `Felúj. ${i.grade || ""}`}</span></td>
-                                <td className="mono">{[i.storage, i.color].filter(Boolean).join(" / ") || "—"}</td>
-                                <td className="mono" style={{ color: "#9CA3AF" }}>{i.imei || "—"}</td>
-                                <td className="mono" style={{ color: "#6B7280" }}>{money(i.costPrice)}</td>
-                                <td className="mono" style={{ fontWeight: 700 }}>{money(i.salePrice)}</td>
-                                <td style={{ display: "flex", gap: 5 }} onClick={(e) => e.stopPropagation()}>
-                                  <button className="btn sec sm" disabled={busy} onClick={() => setSellModal(i)}>Eladva</button>
-                                  <button className="iconbtn" disabled={busy} onClick={() => setStockModal(i)}><EditIcon /></button>
-                                  <ConfirmDelete disabled={busy} onConfirm={() => deleteProduct(i.id)} />
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      )}
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </>
+          <StockTab
+            effectiveLocFilter={effectiveLocFilter} locName={locName} busy={busy} setStockModal={setStockModal}
+            search={search} setSearch={setSearch} loadingData={loadingData} filteredStock={filteredStock}
+            locations={locations} reserveLocId={reserveLocId} setProductDetailId={setProductDetailId}
+            deleteProduct={deleteProduct} setSellModal={setSellModal}
+          />
         )}
 
         {!noLocationAssigned && tab === "finance" && (
-          <>
-            <div className="topbar">
-              <div><div className="page-title">Bevételek &amp; Kiadások</div><div className="page-sub">{effectiveLocFilter === "all" ? "Mindkét helyszín összesítve" : locName(effectiveLocFilter)}</div></div>
-              <div className="seg">
-                <button type="button" className={period === "day" ? "active" : ""} onClick={() => setPeriod("day")}>Napi</button>
-                <button type="button" className={period === "week" ? "active" : ""} onClick={() => setPeriod("week")}>Heti</button>
-                <button type="button" className={period === "month" ? "active" : ""} onClick={() => setPeriod("month")}>Havi</button>
-              </div>
-            </div>
-            <QuickSaleButtons locations={allowedLocations} defaultLocId={defaultLocId} onAdd={addTransaction} busy={busy} />
-            <TransactionQuickAdd locations={allowedLocations} defaultLocId={defaultLocId} onAdd={addTransaction} busy={busy} />
-            {loadingData ? <div className="tw"><div className="empty">Betöltés...</div></div> : (
-              <TransactionsPeriodList transactions={filteredTransactions} period={period} locName={locName} onEdit={setTxModal} onDelete={deleteTransaction} onOpenReceipt={setReceiptTxId} busy={busy} />
-            )}
-          </>
+          <FinanceTab
+            effectiveLocFilter={effectiveLocFilter} locName={locName} period={period} setPeriod={setPeriod}
+            allowedLocations={allowedLocations} defaultLocId={defaultLocId} addTransaction={addTransaction} busy={busy}
+            loadingData={loadingData} filteredTransactions={filteredTransactions} setTxModal={setTxModal}
+            deleteTransaction={deleteTransaction} setReceiptTxId={setReceiptTxId}
+          />
         )}
 
         {!noLocationAssigned && tab === "service" && (
-          <>
-            <div className="topbar">
-              <div><div className="page-title">Szerviz</div><div className="page-sub">{effectiveLocFilter === "all" ? "Mindkét helyszín" : locName(effectiveLocFilter)}</div></div>
-              <button className="btn" disabled={busy} onClick={() => setTicketModal("add")}>+ Új munkalap</button>
-            </div>
-            <div className="filter-row">
-              <div className="searchbar"><SearchIcon /><input placeholder="Keresés vevő, márka, modell..." value={svcSearch} onChange={(e) => setSvcSearch(e.target.value)} /></div>
-              <div className="seg">
-                <button type="button" className={svcKindFilter === "all" ? "active" : ""} onClick={() => setSvcKindFilter("all")}>Mind</button>
-                <button type="button" className={svcKindFilter === "customer" ? "active" : ""} onClick={() => setSvcKindFilter("customer")}>Csak ügyfél</button>
-                <button type="button" className={svcKindFilter === "own" ? "active" : ""} onClick={() => setSvcKindFilter("own")}>Csak saját készlet</button>
-              </div>
-            </div>
-            {loadingData ? <div className="empty">Betöltés...</div> : (
-              <div className="kanban-wrap">
-                <div className="kanban">
-                  {STATUSES.map((col) => {
-                    const items = activeTickets.filter((t) => t.status === col.key);
-                    return (
-                      <div className="k-col" key={col.key} style={{ "--col-color": col.color }}>
-                        <div className="k-col-head">
-                          <div className="k-col-title"><span className="k-dot"></span>{statusLabel(col.key)}</div>
-                          <span className="k-count">{items.length}</span>
-                        </div>
-                        <div className="k-col-body">
-                          {items.length === 0 && <div className="k-empty">Üres</div>}
-                          {items.map((t) => <TicketCard key={t.id} ticket={t} locName={locName} onOpen={setDetailId} />)}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-            <span className="toggle-link" onClick={() => setShowHandedOver((v) => !v)}>
-              {showHandedOver ? "Átadott munkalapok elrejtése" : `Átadott munkalapok megtekintése (${handedOverTickets.length})`}
-            </span>
-            {showHandedOver && (
-              <div className="tw" style={{ marginTop: 12 }}>
-                {handedOverTickets.length === 0 ? <div className="empty">Nincs átadott munkalap.</div> : (
-                  <table>
-                    <thead><tr><th>#</th><th>Vevő</th><th>Helyszín</th><th>Eszköz</th><th>Bejött</th><th>Átadva</th><th>Díj</th></tr></thead>
-                    <tbody>
-                      {handedOverTickets.map((t) => (
-                        <tr key={t.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
-                          <td className="mono">#{t.ticketNo}</td>
-                          <td>{t.customerName}</td>
-                          <td><span className="badge-loc">{locName(t.locationId)}</span></td>
-                          <td>{[t.brand, t.model].filter(Boolean).join(" ")}</td>
-                          <td className="mono">{t.dateIn}</td>
-                          <td className="mono">{t.dateOut || "—"}</td>
-                          <td className="mono" style={{ fontWeight: 700 }}>{money(t.price)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
-            )}
-          </>
+          <ServiceTab
+            effectiveLocFilter={effectiveLocFilter} locName={locName} busy={busy} setTicketModal={setTicketModal}
+            svcSearch={svcSearch} setSvcSearch={setSvcSearch} svcKindFilter={svcKindFilter} setSvcKindFilter={setSvcKindFilter}
+            loadingData={loadingData} activeTickets={activeTickets} setDetailId={setDetailId}
+            showHandedOver={showHandedOver} setShowHandedOver={setShowHandedOver} handedOverTickets={handedOverTickets}
+          />
         )}
 
         {!noLocationAssigned && tab === "parts" && (
-          <>
-            <div className="topbar">
-              <div><div className="page-title">Alkatrész raktár</div><div className="page-sub">Közös raktár — mindkét helyszín</div></div>
-              <button className="btn" disabled={busy} onClick={() => setPartModal("add")}>+ Új alkatrész</button>
-            </div>
-            <div className="filter-row">
-              <div className="searchbar"><SearchIcon /><input placeholder="Keresés név, márka, kategória, forrás szerint..." value={partSearch} onChange={(e) => setPartSearch(e.target.value)} /></div>
-            </div>
-            {loadingData ? <div className="tw"><div className="empty">Betöltés...</div></div> : filteredParts.length === 0 ? <div className="tw"><div className="empty">Nincs találat.</div></div> : (
-              [...PART_CATEGORIES, "Egyéb"].map((cat) => {
-                const items = cat === "Egyéb"
-                  ? filteredParts.filter((p) => !PART_CATEGORIES.includes(p.category))
-                  : filteredParts.filter((p) => p.category === cat);
-                if (items.length === 0) return null;
-                return (
-                  <div key={cat} style={{ marginBottom: 18 }}>
-                    <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>
-                      {cat} <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({items.length} db)</span>
-                    </div>
-                    <div className="tw">
-                      <table>
-                        <thead><tr><th>#</th><th>Alkatrész</th><th>Márka/Illik</th><th>Készlet</th><th>Beérk. ár</th><th>Forrás</th><th></th></tr></thead>
-                        <tbody>
-                          {items.map((p) => (
-                            <tr key={p.id} style={{ cursor: "pointer" }} onClick={() => setPartDetailId(p.id)}>
-                              <td className="mono" style={{ color: "#9CA3AF" }}>{p.partNo}</td>
-                              <td style={{ fontWeight: 600 }}>{p.name}</td>
-                              <td style={{ color: "#6B7280", fontSize: 12 }}>{[p.brand, p.modelFit].filter(Boolean).join(" · ") || "—"}</td>
-                              <td style={{ fontWeight: 700 }}>{p.quantity} db</td>
-                              <td className="mono" style={{ color: "#6B7280" }}>{money(p.costPrice)}</td>
-                              <td style={{ color: "#6B7280", fontSize: 12 }}>{p.source || "—"}</td>
-                              <td style={{ display: "flex", gap: 5 }} onClick={(e) => e.stopPropagation()}>
-                                <button className="iconbtn" disabled={busy} onClick={() => setPartModal(p)}><EditIcon /></button>
-                                <ConfirmDelete disabled={busy} onConfirm={() => deletePart(p.id)} />
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </>
+          <PartsTab
+            busy={busy} setPartModal={setPartModal} partSearch={partSearch} setPartSearch={setPartSearch}
+            loadingData={loadingData} filteredParts={filteredParts} setPartDetailId={setPartDetailId} deletePart={deletePart}
+          />
         )}
 
         {!noLocationAssigned && tab === "customers" && (
-          <>
-            <div className="topbar">
-              <div><div className="page-title">Kliensek</div><div className="page-sub">{effectiveLocFilter === "all" ? "Mindkét helyszín" : locName(effectiveLocFilter)}</div></div>
-              <button className="btn" disabled={busy} onClick={() => setCustomerModal("add")}>+ Új ügyfél</button>
-            </div>
-            <div className="filter-row">
-              <div className="searchbar"><SearchIcon /><input placeholder="Keresés név vagy telefonszám..." value={custSearch} onChange={(e) => setCustSearch(e.target.value)} /></div>
-            </div>
-            <div className="tw">
-              {loadingData ? <div className="empty">Betöltés...</div> : customers.length === 0 ? <div className="empty">Nincs ügyfél.</div> : (
-                <table>
-                  <thead><tr><th>Név</th><th>Telefonszám</th><th>Típus</th><th>Vásárlások</th><th>Szerviz</th><th>Utolsó aktivitás</th></tr></thead>
-                  <tbody>
-                    {customers.map((c) => (
-                      <tr key={c.key} style={{ cursor: "pointer" }} onClick={() => setCustomerKey(c.key)}>
-                        <td style={{ fontWeight: 600 }}>{c.name || "Névtelen"}</td>
-                        <td className="mono">{c.phone || "—"}</td>
-                        <td>{c.isNew ? <span className="badge-loc">Új</span> : <span className="badge-income">Visszatérő</span>}</td>
-                        <td>{c.purchases.length} db · <span className="mono">{money(c.purchaseTotal)}</span></td>
-                        <td>{c.tickets.length} db · <span className="mono">{money(c.ticketTotal)}</span></td>
-                        <td className="mono" style={{ color: "#6B7280" }}>{c.lastActivity || "—"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          </>
+          <CustomersTab
+            effectiveLocFilter={effectiveLocFilter} locName={locName} busy={busy} setCustomerModal={setCustomerModal}
+            custSearch={custSearch} setCustSearch={setCustSearch} loadingData={loadingData} customers={customers} setCustomerKey={setCustomerKey}
+          />
         )}
 
         {!noLocationAssigned && tab === "warranty" && (
-          <>
-            <div className="topbar">
-              <div><div className="page-title">Garancia</div><div className="page-sub">Aktív garanciák — telefon és szerviz, kézzel is felvehető</div></div>
-              <button className="btn" disabled={busy} onClick={() => setWarrantyModal("add")}>+ Garancia felvétele</button>
-            </div>
-            <div className="statrow c1">
-              <div className="statcard accent"><div className="lbl">Aktív garancia</div><div className="val">{activeWarranties.length} db</div></div>
-            </div>
-            <div style={{ display: "flex", gap: 8, margin: "0 0 14px 2px" }}>
-              {[["all", "Mind"], ["sale", "Telefon garancia"], ["service", "Szerviz garancia"]].map(([key, label]) => (
-                <button key={key} type="button"
-                  className={`btn sec sm${warrantyFilter === key ? " active" : ""}`}
-                  style={warrantyFilter === key ? { background: "#111827", color: "#fff", borderColor: "#111827" } : undefined}
-                  onClick={() => setWarrantyFilter(key)}>{label}</button>
-              ))}
-            </div>
-            <div className="tw">
-              {loadingData ? <div className="empty">Betöltés...</div> : filteredWarranties.length === 0 ? <div className="empty">Nincs aktív garancia.</div> : (
-                <table>
-                  <thead><tr><th>Típus</th><th>Ügyfél</th><th>Termék / Eszköz</th><th>Garancia</th><th>Lejárat</th><th>Helyszín</th><th>Művelet</th></tr></thead>
-                  <tbody>
-                    {filteredWarranties.map((w) => {
-                      const daysLeft = w.expiry ? Math.ceil((new Date(w.expiry) - new Date(today())) / 86400000) : null;
-                      function sendReminder(e) {
-                        e.stopPropagation();
-                        const message = stripAccents(`Szia! A(z) ${w.label} garanciája hamarosan lejár (${w.expiry}). Ha bármi gond van a készülékkel, keress minket!`);
-                        supabase.functions.invoke("send-sms", { body: { phone: w.customerPhone, message } })
-                          .then(() => alert("SMS elküldve."))
-                          .catch((err) => { console.error(err); setError("Az SMS nem ment ki."); });
-                      }
-                      return (
-                        <tr key={w.key} style={{ cursor: "pointer" }} onClick={() => setWarrantyDetailKey(w.key)}>
-                          <td>{w.kind === "sale" ? <span className="badge-income">Eladás</span> : <span className="badge-loc">Szerviz</span>}</td>
-                          <td style={{ fontWeight: 600 }}>{w.customerName || "—"}</td>
-                          <td>{w.label || "—"}</td>
-                          <td><span className="gar-pill">{w.warranty}</span></td>
-                          <td className="mono" style={{ fontWeight: 700, color: daysLeft != null && daysLeft <= 14 ? "#DC2626" : "#111827" }}>
-                            {w.expiry} {daysLeft != null && <span style={{ fontWeight: 500, color: "#9CA3AF" }}>({daysLeft} nap)</span>}
-                          </td>
-                          <td><span className="badge-loc">{locName(w.locationId)}</span></td>
-                          <td style={{ display: "flex", gap: 6 }} onClick={(e) => e.stopPropagation()}>
-                            <CallLink phone={w.customerPhone} />
-                            <button type="button" className="btn sec sm" disabled={!w.customerPhone} onClick={sendReminder}>Emlékeztető SMS</button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          </>
+          <WarrantyTab
+            busy={busy} setWarrantyModal={setWarrantyModal} activeWarranties={activeWarranties}
+            warrantyFilter={warrantyFilter} setWarrantyFilter={setWarrantyFilter} loadingData={loadingData}
+            filteredWarranties={filteredWarranties} setWarrantyDetailKey={setWarrantyDetailKey} locName={locName} setError={setError}
+          />
         )}
 
         {!noLocationAssigned && tab === "leave" && (
-          <>
-            <div className="topbar">
-              <div><div className="page-title">Szabadság</div><div className="page-sub">{leaveYear}. évi keretek és a következő ~3 hónap</div></div>
-              <button className="btn" disabled={busy} onClick={() => setLeaveRequestModal(true)}>+ Szabadság kérése</button>
-            </div>
-
-            {coverageWarnings.length > 0 && (
-              <div className="leave-warn">
-                <div className="leave-warn-title">⚠ Ezeken a napokon egy helyszínen mindenki szabadságon lesz</div>
-                {coverageWarnings.map((w, i) => (
-                  <div key={i} className="leave-warn-item">{w.date} — {locName(w.locationId)}</div>
-                ))}
-              </div>
-            )}
-
-            <div className="leave-cards">
-              {users.map((u) => {
-                const b = leaveBalanceByUser[u.id] || { entitled: 20, used: 0 };
-                const pct = b.entitled > 0 ? Math.min(100, Math.round((b.used / b.entitled) * 100)) : 0;
-                return (
-                  <div key={u.id} className="leave-card">
-                    <div className="leave-card-top">
-                      <div className="leave-card-name">{u.fullName || "?"}</div>
-                      {isAdmin && (
-                        <button className="iconbtn" title="Keret módosítása" onClick={() => setLeaveBalanceModal(u)}><EditIcon /></button>
-                      )}
-                    </div>
-                    <div className="leave-card-days">{b.used} / {b.entitled} nap felhasználva</div>
-                    <div className="leave-progress"><div className="leave-progress-fill" style={{ width: `${pct}%` }} /></div>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="tw">
-              {upcomingLeave.length === 0 ? (
-                <div className="empty">Nincs felvett vagy közelgő szabadság a következő 3 hónapban.</div>
-              ) : (
-                <table>
-                  <thead><tr><th>Dolgozó</th><th>Helyszín</th><th>Típus</th><th>Időszak</th><th>Napok</th><th>Állapot</th><th></th></tr></thead>
-                  <tbody>
-                    {upcomingLeave.map((r) => {
-                      const reqUser = users.find((u) => u.id === r.userId);
-                      const lt = leaveTypes.find((t) => t.id === r.leaveTypeId);
-                      const canRevoke = r.status === "Kérve" && r.userId === user.id;
-                      return (
-                        <tr key={r.id}>
-                          <td style={{ fontWeight: 600 }}>{reqUser?.fullName || "?"}</td>
-                          <td><span className="badge-loc">{locName(reqUser?.locationId)}</span></td>
-                          <td><span className="leave-type-chip"><span className="leave-type-dot" style={{ background: lt?.color || "#9CA3AF" }} />{lt?.name || "—"}</span></td>
-                          <td className="mono">{r.startDate} – {r.endDate}</td>
-                          <td style={{ fontWeight: 700 }}>{r.days}</td>
-                          <td><span className={LEAVE_STATUS_CLS[r.status] || "badge-loc"}>{r.status}</span></td>
-                          <td style={{ display: "flex", gap: 6 }}>
-                            {r.status === "Kérve" && isAdmin && (
-                              <>
-                                <button className="btn sec sm" disabled={busy} onClick={() => decideLeaveRequest(r.id, "Jóváhagyva")}>Jóváhagyás</button>
-                                <button className="btn sec sm" disabled={busy} onClick={() => decideLeaveRequest(r.id, "Elutasítva")}>Elutasítás</button>
-                              </>
-                            )}
-                            {canRevoke && (
-                              <button className="btn sec sm" disabled={busy} onClick={() => revokeLeaveRequest(r.id)}>Visszavonás</button>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          </>
+          <LeaveTab
+            leaveYear={leaveYear} busy={busy} setLeaveRequestModal={setLeaveRequestModal} coverageWarnings={coverageWarnings}
+            locName={locName} users={users} leaveBalanceByUser={leaveBalanceByUser} isAdmin={isAdmin}
+            setLeaveBalanceModal={setLeaveBalanceModal} upcomingLeave={upcomingLeave} leaveTypes={leaveTypes} user={user}
+            decideLeaveRequest={decideLeaveRequest} revokeLeaveRequest={revokeLeaveRequest}
+          />
         )}
 
         {!noLocationAssigned && isAdmin && tab === "buyback" && (
-          <>
-            <div className="topbar">
-              <div><div className="page-title">Felvásárlás</div><div className="page-sub">A publikus /eladom oldal árazása — modellek és levonási szabályok</div></div>
-            </div>
-
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 0 8px 2px" }}>
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151" }}>Modellek <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({buybackModels.length} db)</span></div>
-              <button className="btn sec sm" disabled={busy} onClick={() => setBuybackModelModal("add")}>+ Új modell</button>
-            </div>
-            <div className="tw" style={{ marginBottom: 22 }}>
-              {buybackModels.length === 0 ? (
-                <div className="empty">Nincs modell felvéve — az /eladom oldal addig üres marad.</div>
-              ) : (
-                <table>
-                  <thead><tr><th>Márka</th><th>Modell</th><th>Tárhely</th><th>Alapár</th><th>Állapot</th><th></th></tr></thead>
-                  <tbody>
-                    {buybackModels.map((m) => (
-                      <tr key={m.id}>
-                        <td style={{ fontWeight: 600 }}>{m.brand}</td>
-                        <td>{m.model}</td>
-                        <td style={{ color: "#6B7280" }}>{m.storage || "—"}</td>
-                        <td className="mono" style={{ fontWeight: 700 }}>{money(m.basePrice)}</td>
-                        <td>{m.active ? <span className="badge-income">Aktív</span> : <span style={{ color: "#9CA3AF", fontSize: 12 }}>Inaktív</span>}</td>
-                        <td style={{ display: "flex", gap: 5 }}>
-                          <button className="iconbtn" disabled={busy} onClick={() => setBuybackModelModal(m)}><EditIcon /></button>
-                          <ConfirmDelete disabled={busy} onConfirm={() => deleteBuybackModel(m.id)} />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 0 8px 2px" }}>
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151" }}>Levonási szabályok <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({buybackRules.length} db)</span></div>
-              <button className="btn sec sm" disabled={busy} onClick={() => setBuybackRuleModal("add")}>+ Új szabály</button>
-            </div>
-            <div className="tw">
-              {buybackRules.length === 0 ? (
-                <div className="empty">Nincs levonási szabály — minden készülék az alapáron kerül felajánlásra, függetlenül az állapottól.</div>
-              ) : (
-                <table>
-                  <thead><tr><th>Kérdés</th><th>Válasz</th><th>Szöveg</th><th>Levonás</th><th>Állapot</th><th></th></tr></thead>
-                  <tbody>
-                    {buybackRules.map((r) => {
-                      const q = BUYBACK_CONDITION_QUESTIONS.find((x) => x.key === r.questionKey);
-                      const opt = q?.options.find((o) => o.key === r.answerKey);
-                      return (
-                        <tr key={r.id}>
-                          <td style={{ color: "#6B7280", fontSize: 12.5 }}>{q?.question || r.questionKey}</td>
-                          <td style={{ fontSize: 12.5 }}>{opt?.label || r.answerKey}</td>
-                          <td style={{ fontWeight: 600 }}>{r.label}</td>
-                          <td className="mono" style={{ fontWeight: 700, color: "#DC2626" }}>
-                            −{r.deductionType === "percent" ? `${r.deductionValue}%` : money(r.deductionValue)}
-                          </td>
-                          <td>{r.active ? <span className="badge-income">Aktív</span> : <span style={{ color: "#9CA3AF", fontSize: 12 }}>Inaktív</span>}</td>
-                          <td style={{ display: "flex", gap: 5 }}>
-                            <button className="iconbtn" disabled={busy} onClick={() => setBuybackRuleModal(r)}><EditIcon /></button>
-                            <ConfirmDelete disabled={busy} onConfirm={() => deleteBuybackRule(r.id)} />
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          </>
+          <BuybackTab
+            busy={busy} buybackModels={buybackModels} setBuybackModelModal={setBuybackModelModal} deleteBuybackModel={deleteBuybackModel}
+            buybackRules={buybackRules} setBuybackRuleModal={setBuybackRuleModal} deleteBuybackRule={deleteBuybackRule}
+          />
         )}
 
         {!noLocationAssigned && isAdmin && tab === "repair-prices" && (
-          <>
-            <div className="topbar">
-              <div><div className="page-title">Szerviz árbecslő</div><div className="page-sub">A publikus /becsles oldal árazása és a beérkezett érdeklődők</div></div>
-            </div>
-
-            <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>Árazási mátrix</div>
-            <div className="tw" style={{ marginBottom: 22 }}>
-              <table>
-                <thead><tr><th>Modellcsalád</th>{PRICED_PROBLEMS.map((tag) => <th key={tag}>{tag}</th>)}</tr></thead>
-                <tbody>
-                  {Object.entries(REPAIR_FAMILIES).map(([familyKey, familyLabel]) => (
-                    <tr key={familyKey}>
-                      <td style={{ fontWeight: 600 }}>{familyLabel}</td>
-                      {PRICED_PROBLEMS.map((tag) => {
-                        const row = repairPrices.find((p) => p.familyKey === familyKey && p.problemTag === tag);
-                        return (
-                          <td key={tag} style={{ cursor: "pointer" }} onClick={() => setRepairPriceModal({ familyKey, problemTag: tag, price: row })}>
-                            {row?.priceOem != null ? (
-                              <span className="mono" style={{ fontWeight: 700 }}>{money(row.priceOem)}</span>
-                            ) : (
-                              <span style={{ color: "#9CA3AF", fontSize: 12 }}>+ Ár megadása</span>
-                            )}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 0 8px 2px" }}>
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151" }}>Beérkezett érdeklődők <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({repairLeads.filter((l) => repairLeadFilter === "Mind" || l.status === repairLeadFilter).length} db)</span></div>
-              <div style={{ display: "flex", gap: 6 }}>
-                {["Új", "Feldolgozva", "Elvetve", "Mind"].map((f) => (
-                  <button key={f} type="button" className={`btn sec sm${repairLeadFilter === f ? " active" : ""}`}
-                    style={repairLeadFilter === f ? { background: "#111827", color: "#fff", borderColor: "#111827" } : undefined}
-                    onClick={() => setRepairLeadFilter(f)}>{f}</button>
-                ))}
-              </div>
-            </div>
-            <div className="tw">
-              {repairLeads.filter((l) => repairLeadFilter === "Mind" || l.status === repairLeadFilter).length === 0 ? (
-                <div className="empty">Nincs ilyen státuszú érdeklődő.</div>
-              ) : (
-                <table>
-                  <thead><tr><th>Ügyfél</th><th>Telefon</th><th>Eszköz</th><th>Probléma</th><th>Becsült ár</th><th>Helyszín</th><th>Beérkezett</th><th></th></tr></thead>
-                  <tbody>
-                    {repairLeads.filter((l) => repairLeadFilter === "Mind" || l.status === repairLeadFilter).map((l) => (
-                      <tr key={l.id}>
-                        <td style={{ fontWeight: 600 }}>{l.customerName}</td>
-                        <td className="mono">{l.customerPhone}</td>
-                        <td>{[l.brand, l.model].filter(Boolean).join(" ")}</td>
-                        <td>{l.problemTag ? (PROBLEM_LABELS[l.problemTag] || l.problemTag) : (l.note || "—")}</td>
-                        <td className="mono">{l.estimatedPrice != null ? money(l.estimatedPrice) : "—"}</td>
-                        <td><span className="badge-loc">{locName(l.preferredLocationId)}</span></td>
-                        <td className="mono" style={{ color: "#6B7280" }}>{(l.createdAt || "").slice(0, 10)}</td>
-                        <td style={{ display: "flex", gap: 6 }}>
-                          {l.status === "Új" && (
-                            <>
-                              <button className="btn sec sm" disabled={busy} onClick={() => { setRepairLeadConvert(l); setTicketModal("add"); }}>Munkalap létrehozása</button>
-                              <button className="btn sec sm" disabled={busy} onClick={() => rejectRepairLead(l.id)}>Elvetés</button>
-                            </>
-                          )}
-                          {l.status === "Feldolgozva" && <span className="badge-income">Feldolgozva</span>}
-                          {l.status === "Elvetve" && <span style={{ color: "#9CA3AF", fontSize: 12 }}>Elvetve</span>}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          </>
+          <RepairPricesTab
+            repairPrices={repairPrices} setRepairPriceModal={setRepairPriceModal} repairLeads={repairLeads}
+            repairLeadFilter={repairLeadFilter} setRepairLeadFilter={setRepairLeadFilter} busy={busy}
+            setRepairLeadConvert={setRepairLeadConvert} setTicketModal={setTicketModal} rejectRepairLead={rejectRepairLead} locName={locName}
+          />
         )}
 
         {!noLocationAssigned && isAdmin && tab === "users" && (
-          <>
-            <div className="topbar">
-              <div><div className="page-title">Felhasználók</div><div className="page-sub">Szerepkör és helyszín beállítása</div></div>
-              <button className="btn" disabled={busy} onClick={() => { setInviteError(""); setInviteModal(true); }}>+ Új kolléga meghívása</button>
-            </div>
-            <div className="tw">
-              {loadingData ? <div className="empty">Betöltés...</div> : users.length === 0 ? <div className="empty">Nincs felhasználó.</div> : (
-                <table>
-                  <thead><tr><th>Név</th><th>Email</th><th>Szerepkör</th><th>Helyszín</th><th>Műveletek</th></tr></thead>
-                  <tbody>
-                    {users.map((u) => (
-                      <tr key={u.id}>
-                        <td style={{ fontWeight: 600 }}>{u.fullName || "—"}{u.id === user.id ? " (te)" : ""}</td>
-                        <td style={{ color: "#6B7280" }}>{u.email || "—"}</td>
-                        <td>
-                          <select value={u.role} disabled={busy} onChange={(e) => updateUserProfile(u.id, { role: e.target.value })}>
-                            <option value="employee">Alkalmazott</option>
-                            <option value="admin">Admin</option>
-                          </select>
-                        </td>
-                        <td>
-                          <select value={u.locationId || ""} disabled={busy} onChange={(e) => updateUserProfile(u.id, { location_id: e.target.value || null })}>
-                            <option value="">— Nincs —</option>
-                            {allowedLocations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
-                          </select>
-                        </td>
-                        <td style={{ display: "flex", gap: 6 }}>
-                          {u.id !== user.id && (
-                            <>
-                              <button type="button" className="btn sec sm" disabled={busy} onClick={() => resetEmployeePassword(u.id, u.email)}>Jelszó visszaállítása</button>
-                              <ConfirmDelete variant="full" disabled={busy} onConfirm={() => deleteEmployee(u.id)} />
-                            </>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          </>
+          <UsersTab
+            busy={busy} setInviteError={setInviteError} setInviteModal={setInviteModal} loadingData={loadingData}
+            users={users} user={user} updateUserProfile={updateUserProfile} allowedLocations={allowedLocations}
+            resetEmployeePassword={resetEmployeePassword} deleteEmployee={deleteEmployee}
+          />
         )}
 
         {!noLocationAssigned && tab === "trash" && (
-          <>
-            <div className="topbar">
-              <div><div className="page-title">Kuka</div><div className="page-sub">Törölt tételek — bármikor visszaállíthatók</div></div>
-            </div>
-            {trashLoading || !trash ? <div className="tw"><div className="empty">Betöltés...</div></div> : (
-              <>
-                {trash.products.length === 0 && trash.parts.length === 0 && trash.transactions.length === 0 && trash.tickets.length === 0 && (
-                  <div className="tw"><div className="empty">A kuka üres.</div></div>
-                )}
-                {trash.products.length > 0 && (
-                  <div style={{ marginBottom: 18 }}>
-                    <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>Telefonok <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({trash.products.length} db)</span></div>
-                    <div className="tw">
-                      <table>
-                        <thead><tr><th>Termék</th><th>IMEI</th><th>Ár</th><th></th></tr></thead>
-                        <tbody>
-                          {trash.products.map((p) => (
-                            <tr key={p.id}>
-                              <td style={{ fontWeight: 600 }}>{p.brand} {p.model}</td>
-                              <td className="mono" style={{ color: "#9CA3AF" }}>{p.imei || "—"}</td>
-                              <td className="mono" style={{ fontWeight: 700 }}>{money(p.salePrice)}</td>
-                              <td style={{ display: "flex", gap: 6 }}>
-                                <button className="btn sec sm" disabled={busy} onClick={() => restoreProduct(p.id)}>Visszaállítás</button>
-                                <ConfirmDelete variant="full" disabled={busy} onConfirm={() => hardDeleteProduct(p.id)} />
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-                {trash.parts.length > 0 && (
-                  <div style={{ marginBottom: 18 }}>
-                    <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>Alkatrészek <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({trash.parts.length} db)</span></div>
-                    <div className="tw">
-                      <table>
-                        <thead><tr><th>Alkatrész</th><th>Kategória</th><th>Készlet</th><th></th></tr></thead>
-                        <tbody>
-                          {trash.parts.map((p) => (
-                            <tr key={p.id}>
-                              <td style={{ fontWeight: 600 }}>{p.name}</td>
-                              <td style={{ color: "#6B7280", fontSize: 12 }}>{p.category || "—"}</td>
-                              <td style={{ fontWeight: 700 }}>{p.quantity} db</td>
-                              <td style={{ display: "flex", gap: 6 }}>
-                                <button className="btn sec sm" disabled={busy} onClick={() => restorePart(p.id)}>Visszaállítás</button>
-                                <ConfirmDelete variant="full" disabled={busy} onConfirm={() => hardDeletePart(p.id)} />
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-                {trash.transactions.length > 0 && (
-                  <div style={{ marginBottom: 18 }}>
-                    <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>Bevételek &amp; Kiadások <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({trash.transactions.length} db)</span></div>
-                    <div className="tw">
-                      <table>
-                        <thead><tr><th>Leírás</th><th>Összeg</th><th>Dátum</th><th></th></tr></thead>
-                        <tbody>
-                          {trash.transactions.map((t) => (
-                            <tr key={t.id}>
-                              <td style={{ fontWeight: 600 }}>{t.description}</td>
-                              <td className="mono" style={{ fontWeight: 700, color: t.type === "income" ? "#15803D" : "#B91C1C" }}>{t.type === "income" ? "+" : "-"}{money(t.amount)}</td>
-                              <td style={{ color: "#6B7280" }}>{t.date}</td>
-                              <td style={{ display: "flex", gap: 6 }}>
-                                <button className="btn sec sm" disabled={busy} onClick={() => restoreTransaction(t.id)}>Visszaállítás</button>
-                                <ConfirmDelete variant="full" disabled={busy} onConfirm={() => hardDeleteTransaction(t.id)} />
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-                {trash.tickets.length > 0 && (
-                  <div style={{ marginBottom: 18 }}>
-                    <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>Szerviz munkalapok <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({trash.tickets.length} db)</span></div>
-                    <div className="tw">
-                      <table>
-                        <thead><tr><th>#</th><th>Ügyfél</th><th>Eszköz</th><th></th></tr></thead>
-                        <tbody>
-                          {trash.tickets.map((t) => (
-                            <tr key={t.id}>
-                              <td className="mono" style={{ color: "#9CA3AF" }}>{t.ticketNo}</td>
-                              <td style={{ fontWeight: 600 }}>{t.customerName}</td>
-                              <td style={{ color: "#6B7280" }}>{[t.brand, t.model].filter(Boolean).join(" ")}</td>
-                              <td style={{ display: "flex", gap: 6 }}>
-                                <button className="btn sec sm" disabled={busy} onClick={() => restoreTicket(t.id)}>Visszaállítás</button>
-                                <ConfirmDelete variant="full" disabled={busy} onConfirm={() => hardDeleteTicket(t.id)} />
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-          </>
+          <TrashTab
+            trashLoading={trashLoading} trash={trash} busy={busy} restoreProduct={restoreProduct} hardDeleteProduct={hardDeleteProduct}
+            restorePart={restorePart} hardDeletePart={hardDeletePart} restoreTransaction={restoreTransaction}
+            hardDeleteTransaction={hardDeleteTransaction} restoreTicket={restoreTicket} hardDeleteTicket={hardDeleteTicket}
+          />
         )}
       </div>
 
