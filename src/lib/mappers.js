@@ -211,6 +211,14 @@ export const buybackRuleToApi = (r) => ({
   active: r.active !== false,
 });
 
+export const leaveTypeFromApi = (r) => ({ id: r.id, name: r.name, color: r.color });
+export const leaveBalanceFromApi = (r) => ({ id: r.id, userId: r.user_id, year: r.year, entitledDays: Number(r.entitled_days) });
+export const leaveRequestFromApi = (r) => ({
+  id: r.id, userId: r.user_id, leaveTypeId: r.leave_type_id,
+  startDate: r.start_date, endDate: r.end_date, days: Number(r.days), note: r.note || "",
+  status: r.status, requestedAt: r.requested_at, decidedBy: r.decided_by, decidedAt: r.decided_at,
+});
+
 export const monthlySummaryFromApi = (r) => ({
   id: r.id,
   locationId: r.location_id,

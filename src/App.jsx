@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap } from "./lib/supabaseClient";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi } from "./lib/mappers";
-import { money, today, STATUSES, PART_CATEGORIES, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, statusLabel, BUYBACK_CONDITION_QUESTIONS } from "./lib/utils";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi } from "./lib/mappers";
+import { money, today, STATUSES, PART_CATEGORIES, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, statusLabel, BUYBACK_CONDITION_QUESTIONS, countWorkdays, LEAVE_STATUS_CLS } from "./lib/utils";
 import Login from "./Login";
 import StockModal from "./components/StockModal";
 import SellModal from "./components/SellModal";
@@ -28,9 +28,11 @@ import WarrantyModal from "./components/WarrantyModal";
 import PrintWarrantySlip from "./components/PrintWarrantySlip";
 import BuybackModelModal from "./components/BuybackModelModal";
 import BuybackRuleModal from "./components/BuybackRuleModal";
+import LeaveRequestModal from "./components/LeaveRequestModal";
+import LeaveBalanceModal from "./components/LeaveBalanceModal";
 import {
   SearchIcon, EditIcon, LogoIcon, DashboardIcon, ServiceIcon, PhoneCaseIcon,
-  PartsIcon, FinanceIcon, CustomersIcon, WarrantyIcon, UsersNavIcon, TrashNavIcon, LogoutIcon, CloseIcon, BuybackIcon,
+  PartsIcon, FinanceIcon, CustomersIcon, WarrantyIcon, UsersNavIcon, TrashNavIcon, LogoutIcon, CloseIcon, BuybackIcon, LeaveIcon,
 } from "./components/icons";
 import ConfirmDelete from "./components/ConfirmDelete";
 import CallLink from "./components/CallLink";
@@ -106,6 +108,11 @@ function AppShell() {
   const [buybackRules, setBuybackRules] = useState([]);
   const [buybackModelModal, setBuybackModelModal] = useState(null); // null | "add" | model obj (edit)
   const [buybackRuleModal, setBuybackRuleModal] = useState(null); // null | "add" | rule obj (edit)
+  const [leaveTypes, setLeaveTypes] = useState([]);
+  const [leaveBalances, setLeaveBalances] = useState([]);
+  const [leaveRequests, setLeaveRequests] = useState([]);
+  const [leaveRequestModal, setLeaveRequestModal] = useState(false);
+  const [leaveBalanceModal, setLeaveBalanceModal] = useState(null); // null | user obj
 
   function printTicketSlip(ticket) {
     setPrintTicket(ticket);
@@ -132,7 +139,7 @@ function AppShell() {
   async function loadAll() {
     setLoadingData(true);
     try {
-      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules] = await Promise.all([
+      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, lTypes, lBalances, lRequests] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false }),
         supabase.from("transactions").select("*").is("deleted_at", null).order("date", { ascending: false }),
@@ -146,6 +153,9 @@ function AppShell() {
         supabase.from("warranties").select("*").is("deleted_at", null),
         supabase.from("buyback_models").select("*").is("deleted_at", null).order("brand", { ascending: true }),
         supabase.from("buyback_deduction_rules").select("*").order("question_key", { ascending: true }),
+        supabase.from("leave_types").select("*"),
+        supabase.from("leave_balances").select("*"),
+        supabase.from("leave_requests").select("*").order("start_date", { ascending: true }),
       ]);
       setLocations(unwrap(locs) || []);
       const prodRows = unwrap(prods) || [];
@@ -163,6 +173,9 @@ function AppShell() {
       setWarranties((unwrap(warrs) || []).map(warrantyFromApi));
       setBuybackModels((unwrap(bbModels) || []).map(buybackModelFromApi));
       setBuybackRules((unwrap(bbRules) || []).map(buybackRuleFromApi));
+      setLeaveTypes((unwrap(lTypes) || []).map(leaveTypeFromApi));
+      setLeaveBalances((unwrap(lBalances) || []).map(leaveBalanceFromApi));
+      setLeaveRequests((unwrap(lRequests) || []).map(leaveRequestFromApi));
       const historyRows = unwrap(hist) || [];
       setStockHistory(historyRows.map((r) => ({ date: r.date, value: Number(r.value) || 0 })));
       maybeSnapshotStockValue(prodRows, historyRows);
@@ -393,6 +406,46 @@ function AppShell() {
     await withBusy(async () => {
       unwrap(await supabase.from("buyback_deduction_rules").delete().eq("id", id));
       setBuybackRules(buybackRules.filter((r) => r.id !== id));
+    });
+  }
+
+  // SZABADSÁG
+  async function addLeaveRequest({ startDate, endDate, leaveTypeId, note }) {
+    await withBusy(async () => {
+      const days = countWorkdays(startDate, endDate);
+      const r = unwrap(await supabase.from("leave_requests").insert({
+        user_id: user.id, leave_type_id: leaveTypeId || null, start_date: startDate, end_date: endDate, days, note: note || null,
+      }).select());
+      setLeaveRequests([...leaveRequests, leaveRequestFromApi(r[0])].sort((a, b) => a.startDate.localeCompare(b.startDate)));
+      setLeaveRequestModal(false);
+      sendChatMessage(`📅 ${profile?.fullName || "Valaki"} szabadságot kért: ${startDate} – ${endDate} (${days} munkanap)`);
+    });
+  }
+  async function decideLeaveRequest(id, status) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("leave_requests").update({ status, decided_by: user.id, decided_at: new Date().toISOString() }).eq("id", id).select());
+      const updated = leaveRequestFromApi(r[0]);
+      setLeaveRequests(leaveRequests.map((lr) => (lr.id === id ? updated : lr)));
+      if (status === "Jóváhagyva") {
+        const reqUser = users.find((u) => u.id === updated.userId);
+        sendChatMessage(`✅ ${reqUser?.fullName || "Kolléga"} szabadsága jóváhagyva: ${updated.startDate} – ${updated.endDate}`);
+      }
+    });
+  }
+  async function revokeLeaveRequest(id) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("leave_requests").update({ status: "Visszavonva" }).eq("id", id).select());
+      setLeaveRequests(leaveRequests.map((lr) => (lr.id === id ? leaveRequestFromApi(r[0]) : lr)));
+    });
+  }
+  async function saveLeaveBalance(userId, year, entitledDays) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("leave_balances").upsert(
+        { user_id: userId, year, entitled_days: entitledDays }, { onConflict: "user_id,year" }
+      ).select());
+      const updated = leaveBalanceFromApi(r[0]);
+      setLeaveBalances([...leaveBalances.filter((b) => !(b.userId === userId && b.year === year)), updated]);
+      setLeaveBalanceModal(null);
     });
   }
 
@@ -829,6 +882,48 @@ function AppShell() {
   }, [transactions, tickets, warranties]);
   const filteredWarranties = warrantyFilter === "all" ? activeWarranties : activeWarranties.filter((w) => w.kind === warrantyFilter);
 
+  const leaveYear = new Date().getFullYear();
+  const leaveBalanceByUser = useMemo(() => {
+    const map = {};
+    users.forEach((u) => {
+      const bal = leaveBalances.find((b) => b.userId === u.id && b.year === leaveYear);
+      const entitled = bal ? bal.entitledDays : 20;
+      const used = leaveRequests
+        .filter((r) => r.userId === u.id && r.status === "Jóváhagyva" && r.startDate.slice(0, 4) === String(leaveYear))
+        .reduce((s, r) => s + r.days, 0);
+      map[u.id] = { entitled, used };
+    });
+    return map;
+  }, [users, leaveBalances, leaveRequests, leaveYear]);
+  const upcomingLeave = useMemo(() => {
+    const todayStr = today();
+    const horizon = new Date();
+    horizon.setDate(horizon.getDate() + 92);
+    const horizonStr = horizon.toISOString().slice(0, 10);
+    return leaveRequests
+      .filter((r) => (r.status === "Kérve" || r.status === "Jóváhagyva") && r.endDate >= todayStr && r.startDate <= horizonStr)
+      .sort((a, b) => a.startDate.localeCompare(b.startDate));
+  }, [leaveRequests]);
+  const coverageWarnings = useMemo(() => {
+    const todayStr = today();
+    const warnings = [];
+    const staffByLocation = {};
+    users.forEach((u) => { if (u.locationId) (staffByLocation[u.locationId] ||= []).push(u.id); });
+    const approved = leaveRequests.filter((r) => r.status === "Jóváhagyva");
+    for (let i = 0; i < 92; i++) {
+      const d = new Date(todayStr + "T00:00:00");
+      d.setDate(d.getDate() + i);
+      const dStr = d.toISOString().slice(0, 10);
+      for (const loc of locations) {
+        const staff = staffByLocation[loc.id] || [];
+        if (staff.length === 0) continue;
+        const allAway = staff.every((uid) => approved.some((r) => r.userId === uid && r.startDate <= dStr && dStr <= r.endDate));
+        if (allAway) warnings.push({ date: dStr, locationId: loc.id });
+      }
+    }
+    return warnings;
+  }, [users, locations, leaveRequests]);
+
   const detailCustomer = customerKey ? customers.find((c) => c.key === customerKey) : null;
   const receiptTx = receiptTxId ? transactions.find((t) => t.id === receiptTxId) : null;
 
@@ -867,6 +962,7 @@ function AppShell() {
           {isAdmin && (
             <button className={`navbtn ${tab === "users" ? "active" : ""}`} onClick={() => setTab("users")}><UsersNavIcon className="nav-ic" />Felhasználók</button>
           )}
+          <button className={`navbtn ${tab === "leave" ? "active" : ""}`} onClick={() => setTab("leave")}><LeaveIcon className="nav-ic" />Szabadság</button>
           <button className={`navbtn ${tab === "trash" ? "active" : ""}`} onClick={() => setTab("trash")}><TrashNavIcon className="nav-ic" />Kuka</button>
         </div>
         <div className="sidebar-bottom">
@@ -1220,6 +1316,81 @@ function AppShell() {
                           <td style={{ display: "flex", gap: 6 }} onClick={(e) => e.stopPropagation()}>
                             <CallLink phone={w.customerPhone} />
                             <button type="button" className="btn sec sm" disabled={!w.customerPhone} onClick={sendReminder}>Emlékeztető SMS</button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </>
+        )}
+
+        {!noLocationAssigned && tab === "leave" && (
+          <>
+            <div className="topbar">
+              <div><div className="page-title">Szabadság</div><div className="page-sub">{leaveYear}. évi keretek és a következő ~3 hónap</div></div>
+              <button className="btn" disabled={busy} onClick={() => setLeaveRequestModal(true)}>+ Szabadság kérése</button>
+            </div>
+
+            {coverageWarnings.length > 0 && (
+              <div className="leave-warn">
+                <div className="leave-warn-title">⚠ Ezeken a napokon egy helyszínen mindenki szabadságon lesz</div>
+                {coverageWarnings.map((w, i) => (
+                  <div key={i} className="leave-warn-item">{w.date} — {locName(w.locationId)}</div>
+                ))}
+              </div>
+            )}
+
+            <div className="leave-cards">
+              {users.map((u) => {
+                const b = leaveBalanceByUser[u.id] || { entitled: 20, used: 0 };
+                const pct = b.entitled > 0 ? Math.min(100, Math.round((b.used / b.entitled) * 100)) : 0;
+                return (
+                  <div key={u.id} className="leave-card">
+                    <div className="leave-card-top">
+                      <div className="leave-card-name">{u.fullName || "?"}</div>
+                      {isAdmin && (
+                        <button className="iconbtn" title="Keret módosítása" onClick={() => setLeaveBalanceModal(u)}><EditIcon /></button>
+                      )}
+                    </div>
+                    <div className="leave-card-days">{b.used} / {b.entitled} nap felhasználva</div>
+                    <div className="leave-progress"><div className="leave-progress-fill" style={{ width: `${pct}%` }} /></div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="tw">
+              {upcomingLeave.length === 0 ? (
+                <div className="empty">Nincs felvett vagy közelgő szabadság a következő 3 hónapban.</div>
+              ) : (
+                <table>
+                  <thead><tr><th>Dolgozó</th><th>Helyszín</th><th>Típus</th><th>Időszak</th><th>Napok</th><th>Állapot</th><th></th></tr></thead>
+                  <tbody>
+                    {upcomingLeave.map((r) => {
+                      const reqUser = users.find((u) => u.id === r.userId);
+                      const lt = leaveTypes.find((t) => t.id === r.leaveTypeId);
+                      const canRevoke = r.status === "Kérve" && r.userId === user.id;
+                      return (
+                        <tr key={r.id}>
+                          <td style={{ fontWeight: 600 }}>{reqUser?.fullName || "?"}</td>
+                          <td><span className="badge-loc">{locName(reqUser?.locationId)}</span></td>
+                          <td><span className="leave-type-chip"><span className="leave-type-dot" style={{ background: lt?.color || "#9CA3AF" }} />{lt?.name || "—"}</span></td>
+                          <td className="mono">{r.startDate} – {r.endDate}</td>
+                          <td style={{ fontWeight: 700 }}>{r.days}</td>
+                          <td><span className={LEAVE_STATUS_CLS[r.status] || "badge-loc"}>{r.status}</span></td>
+                          <td style={{ display: "flex", gap: 6 }}>
+                            {r.status === "Kérve" && isAdmin && (
+                              <>
+                                <button className="btn sec sm" disabled={busy} onClick={() => decideLeaveRequest(r.id, "Jóváhagyva")}>Jóváhagyás</button>
+                                <button className="btn sec sm" disabled={busy} onClick={() => decideLeaveRequest(r.id, "Elutasítva")}>Elutasítás</button>
+                              </>
+                            )}
+                            {canRevoke && (
+                              <button className="btn sec sm" disabled={busy} onClick={() => revokeLeaveRequest(r.id)}>Visszavonás</button>
+                            )}
                           </td>
                         </tr>
                       );
@@ -1591,6 +1762,24 @@ function AppShell() {
           onClose={() => setBuybackRuleModal(null)}
           busy={busy}
           onSave={(data) => (buybackRuleModal !== "add" ? editBuybackRule(buybackRuleModal.id, data) : addBuybackRule(data))}
+        />
+      )}
+      {leaveRequestModal && (
+        <LeaveRequestModal
+          leaveTypes={leaveTypes}
+          busy={busy}
+          onClose={() => setLeaveRequestModal(false)}
+          onSubmit={addLeaveRequest}
+        />
+      )}
+      {leaveBalanceModal && (
+        <LeaveBalanceModal
+          user={leaveBalanceModal}
+          year={leaveYear}
+          initial={leaveBalanceByUser[leaveBalanceModal.id]?.entitled ?? 20}
+          busy={busy}
+          onClose={() => setLeaveBalanceModal(null)}
+          onSave={(days) => saveLeaveBalance(leaveBalanceModal.id, leaveYear, days)}
         />
       )}
       <div id="print-slip-root">

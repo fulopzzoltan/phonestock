@@ -110,6 +110,19 @@ export const BUYBACK_CONDITION_QUESTIONS = [
   },
 ];
 
+export function countWorkdays(startStr, endStr) {
+  const start = new Date(startStr + "T00:00:00");
+  const end = new Date(endStr + "T00:00:00");
+  let count = 0;
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const day = d.getDay();
+    if (day !== 0 && day !== 6) count++;
+  }
+  return count;
+}
+
+export const LEAVE_STATUS_CLS = { "Kérve": "badge-loc", "Jóváhagyva": "badge-income", "Elutasítva": "badge-expense", "Visszavonva": "" };
+
 // Gyakran eladott kiegészítők — egy kattintással rögzíthető bevétel (eladási ár + beszerzési ár)
 export const QUICK_SALES = [
   { label: "Devia fólia", amount: 49, cost: 10 },
