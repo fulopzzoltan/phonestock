@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "./lib/supabaseClient";
+import PublicHeader from "./components/PublicHeader";
+import PublicFooter from "./components/PublicFooter";
 
 const deviceSvg = (
   <svg viewBox="0 0 40 64" fill="none" stroke="currentColor" strokeWidth="1.6">
@@ -37,6 +39,15 @@ export default function StockShowcase() {
 
   const brands = useMemo(() => ["all", ...new Set(phones.map((p) => p.brand))].sort((a, b) => (a === "all" ? -1 : b === "all" ? 1 : a.localeCompare(b))), [phones]);
 
+  const stockCounts = useMemo(() => {
+    const counts = {};
+    phones.forEach((p) => {
+      const key = `${p.brand}|${p.model}|${p.storage || ""}`;
+      counts[key] = (counts[key] || 0) + 1;
+    });
+    return counts;
+  }, [phones]);
+
   const filtered = useMemo(() => {
     let items = phones.filter((p) => {
       if (brand !== "all" && p.brand !== brand) return false;
@@ -54,46 +65,29 @@ export default function StockShowcase() {
 
   return (
     <div className="pub-shop">
-      <header className="pub-header">
-        <div className="pub-header-inner">
-          <div className="pub-brand-row">
-            <div className="pub-wordmark">
-              <div className="pub-mark">
-                <svg viewBox="0 0 24 24" style={{ width: 18, height: 18, fill: "none", stroke: "#fff", strokeWidth: 2 }}>
-                  <rect x="6" y="2" width="12" height="20" rx="2.5" /><line x1="10" y1="18.5" x2="14" y2="18.5" />
-                </svg>
-              </div>
-              <div className="pub-name">TELEF<em>O</em>NOS</div>
-            </div>
-            <nav className="pub-nav">
-              <a className="pub-nav-link active" href="/">Készlet</a>
-              <a className="pub-nav-link" href="/status">Szerviz / vásárlás státusz</a>
-              <a className="pub-nav-link pub-nav-login" href="/admin">Bejelentkezés</a>
-            </nav>
-          </div>
-          <div className="pub-search-row">
-            <div className="pub-search-box">
-              <svg viewBox="0 0 24 24" style={{ width: 15, height: 15, stroke: "var(--pub-ink-soft)", fill: "none", strokeWidth: 2 }}><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-              <input placeholder="Keresés — pl. iPhone 13, Samsung A07..." value={q} onChange={(e) => setQ(e.target.value)} />
-            </div>
-          </div>
-          <div className="pub-chip-row">
-            {brands.map((b) => (
-              <button key={b} type="button" className={`pub-chip${brand === b ? " active" : ""}`} onClick={() => setBrand(b)}>{b === "all" ? "Minden márka" : b}</button>
-            ))}
-          </div>
-          <div className="pub-chip-row">
-            <button type="button" className={`pub-chip${cond === "all" ? " active" : ""}`} onClick={() => setCond("all")}>Összes állapot</button>
-            <button type="button" className={`pub-chip${cond === "New" ? " active" : ""}`} onClick={() => setCond("New")}>Új</button>
-            <button type="button" className={`pub-chip${cond === "Refurbished" ? " active" : ""}`} onClick={() => setCond("Refurbished")}>Felújított</button>
-            <select className="pub-sort-select" value={sort} onChange={(e) => setSort(e.target.value)}>
-              <option value="price-asc">Ár: olcsóbb elöl</option>
-              <option value="price-desc">Ár: drágább elöl</option>
-              <option value="brand">Márka szerint</option>
-            </select>
+      <PublicHeader activeNav="stock">
+        <div className="pub-search-row">
+          <div className="pub-search-box">
+            <svg viewBox="0 0 24 24" style={{ width: 15, height: 15, stroke: "var(--pub-ink-soft)", fill: "none", strokeWidth: 2 }}><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+            <input placeholder="Keresés — pl. iPhone 13, Samsung A07..." value={q} onChange={(e) => setQ(e.target.value)} />
           </div>
         </div>
-      </header>
+        <div className="pub-chip-row">
+          {brands.map((b) => (
+            <button key={b} type="button" className={`pub-chip${brand === b ? " active" : ""}`} onClick={() => setBrand(b)}>{b === "all" ? "Minden márka" : b}</button>
+          ))}
+        </div>
+        <div className="pub-chip-row">
+          <button type="button" className={`pub-chip${cond === "all" ? " active" : ""}`} onClick={() => setCond("all")}>Összes állapot</button>
+          <button type="button" className={`pub-chip${cond === "New" ? " active" : ""}`} onClick={() => setCond("New")}>Új</button>
+          <button type="button" className={`pub-chip${cond === "Refurbished" ? " active" : ""}`} onClick={() => setCond("Refurbished")}>Felújított</button>
+          <select className="pub-sort-select" value={sort} onChange={(e) => setSort(e.target.value)}>
+            <option value="price-asc">Ár: olcsóbb elöl</option>
+            <option value="price-desc">Ár: drágább elöl</option>
+            <option value="brand">Márka szerint</option>
+          </select>
+        </div>
+      </PublicHeader>
 
       <div className="pub-results-bar">
         <div className="pub-results-count"><b>{loading ? "…" : filtered.length}</b> telefon készleten</div>
@@ -107,46 +101,60 @@ export default function StockShowcase() {
           <div className="pub-empty">Nincs találat a szűrésre — próbálj más márkát vagy keresőszót.</div>
         ) : (
           <div className="pub-grid">
-            {filtered.map((p) => (
-              <div key={p.id} className="pub-card">
-                <div className="pub-card-top">
-                  <span className={`pub-cond-pill ${p.condition === "New" ? "new" : "refurb"}`}>{p.condition === "New" ? "Új" : "Felújított"}</span>
-                </div>
-                <div className="pub-device-art">
-                  {p.photo_paths && p.photo_paths.length > 0 ? (
-                    <img src={photoUrl(p.photo_paths[0])} alt={`${p.brand} ${p.model}`} className="pub-device-photo" />
-                  ) : deviceSvg}
-                </div>
-                <div className="pub-card-name">{p.brand} {p.model}</div>
-                <div className="pub-card-specs">
-                  {p.storage && <span>{p.storage}</span>}
-                  {p.color && <span>{p.color}</span>}
-                </div>
-                {p.battery_health != null && (
-                  <div className="pub-battery-row">
-                    <div className="pub-battery-track"><div className="pub-battery-fill" style={{ width: `${p.battery_health}%` }} /></div>
-                    <span className="pub-battery-label mono">{p.battery_health}%</span>
+            {filtered.map((p) => {
+              const isLastOne = stockCounts[`${p.brand}|${p.model}|${p.storage || ""}`] === 1;
+              const hasAnchor = p.new_price && Number(p.new_price) > Number(p.sale_price);
+              return (
+                <div key={p.id} className="pub-card" role="link" tabIndex={0}
+                  onClick={() => { window.location.href = `/telefon/${p.id}`; }}
+                  onKeyDown={(e) => { if (e.key === "Enter") window.location.href = `/telefon/${p.id}`; }}
+                >
+                  <div className="pub-card-top">
+                    <span className={`pub-cond-pill ${p.condition === "New" ? "new" : "refurb"}`}>{p.condition === "New" ? "Új" : "Felújított"}</span>
+                    {isLastOne && <span className="pub-scarcity-pill">Utolsó darab</span>}
                   </div>
-                )}
-                {p.warranty && (
-                  <div className="pub-warranty-tag">
-                    <svg viewBox="0 0 24 24" style={{ width: 11, height: 11, stroke: "var(--pub-ink-soft)", fill: "none", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" }}><path d="M12 3l7 2.5v5.8c0 4.2-2.9 7.6-7 8.7-4.1-1.1-7-4.5-7-8.7V5.5L12 3z" /></svg>
-                    {p.warranty} garancia
+                  <div className="pub-device-art">
+                    {p.photo_paths && p.photo_paths.length > 0 ? (
+                      <img src={photoUrl(p.photo_paths[0])} alt={`${p.brand} ${p.model}`} className="pub-device-photo" />
+                    ) : deviceSvg}
                   </div>
-                )}
-                <div className="pub-card-foot">
-                  <div className="pub-price mono">{Number(p.sale_price).toLocaleString("hu-HU")}<span className="pub-cur">Lei</span></div>
-                  <a className="pub-ask-btn" href="tel:0773985278">Érdekel</a>
+                  <div className="pub-card-name">{p.brand} {p.model}</div>
+                  <div className="pub-card-specs">
+                    {p.storage && <span>{p.storage}</span>}
+                    {p.color && <span>{p.color}</span>}
+                  </div>
+                  {p.battery_health != null && (
+                    <div className="pub-battery-row">
+                      <div className="pub-battery-track"><div className="pub-battery-fill" style={{ width: `${p.battery_health}%` }} /></div>
+                      <span className="pub-battery-label mono">{p.battery_health}%</span>
+                    </div>
+                  )}
+                  {p.warranty && (
+                    <div className="pub-warranty-tag">
+                      <svg viewBox="0 0 24 24" style={{ width: 11, height: 11, stroke: "var(--pub-ink-soft)", fill: "none", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" }}><path d="M12 3l7 2.5v5.8c0 4.2-2.9 7.6-7 8.7-4.1-1.1-7-4.5-7-8.7V5.5L12 3z" /></svg>
+                      {p.warranty} garancia
+                    </div>
+                  )}
+                  <div className="pub-card-foot">
+                    <div>
+                      {hasAnchor && (
+                        <div className="pub-anchor">
+                          <span className="pub-anchor-old">{Number(p.new_price).toLocaleString("hu-HU")} Lei</span>
+                          <span className="pub-anchor-save">Spórolsz {Math.round(p.new_price - p.sale_price).toLocaleString("hu-HU")} Lei</span>
+                        </div>
+                      )}
+                      <div className="pub-price mono">{Number(p.sale_price).toLocaleString("hu-HU")}<span className="pub-cur">Lei</span></div>
+                    </div>
+                    <a className="pub-ask-btn" href="tel:0773985278" onClick={(e) => e.stopPropagation()}>Érdekel</a>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </main>
 
-      <footer className="pub-footer">
-        <div className="pub-footer-inner">Telefonos — az árak és a raktárkészlet folyamatosan frissülnek, végleges ár a szervizben/üzletben.</div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }

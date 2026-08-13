@@ -22,6 +22,7 @@ export const pFromApi = (r) => ({
   source: r.source,
   batteryHealth: r.battery_health,
   locationId: r.location_id,
+  newPrice: r.new_price,
 });
 
 export const pToApi = (p, locId) => ({
@@ -38,6 +39,7 @@ export const pToApi = (p, locId) => ({
   source: p.source || null,
   battery_health: p.batteryHealth === "" || p.batteryHealth == null ? null : Number(p.batteryHealth),
   location_id: locId,
+  new_price: p.newPrice === "" || p.newPrice == null ? null : Number(p.newPrice),
 });
 
 export const txFromApi = (r) => ({
