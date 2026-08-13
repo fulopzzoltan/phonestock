@@ -14,7 +14,7 @@ export default function PublicHeader({ children, activeNav = "stock" }) {
           <nav className="pub-nav">
             <a className={`pub-nav-link${activeNav === "stock" ? " active" : ""}`} href="/">Készlet</a>
             <a className={`pub-nav-link${activeNav === "buyback" ? " active" : ""}`} href="/eladom">Add el a telefonod</a>
-            <a className="pub-nav-link" href="/status">Szerviz / vásárlás státusz</a>
+            <a className={`pub-nav-link${activeNav === "status" ? " active" : ""}`} href="/status">Szerviz / vásárlás státusz</a>
             <a className="pub-nav-link pub-nav-login" href="/admin">Bejelentkezés</a>
           </nav>
         </div>

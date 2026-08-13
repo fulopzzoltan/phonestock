@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { supabase } from "./lib/supabaseClient";
 import { money, statusCls, subStatusLabel, warrantyExpiry, isWarrantyActive, SERVICE_WARRANTY_TERMS } from "./lib/utils";
+import PublicHeader from "./components/PublicHeader";
+import PublicFooter from "./components/PublicFooter";
 
 export default function StatusLookup({ token, shortCode }) {
   const [ticketNo, setTicketNo] = useState("");
@@ -57,12 +59,10 @@ export default function StatusLookup({ token, shortCode }) {
   const active = handedOver ? isWarrantyActive(warrantyFrom, result?.warranty) : false;
 
   return (
-    <div className="login-shell">
+    <div className="pub-shop">
+      <PublicHeader activeNav="status" />
+      <main className="pub-lookup-main">
       <div className="login-card" style={{ maxWidth: 460 }}>
-        <div className="login-brand">
-          <div className="brand-icon"><svg viewBox="0 0 24 24"><path d="M17 2H7a2 2 0 00-2 2v16a2 2 0 002 2h10a2 2 0 002-2V4a2 2 0 00-2-2zm-5 15a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm3-7H9V5h6v5z" /></svg></div>
-          <div className="brand-name">TELEF<span>O</span>NOS</div>
-        </div>
         {!result && <div className="login-title">Javítás állapota</div>}
         {error && <div className="errbar">{error}</div>}
         {busy && !result && <div style={{ textAlign: "center", color: "#6B7280", fontSize: 13, padding: "10px 0" }}>Betöltés...</div>}
@@ -121,6 +121,8 @@ export default function StatusLookup({ token, shortCode }) {
           </div>
         )}
       </div>
+      </main>
+      <PublicFooter />
     </div>
   );
 }

@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { supabase } from "./lib/supabaseClient";
 import { money, warrantyExpiry, isWarrantyActive } from "./lib/utils";
+import PublicHeader from "./components/PublicHeader";
+import PublicFooter from "./components/PublicFooter";
 
 export default function ReceiptLookup({ token }) {
   const [receiptNo, setReceiptNo] = useState("");
@@ -49,12 +51,10 @@ export default function ReceiptLookup({ token }) {
   const active = result ? isWarrantyActive(result.date, result.warranty) : false;
 
   return (
-    <div className="login-shell">
+    <div className="pub-shop">
+      <PublicHeader activeNav="status" />
+      <main className="pub-lookup-main">
       <div className="login-card" style={{ maxWidth: 440 }}>
-        <div className="login-brand">
-          <div className="brand-icon"><svg viewBox="0 0 24 24"><path d="M17 2H7a2 2 0 00-2 2v16a2 2 0 002 2h10a2 2 0 002-2V4a2 2 0 00-2-2zm-5 15a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm3-7H9V5h6v5z" /></svg></div>
-          <div className="brand-name">TELEF<span>O</span>NOS</div>
-        </div>
         {!result && <div className="login-title">Vásárlás / garancia</div>}
         {error && <div className="errbar">{error}</div>}
         {busy && !result && <div style={{ textAlign: "center", color: "#6B7280", fontSize: 13, padding: "10px 0" }}>Betöltés...</div>}
@@ -103,6 +103,8 @@ export default function ReceiptLookup({ token }) {
           </div>
         )}
       </div>
+      </main>
+      <PublicFooter />
     </div>
   );
 }

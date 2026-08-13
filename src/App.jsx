@@ -942,6 +942,7 @@ function AppShell() {
             <div className="brand-mark"><LogoIcon className="nav-ic" /></div>
             <div className="brand-word">TELEF<span>O</span>NOS</div>
           </div>
+          <a className="shop-preview-link" href="/" target="_blank" rel="noopener noreferrer">Webshop megtekintése ↗</a>
 
           <div className="nav-lbl">Napi munka</div>
           <button className={`navbtn ${tab === "dashboard" ? "active" : ""}`} onClick={() => setTab("dashboard")}><DashboardIcon className="nav-ic" />Áttekintés</button>
