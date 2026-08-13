@@ -41,10 +41,8 @@ import BuybackRuleModal from "./components/BuybackRuleModal";
 import LeaveRequestModal from "./components/LeaveRequestModal";
 import LeaveBalanceModal from "./components/LeaveBalanceModal";
 import RepairPriceModal from "./components/RepairPriceModal";
-import {
-  EditIcon, LogoIcon, DashboardIcon, ServiceIcon, PhoneCaseIcon,
-  PartsIcon, FinanceIcon, CustomersIcon, WarrantyIcon, UsersNavIcon, TrashNavIcon, LogoutIcon, CloseIcon, BuybackIcon, LeaveIcon, RepairPriceIcon,
-} from "./components/icons";
+import { CloseIcon } from "./components/icons";
+import Sidebar from "./components/Sidebar";
 import TeamChatPanel from "./components/TeamChatPanel";
 import InviteEmployeeModal from "./components/InviteEmployeeModal";
 import ChangePasswordModal from "./components/ChangePasswordModal";
@@ -65,7 +63,7 @@ function AppShell() {
   const isAdmin = profile?.role === "admin";
   const myLocationId = profile?.locationId || null;
 
-  const [tab, setTab] = useState("dashboard");
+  const [tab, setTab] = useState(isAdmin ? "dashboard" : "service");
   const [locFilter, setLocFilter] = useState("all");
   const [locations, setLocations] = useState([]);
   const [stock, setStock] = useState([]);
@@ -984,65 +982,11 @@ function AppShell() {
 
   return (
     <div className="shell">
-      <div className="sidebar">
-        <div className="sidebar-inner">
-          <div className="brand">
-            <div className="brand-mark"><LogoIcon className="nav-ic" /></div>
-            <div className="brand-word">TELEF<span>O</span>NOS</div>
-          </div>
-          <a className="shop-preview-link" href="/" target="_blank" rel="noopener noreferrer">Webshop megtekintése ↗</a>
-
-          <div className="nav-lbl">Napi munka</div>
-          <button className={`navbtn ${tab === "dashboard" ? "active" : ""}`} onClick={() => setTab("dashboard")}><DashboardIcon className="nav-ic" />Áttekintés</button>
-          <div className="navrow">
-            <button className={`navbtn ${tab === "service" ? "active" : ""}`} onClick={() => setTab("service")}><ServiceIcon className="nav-ic" />Szerviz</button>
-            <button type="button" className="nav-quick-add" title="Új munkalap" onClick={() => { setTab("service"); setTicketModal("add"); }}>+</button>
-          </div>
-          <button className={`navbtn ${tab === "stock" ? "active" : ""}`} onClick={() => setTab("stock")}><PhoneCaseIcon className="nav-ic" />Telefonok</button>
-          <button className={`navbtn ${tab === "parts" ? "active" : ""}`} onClick={() => setTab("parts")}><PartsIcon className="nav-ic" />Alkatrészek</button>
-          <button className={`navbtn ${tab === "finance" ? "active" : ""}`} onClick={() => setTab("finance")}><FinanceIcon className="nav-ic" />Bevételek &amp; Kiadások</button>
-          <button className={`navbtn ${tab === "customers" ? "active" : ""}`} onClick={() => setTab("customers")}><CustomersIcon className="nav-ic" />Kliensek</button>
-          <button className={`navbtn ${tab === "warranty" ? "active" : ""}`} onClick={() => setTab("warranty")}><WarrantyIcon className="nav-ic" />Garancia</button>
-
-          <div className="nav-lbl">Admin</div>
-          {isAdmin && (
-            <button className={`navbtn ${tab === "buyback" ? "active" : ""}`} onClick={() => setTab("buyback")}><BuybackIcon className="nav-ic" />Felvásárlás</button>
-          )}
-          {isAdmin && (
-            <button className={`navbtn ${tab === "users" ? "active" : ""}`} onClick={() => setTab("users")}><UsersNavIcon className="nav-ic" />Felhasználók</button>
-          )}
-          {isAdmin && (
-            <button className={`navbtn ${tab === "repair-prices" ? "active" : ""}`} onClick={() => setTab("repair-prices")}><RepairPriceIcon className="nav-ic" />Szerviz árbecslő</button>
-          )}
-          <button className={`navbtn ${tab === "leave" ? "active" : ""}`} onClick={() => setTab("leave")}><LeaveIcon className="nav-ic" />Szabadság</button>
-          <button className={`navbtn ${tab === "trash" ? "active" : ""}`} onClick={() => setTab("trash")}><TrashNavIcon className="nav-ic" />Kuka</button>
-        </div>
-        <div className="sidebar-bottom">
-          {isAdmin ? (
-            <div className="loc-sw">
-              <button className={`loc-btn ${locFilter === "all" ? "active" : ""}`} onClick={() => setLocFilter("all")}>Mind</button>
-              {allowedLocations.map((l) => (
-                <button key={l.id} className={`loc-btn ${locFilter === l.id ? "active" : ""}`} onClick={() => setLocFilter(l.id)}>{l.name}</button>
-              ))}
-            </div>
-          ) : (
-            <div className="loc-static">{myLocationId ? locName(myLocationId) : "Nincs helyszín"}</div>
-          )}
-          <div className="user-row">
-            <div className="user-avatar">{(profile?.fullName || user?.email || "?").slice(0, 1).toUpperCase()}</div>
-            <div className="user-meta">
-              <div className="user-name">{profile?.fullName || user?.email}</div>
-              <div className="user-role">{isAdmin ? "Admin" : "Alkalmazott"}</div>
-            </div>
-            <button className="logout-btn" title="Jelszó módosítása" onClick={() => setChangePasswordModal(true)}>
-              <EditIcon />
-            </button>
-            <button className="logout-btn" title="Kijelentkezés" onClick={signOut}>
-              <LogoutIcon />
-            </button>
-          </div>
-        </div>
-      </div>
+      <Sidebar
+        tab={tab} setTab={setTab} setTicketModal={setTicketModal} isAdmin={isAdmin} locFilter={locFilter} setLocFilter={setLocFilter}
+        allowedLocations={allowedLocations} myLocationId={myLocationId} locName={locName} profile={profile} user={user}
+        signOut={signOut} setChangePasswordModal={setChangePasswordModal}
+      />
 
       <div className="main">
         {error && <div className="errbar">{error}</div>}
@@ -1051,7 +995,7 @@ function AppShell() {
           <div className="banner warn">Nincs helyszín hozzárendelve a fiókodhoz. Kérj meg egy adminisztrátort, hogy rendeljen hozzá egy helyszínt, addig nem látsz adatokat.</div>
         )}
 
-        {!noLocationAssigned && tab === "dashboard" && (
+        {!noLocationAssigned && isAdmin && tab === "dashboard" && (
           <DashboardTab
             effectiveLocFilter={effectiveLocFilter} locName={locName} stockStats={stockStats} stockHistory={stockHistory}
             svcStats={svcStats} monthlyTrendSummary={monthlyTrendSummary} currentMonthLive={currentMonthLive}

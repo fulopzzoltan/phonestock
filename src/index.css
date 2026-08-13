@@ -24,7 +24,7 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
 .brand-mark svg{width:18px;height:18px}
 .brand-word{font-size:14px;font-weight:700;letter-spacing:-.2px;color:#101828;line-height:1;font-family:'Inter',sans-serif}
 .brand-word span{color:var(--sidebar-accent)}
-.shop-preview-link{display:block;font-size:11.5px;font-weight:600;color:var(--accent-dark);text-decoration:none;background:var(--accent-soft,#F0FDF4);border:1px solid #BBF7D0;border-radius:9px;padding:7px 10px;margin:0 8px 18px;text-align:center}
+.shop-preview-link{display:block;font-size:11.5px;font-weight:600;color:var(--accent-dark);text-decoration:none;background:var(--accent-soft,#F0FDF4);border:1px solid #BBF7D0;border-radius:9px;padding:7px 10px;margin:0 0 12px;text-align:center}
 .shop-preview-link:hover{background:#DCFCE7}
 .nav-lbl{font-size:10px;font-weight:600;color:var(--sidebar-text-dim);text-transform:uppercase;letter-spacing:.08em;padding:0 12px;margin:20px 0 8px}
 .nav-lbl:first-of-type{margin-top:0}
