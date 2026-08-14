@@ -184,16 +184,12 @@ export function isWarrantyActive(fromDateStr, warranty) {
 }
 
 export function startOfWeek(d) {
-  const date = new Date(d + "T00:00:00");
-  const day = (date.getDay() + 6) % 7; // Monday = 0
-  date.setDate(date.getDate() - day);
+  // UTC-ban számol (nem helyi idő), hogy a toISOString()-es visszaalakítás
+  // ne csússzon egy nappal pozitív időzóna-eltolásnál (pl. Románia UTC+2/+3).
+  const date = new Date(d + "T00:00:00Z");
+  const day = (date.getUTCDay() + 6) % 7; // Monday = 0
+  date.setUTCDate(date.getUTCDate() - day);
   return date.toISOString().slice(0, 10);
-}
-export function periodKey(dateStr, period) {
-  if (period === "day") return dateStr;
-  if (period === "week") return startOfWeek(dateStr);
-  if (period === "year") return dateStr.slice(0, 4); // év YYYY
-  return dateStr.slice(0, 7); // month YYYY-MM
 }
 export function periodLabel(key, period) {
   if (period === "year") return key; // "2024", "2025" — nem kell bonyolítani
@@ -207,6 +203,25 @@ export function periodLabel(key, period) {
     end.setDate(end.getDate() + 6);
     return `${start.toLocaleDateString("hu-HU", { month: "short", day: "numeric" })} – ${end.toLocaleDateString("hu-HU", { month: "short", day: "numeric" })}`;
   }
+  const todayStr = today();
+  if (key === todayStr) return "Ma";
+  const yesterday = new Date(todayStr + "T00:00:00Z");
+  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+  if (key === yesterday.toISOString().slice(0, 10)) return "Tegnap";
   const d = new Date(key + "T00:00:00");
   return d.toLocaleDateString("hu-HU", { year: "numeric", month: "long", day: "numeric", weekday: "long" });
+}
+
+// Öregedő ("telescoping") csoportosítás: a folyamatban lévő hét napi bontásban,
+// az idei hónap heti bontásban, az idei év havi bontásban, a korábbi évek évenként —
+// így a lista sosem "kurva sok sor", csak a friss adat van részletezve.
+export function adaptivePeriodBucket(dateStr) {
+  const todayStr = today();
+  const curWeekStart = startOfWeek(todayStr);
+  const curMonthStart = todayStr.slice(0, 7) + "-01";
+  const curYearStart = todayStr.slice(0, 4) + "-01-01";
+  if (dateStr >= curWeekStart) return { key: dateStr, granularity: "day" };
+  if (dateStr >= curMonthStart) return { key: startOfWeek(dateStr), granularity: "week" };
+  if (dateStr >= curYearStart) return { key: dateStr.slice(0, 7), granularity: "month" };
+  return { key: dateStr.slice(0, 4), granularity: "year" };
 }

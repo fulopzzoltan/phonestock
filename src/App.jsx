@@ -87,7 +87,6 @@ function AppShell() {
   const [svcKindFilter, setSvcKindFilter] = useState("all"); // all | customer | own
   const [partSearch, setPartSearch] = useState("");
   const [custSearch, setCustSearch] = useState("");
-  const [period, setPeriod] = useState("day");
 
   const [stockModal, setStockModal] = useState(null); // null | "add" | product obj (edit)
   const [sellModal, setSellModal] = useState(null);
@@ -1014,7 +1013,7 @@ function AppShell() {
 
         {!noLocationAssigned && tab === "finance" && (
           <FinanceTab
-            effectiveLocFilter={effectiveLocFilter} locName={locName} period={period} setPeriod={setPeriod}
+            effectiveLocFilter={effectiveLocFilter} locName={locName}
             allowedLocations={allowedLocations} defaultLocId={defaultLocId} addTransaction={addTransaction} busy={busy}
             loadingData={loadingData} filteredTransactions={filteredTransactions} setTxModal={setTxModal}
             deleteTransaction={deleteTransaction} setReceiptTxId={setReceiptTxId}

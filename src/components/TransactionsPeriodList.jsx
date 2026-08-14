@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { money, periodKey, periodLabel, today } from "../lib/utils";
+import { money, adaptivePeriodBucket, periodLabel, today } from "../lib/utils";
 import { EditIcon } from "./icons";
 import ConfirmDelete from "./ConfirmDelete";
 
-export default function TransactionsPeriodList({ transactions, period, locName, onEdit, onDelete, onOpenReceipt, busy }) {
-  const currentKey = periodKey(today(), period);
+export default function TransactionsPeriodList({ transactions, locName, onEdit, onDelete, onOpenReceipt, busy }) {
+  const currentKey = adaptivePeriodBucket(today()).key;
   const [expanded, setExpanded] = useState(() => new Set([currentKey]));
 
   if (transactions.length === 0) {
@@ -12,9 +12,9 @@ export default function TransactionsPeriodList({ transactions, period, locName, 
   }
   const groups = {};
   transactions.forEach((t) => {
-    const key = periodKey(t.date, period);
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(t);
+    const { key, granularity } = adaptivePeriodBucket(t.date);
+    if (!groups[key]) groups[key] = { granularity, rows: [] };
+    groups[key].rows.push(t);
   });
   const keys = Object.keys(groups).sort((a, b) => b.localeCompare(a));
 
@@ -30,7 +30,7 @@ export default function TransactionsPeriodList({ transactions, period, locName, 
   return (
     <>
       {keys.map((key) => {
-        const rows = groups[key];
+        const { granularity, rows } = groups[key];
         const income = rows.filter((r) => r.type === "income").reduce((a, r) => a + (Number(r.amount) || 0), 0);
         const expense = rows.filter((r) => r.type === "expense").reduce((a, r) => a + (Number(r.amount) || 0), 0);
         const margin = rows.filter((r) => r.type === "income").reduce((a, r) => a + ((Number(r.amount) || 0) - (Number(r.costPrice) || 0)), 0);
@@ -50,7 +50,12 @@ export default function TransactionsPeriodList({ transactions, period, locName, 
                   style={{ transform: isOpen ? "rotate(90deg)" : "rotate(0deg)", transition: "transform .12s", flexShrink: 0 }}>
                   <polyline points="9 6 15 12 9 18" />
                 </svg>
-                <div style={{ fontSize: 13, fontWeight: 700, color: "#111827" }}>{periodLabel(key, period)}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "#111827" }}>{periodLabel(key, granularity)}</div>
+                {granularity !== "day" && (
+                  <span style={{ fontSize: 10.5, fontWeight: 600, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 8px" }}>
+                    {granularity === "week" ? "heti összesítő" : granularity === "month" ? "havi összesítő" : "éves összesítő"}
+                  </span>
+                )}
               </div>
               <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
                 <span style={{ fontSize: 12, color: "#6B7280" }}>{rows.length} tétel</span>
