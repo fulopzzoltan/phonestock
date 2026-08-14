@@ -19,6 +19,12 @@ function sortItems(items, sortBy) {
   return arr;
 }
 
+// Az "Apple iPhone 11" helyett elég csak "iPhone 11" — a brand adat marad "Apple", ez csak megjelenítés.
+function displayName(brand, model) {
+  if (brand === "Apple" && (model || "").toLowerCase().startsWith("iphone")) return model;
+  return `${brand} ${model}`;
+}
+
 function Thumb({ brand }) {
   return (
     <div className="stk-thumb" style={{ background: brandColor(brand) }}>
@@ -88,7 +94,7 @@ export default function StockTab({
               {view === "list" ? (
                 <div className="tw">
                   <table>
-                    <thead><tr><th>Termék</th><th>Állapot</th><th>Besz.</th><th>Ár</th><th></th></tr></thead>
+                    <thead><tr><th>Termék</th><th>Állapot</th><th>Ár</th><th>Besz.</th><th></th></tr></thead>
                     <tbody>
                       {items.map((i) => (
                         <tr key={i.id} style={{ cursor: "pointer" }} onClick={() => setProductDetailId(i.id)}>
@@ -97,10 +103,10 @@ export default function StockTab({
                               <Thumb brand={i.brand} />
                               <div>
                                 <div className="stk-name">
-                                  {i.brand} {i.model}
+                                  {displayName(i.brand, i.model)}
                                   {!i.onShelf && <span style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }} title="Nem látszik a webshopban">nem polcon</span>}
                                 </div>
-                                <div className="stk-sub">{[i.storage, i.color, i.imei].filter(Boolean).join(" · ") || "—"}</div>
+                                <div className="stk-sub">{[i.storage, i.color].filter(Boolean).join(" · ") || "—"}</div>
                               </div>
                             </div>
                           </td>
@@ -110,10 +116,10 @@ export default function StockTab({
                               {i.warranty && <span className="gar-pill">{i.warranty}</span>}
                             </div>
                           </td>
-                          <td className="mono" style={{ color: "#6B7280" }}>{money(i.costPrice)}</td>
                           <td className="mono" style={{ fontWeight: 700 }}>{money(i.salePrice)}</td>
-                          <td style={{ display: "flex", gap: 5 }} onClick={(e) => e.stopPropagation()}>
-                            <button className="btn sec sm" disabled={busy} onClick={() => setSellModal(i)}>Eladva</button>
+                          <td className="mono" style={{ color: "#6B7280" }}>{money(i.costPrice)}</td>
+                          <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
+                            <button className="btn sec sm" disabled={busy} onClick={() => setSellModal(i)}>Eladás</button>
                             <button className="iconbtn" disabled={busy} onClick={() => setStockModal(i)}><EditIcon /></button>
                             <ConfirmDelete disabled={busy} onConfirm={() => deleteProduct(i.id)} />
                           </td>
@@ -133,14 +139,14 @@ export default function StockTab({
                         </div>
                       </div>
                       <div className="stk-card-name">
-                        {i.brand} {i.model}
+                        {displayName(i.brand, i.model)}
                         {!i.onShelf && <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }} title="Nem látszik a webshopban">nem polcon</span>}
                       </div>
                       <div className="stk-card-sub">{[i.storage, i.color].filter(Boolean).join(" · ") || "—"}{i.warranty ? ` · ${i.warranty} gar.` : ""}</div>
                       <div className="stk-card-price">{money(i.salePrice)}</div>
                       <div className="stk-card-cost">besz. {money(i.costPrice)}</div>
                       <div className="stk-card-actions" onClick={(e) => e.stopPropagation()}>
-                        <button className="btn sec sm" disabled={busy} onClick={() => setSellModal(i)}>Eladva</button>
+                        <button className="btn sec sm" disabled={busy} onClick={() => setSellModal(i)}>Eladás</button>
                         <button className="iconbtn" disabled={busy} onClick={() => setStockModal(i)}><EditIcon /></button>
                         <ConfirmDelete disabled={busy} onConfirm={() => deleteProduct(i.id)} />
                       </div>
@@ -167,10 +173,7 @@ export default function StockTab({
                     <td>
                       <div className="stk-row">
                         <Thumb brand={i.brand} />
-                        <div>
-                          <div className="stk-name">{i.brand} {i.model}</div>
-                          <div className="stk-sub">{i.imei || "—"}</div>
-                        </div>
+                        <div className="stk-name">{displayName(i.brand, i.model)}</div>
                       </div>
                     </td>
                     <td><span className="badge-loc">{locName(i.locationId)}</span></td>

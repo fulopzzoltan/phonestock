@@ -147,7 +147,10 @@ tr:hover td{background:#FAFAFA}
 .stk-card-sub{font-size:11px;color:#9CA3AF;margin-top:2px;font-family:'JetBrains Mono',monospace}
 .stk-card-price{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:16px;margin-top:12px}
 .stk-card-cost{font-size:10.5px;color:#9CA3AF;margin-top:1px}
-.stk-card-actions{display:flex;gap:6px;margin-top:12px;padding-top:12px;border-top:1px solid #F3F4F6}
+.stk-card-actions{display:flex;gap:6px;margin-top:12px;padding-top:12px;border-top:1px solid #F3F4F6;align-items:center}
+.stk-actions{display:flex;gap:6px;align-items:center}
+.stk-actions .iconbtn,.stk-card-actions .iconbtn{padding:6px;border-radius:9px}
+.stk-actions .iconbtn svg,.stk-card-actions .iconbtn svg{width:15px;height:15px}
 
 /* ====== KANBAN BOARD ====== */
 .kanban-wrap{overflow-x:auto;padding-bottom:8px}
