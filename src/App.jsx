@@ -1023,7 +1023,7 @@ function AppShell() {
             effectiveLocFilter={effectiveLocFilter} locName={locName} busy={busy} setStockModal={setStockModal}
             search={search} setSearch={setSearch} loadingData={loadingData} filteredStock={filteredStock}
             locations={locations} reserveLocId={reserveLocId} setProductDetailId={setProductDetailId}
-            deleteProduct={deleteProduct} setSellModal={setSellModal}
+            deleteProduct={deleteProduct} setSellModal={setSellModal} stockStats={stockStats}
             showSold={showSold} setShowSold={setShowSold} soldStock={soldStock}
           />
         )}

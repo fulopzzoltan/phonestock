@@ -10,6 +10,18 @@ export const today = () => new Date().toISOString().slice(0, 10);
 
 export const LOCS = { gyimes: "Gyimes", szentgy: "Szentgyörgy" };
 
+// márkánként konzisztens szín a fotó nélküli termékek avatar-monogramjához (StockTab)
+const BRAND_COLORS = {
+  Apple: "#111827", Samsung: "#1D4ED8", Xiaomi: "#EA580C", Huawei: "#DC2626",
+  Oppo: "#059669", Vivo: "#7C3AED", OnePlus: "#B91C1C", Nokia: "#0EA5E9", Google: "#EAB308",
+};
+export function brandColor(brand) {
+  if (BRAND_COLORS[brand]) return BRAND_COLORS[brand];
+  let h = 0;
+  for (let i = 0; i < (brand || "").length; i++) h = (h * 31 + brand.charCodeAt(i)) % 360;
+  return `hsl(${h}, 55%, 42%)`;
+}
+
 // "key" = adatbázisban tárolt érték (ne változtasd, meglévő sorok erre hivatkoznak),
 // "label" = amit a kanban/UI mutat — ez bármikor finomítható a key érintése nélkül
 export const STATUSES = [
