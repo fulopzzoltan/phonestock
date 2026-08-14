@@ -29,8 +29,20 @@ export const REPAIR_MODELS = [
 
 // Melyik PROBLEM_TAGS-érték kap fix mátrix-árat vs. csak diagnózis-lead-et.
 export const PRICED_PROBLEMS = ["LCD", "Akku", "Csatlakozó", "Kamera"];
+
+// Admin (belső) feliratok — ez marad magyar, ld. TASKS_SEO_GEO.md 9. pont ("belső admin nincs lefordítva").
 export const PROBLEM_LABELS = {
   LCD: "Törött / hibás kijelző", Akku: "Lemerülő / cserélendő akku",
   Csatlakozó: "Nem tölt / töltőcsatlakozó hibás", Kamera: "Kamera nem működik",
   FRP: "Fiók/FRP zárolás", Szoftver: "Szoftverhiba", Egyéb: "Egyéb probléma",
 };
+// Publikus (ügyfél felé mutatott) feliratok, nyelv szerint — a RepairEstimator.jsx ezt használja.
+const PROBLEM_LABELS_BY_LANG = {
+  hu: PROBLEM_LABELS,
+  ro: {
+    LCD: "Ecran spart / defect", Akku: "Baterie descărcată / de schimbat",
+    Csatlakozó: "Nu se încarcă / conector defect", Kamera: "Camera nu funcționează",
+    FRP: "Blocare cont/FRP", Szoftver: "Eroare software", Egyéb: "Altă problemă",
+  },
+};
+export const problemLabel = (tag, lang = "hu") => (PROBLEM_LABELS_BY_LANG[lang] || PROBLEM_LABELS)[tag] || tag;

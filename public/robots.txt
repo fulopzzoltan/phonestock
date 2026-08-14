@@ -1,0 +1,26 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /status
+Disallow: /receipt
+
+User-agent: GPTBot
+Allow: /keszlet
+Allow: /ro/telefoane
+Allow: /telefon/
+Allow: /ro/telefon/
+Allow: /becsles
+Allow: /ro/estimare
+
+User-agent: ClaudeBot
+Allow: /keszlet
+Allow: /ro/telefoane
+Allow: /telefon/
+Allow: /ro/telefon/
+Allow: /becsles
+Allow: /ro/estimare
+
+User-agent: PerplexityBot
+Allow: /
+
+Sitemap: https://phonestock-manager.netlify.app/sitemap.xml

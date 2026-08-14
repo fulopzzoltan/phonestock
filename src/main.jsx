@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import { HelmetProvider } from "react-helmet-async";
 import App from "./App.jsx";
 import StatusLookup from "./StatusLookup.jsx";
 import ReceiptLookup from "./ReceiptLookup.jsx";
@@ -22,6 +23,11 @@ const repairMatch = window.location.pathname.match(/^\/becsles\/?$/i);
 // a Netlify domain-re érkezve először lát, nem a bejelentkezés.
 const stockMatch = window.location.pathname.match(/^\/(keszlet\/?)?$/i);
 
+// Román nyelvű tükör-útvonalak (ld. TASKS_SEO_GEO.md) — a magyar útvonalak változatlanok maradnak.
+const roStockMatch = window.location.pathname.match(/^\/ro\/telefoane\/?$/i);
+const roPhoneDetailMatch = window.location.pathname.match(/^\/ro\/telefon\/([0-9a-f-]{36})\/?$/i);
+const roRepairMatch = window.location.pathname.match(/^\/ro\/estimare\/?$/i);
+
 function Root() {
   if (statusMatch) return <StatusLookup token={statusMatch[1] || null} />;
   if (shortMatch) return <StatusLookup shortCode={shortMatch[1]} />;
@@ -31,10 +37,13 @@ function Root() {
       <App />
     </AuthProvider>
   );
-  if (phoneDetailMatch) return <PhoneDetail id={phoneDetailMatch[1]} />;
+  if (roPhoneDetailMatch) return <PhoneDetail id={roPhoneDetailMatch[1]} lang="ro" />;
+  if (phoneDetailMatch) return <PhoneDetail id={phoneDetailMatch[1]} lang="hu" />;
   if (buybackMatch) return <BuybackFlow />;
-  if (repairMatch) return <RepairEstimator />;
-  if (stockMatch) return <StockShowcase />;
+  if (roRepairMatch) return <RepairEstimator lang="ro" />;
+  if (repairMatch) return <RepairEstimator lang="hu" />;
+  if (roStockMatch) return <StockShowcase lang="ro" />;
+  if (stockMatch) return <StockShowcase lang="hu" />;
   return (
     <AuthProvider>
       <App />
@@ -44,6 +53,8 @@ function Root() {
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <Root />
+    <HelmetProvider>
+      <Root />
+    </HelmetProvider>
   </React.StrictMode>
 );

@@ -1,0 +1,17 @@
+# Telefonos
+
+Second-hand and new phone shop with repair service, two locations in Harghita/Covasna, Romania (Ghimeș, Sfântu Gheorghe).
+Bolt használt és új telefonokra, szervizzel, két helyszínen (Gyimes, Szentgyörgy).
+
+## Pages / Oldalak
+- Stock / Készlet: /keszlet (HU), /ro/telefoane (RO) — live phone inventory with prices, condition, warranty
+- Repair estimate / Szerviz árbecslő: /becsles (HU), /ro/estimare (RO) — instant repair pricing for common issues
+- Sell your phone / Add el a telefonod: /eladom — instant buyback offer, in-person or by mail
+- Repair/purchase status lookup: /status, /receipt — existing customers only
+
+## Contact / Kapcsolat
+- Phone / Telefon: +40 773 985 278
+
+## Business
+- In-house repair service, warranty on all sales and repairs
+- [ITT ADD MEG: pontos cím és nyitvatartás mindkét helyszínre (Gyimes, Szentgyörgy) — ezt a tulajdonos tudja megadni]

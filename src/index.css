@@ -264,6 +264,8 @@ tr:hover td{background:#FAFAFA}
 .pub-nav-link.active{color:var(--pub-accent-ink);background:var(--pub-accent-soft)}
 .pub-nav-link.pub-nav-login{border:1px solid var(--pub-line);background:var(--pub-paper-raised);color:var(--pub-ink);margin-left:6px}
 .pub-nav-link.pub-nav-login:hover{border-color:var(--pub-accent)}
+.pub-nav-link.pub-lang-switch{border:1px solid var(--pub-line);border-radius:999px;padding:6px 11px;font-size:11.5px;font-weight:700;letter-spacing:.03em}
+.pub-nav-link.pub-lang-switch:hover{border-color:var(--pub-accent);color:var(--pub-accent-ink)}
 @media (max-width:560px){
   .pub-nav-link{font-size:12px;padding:7px 9px}
 }

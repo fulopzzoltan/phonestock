@@ -1,14 +1,18 @@
 import { useState, useMemo, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import { supabase } from "./lib/supabaseClient";
-import { REPAIR_MODELS, PRICED_PROBLEMS, PROBLEM_LABELS } from "./lib/repairCatalog";
+import { REPAIR_MODELS, PRICED_PROBLEMS, problemLabel } from "./lib/repairCatalog";
 import { PROBLEM_TAGS } from "./lib/utils";
+import { t } from "./lib/i18n";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 
-const OTHER_PROBLEMS = PROBLEM_TAGS.filter((t) => !PRICED_PROBLEMS.includes(t));
+const SITE = "https://phonestock-manager.netlify.app";
+const OTHER_PROBLEMS = PROBLEM_TAGS.filter((tag) => !PRICED_PROBLEMS.includes(tag));
 const STEP_ORDER = ["model", "problem", "result"];
 
-export default function RepairEstimator() {
+export default function RepairEstimator({ lang = "hu" }) {
+  const s = t(lang);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [prices, setPrices] = useState([]);
@@ -48,11 +52,12 @@ export default function RepairEstimator() {
         setAvailability(a.data || []);
         setLocations(l.data || []);
       } catch (err) {
-        setLoadError(err.message || "Hiba történt a betöltés közben.");
+        setLoadError(err.message || s.genericError);
       } finally {
         setLoading(false);
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const matches = query.trim()
@@ -92,7 +97,7 @@ export default function RepairEstimator() {
   }
 
   async function sendLead() {
-    if (!leadName.trim() || !leadPhone.trim()) { setSubmitError("Add meg a neved és a telefonszámod."); return; }
+    if (!leadName.trim() || !leadPhone.trim()) { setSubmitError(s.nameRequired); return; }
     setSubmitError("");
     setSubmitting(true);
     try {
@@ -110,18 +115,40 @@ export default function RepairEstimator() {
       if (error) throw error;
       setLeadSent(true);
     } catch (err) {
-      setSubmitError(err.message || "Hiba történt a beküldés közben.");
+      setSubmitError(err.message || s.genericError);
     } finally {
       setSubmitting(false);
     }
   }
 
+  const canonical = lang === "ro" ? `${SITE}/ro/estimare` : `${SITE}/becsles`;
+  const title = lang === "ro" ? "Estimare rapidă preț service — Telefonos" : "Gyors szerviz árbecslő — Telefonos";
+  const description = lang === "ro"
+    ? "Preț instant pentru cele mai frecvente reparații (ecran, baterie, conector, cameră) — verifică și dacă piesa e pe stoc azi."
+    : "Azonnali ár a leggyakoribb szerviz-javításokra (kijelző, akku, csatlakozó, kamera) — élő raktárkészlet-jelzéssel.";
+
+  const seoHead = (
+    <Helmet>
+      <html lang={lang} />
+      <title>{title}</title>
+      <meta name="description" content={description} />
+      <link rel="canonical" href={canonical} />
+      <link rel="alternate" hrefLang="hu" href={`${SITE}/becsles`} />
+      <link rel="alternate" hrefLang="ro" href={`${SITE}/ro/estimare`} />
+      <link rel="alternate" hrefLang="x-default" href={`${SITE}/becsles`} />
+      <meta property="og:title" content={title} />
+      <meta property="og:description" content={description} />
+      <meta property="og:type" content="website" />
+    </Helmet>
+  );
+
   if (loading) {
     return (
       <div className="pub-shop">
-        <PublicHeader activeNav="repair" />
-        <div className="pub-empty">Betöltés...</div>
-        <PublicFooter />
+        {seoHead}
+        <PublicHeader activeNav="repair" lang={lang} />
+        <div className="pub-empty">{s.loading}</div>
+        <PublicFooter lang={lang} />
       </div>
     );
   }
@@ -129,9 +156,10 @@ export default function RepairEstimator() {
   if (loadError) {
     return (
       <div className="pub-shop">
-        <PublicHeader activeNav="repair" />
+        {seoHead}
+        <PublicHeader activeNav="repair" lang={lang} />
         <div className="pub-empty">{loadError}</div>
-        <PublicFooter />
+        <PublicFooter lang={lang} />
       </div>
     );
   }
@@ -139,62 +167,64 @@ export default function RepairEstimator() {
   if (leadSent) {
     return (
       <div className="pub-shop">
-        <PublicHeader activeNav="repair" />
+        {seoHead}
+        <PublicHeader activeNav="repair" lang={lang} />
         <main className="bb-main">
           <div className="bb-card bb-done">
             <div className="bb-done-icon">✓</div>
-            <h1>Köszönjük, foglaltunk neked helyet!</h1>
+            <h1>{s.repairDoneTitle}</h1>
             <div className="bb-done-promises">
-              <div>📞 Hamarosan hívunk egyeztetni</div>
-              <div>🏬 Vagy hozd be a készüléket bármelyik boltunkba</div>
+              <div>{s.repairDoneCall}</div>
+              <div>{s.repairDoneVisit}</div>
             </div>
-            <a href="/" className="pub-ask-btn" style={{ marginTop: 18 }}>Vissza a főoldalra</a>
+            <a href={lang === "ro" ? "/ro/telefoane" : "/"} className="pub-ask-btn" style={{ marginTop: 18 }}>{s.backToHome}</a>
           </div>
         </main>
-        <PublicFooter />
+        <PublicFooter lang={lang} />
       </div>
     );
   }
 
   const leadFormBlock = (
     <div className="bb-card" style={{ marginTop: 14 }}>
-      <div className="bb-label">Foglald le a helyed</div>
+      <div className="bb-label">{s.repairBookSlot}</div>
       {submitError && <div className="errbar">{submitError}</div>}
-      <div className="field"><label>Név</label><input value={leadName} onChange={(e) => setLeadName(e.target.value)} placeholder="Kovács János" /></div>
-      <div className="field"><label>Telefonszám</label><input value={leadPhone} onChange={(e) => setLeadPhone(e.target.value)} placeholder="07xx xxx xxx" /></div>
+      <div className="field"><label>{s.nameLabel}</label><input value={leadName} onChange={(e) => setLeadName(e.target.value)} placeholder="Kovács János" /></div>
+      <div className="field"><label>{s.phoneLabel}</label><input value={leadPhone} onChange={(e) => setLeadPhone(e.target.value)} placeholder="07xx xxx xxx" /></div>
       {locations.length > 0 && (
-        <div className="field"><label>Melyik bolt lenne jó? (opcionális)</label>
+        <div className="field"><label>{s.repairLocationOptional}</label>
           <select value={leadLocationId} onChange={(e) => setLeadLocationId(e.target.value)}>
-            <option value="">— mindegy —</option>
+            <option value="">{s.repairAnyLocation}</option>
             {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
           </select>
         </div>
       )}
       <button type="button" className="btn" style={{ width: "100%", justifyContent: "center", marginTop: 6 }} disabled={submitting} onClick={sendLead}>
-        {submitting ? "Küldés..." : "Foglalás elküldése"}
+        {submitting ? s.sending : s.repairSendBooking}
       </button>
     </div>
   );
 
   return (
     <div className="pub-shop">
-      <PublicHeader activeNav="repair" />
+      {seoHead}
+      <PublicHeader activeNav="repair" lang={lang} />
       <main className="bb-main">
         {step !== "custom" && (
           <div className="pub-steps">
-            {STEP_ORDER.map((s, i) => (
-              <div key={s} className={`pub-step${STEP_ORDER.indexOf(step) === i ? " active" : ""}`} />
+            {STEP_ORDER.map((st, i) => (
+              <div key={st} className={`pub-step${STEP_ORDER.indexOf(step) === i ? " active" : ""}`} />
             ))}
           </div>
         )}
         {step !== "model" && (
-          <button type="button" className="pub-back-link" style={{ border: "none", background: "none", cursor: "pointer" }} onClick={goBack}>← Vissza</button>
+          <button type="button" className="pub-back-link" style={{ border: "none", background: "none", cursor: "pointer" }} onClick={goBack}>{s.back}</button>
         )}
 
         {step === "model" && (
           <div className="bb-card">
-            <h1 className="bb-h1">Milyen telefonod van?</h1>
-            <input className="bb-text-input" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Keresés — pl. iPhone 12, Galaxy A54..." />
+            <h1 className="bb-h1">{s.repairWhatPhone}</h1>
+            <input className="bb-text-input" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={s.repairSearchPlaceholder} />
             {matches.length > 0 && (
               <div className="bb-grid bb-grid-1col" style={{ marginTop: 12 }}>
                 {matches.map((m) => (
@@ -203,45 +233,45 @@ export default function RepairEstimator() {
               </div>
             )}
             {query.trim() && matches.length === 0 && (
-              <div className="field-hint" style={{ marginTop: 8 }}>Nincs találat ilyen modellre.</div>
+              <div className="field-hint" style={{ marginTop: 8 }}>{s.repairNoMatch}</div>
             )}
             <button type="button" className="pub-back-link" style={{ border: "none", background: "none", cursor: "pointer", marginTop: 14, display: "block" }} onClick={() => setStep("custom")}>
-              Nem találod a modelledet? Kérj egyedi árajánlatot →
+              {s.repairNotFoundCta}
             </button>
           </div>
         )}
 
         {step === "custom" && (
           <div className="bb-card">
-            <h1 className="bb-h1">Kérj egyedi árajánlatot</h1>
-            <div className="field-hint" style={{ marginBottom: 12 }}>A modelled nincs a listánkban, de szívesen adunk egyedi árat — írd le, miről van szó.</div>
+            <h1 className="bb-h1">{s.repairCustomTitle}</h1>
+            <div className="field-hint" style={{ marginBottom: 12 }}>{s.repairCustomHint}</div>
             <div className="row2">
-              <div className="field"><label>Márka</label><input value={customBrand} onChange={(e) => setCustomBrand(e.target.value)} placeholder="pl. Huawei" /></div>
-              <div className="field"><label>Modell</label><input value={customModel} onChange={(e) => setCustomModel(e.target.value)} placeholder="pl. P30 Pro" /></div>
+              <div className="field"><label>{s.brandLabel}</label><input value={customBrand} onChange={(e) => setCustomBrand(e.target.value)} placeholder="pl. Huawei" /></div>
+              <div className="field"><label>{s.modelLabel}</label><input value={customModel} onChange={(e) => setCustomModel(e.target.value)} placeholder="pl. P30 Pro" /></div>
             </div>
-            <div className="field"><label>Mi a probléma?</label><textarea rows={2} value={customNote} onChange={(e) => setCustomNote(e.target.value)} placeholder="pl. törött kijelző" /></div>
+            <div className="field"><label>{s.repairProblemQ}</label><textarea rows={2} value={customNote} onChange={(e) => setCustomNote(e.target.value)} placeholder={s.repairProblemPlaceholder} /></div>
             {leadFormBlock}
           </div>
         )}
 
         {step === "problem" && selectedModel && (
           <div className="bb-card">
-            <h1 className="bb-h1">Mi a probléma?</h1>
+            <h1 className="bb-h1">{s.repairProblemQ}</h1>
             <div className="field-hint" style={{ marginBottom: 14 }}>{selectedModel.brand} {selectedModel.model}</div>
             <div className="pub-problem-grid">
               {PRICED_PROBLEMS.map((tag) => {
                 const has = availableProblems.includes(tag);
                 return (
                   <button key={tag} type="button" className={`pub-problem-card${has ? "" : " disabled"}`} disabled={!has} onClick={() => has && pickProblem(tag)}>
-                    {PROBLEM_LABELS[tag]}
+                    {problemLabel(tag, lang)}
                   </button>
                 );
               })}
             </div>
-            <div className="bb-label" style={{ marginTop: 18 }}>Más a probléma?</div>
+            <div className="bb-label" style={{ marginTop: 18 }}>{s.repairOtherProblem}</div>
             <div className="pub-problem-grid">
               {OTHER_PROBLEMS.map((tag) => (
-                <button key={tag} type="button" className="pub-problem-card" onClick={() => pickProblem(tag)}>{PROBLEM_LABELS[tag]}</button>
+                <button key={tag} type="button" className="pub-problem-card" onClick={() => pickProblem(tag)}>{problemLabel(tag, lang)}</button>
               ))}
             </div>
           </div>
@@ -251,36 +281,36 @@ export default function RepairEstimator() {
           <div className="bb-card">
             {selectedPriceRow ? (
               <>
-                <h1 className="bb-h1">{PROBLEM_LABELS[problem]}</h1>
+                <h1 className="bb-h1">{problemLabel(problem, lang)}</h1>
                 {selectedPriceRow.price_after != null && (
                   <div className="pub-origin-toggle">
-                    <button type="button" className={`pub-origin-btn${origin === "oem" ? " active" : ""}`} onClick={() => setOrigin("oem")}>Eredeti (OEM)</button>
-                    <button type="button" className={`pub-origin-btn${origin === "after" ? " active" : ""}`} onClick={() => setOrigin("after")}>Utángyártott</button>
+                    <button type="button" className={`pub-origin-btn${origin === "oem" ? " active" : ""}`} onClick={() => setOrigin("oem")}>{s.repairOem}</button>
+                    <button type="button" className={`pub-origin-btn${origin === "after" ? " active" : ""}`} onClick={() => setOrigin("after")}>{s.repairAfter}</button>
                   </div>
                 )}
                 <div className="bb-offer-price">{Math.round(Number(displayPrice)).toLocaleString("hu-HU")} Lei</div>
-                {selectedPriceRow.warranty && <div className="pub-warranty-tag" style={{ marginBottom: 10 }}>{selectedPriceRow.warranty} garancia a javításra</div>}
+                {selectedPriceRow.warranty && <div className="pub-warranty-tag" style={{ marginBottom: 10 }}>{s.repairWarrantyFor(selectedPriceRow.warranty)}</div>}
                 {stockAvailable === true && (
-                  <div className="pub-stock-note available">✓ Ma bejöhetsz, kb. {selectedPriceRow.est_minutes || "~30"} perc alatt kész</div>
+                  <div className="pub-stock-note available">{s.repairStockAvail(selectedPriceRow.est_minutes || "~30")}</div>
                 )}
                 {stockAvailable === false && (
-                  <div className="pub-stock-note unavailable">⏳ Alkatrészt rendelni kell, kb. 2-3 munkanap</div>
+                  <div className="pub-stock-note unavailable">{s.repairStockUnavail}</div>
                 )}
                 {!showLeadForm ? (
-                  <button type="button" className="btn" style={{ width: "100%", justifyContent: "center", marginTop: 14 }} onClick={() => setShowLeadForm(true)}>Foglald le a helyed</button>
+                  <button type="button" className="btn" style={{ width: "100%", justifyContent: "center", marginTop: 14 }} onClick={() => setShowLeadForm(true)}>{s.repairBookSlot}</button>
                 ) : leadFormBlock}
               </>
             ) : (
               <>
-                <h1 className="bb-h1">{PROBLEM_LABELS[problem]}</h1>
-                <div className="field-hint" style={{ marginBottom: 4 }}>Ehhez személyes felmérés szükséges — hozd be ingyenes felméréshez, vagy foglald le a helyed és hívunk.</div>
+                <h1 className="bb-h1">{problemLabel(problem, lang)}</h1>
+                <div className="field-hint" style={{ marginBottom: 4 }}>{s.repairNeedsAssessment}</div>
                 {leadFormBlock}
               </>
             )}
           </div>
         )}
       </main>
-      <PublicFooter />
+      <PublicFooter lang={lang} />
     </div>
   );
 }

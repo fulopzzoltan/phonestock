@@ -11,6 +11,8 @@ A jelenlegi `/keszlet` (`src/StockShowcase.jsx`) már szolid alap: keresés, má
 - `products.new_price numeric` oszlop hozzáadva (opcionális, admin tölti ki — becsült új kori ár).
 - `get_public_stock()` RPC frissítve, most `new_price`-t is visszaadja.
 
+**FONTOS — olvasd el a `TASKS_SEO_GEO.md`-t is EZ ELŐTT, ha még nem tetted.** A `PhoneDetail.jsx` (4. pont, lent) egy még meg nem írt fájl — ha a `TASKS_SEO_GEO.md` már készen van, azt a fájlt eleve `lang` prop + `src/lib/i18n.js` szótár mintára írd meg, ne hardkódolt magyar szöveggel, mert utólag dupla munka lenne kétnyelvűsíteni.
+
 Ne pusholj / ne deployolj, csak lokális commit, amíg nem szólnak.
 
 ---
