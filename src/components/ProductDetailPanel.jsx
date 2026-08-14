@@ -4,8 +4,9 @@ import Row from "./DetailRow";
 import ConfirmDelete from "./ConfirmDelete";
 import ProductPhotos from "./ProductPhotos";
 
-export default function ProductDetailPanel({ product, locName, onClose, onSell, onEdit, onDelete, busy }) {
+export default function ProductDetailPanel({ product, saleTx, locName, onClose, onSell, onEdit, onDelete, busy }) {
   const profit = (Number(product.salePrice) || 0) - (Number(product.costPrice) || 0);
+  const isSold = product.status === "sold";
   return (
     <div className="detail-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="detail-panel">
@@ -35,11 +36,19 @@ export default function ProductDetailPanel({ product, locName, onClose, onSell, 
             <div className="dp-section-title">Pénzügyek</div>
             <Row k="Beszerzési ár" v={money(product.costPrice)} />
             <Row k="Eladási ár" v={money(product.salePrice)} />
-            <Row k="Várható profit" v={<span style={{ color: "#22C55E", fontWeight: 700 }}>{money(profit)}</span>} />
+            <Row k={isSold ? "Profit" : "Várható profit"} v={<span style={{ color: "#22C55E", fontWeight: 700 }}>{money(profit)}</span>} />
           </div>
+          {isSold && (
+            <div className="dp-section">
+              <div className="dp-section-title">Eladás adatai</div>
+              <Row k="Eladva" v={saleTx?.date || "—"} />
+              <Row k="Vevő" v={saleTx?.customerName || "—"} />
+              <Row k="Telefonszám" v={saleTx?.customerPhone || "—"} />
+            </div>
+          )}
         </div>
         <div className="dp-actions">
-          <button className="btn sm" disabled={busy} onClick={() => onSell(product)}>Eladva</button>
+          {!isSold && <button className="btn sm" disabled={busy} onClick={() => onSell(product)}>Eladva</button>}
           <button className="btn sec sm" disabled={busy} onClick={() => onEdit(product)}>Szerkesztés</button>
           <ConfirmDelete variant="full" disabled={busy} onConfirm={() => onDelete(product.id)} />
         </div>

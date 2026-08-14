@@ -97,6 +97,7 @@ function AppShell() {
   const [productDetailId, setProductDetailId] = useState(null);
   const [partDetailId, setPartDetailId] = useState(null);
   const [showHandedOver, setShowHandedOver] = useState(false);
+  const [showSold, setShowSold] = useState(false);
   const [customerKey, setCustomerKey] = useState(null);
   const [customerModal, setCustomerModal] = useState(null);
   const [printTicket, setPrintTicket] = useState(null);
@@ -791,6 +792,21 @@ function AppShell() {
     return [...s].sort((a, b) => (a.brand || "").localeCompare(b.brand || "", "hu") || (a.model || "").localeCompare(b.model || "", "hu"));
   }, [stock, effectiveLocFilter, search, reserveLocId]);
 
+  const txByProductId = useMemo(() => {
+    const m = new Map();
+    for (const t of transactions) if (t.productId) m.set(t.productId, t);
+    return m;
+  }, [transactions]);
+
+  const soldStock = useMemo(() => {
+    let s = stock.filter((i) => i.status === "sold");
+    if (effectiveLocFilter !== "all") s = s.filter((i) => i.locationId === effectiveLocFilter || i.locationId === reserveLocId);
+    const q = search.trim().toLowerCase();
+    if (q) s = s.filter((i) => [i.brand, i.model, i.imei, i.color].join(" ").toLowerCase().includes(q));
+    const withTx = s.map((i) => ({ ...i, saleTx: txByProductId.get(i.id) || null }));
+    return withTx.sort((a, b) => (b.saleTx?.date || "").localeCompare(a.saleTx?.date || ""));
+  }, [stock, effectiveLocFilter, search, reserveLocId, txByProductId]);
+
   const filteredTransactions = useMemo(() => {
     if (effectiveLocFilter === "all") return transactions;
     return transactions.filter((t) => t.locationId === effectiveLocFilter);
@@ -1008,6 +1024,7 @@ function AppShell() {
             search={search} setSearch={setSearch} loadingData={loadingData} filteredStock={filteredStock}
             locations={locations} reserveLocId={reserveLocId} setProductDetailId={setProductDetailId}
             deleteProduct={deleteProduct} setSellModal={setSellModal}
+            showSold={showSold} setShowSold={setShowSold} soldStock={soldStock}
           />
         )}
 
@@ -1163,6 +1180,7 @@ function AppShell() {
       {detailProduct && (
         <ProductDetailPanel
           product={detailProduct}
+          saleTx={detailProduct.status === "sold" ? txByProductId.get(detailProduct.id) : null}
           locName={locName}
           busy={busy}
           onClose={() => setProductDetailId(null)}

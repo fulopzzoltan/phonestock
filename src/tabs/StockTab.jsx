@@ -5,6 +5,7 @@ import ConfirmDelete from "../components/ConfirmDelete";
 export default function StockTab({
   effectiveLocFilter, locName, busy, setStockModal, search, setSearch, loadingData, filteredStock,
   locations, reserveLocId, setProductDetailId, deleteProduct, setSellModal,
+  showSold, setShowSold, soldStock,
 }) {
   return (
     <>
@@ -51,6 +52,30 @@ export default function StockTab({
             </div>
           );
         })
+      )}
+      <span className="toggle-link" onClick={() => setShowSold((v) => !v)}>
+        {showSold ? "Eladott telefonok elrejtése" : `Eladott telefonok megtekintése (${soldStock.length})`}
+      </span>
+      {showSold && (
+        <div className="tw" style={{ marginTop: 12 }}>
+          {soldStock.length === 0 ? <div className="empty">Nincs eladott telefon.</div> : (
+            <table>
+              <thead><tr><th>Termék</th><th>Helyszín</th><th>IMEI</th><th>Eladva</th><th>Vevő</th><th>Ár</th></tr></thead>
+              <tbody>
+                {soldStock.map((i) => (
+                  <tr key={i.id} style={{ cursor: "pointer" }} onClick={() => setProductDetailId(i.id)}>
+                    <td style={{ fontWeight: 600 }}>{i.brand} {i.model}</td>
+                    <td><span className="badge-loc">{locName(i.locationId)}</span></td>
+                    <td className="mono" style={{ color: "#9CA3AF" }}>{i.imei || "—"}</td>
+                    <td className="mono">{i.saleTx?.date || "—"}</td>
+                    <td>{i.saleTx?.customerName || "—"}</td>
+                    <td className="mono" style={{ fontWeight: 700 }}>{money(i.salePrice)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
       )}
     </>
   );
