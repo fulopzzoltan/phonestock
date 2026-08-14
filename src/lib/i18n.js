@@ -93,3 +93,23 @@ export const STRINGS = {
 };
 
 export const t = (lang) => STRINGS[lang] || STRINGS.hu;
+
+// A termékadatok (szín, garancia) az adminok által magyarul rögzített szabad/félig-szabad szöveg —
+// a publikus RO oldalakon ezeket is fordítjuk, ismeretlen/angol értéknél változatlanul hagyva.
+const WARRANTY_HU_TO_RO = {
+  "1 hó": "1 lună", "3 hó": "3 luni", "6 hó": "6 luni", "1 év": "1 an", "2 év": "2 ani",
+};
+export function translateWarranty(warranty, lang) {
+  if (lang !== "ro" || !warranty) return warranty;
+  return WARRANTY_HU_TO_RO[warranty] || warranty;
+}
+
+const COLOR_HU_TO_RO = {
+  "Fekete": "Negru", "Fehér": "Alb", "Kék": "Albastru", "Zöld": "Verde", "Ezüst": "Argintiu",
+  "Szürke": "Gri", "Piros": "Roșu", "Sárga": "Galben", "Rózsaszín": "Roz", "Arany": "Auriu",
+  "Lila": "Mov", "Bordó": "Bordo", "Barna": "Maro",
+};
+export function translateColor(color, lang) {
+  if (lang !== "ro" || !color) return color;
+  return COLOR_HU_TO_RO[color] || color;
+}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "./lib/supabaseClient";
-import { t } from "./lib/i18n";
+import { t, translateColor, translateWarranty } from "./lib/i18n";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 
@@ -57,7 +57,7 @@ export default function PhoneDetail({ id, lang = "hu" }) {
   const canonical = lang === "ro" ? `${SITE}/ro/telefon/${id}` : `${SITE}/telefon/${id}`;
   const title = `${phone.brand} ${phone.model}${phone.storage ? " " + phone.storage : ""}, ${Number(phone.sale_price).toLocaleString("hu-HU")} Lei | Telefonos`;
   const description = lang === "ro"
-    ? `${phone.brand} ${phone.model} ${phone.condition === "New" ? "nou" : "recondiționat"}${phone.warranty ? `, garanție ${phone.warranty}` : ""} — ${Number(phone.sale_price).toLocaleString("hu-HU")} Lei.`
+    ? `${phone.brand} ${phone.model} ${phone.condition === "New" ? "nou" : "recondiționat"}${phone.warranty ? `, garanție ${translateWarranty(phone.warranty, "ro")}` : ""} — ${Number(phone.sale_price).toLocaleString("hu-HU")} Lei.`
     : `${phone.brand} ${phone.model} ${phone.condition === "New" ? "új" : "felújított"}${phone.warranty ? `, ${phone.warranty} garanciával` : ""} — ${Number(phone.sale_price).toLocaleString("hu-HU")} Lei.`;
 
   return (
@@ -106,9 +106,9 @@ export default function PhoneDetail({ id, lang = "hu" }) {
             <h1 className="pub-detail-title">{phone.brand} {phone.model}</h1>
             <div className="pub-detail-specs">
               {phone.storage && <div><b>{s.storageLabel}</b> {phone.storage}</div>}
-              {phone.color && <div><b>{s.colorLabel}</b> {phone.color}</div>}
+              {phone.color && <div><b>{s.colorLabel}</b> {translateColor(phone.color, lang)}</div>}
               {phone.battery_health != null && <div><b>{s.batteryLabel}</b> {phone.battery_health}%</div>}
-              {phone.warranty && <div><b>{s.warrantyLabel}</b> {phone.warranty}</div>}
+              {phone.warranty && <div><b>{s.warrantyLabel}</b> {translateWarranty(phone.warranty, lang)}</div>}
             </div>
             {phone.new_price && Number(phone.new_price) > Number(phone.sale_price) && (
               <div className="pub-anchor" style={{ fontSize: 14 }}>

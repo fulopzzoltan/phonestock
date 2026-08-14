@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "./lib/supabaseClient";
-import { t } from "./lib/i18n";
+import { t, translateColor, translateWarranty } from "./lib/i18n";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 
@@ -155,7 +155,7 @@ export default function StockShowcase({ lang = "hu" }) {
                   <div className="pub-card-name">{p.brand} {p.model}</div>
                   <div className="pub-card-specs">
                     {p.storage && <span>{p.storage}</span>}
-                    {p.color && <span>{p.color}</span>}
+                    {p.color && <span>{translateColor(p.color, lang)}</span>}
                   </div>
                   {p.battery_health != null && (
                     <div className="pub-battery-row">
@@ -166,7 +166,7 @@ export default function StockShowcase({ lang = "hu" }) {
                   {p.warranty && (
                     <div className="pub-warranty-tag">
                       <svg viewBox="0 0 24 24" style={{ width: 11, height: 11, stroke: "var(--pub-ink-soft)", fill: "none", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" }}><path d="M12 3l7 2.5v5.8c0 4.2-2.9 7.6-7 8.7-4.1-1.1-7-4.5-7-8.7V5.5L12 3z" /></svg>
-                      {s.warrantyTag(p.warranty)}
+                      {s.warrantyTag(translateWarranty(p.warranty, lang))}
                     </div>
                   )}
                   <div className="pub-card-foot">
