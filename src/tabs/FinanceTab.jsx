@@ -14,6 +14,7 @@ export default function FinanceTab({
           <button type="button" className={period === "day" ? "active" : ""} onClick={() => setPeriod("day")}>Napi</button>
           <button type="button" className={period === "week" ? "active" : ""} onClick={() => setPeriod("week")}>Heti</button>
           <button type="button" className={period === "month" ? "active" : ""} onClick={() => setPeriod("month")}>Havi</button>
+          <button type="button" className={period === "year" ? "active" : ""} onClick={() => setPeriod("year")}>Éves</button>
         </div>
       </div>
       <QuickSaleButtons locations={allowedLocations} defaultLocId={defaultLocId} onAdd={addTransaction} busy={busy} />

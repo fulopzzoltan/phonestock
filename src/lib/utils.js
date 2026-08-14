@@ -192,9 +192,11 @@ export function startOfWeek(d) {
 export function periodKey(dateStr, period) {
   if (period === "day") return dateStr;
   if (period === "week") return startOfWeek(dateStr);
+  if (period === "year") return dateStr.slice(0, 4); // év YYYY
   return dateStr.slice(0, 7); // month YYYY-MM
 }
 export function periodLabel(key, period) {
+  if (period === "year") return key; // "2024", "2025" — nem kell bonyolítani
   if (period === "month") {
     const d = new Date(key + "-01T00:00:00");
     return d.toLocaleDateString("hu-HU", { year: "numeric", month: "long" });

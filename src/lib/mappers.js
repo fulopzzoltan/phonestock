@@ -73,6 +73,7 @@ export const txToApi = (t, locId) => ({
   customer_name: t.customerName || null,
   customer_phone: t.customerPhone || null,
   location_id: locId,
+  date: t.date || undefined,
 });
 
 export const tFromApi = (r) => ({

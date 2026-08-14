@@ -1,7 +1,7 @@
 import { useState } from "react";
 import LocationField from "./LocationField";
 import { CloseIcon } from "./icons";
-import { CATEGORIES, PAYMENTS } from "../lib/utils";
+import { CATEGORIES, PAYMENTS, today } from "../lib/utils";
 
 export default function TransactionModal({ tx, locations, defaultLocId, onClose, onSave, busy }) {
   const [f, setF] = useState({
@@ -13,6 +13,7 @@ export default function TransactionModal({ tx, locations, defaultLocId, onClose,
     customerName: tx.customerName || "",
     customerPhone: tx.customerPhone || "",
     costPrice: tx.costPrice ?? "",
+    date: tx.date || today(),
   });
   const [locId, setLocId] = useState(tx.locationId || defaultLocId || locations[0]?.id || "");
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
@@ -35,13 +36,14 @@ export default function TransactionModal({ tx, locations, defaultLocId, onClose,
           </div>
         </div>
         <div className="field"><label>Leírás</label><input value={f.description} onChange={set("description")} /></div>
-        <div className="row2">
+        <div className="row3">
           <div className="field"><label>Összeg (Lei)</label><input type="number" value={f.amount} onChange={set("amount")} /></div>
           <div className="field"><label>Fizetés</label>
             <select value={f.payment} onChange={set("payment")}>
               {PAYMENTS.map((p) => <option key={p}>{p}</option>)}
             </select>
           </div>
+          <div className="field"><label>Dátum</label><input type="date" value={f.date} onChange={set("date")} /></div>
         </div>
         {f.type === "income" && (
           <div className="field"><label>Beszerzési ár (Lei)</label><input type="number" value={f.costPrice} onChange={set("costPrice")} placeholder="0" /></div>
