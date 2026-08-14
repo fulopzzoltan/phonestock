@@ -135,6 +135,7 @@ tr:hover td{background:#FAFAFA}
 .stk-row{display:flex;align-items:center;gap:11px}
 .stk-thumb{width:36px;height:36px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11.5px;font-weight:700;overflow:hidden}
 .stk-thumb svg{width:15px;height:15px;opacity:.9}
+.stk-thumb.sm{width:19px;height:19px;border-radius:6px;font-size:8.5px}
 .stk-name{font-weight:600;color:#111827;line-height:1.3;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .stk-sub{font-size:11px;color:#9CA3AF;margin-top:1px;font-family:'JetBrains Mono',monospace}
 .stk-badges{display:flex;gap:4px;flex-wrap:wrap}
@@ -177,6 +178,7 @@ tr:hover td{background:#FAFAFA}
 .t-loc{font-size:10px;padding:1px 6px;border-radius:999px;background:#F0FDF4;color:#15803D;font-weight:600;border:1px solid #BBF7D0}
 .t-name{font-size:13px;font-weight:700;color:#111827;margin-bottom:2px;line-height:1.3}
 .t-device{font-size:11.5px;color:#6B7280;margin-bottom:7px;display:flex;align-items:center;justify-content:space-between;gap:6px}
+.t-device-main{display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .t-probs{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:7px}
 .t-footer{display:flex;align-items:center;justify-content:space-between}
 .t-price{font-size:13px;font-weight:700;color:#111827}

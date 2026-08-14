@@ -1043,6 +1043,7 @@ function AppShell() {
             svcSearch={svcSearch} setSvcSearch={setSvcSearch} svcKindFilter={svcKindFilter} setSvcKindFilter={setSvcKindFilter}
             loadingData={loadingData} activeTickets={activeTickets} setDetailId={setDetailId}
             showHandedOver={showHandedOver} setShowHandedOver={setShowHandedOver} handedOverTickets={handedOverTickets}
+            svcStats={svcStats}
           />
         )}
 

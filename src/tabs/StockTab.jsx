@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
-import { money, brandColor } from "../lib/utils";
+import { money, displayName } from "../lib/utils";
 import { SearchIcon, EditIcon, ListViewIcon, GridViewIcon } from "../components/icons";
 import ConfirmDelete from "../components/ConfirmDelete";
+import Thumb from "../components/Thumb";
 
 const SORTS = [
   { key: "recent", label: "Legújabb elöl" },
@@ -17,20 +18,6 @@ function sortItems(items, sortBy) {
   else if (sortBy === "price-asc") arr.sort((a, b) => (Number(a.salePrice) || 0) - (Number(b.salePrice) || 0));
   else if (sortBy === "name") arr.sort((a, b) => `${a.brand} ${a.model}`.localeCompare(`${b.brand} ${b.model}`));
   return arr;
-}
-
-// Az "Apple iPhone 11" helyett elég csak "iPhone 11" — a brand adat marad "Apple", ez csak megjelenítés.
-function displayName(brand, model) {
-  if (brand === "Apple" && (model || "").toLowerCase().startsWith("iphone")) return model;
-  return `${brand} ${model}`;
-}
-
-function Thumb({ brand }) {
-  return (
-    <div className="stk-thumb" style={{ background: brandColor(brand) }}>
-      {(brand || "?").slice(0, 1).toUpperCase()}
-    </div>
-  );
 }
 
 export default function StockTab({

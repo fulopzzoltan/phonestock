@@ -1,10 +1,11 @@
-import { money, STATUSES, statusLabel } from "../lib/utils";
+import { money, STATUSES, statusLabel, displayName } from "../lib/utils";
 import { SearchIcon } from "../components/icons";
 import TicketCard from "../components/TicketCard";
+import Thumb from "../components/Thumb";
 
 export default function ServiceTab({
   effectiveLocFilter, locName, busy, setTicketModal, svcSearch, setSvcSearch, svcKindFilter, setSvcKindFilter,
-  loadingData, activeTickets, setDetailId, showHandedOver, setShowHandedOver, handedOverTickets,
+  loadingData, activeTickets, setDetailId, showHandedOver, setShowHandedOver, handedOverTickets, svcStats,
 }) {
   return (
     <>
@@ -12,6 +13,18 @@ export default function ServiceTab({
         <div><div className="page-title">Szerviz</div><div className="page-sub">{effectiveLocFilter === "all" ? "Mindkét helyszín" : locName(effectiveLocFilter)}</div></div>
         <button className="btn" disabled={busy} onClick={() => setTicketModal("add")}>+ Új munkalap</button>
       </div>
+
+      <div className={`statrow ${svcStats.ownStock > 0 ? "c6" : "c5"}`}>
+        <div className="statcard accent"><div className="lbl">Összes</div><div className="val">{svcStats.total}</div></div>
+        <div className="statcard"><div className="lbl">Aktív (ügyfél)</div><div className="val">{svcStats.active}</div></div>
+        <div className="statcard"><div className="lbl">Kész (ügyfél)</div><div className="val" style={{ color: "#15803D" }}>{svcStats.kesz}</div></div>
+        <div className="statcard"><div className="lbl">Sikertelen (ügyfél)</div><div className="val" style={{ color: "#9D174D" }}>{svcStats.sikertelen}</div></div>
+        <div className="statcard"><div className="lbl">Kiadva</div><div className="val">{svcStats.kiadva}</div></div>
+        {svcStats.ownStock > 0 && (
+          <div className="statcard"><div className="lbl">Saját készlet szervizben</div><div className="val">{svcStats.ownStock}</div></div>
+        )}
+      </div>
+
       <div className="filter-row">
         <div className="searchbar"><SearchIcon /><input placeholder="Keresés vevő, márka, modell..." value={svcSearch} onChange={(e) => setSvcSearch(e.target.value)} /></div>
         <div className="seg">
@@ -48,16 +61,23 @@ export default function ServiceTab({
         <div className="tw" style={{ marginTop: 12 }}>
           {handedOverTickets.length === 0 ? <div className="empty">Nincs átadott munkalap.</div> : (
             <table>
-              <thead><tr><th>#</th><th>Vevő</th><th>Helyszín</th><th>Eszköz</th><th>Bejött</th><th>Átadva</th><th>Díj</th></tr></thead>
+              <thead><tr><th>Eszköz</th><th>Helyszín</th><th>Bejött</th><th>Átadva</th><th>Vevő</th><th>Díj</th></tr></thead>
               <tbody>
                 {handedOverTickets.map((t) => (
                   <tr key={t.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
-                    <td className="mono">#{t.ticketNo}</td>
-                    <td>{t.customerName}</td>
+                    <td>
+                      <div className="stk-row">
+                        <Thumb brand={t.brand} />
+                        <div>
+                          <div className="stk-name">{displayName(t.brand, t.model) || "—"}</div>
+                          <div className="stk-sub">#{t.ticketNo}</div>
+                        </div>
+                      </div>
+                    </td>
                     <td><span className="badge-loc">{locName(t.locationId)}</span></td>
-                    <td>{[t.brand, t.model].filter(Boolean).join(" ")}</td>
                     <td className="mono">{t.dateIn}</td>
                     <td className="mono">{t.dateOut || "—"}</td>
+                    <td>{t.customerName}</td>
                     <td className="mono" style={{ fontWeight: 700 }}>{money(t.price)}</td>
                   </tr>
                 ))}

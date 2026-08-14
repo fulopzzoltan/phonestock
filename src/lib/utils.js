@@ -21,6 +21,12 @@ export function brandColor(brand) {
   for (let i = 0; i < (brand || "").length; i++) h = (h * 31 + brand.charCodeAt(i)) % 360;
   return `hsl(${h}, 55%, 42%)`;
 }
+// "Apple iPhone 11" helyett elég csak "iPhone 11" — a brand adat marad "Apple", ez csak megjelenítés.
+// Terméknél és szerviz munkalapnál is ugyanaz a brand/model pár, ezért közös helyen.
+export function displayName(brand, model) {
+  if (brand === "Apple" && (model || "").toLowerCase().startsWith("iphone")) return model;
+  return [brand, model].filter(Boolean).join(" ");
+}
 
 // "key" = adatbázisban tárolt érték (ne változtasd, meglévő sorok erre hivatkoznak),
 // "label" = amit a kanban/UI mutat — ez bármikor finomítható a key érintése nélkül
