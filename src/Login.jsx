@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { useAuth } from "./lib/AuthContext";
+import PublicHeader from "./components/PublicHeader";
+import PublicFooter from "./components/PublicFooter";
+
+const LAST_EMAIL_KEY = "phonestock_last_email";
 
 export default function Login() {
   const { signIn } = useAuth();
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(() => localStorage.getItem(LAST_EMAIL_KEY) || "");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -16,6 +20,7 @@ export default function Login() {
     setBusy(true);
     try {
       await signIn(email, password);
+      localStorage.setItem(LAST_EMAIL_KEY, email.trim());
     } catch (err) {
       setError(err.message || "Hiba történt.");
     } finally {
@@ -24,24 +29,25 @@ export default function Login() {
   }
 
   return (
-    <div className="login-shell">
-      <div className="login-card">
-        <div className="login-brand">
-          <div className="brand-icon"><svg viewBox="0 0 24 24"><path d="M17 2H7a2 2 0 00-2 2v16a2 2 0 002 2h10a2 2 0 002-2V4a2 2 0 00-2-2zm-5 15a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm3-7H9V5h6v5z"/></svg></div>
-          <div className="brand-name">TELEF<span>O</span>NOS</div>
+    <div className="pub-shop">
+      <PublicHeader activeNav="login" />
+      <main className="pub-lookup-main">
+        <div className="login-card" style={{ maxWidth: 380 }}>
+          <div className="login-title">Bejelentkezés</div>
+          {error && <div className="errbar">{error}</div>}
+          <form onSubmit={submit} autoComplete="on">
+            <div className="field"><label>Email</label><input type="email" name="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="te@pelda.hu" /></div>
+            <div className="field"><label>Jelszó</label><input type="password" name="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" /></div>
+            <button className="btn" style={{ width: "100%", justifyContent: "center", marginTop: 6 }} disabled={busy} type="submit">
+              {busy ? "Kérlek várj..." : "Bejelentkezés"}
+            </button>
+          </form>
+          <div className="login-note">
+            Fiókot csak meghívóval lehet létrehozni — kérj meghívót egy adminisztrátortól.
+          </div>
         </div>
-        {error && <div className="errbar">{error}</div>}
-        <form onSubmit={submit}>
-          <div className="field"><label>Email</label><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="te@pelda.hu" /></div>
-          <div className="field"><label>Jelszó</label><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" /></div>
-          <button className="btn" style={{ width: "100%", justifyContent: "center", marginTop: 6 }} disabled={busy} type="submit">
-            {busy ? "Kérlek várj..." : "Bejelentkezés"}
-          </button>
-        </form>
-        <div className="login-note">
-          Fiókot csak meghívóval lehet létrehozni — kérj meghívót egy adminisztrátortól.
-        </div>
-      </div>
+      </main>
+      <PublicFooter />
     </div>
   );
 }

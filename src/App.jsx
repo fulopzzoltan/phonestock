@@ -53,7 +53,7 @@ const SMS_ON_TICKET_CREATE = false;
 
 export default function App() {
   const { session, loading } = useAuth();
-  if (loading) return <div className="login-shell"><div style={{ color: "#6B7280", fontSize: 13 }}>Betöltés...</div></div>;
+  if (loading) return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F4F6F3", color: "#6B7280", fontSize: 13 }}>Betöltés...</div>;
   if (!session) return <Login />;
   return <AppShell />;
 }
