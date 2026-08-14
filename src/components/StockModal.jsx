@@ -19,6 +19,7 @@ export default function StockModal({ product, locations, onClose, onSave, busy, 
     source: product?.source || "",
     batteryHealth: product?.batteryHealth ?? "",
     newPrice: product?.newPrice ?? "",
+    onShelf: product?.onShelf !== false,
   });
   const [locId, setLocId] = useState(product?.locationId || defaultLocId || locations[0]?.id || "");
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
@@ -79,6 +80,9 @@ export default function StockModal({ product, locations, onClose, onSave, busy, 
         {f.condition === "Refurbished" && (
           <div className="field"><label>Akkuállapot (%)</label><input type="number" min="0" max="100" value={f.batteryHealth} onChange={set("batteryHealth")} placeholder="100" /></div>
         )}
+        <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#374151", fontWeight: 500, margin: "2px 0 4px", cursor: "pointer" }}>
+          <input type="checkbox" className="chk" checked={f.onShelf} onChange={(e) => setF({ ...f, onShelf: e.target.checked })} /> Polcon (látszik a nyilvános webshopban)
+        </label>
         <div className="modal-actions">
           <button className="btn sec" onClick={onClose}>Mégse</button>
           <button className="btn" disabled={!valid || busy} onClick={() => valid && onSave(f, locId)}>{busy ? "Mentés..." : isEdit ? "Mentés" : "Hozzáadás"}</button>

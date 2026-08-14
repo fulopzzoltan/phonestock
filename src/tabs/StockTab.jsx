@@ -32,7 +32,10 @@ export default function StockTab({
                     <tbody>
                       {items.map((i) => (
                         <tr key={i.id} style={{ cursor: "pointer" }} onClick={() => setProductDetailId(i.id)}>
-                          <td style={{ fontWeight: 600 }}>{i.brand} {i.model}</td>
+                          <td style={{ fontWeight: 600 }}>
+                            {i.brand} {i.model}
+                            {!i.onShelf && <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }} title="Nem látszik a webshopban">nem polcon</span>}
+                          </td>
                           <td><span className={`st ${i.condition === "New" ? "st-kesz" : "st-beveve"}`}>{i.condition === "New" ? "Új" : `Felúj. ${i.grade || ""}`}</span></td>
                           <td className="mono">{[i.storage, i.color].filter(Boolean).join(" / ") || "—"}</td>
                           <td className="mono" style={{ color: "#9CA3AF" }}>{i.imei || "—"}</td>
