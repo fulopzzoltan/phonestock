@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { money, displayName, phoneCode } from "../lib/utils";
+import { money, displayName, phoneCode, daysOnShelf, isSlowMoving } from "../lib/utils";
 import { SearchIcon, EditIcon, ListViewIcon, GridViewIcon, PhoneCaseIcon } from "../components/icons";
 import ConfirmDelete from "../components/ConfirmDelete";
 import Thumb from "../components/Thumb";
@@ -21,6 +21,7 @@ function sortItems(items, sortBy) {
   return arr;
 }
 
+
 export default function StockTab({
   effectiveLocFilter, locName, busy, setStockModal, search, setSearch, loadingData, filteredStock,
   locations, reserveLocId, setProductDetailId, deleteProduct, setSellModal, stockStats,
@@ -29,11 +30,15 @@ export default function StockTab({
   const [condFilter, setCondFilter] = useState("all"); // all | New | Refurbished
   const [sortBy, setSortBy] = useState("recent");
   const [view, setView] = useState("list"); // list | grid
+  const [slowOnly, setSlowOnly] = useState(false);
+
+  const slowMovingCount = useMemo(() => filteredStock.filter(isSlowMoving).length, [filteredStock]);
 
   const condFiltered = useMemo(() => {
-    if (condFilter === "all") return filteredStock;
-    return filteredStock.filter((i) => i.condition === condFilter);
-  }, [filteredStock, condFilter]);
+    let items = condFilter === "all" ? filteredStock : filteredStock.filter((i) => i.condition === condFilter);
+    if (slowOnly) items = items.filter(isSlowMoving);
+    return items;
+  }, [filteredStock, condFilter, slowOnly]);
 
   const visibleLocations = effectiveLocFilter === "all" ? locations : locations.filter((l) => l.id === effectiveLocFilter || l.id === reserveLocId);
 
@@ -41,7 +46,14 @@ export default function StockTab({
     <>
       <div className="topbar">
         <div><div className="page-title">Telefonok</div><div className="page-sub">{effectiveLocFilter === "all" ? "Mindkét helyszín" : locName(effectiveLocFilter)}</div></div>
-        <button className="btn" disabled={busy} onClick={() => setStockModal("add")}>+ Új termék</button>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          {slowMovingCount > 0 && (
+            <button type="button" className="btn sec sm" style={slowOnly ? { borderColor: "var(--warning)", color: "var(--warning-ink)", background: "var(--warning-soft)" } : undefined} onClick={() => setSlowOnly((v) => !v)}>
+              Lassan mozgó: {slowMovingCount} db
+            </button>
+          )}
+          <button className="btn" disabled={busy} onClick={() => setStockModal("add")}>+ Új termék</button>
+        </div>
       </div>
 
       <div className="statrow c4">
@@ -93,6 +105,7 @@ export default function StockTab({
                                 <div className="stk-name">
                                   {displayName(i.brand, i.model)}
                                   {!i.onShelf && <span style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }} title="Nem látszik a webshopban">nem polcon</span>}
+                                  {isSlowMoving(i) && <span className="tag" style={{ background: "var(--warning-soft)", color: "var(--warning-ink)", fontWeight: 700 }}>{daysOnShelf(i.dateAdded)} napja a polcon</span>}
                                 </div>
                                 <div className="stk-sub">{[phoneCode(i.productNo), i.storage, i.color].filter(Boolean).join(" · ") || "—"}</div>
                               </div>
@@ -129,6 +142,7 @@ export default function StockTab({
                       <div className="stk-card-name">
                         {displayName(i.brand, i.model)}
                         {!i.onShelf && <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }} title="Nem látszik a webshopban">nem polcon</span>}
+                        {isSlowMoving(i) && <span className="tag" style={{ marginLeft: 6, background: "var(--warning-soft)", color: "var(--warning-ink)", fontWeight: 700 }}>{daysOnShelf(i.dateAdded)} napja a polcon</span>}
                       </div>
                       <div className="stk-card-sub">{[phoneCode(i.productNo), i.storage, i.color].filter(Boolean).join(" · ") || "—"}{i.warranty ? ` · ${i.warranty} gar.` : ""}</div>
                       <div className="stk-card-price">{money(i.salePrice)}</div>

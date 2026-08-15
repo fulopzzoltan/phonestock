@@ -28,6 +28,16 @@ export function displayName(brand, model) {
   return [brand, model].filter(Boolean).join(" ");
 }
 
+export const SLOW_MOVING_DAYS = 45;
+export function daysOnShelf(dateAdded) {
+  if (!dateAdded) return null;
+  return Math.floor((Date.now() - new Date(dateAdded + "T00:00:00")) / 86400000);
+}
+export function isSlowMoving(p) {
+  const days = daysOnShelf(p.dateAdded);
+  return days != null && days >= SLOW_MOVING_DAYS;
+}
+
 // Rövid, kimondható azonosítók — kategóriánként egy betű, kötőjel nélkül.
 // T = Telefon, S(+helyszín) = Szerviz munkalap (pl. SCS235), A = Alkatrész.
 // A bizonylatszámhoz (receipt_no) szándékosan nem nyúlunk — az pénzügyi/könyvelési sorszám.

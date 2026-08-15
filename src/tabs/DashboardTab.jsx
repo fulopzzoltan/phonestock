@@ -53,6 +53,11 @@ export default function DashboardTab({
       )}
 
       <SectionHead icon={PhoneCaseIcon}>Telefonok</SectionHead>
+      {stockStats.slowMoving > 0 && (
+        <div style={{ fontSize: 12, color: "var(--warning-ink)", background: "var(--warning-soft)", borderRadius: "var(--radius-sm)", padding: "7px 12px", margin: "0 0 12px 2px", display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <WarningIcon width={13} height={13} />{stockStats.slowMoving} telefon 45+ napja mozdulatlan — érdemes átnézni az árazást.
+        </div>
+      )}
       <div className="statrow c4">
         <div className="statcard accent"><div className="lbl">Raktáron</div><div className="val">{stockStats.count} db</div></div>
         <div className="statcard"><div className="lbl">Készlet értéke</div><div className="val">{money(stockStats.value)}</div></div>

@@ -25,6 +25,7 @@ export const pFromApi = (r) => ({
   newPrice: r.new_price,
   onShelf: r.on_shelf,
   productNo: r.product_no,
+  dateAdded: r.date_added,
 });
 
 export const pToApi = (p, locId) => ({
