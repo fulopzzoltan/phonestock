@@ -1,5 +1,7 @@
 import { useState, useMemo, useRef } from "react";
 import { money } from "../lib/utils";
+import { FinanceIcon } from "./icons";
+import { EmptyState } from "./EmptyState";
 
 const W = 700, H = 220, PAD_L = 56, PAD_R = 16, PAD_T = 16, PAD_B = 30;
 
@@ -41,8 +43,8 @@ export default function StockValueChart({ history }) {
 
   if (points.length < 2) {
     return (
-      <div className="tw" style={{ padding: "36px 20px" }}>
-        <div className="empty">Még nincs elég adat a grafikonhoz — pár nap múlva itt látod a készletérték alakulását.</div>
+      <div className="tw">
+        <EmptyState icon={FinanceIcon}>Még nincs elég adat a grafikonhoz — pár nap múlva itt látod a készletérték alakulását.</EmptyState>
       </div>
     );
   }

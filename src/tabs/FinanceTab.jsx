@@ -1,6 +1,7 @@
 import QuickSaleButtons from "../components/QuickSaleButtons";
 import TransactionQuickAdd from "../components/TransactionQuickAdd";
 import TransactionsPeriodList from "../components/TransactionsPeriodList";
+import { LoadingState } from "../components/EmptyState";
 
 export default function FinanceTab({
   effectiveLocFilter, locName, allowedLocations, defaultLocId, addTransaction, busy,
@@ -13,7 +14,7 @@ export default function FinanceTab({
       </div>
       <QuickSaleButtons locations={allowedLocations} defaultLocId={defaultLocId} onAdd={addTransaction} busy={busy} />
       <TransactionQuickAdd locations={allowedLocations} defaultLocId={defaultLocId} onAdd={addTransaction} busy={busy} />
-      {loadingData ? <div className="tw"><div className="empty">Betöltés...</div></div> : (
+      {loadingData ? <div className="tw"><LoadingState /></div> : (
         <TransactionsPeriodList transactions={filteredTransactions} locName={locName} onEdit={setTxModal} onDelete={deleteTransaction} onOpenReceipt={setReceiptTxId} busy={busy} />
       )}
     </>

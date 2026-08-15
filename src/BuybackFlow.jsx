@@ -5,7 +5,8 @@ import { BUYBACK_CONDITION_QUESTIONS as CONDITION_QUESTIONS } from "./lib/utils"
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 import BuybackPriceBar from "./components/BuybackPriceBar";
-import { ClockIcon, FinanceIcon, CallIcon, PinIcon, PartsIcon } from "./components/icons";
+import { ClockIcon, FinanceIcon, CallIcon, PinIcon, PartsIcon, WarningIcon, BuybackIcon } from "./components/icons";
+import { EmptyState, LoadingState } from "./components/EmptyState";
 
 const COLORS = ["Fekete", "Fehér", "Kék", "Zöld", "Ezüst", "Egyéb"];
 
@@ -126,7 +127,7 @@ export default function BuybackFlow() {
     return (
       <div className="pub-shop">
         <PublicHeader activeNav="buyback" />
-        <div className="pub-empty">Betöltés...</div>
+        <LoadingState />
         <PublicFooter />
       </div>
     );
@@ -136,7 +137,7 @@ export default function BuybackFlow() {
     return (
       <div className="pub-shop">
         <PublicHeader activeNav="buyback" />
-        <div className="pub-empty">{loadError}</div>
+        <EmptyState icon={WarningIcon}>{loadError}</EmptyState>
         <PublicFooter />
       </div>
     );
@@ -168,7 +169,7 @@ export default function BuybackFlow() {
     return (
       <div className="pub-shop">
         <PublicHeader activeNav="buyback" />
-        <div className="pub-empty">A felvásárlási szolgáltatás hamarosan elérhető lesz.<br /><a href="/" className="pub-ask-btn" style={{ marginTop: 12 }}>Vissza a készlethez</a></div>
+        <EmptyState icon={BuybackIcon}>A felvásárlási szolgáltatás hamarosan elérhető lesz.<br /><a href="/" className="pub-ask-btn" style={{ marginTop: 12 }}>Vissza a készlethez</a></EmptyState>
         <PublicFooter />
       </div>
     );

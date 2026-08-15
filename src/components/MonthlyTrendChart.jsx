@@ -1,5 +1,7 @@
 import { useState, useMemo, useRef } from "react";
 import { money } from "../lib/utils";
+import { FinanceIcon } from "./icons";
+import { EmptyState } from "./EmptyState";
 
 const W = 760, H = 260, PAD_L = 52, PAD_R = 12, PAD_T = 16, PAD_B = 40;
 const MONTH_NAMES = ["jan.", "febr.", "márc.", "ápr.", "máj.", "jún.", "júl.", "aug.", "szept.", "okt.", "nov.", "dec."];
@@ -61,8 +63,8 @@ export default function MonthlyTrendChart({ summaries, liveMonth, locations, loc
   const nonEmptyGroups = groups.filter((g) => g.bars.length > 0);
   if (nonEmptyGroups.length === 0) {
     return (
-      <div className="tw" style={{ padding: "36px 20px" }}>
-        <div className="empty">Még nincs havi adat a trendhez.</div>
+      <div className="tw">
+        <EmptyState icon={FinanceIcon}>Még nincs havi adat a trendhez.</EmptyState>
       </div>
     );
   }

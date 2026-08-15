@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { CloseIcon, ChatIcon, ServiceIcon, PhoneCaseIcon } from "./icons";
+import { EmptyState } from "./EmptyState";
 
 function timeLabel(iso) {
   if (!iso) return "";
@@ -71,7 +72,7 @@ export default function TeamChatPanel({ messages, users, tickets, stock, current
         <button className="iconbtn" onClick={onClose}><CloseIcon /></button>
       </div>
       <div className="chat-panel-list" ref={listRef}>
-        {messages.length === 0 && <div className="empty">Még nincs üzenet — írj elsőnek!</div>}
+        {messages.length === 0 && <EmptyState icon={ChatIcon}>Még nincs üzenet — írj elsőnek!</EmptyState>}
         {messages.map((m) => (
           <div key={m.id} className={`chat-msg${m.senderId === currentUserId ? " mine" : ""}`}>
             <div className="chat-msg-meta">

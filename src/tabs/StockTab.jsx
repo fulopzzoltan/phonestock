@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { money, displayName, phoneCode } from "../lib/utils";
-import { SearchIcon, EditIcon, ListViewIcon, GridViewIcon } from "../components/icons";
+import { SearchIcon, EditIcon, ListViewIcon, GridViewIcon, PhoneCaseIcon } from "../components/icons";
 import ConfirmDelete from "../components/ConfirmDelete";
 import Thumb from "../components/Thumb";
+import { EmptyState, LoadingState } from "../components/EmptyState";
 
 const SORTS = [
   { key: "recent", label: "Legújabb elöl" },
@@ -66,7 +67,7 @@ export default function StockTab({
         </div>
       </div>
 
-      {loadingData ? <div className="empty">Betöltés...</div> : condFiltered.length === 0 ? <div className="empty">Nincs termék raktáron.</div> : (
+      {loadingData ? <LoadingState /> : condFiltered.length === 0 ? <EmptyState icon={PhoneCaseIcon}>Nincs termék raktáron.</EmptyState> : (
         visibleLocations.map((loc) => {
           const items = sortItems(condFiltered.filter((i) => i.locationId === loc.id), sortBy);
           if (items.length === 0) return null;
@@ -151,7 +152,7 @@ export default function StockTab({
       </span>
       {showSold && (
         <div className="tw" style={{ marginTop: 12 }}>
-          {soldStock.length === 0 ? <div className="empty">Nincs eladott telefon.</div> : (
+          {soldStock.length === 0 ? <EmptyState icon={PhoneCaseIcon}>Nincs eladott telefon.</EmptyState> : (
             <table>
               <thead><tr><th>Termék</th><th>Helyszín</th><th>Eladva</th><th>Vevő</th><th>Ár</th></tr></thead>
               <tbody>

@@ -4,6 +4,8 @@ import { supabase } from "./lib/supabaseClient";
 import { t, translateColor, translateWarranty } from "./lib/i18n";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
+import { PhoneCaseIcon } from "./components/icons";
+import { EmptyState, LoadingState } from "./components/EmptyState";
 
 const SITE = "https://phonestock-manager.netlify.app";
 
@@ -38,7 +40,7 @@ export default function PhoneDetail({ id, lang = "hu" }) {
     return (
       <div className="pub-shop">
         <PublicHeader activeNav="stock" lang={lang} langSwitchHref={langSwitchHref} />
-        <div className="pub-empty">{s.loading}</div>
+        <LoadingState />
         <PublicFooter lang={lang} />
       </div>
     );
@@ -47,7 +49,7 @@ export default function PhoneDetail({ id, lang = "hu" }) {
     return (
       <div className="pub-shop">
         <PublicHeader activeNav="stock" lang={lang} langSwitchHref={langSwitchHref} />
-        <div className="pub-empty">{s.soldOut}<br /><a href={lang === "ro" ? "/ro/telefoane" : "/"} className="pub-ask-btn" style={{ marginTop: 12 }}>{s.backToStock}</a></div>
+        <EmptyState icon={PhoneCaseIcon}>{s.soldOut}<br /><a href={lang === "ro" ? "/ro/telefoane" : "/"} className="pub-ask-btn" style={{ marginTop: 12 }}>{s.backToStock}</a></EmptyState>
         <PublicFooter lang={lang} />
       </div>
     );

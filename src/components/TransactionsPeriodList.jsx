@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { money, adaptivePeriodBucket, periodLabel, today } from "../lib/utils";
-import { EditIcon } from "./icons";
+import { EditIcon, FinanceIcon } from "./icons";
 import ConfirmDelete from "./ConfirmDelete";
+import { EmptyState } from "./EmptyState";
 
 export default function TransactionsPeriodList({ transactions, locName, onEdit, onDelete, onOpenReceipt, busy }) {
   const currentKey = adaptivePeriodBucket(today()).key;
   const [expanded, setExpanded] = useState(() => new Set([currentKey]));
 
   if (transactions.length === 0) {
-    return <div className="tw"><div className="empty">Nincs rögzített tranzakció.</div></div>;
+    return <div className="tw"><EmptyState icon={FinanceIcon}>Nincs rögzített tranzakció.</EmptyState></div>;
   }
   const groups = {};
   transactions.forEach((t) => {

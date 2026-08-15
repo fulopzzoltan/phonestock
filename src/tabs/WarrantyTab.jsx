@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { today } from "../lib/utils";
-import { SearchIcon } from "../components/icons";
+import { SearchIcon, WarrantyIcon } from "../components/icons";
 import CallLink from "../components/CallLink";
 import Thumb from "../components/Thumb";
+import { EmptyState, LoadingState } from "../components/EmptyState";
 
 const FILTERS = [["all", "Mind"], ["sale", "Telefon garancia"], ["service", "Szerviz garancia"]];
 
@@ -46,7 +47,7 @@ export default function WarrantyTab({
       </div>
 
       <div className="tw">
-        {loadingData ? <div className="empty">Betöltés...</div> : rows.length === 0 ? <div className="empty">Nincs aktív garancia.</div> : (
+        {loadingData ? <LoadingState /> : rows.length === 0 ? <EmptyState icon={WarrantyIcon}>Nincs aktív garancia.</EmptyState> : (
           <table>
             <thead><tr><th>Típus</th><th>Ügyfél</th><th>Termék / Eszköz</th><th>Garancia</th><th>Lejárat</th><th>Helyszín</th><th>Művelet</th></tr></thead>
             <tbody>

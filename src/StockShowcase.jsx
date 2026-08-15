@@ -4,6 +4,8 @@ import { supabase } from "./lib/supabaseClient";
 import { t, translateColor, translateWarranty } from "./lib/i18n";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
+import { SearchIcon } from "./components/icons";
+import { EmptyState, LoadingState } from "./components/EmptyState";
 
 const SITE = "https://phonestock-manager.netlify.app";
 
@@ -129,9 +131,9 @@ export default function StockShowcase({ lang = "hu" }) {
       <main className="pub-main">
         {error && <div className="errbar">{error}</div>}
         {loading ? (
-          <div className="pub-empty">{s.loading}</div>
+          <LoadingState />
         ) : filtered.length === 0 ? (
-          <div className="pub-empty">{s.noResults}</div>
+          <EmptyState icon={SearchIcon}>{s.noResults}</EmptyState>
         ) : (
           <div className="pub-grid">
             {filtered.map((p) => {

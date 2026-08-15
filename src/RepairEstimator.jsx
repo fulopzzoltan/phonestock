@@ -6,7 +6,8 @@ import { PROBLEM_TAGS } from "./lib/utils";
 import { t } from "./lib/i18n";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
-import { CallIcon, PinIcon } from "./components/icons";
+import { CallIcon, PinIcon, WarningIcon } from "./components/icons";
+import { EmptyState, LoadingState } from "./components/EmptyState";
 
 const SITE = "https://phonestock-manager.netlify.app";
 const OTHER_PROBLEMS = PROBLEM_TAGS.filter((tag) => !PRICED_PROBLEMS.includes(tag));
@@ -148,7 +149,7 @@ export default function RepairEstimator({ lang = "hu" }) {
       <div className="pub-shop">
         {seoHead}
         <PublicHeader activeNav="repair" lang={lang} />
-        <div className="pub-empty">{s.loading}</div>
+        <LoadingState />
         <PublicFooter lang={lang} />
       </div>
     );
@@ -159,7 +160,7 @@ export default function RepairEstimator({ lang = "hu" }) {
       <div className="pub-shop">
         {seoHead}
         <PublicHeader activeNav="repair" lang={lang} />
-        <div className="pub-empty">{loadError}</div>
+        <EmptyState icon={WarningIcon}>{loadError}</EmptyState>
         <PublicFooter lang={lang} />
       </div>
     );

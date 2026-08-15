@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { money } from "../lib/utils";
-import { SearchIcon } from "../components/icons";
+import { SearchIcon, CustomersIcon } from "../components/icons";
 import Thumb from "../components/Thumb";
+import { EmptyState, LoadingState } from "../components/EmptyState";
 
 const SORTS = [
   { key: "recent", label: "Legutóbbi aktivitás" },
@@ -57,7 +58,7 @@ export default function CustomersTab({
       </div>
 
       <div className="tw">
-        {loadingData ? <div className="empty">Betöltés...</div> : sorted.length === 0 ? <div className="empty">Nincs ügyfél.</div> : (
+        {loadingData ? <LoadingState /> : sorted.length === 0 ? <EmptyState icon={CustomersIcon}>Nincs ügyfél.</EmptyState> : (
           <table>
             <thead><tr><th>Név</th><th>Telefonszám</th><th>Típus</th><th>Vásárlások</th><th>Szerviz</th><th>Utolsó aktivitás</th></tr></thead>
             <tbody>

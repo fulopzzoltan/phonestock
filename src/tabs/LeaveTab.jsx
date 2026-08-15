@@ -1,5 +1,6 @@
 import { LEAVE_STATUS_CLS } from "../lib/utils";
-import { EditIcon, WarningIcon } from "../components/icons";
+import { EditIcon, WarningIcon, LeaveIcon } from "../components/icons";
+import { EmptyState } from "../components/EmptyState";
 
 export default function LeaveTab({
   leaveYear, busy, setLeaveRequestModal, coverageWarnings, locName, users, leaveBalanceByUser, isAdmin,
@@ -42,7 +43,7 @@ export default function LeaveTab({
 
       <div className="tw">
         {upcomingLeave.length === 0 ? (
-          <div className="empty">Nincs felvett vagy közelgő szabadság a következő 3 hónapban.</div>
+          <EmptyState icon={LeaveIcon}>Nincs felvett vagy közelgő szabadság a következő 3 hónapban.</EmptyState>
         ) : (
           <table>
             <thead><tr><th>Dolgozó</th><th>Helyszín</th><th>Típus</th><th>Időszak</th><th>Napok</th><th>Állapot</th><th></th></tr></thead>

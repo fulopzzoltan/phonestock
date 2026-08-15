@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { money, STATUSES, statusLabel, displayName, ticketCode } from "../lib/utils";
-import { SearchIcon, ChevronDownIcon } from "../components/icons";
+import { SearchIcon, ChevronDownIcon, ServiceIcon } from "../components/icons";
 import TicketCard from "../components/TicketCard";
 import Thumb from "../components/Thumb";
+import { EmptyState, LoadingState } from "../components/EmptyState";
 
 export default function ServiceTab({
   effectiveLocFilter, locName, busy, setTicketModal, svcSearch, setSvcSearch, svcKindFilter, setSvcKindFilter,
@@ -34,7 +35,7 @@ export default function ServiceTab({
           <button type="button" className={svcKindFilter === "own" ? "active" : ""} onClick={() => setSvcKindFilter("own")}>Csak saját készlet</button>
         </div>
       </div>
-      {loadingData ? <div className="empty">Betöltés...</div> : (
+      {loadingData ? <LoadingState /> : (
         <div className="kanban-wrap">
           <div className="kanban">
             {STATUSES.map((col) => {
@@ -49,7 +50,7 @@ export default function ServiceTab({
                     <span className="k-count">{items.length}</span>
                   </div>
                   <div className="k-col-body">
-                    {items.length === 0 && <div className="k-empty">Üres</div>}
+                    {items.length === 0 && <div className="k-empty"><ServiceIcon />Üres</div>}
                     {shownItems.map((t) => <TicketCard key={t.id} ticket={t} locName={locName} onOpen={setDetailId} />)}
                     {failedItems.length > 0 && (
                       <>
@@ -72,7 +73,7 @@ export default function ServiceTab({
       </span>
       {showHandedOver && (
         <div className="tw" style={{ marginTop: 12 }}>
-          {handedOverTickets.length === 0 ? <div className="empty">Nincs átadott munkalap.</div> : (
+          {handedOverTickets.length === 0 ? <EmptyState icon={ServiceIcon}>Nincs átadott munkalap.</EmptyState> : (
             <table>
               <thead><tr><th>Eszköz</th><th>Helyszín</th><th>Bejött</th><th>Átadva</th><th>Vevő</th><th>Díj</th></tr></thead>
               <tbody>

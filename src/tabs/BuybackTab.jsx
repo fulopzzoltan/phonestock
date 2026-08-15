@@ -1,6 +1,7 @@
 import { money, BUYBACK_CONDITION_QUESTIONS } from "../lib/utils";
-import { EditIcon } from "../components/icons";
+import { EditIcon, BuybackIcon } from "../components/icons";
 import ConfirmDelete from "../components/ConfirmDelete";
+import { EmptyState } from "../components/EmptyState";
 
 export default function BuybackTab({
   busy, buybackModels, setBuybackModelModal, deleteBuybackModel, buybackRules, setBuybackRuleModal, deleteBuybackRule,
@@ -17,7 +18,7 @@ export default function BuybackTab({
       </div>
       <div className="tw" style={{ marginBottom: 22 }}>
         {buybackModels.length === 0 ? (
-          <div className="empty">Nincs modell felvéve — az /eladom oldal addig üres marad.</div>
+          <EmptyState icon={BuybackIcon}>Nincs modell felvéve — az /eladom oldal addig üres marad.</EmptyState>
         ) : (
           <table>
             <thead><tr><th>Márka</th><th>Modell</th><th>Tárhely</th><th>Alapár</th><th>Állapot</th><th></th></tr></thead>
@@ -46,7 +47,7 @@ export default function BuybackTab({
       </div>
       <div className="tw">
         {buybackRules.length === 0 ? (
-          <div className="empty">Nincs levonási szabály — minden készülék az alapáron kerül felajánlásra, függetlenül az állapottól.</div>
+          <EmptyState icon={BuybackIcon}>Nincs levonási szabály — minden készülék az alapáron kerül felajánlásra, függetlenül az állapottól.</EmptyState>
         ) : (
           <table>
             <thead><tr><th>Kérdés</th><th>Válasz</th><th>Szöveg</th><th>Levonás</th><th>Állapot</th><th></th></tr></thead>

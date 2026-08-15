@@ -1,5 +1,7 @@
 import { money } from "../lib/utils";
 import ConfirmDelete from "../components/ConfirmDelete";
+import { TrashNavIcon } from "../components/icons";
+import { EmptyState, LoadingState } from "../components/EmptyState";
 
 export default function TrashTab({
   trashLoading, trash, busy, restoreProduct, hardDeleteProduct, restorePart, hardDeletePart,
@@ -20,10 +22,10 @@ export default function TrashTab({
           />
         )}
       </div>
-      {trashLoading || !trash ? <div className="tw"><div className="empty">Betöltés...</div></div> : (
+      {trashLoading || !trash ? <div className="tw"><LoadingState /></div> : (
         <>
           {trash.products.length === 0 && trash.parts.length === 0 && trash.transactions.length === 0 && trash.tickets.length === 0 && (
-            <div className="tw"><div className="empty">A kuka üres.</div></div>
+            <div className="tw"><EmptyState icon={TrashNavIcon}>A kuka üres.</EmptyState></div>
           )}
           {trash.products.length > 0 && (
             <div style={{ marginBottom: 18 }}>

@@ -1,4 +1,6 @@
 import ConfirmDelete from "../components/ConfirmDelete";
+import { UsersNavIcon } from "../components/icons";
+import { EmptyState, LoadingState } from "../components/EmptyState";
 
 export default function UsersTab({
   busy, setInviteError, setInviteModal, loadingData, users, user, updateUserProfile,
@@ -11,7 +13,7 @@ export default function UsersTab({
         <button className="btn" disabled={busy} onClick={() => { setInviteError(""); setInviteModal(true); }}>+ Új kolléga meghívása</button>
       </div>
       <div className="tw">
-        {loadingData ? <div className="empty">Betöltés...</div> : users.length === 0 ? <div className="empty">Nincs felhasználó.</div> : (
+        {loadingData ? <LoadingState /> : users.length === 0 ? <EmptyState icon={UsersNavIcon}>Nincs felhasználó.</EmptyState> : (
           <table>
             <thead><tr><th>Név</th><th>Email</th><th>Szerepkör</th><th>Helyszín</th><th>Műveletek</th></tr></thead>
             <tbody>

@@ -1,5 +1,7 @@
 import { money } from "../lib/utils";
 import { REPAIR_FAMILIES, PRICED_PROBLEMS, PROBLEM_LABELS } from "../lib/repairCatalog";
+import { RepairPriceIcon } from "../components/icons";
+import { EmptyState } from "../components/EmptyState";
 
 export default function RepairPricesTab({
   repairPrices, setRepairPriceModal, repairLeads, repairLeadFilter, setRepairLeadFilter, busy,
@@ -50,7 +52,7 @@ export default function RepairPricesTab({
       </div>
       <div className="tw">
         {filteredLeads.length === 0 ? (
-          <div className="empty">Nincs ilyen státuszú érdeklődő.</div>
+          <EmptyState icon={RepairPriceIcon}>Nincs ilyen státuszú érdeklődő.</EmptyState>
         ) : (
           <table>
             <thead><tr><th>Ügyfél</th><th>Telefon</th><th>Eszköz</th><th>Probléma</th><th>Becsült ár</th><th>Helyszín</th><th>Beérkezett</th><th></th></tr></thead>

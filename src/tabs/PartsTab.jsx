@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { money, PART_CATEGORIES, partCode } from "../lib/utils";
-import { SearchIcon, EditIcon } from "../components/icons";
+import { SearchIcon, EditIcon, PartsIcon } from "../components/icons";
 import ConfirmDelete from "../components/ConfirmDelete";
 import Thumb from "../components/Thumb";
+import { EmptyState, LoadingState } from "../components/EmptyState";
 
 const SORTS = [
   { key: "recent", label: "Legújabb elöl" },
@@ -59,7 +60,7 @@ export default function PartsTab({
         </select>
       </div>
 
-      {loadingData ? <div className="tw"><div className="empty">Betöltés...</div></div> : catFiltered.length === 0 ? <div className="tw"><div className="empty">Nincs találat.</div></div> : (
+      {loadingData ? <div className="tw"><LoadingState /></div> : catFiltered.length === 0 ? <div className="tw"><EmptyState icon={PartsIcon}>Nincs találat.</EmptyState></div> : (
         CATS.map((cat) => {
           const items = sortItems(cat === "Egyéb"
             ? catFiltered.filter((p) => !PART_CATEGORIES.includes(p.category))
