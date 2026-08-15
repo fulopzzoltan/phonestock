@@ -7,7 +7,7 @@ import PhonePartsPicker from "./PhonePartsPicker";
 
 export default function ProductDetailPanel({
   product, saleTx, locName, onClose, onSell, onEdit, onDelete, busy,
-  users = [], activeServiceTicket, parts = [], onAddPart, onRemovePart, onStartService, onOpenTicket,
+  users = [], activeServiceTicket, parts = [], onAddPart, onRemovePart, onStartService, onOpenTicket, onReturnToStock,
 }) {
   const profit = (Number(product.salePrice) || 0) - (Number(product.costPrice) || 0);
   const isSold = product.status === "sold";
@@ -73,6 +73,19 @@ export default function ProductDetailPanel({
               <Row k="Eladva" v={saleTx?.date || "—"} />
               <Row k="Vevő" v={saleTx?.customerName || "—"} />
               <Row k="Telefonszám" v={saleTx?.customerPhone || "—"} />
+              <button
+                type="button"
+                className="btn sec sm"
+                style={{ marginTop: 10 }}
+                disabled={busy}
+                onClick={() => {
+                  if (window.confirm("Biztosan visszaveszed ezt a telefont? Visszakerül a raktárba (Polcon állapotba), és megszűnik rajta a garancia. A bevételi tranzakció változatlan marad — ha vissza kell fizetni az árat, azt külön rögzítsd kiadásként.")) {
+                    onReturnToStock(product.id, saleTx?.id);
+                  }
+                }}
+              >
+                Visszavétel (visszakerül a raktárba)
+              </button>
             </div>
           )}
         </div>

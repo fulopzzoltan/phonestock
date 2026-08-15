@@ -33,7 +33,8 @@ export function daysOnShelf(dateAdded) {
   if (!dateAdded) return null;
   return Math.floor((Date.now() - new Date(dateAdded + "T00:00:00")) / 86400000);
 }
-export function isSlowMoving(p) {
+export function isSlowMoving(p, reserveLocId) {
+  if (reserveLocId && p.locationId === reserveLocId) return false;
   const days = daysOnShelf(p.dateAdded);
   return days != null && days >= SLOW_MOVING_DAYS;
 }

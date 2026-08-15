@@ -414,6 +414,16 @@ function AppShell() {
       setSellModal(null);
     });
   }
+  async function returnProductToStock(productId, txId) {
+    await withBusy(async () => {
+      unwrap(await supabase.from("products").update({ status: "in_stock", stock_status: "polcon" }).eq("id", productId));
+      setStock(stock.map((i) => (i.id === productId ? { ...i, status: "in_stock", stockStatus: "polcon" } : i)));
+      if (txId) {
+        unwrap(await supabase.from("transactions").update({ warranty: null }).eq("id", txId));
+        setTransactions(transactions.map((t) => (t.id === txId ? { ...t, warranty: null } : t)));
+      }
+    });
+  }
 
   // PARTS
   async function addPart(data) {
@@ -940,8 +950,8 @@ function AppShell() {
     value: filteredStock.reduce((s, i) => s + (Number(i.salePrice) || 0), 0),
     cost: filteredStock.reduce((s, i) => s + (Number(i.costPrice) || 0), 0),
     profit: filteredStock.reduce((s, i) => s + ((Number(i.salePrice) || 0) - (Number(i.costPrice) || 0)), 0),
-    slowMoving: filteredStock.filter(isSlowMoving).length,
-  }), [filteredStock]);
+    slowMoving: filteredStock.filter((p) => isSlowMoving(p, reserveLocId)).length,
+  }), [filteredStock, reserveLocId]);
 
   const txStats = useMemo(() => {
     const income = filteredTransactions.filter((t) => t.type === "income").reduce((a, t) => a + (Number(t.amount) || 0), 0);
@@ -1425,6 +1435,7 @@ function AppShell() {
           onSell={(p) => { setProductDetailId(null); setSellModal(p); }}
           onEdit={(p) => { setProductDetailId(null); setStockModal(p); }}
           onDelete={(id) => { deleteProduct(id); setProductDetailId(null); }}
+          onReturnToStock={returnProductToStock}
         />
       )}
       {ownServiceModal && (

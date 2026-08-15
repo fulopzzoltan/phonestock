@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { money, displayName, phoneCode, daysOnShelf, isSlowMoving, stockStatusLabel } from "../lib/utils";
-import { SearchIcon, EditIcon, ListViewIcon, GridViewIcon, PhoneCaseIcon } from "../components/icons";
+import { SearchIcon, EditIcon, ListViewIcon, GridViewIcon, PhoneCaseIcon, ChevronDownIcon } from "../components/icons";
 import ConfirmDelete from "../components/ConfirmDelete";
 import Thumb from "../components/Thumb";
 import { EmptyState, LoadingState } from "../components/EmptyState";
@@ -32,14 +32,17 @@ export default function StockTab({
   const [sortBy, setSortBy] = useState("recent");
   const [view, setView] = useState("list"); // list | grid
   const [slowOnly, setSlowOnly] = useState(false);
+  const [collapsedOverride, setCollapsedOverride] = useState({}); // loc.id -> bool
+  const isCollapsed = (loc) => collapsedOverride[loc.id] ?? loc.name === "Tartalék";
+  const toggleCollapse = (loc) => setCollapsedOverride((c) => ({ ...c, [loc.id]: !isCollapsed(loc) }));
 
-  const slowMovingCount = useMemo(() => filteredStock.filter(isSlowMoving).length, [filteredStock]);
+  const slowMovingCount = useMemo(() => filteredStock.filter((p) => isSlowMoving(p, reserveLocId)).length, [filteredStock, reserveLocId]);
 
   const condFiltered = useMemo(() => {
     let items = condFilter === "all" ? filteredStock : filteredStock.filter((i) => i.condition === condFilter);
-    if (slowOnly) items = items.filter(isSlowMoving);
+    if (slowOnly) items = items.filter((p) => isSlowMoving(p, reserveLocId));
     return items;
-  }, [filteredStock, condFilter, slowOnly]);
+  }, [filteredStock, condFilter, slowOnly, reserveLocId]);
 
   const visibleLocations = effectiveLocFilter === "all" ? locations : locations.filter((l) => l.id === effectiveLocFilter || l.id === reserveLocId);
 
@@ -84,15 +87,25 @@ export default function StockTab({
         visibleLocations.map((loc) => {
           const items = sortItems(condFiltered.filter((i) => i.locationId === loc.id), sortBy);
           if (items.length === 0) return null;
+          const isReserve = loc.name === "Tartalék";
+          const collapsed = isCollapsed(loc);
           return (
             <div key={loc.id} style={{ marginBottom: 18 }}>
-              <div className="loc-group-head">
-                <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151" }}>
-                  {loc.name} <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({items.length} db)</span>
+              {isReserve ? (
+                <button type="button" className="history-toggle" style={{ marginBottom: 8 }} onClick={() => toggleCollapse(loc)}>
+                  <PhoneCaseIcon width={14} height={14} />
+                  <span>{loc.name} ({items.length} db)</span>
+                  <ChevronDownIcon style={{ marginLeft: "auto", transform: collapsed ? undefined : "rotate(180deg)" }} />
+                </button>
+              ) : (
+                <div className="loc-group-head">
+                  <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151" }}>
+                    {loc.name} <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({items.length} db)</span>
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {view === "list" ? (
+              {collapsed ? null : view === "list" ? (
                 <div className="tw">
                   <table>
                     <thead><tr><th>Termék</th><th>Állapot</th><th>Ár</th><th>Besz.</th><th></th></tr></thead>
@@ -107,7 +120,7 @@ export default function StockTab({
                                   {displayName(i.brand, i.model)}
                                   {i.stockStatus === "javitando" && <span className="tag" style={{ background: "var(--danger-soft)", color: "var(--danger-ink)", fontWeight: 700 }} title="Nem látszik a webshopban">Javítandó</span>}
                                   {i.stockStatus === "lefoglalt" && <span style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }} title="Nem látszik a webshopban">{stockStatusLabel(i.stockStatus)}</span>}
-                                  {isSlowMoving(i) && <span className="tag" style={{ background: "var(--warning-soft)", color: "var(--warning-ink)", fontWeight: 700 }}>{daysOnShelf(i.dateAdded)} napja a polcon</span>}
+                                  {isSlowMoving(i, reserveLocId) && <span className="tag" style={{ background: "var(--warning-soft)", color: "var(--warning-ink)", fontWeight: 700 }}>{daysOnShelf(i.dateAdded)} napja a polcon</span>}
                                 </div>
                                 <div className="stk-sub">{[phoneCode(i.productNo), i.storage, i.color].filter(Boolean).join(" · ") || "—"}</div>
                               </div>
@@ -145,7 +158,7 @@ export default function StockTab({
                         {displayName(i.brand, i.model)}
                         {i.stockStatus === "javitando" && <span className="tag" style={{ marginLeft: 6, background: "var(--danger-soft)", color: "var(--danger-ink)", fontWeight: 700 }} title="Nem látszik a webshopban">Javítandó</span>}
                         {i.stockStatus === "lefoglalt" && <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }} title="Nem látszik a webshopban">{stockStatusLabel(i.stockStatus)}</span>}
-                        {isSlowMoving(i) && <span className="tag" style={{ marginLeft: 6, background: "var(--warning-soft)", color: "var(--warning-ink)", fontWeight: 700 }}>{daysOnShelf(i.dateAdded)} napja a polcon</span>}
+                        {isSlowMoving(i, reserveLocId) && <span className="tag" style={{ marginLeft: 6, background: "var(--warning-soft)", color: "var(--warning-ink)", fontWeight: 700 }}>{daysOnShelf(i.dateAdded)} napja a polcon</span>}
                       </div>
                       <div className="stk-card-sub">{[phoneCode(i.productNo), i.storage, i.color].filter(Boolean).join(" · ") || "—"}{i.warranty ? ` · ${i.warranty} gar.` : ""}</div>
                       <div className="stk-card-price">{money(i.salePrice)}</div>
