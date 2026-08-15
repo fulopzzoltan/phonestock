@@ -129,6 +129,9 @@ tr:hover td{background:#FAFAFA}
 .quick-sale-btn:disabled{opacity:.6;cursor:default}
 
 /* BADGES */
+/* Közös alap minden címke-jellegű elemhez (st-*, badge-*, prob-pill, gar-pill,
+   sla-badge) — mindegyik ugyanazt a pill-formát kövesse, a szín a módosító. */
+.tag{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:var(--radius-pill);font-size:10.5px;font-weight:600}
 .st{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:600}
 .st-beveve{background:#FEF9C3;color:#854D0E}
 .st-alkatresz{background:var(--info-soft);color:var(--info-ink)}
@@ -141,8 +144,8 @@ tr:hover td{background:#FAFAFA}
 .badge-loc{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:600;background:#F0FDF4;color:#15803D;border:1px solid #BBF7D0}
 .badge-income{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700;background:#DCFCE7;color:#15803D}
 .badge-expense{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700;background:#FEE2E2;color:#B91C1C}
-.prob-pill{display:inline-flex;padding:2px 7px;border-radius:6px;font-size:10.5px;font-weight:500;background:#F3F4F6;color:#374151;margin:1px}
-.gar-pill{display:inline-flex;padding:2px 7px;border-radius:6px;font-size:10.5px;font-weight:500;background:var(--info-soft);color:var(--info)}
+.prob-pill{display:inline-flex;padding:2px 7px;border-radius:var(--radius-pill);font-size:10.5px;font-weight:500;background:#F3F4F6;color:#374151;margin:1px}
+.gar-pill{display:inline-flex;padding:2px 7px;border-radius:var(--radius-pill);font-size:10.5px;font-weight:500;background:var(--info-soft);color:var(--info)}
 .sla-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700}
 .sla-badge.sla-warn{background:#FEF3C7;color:#92400E}
 .sla-badge.sla-overdue{background:#FEE2E2;color:#B91C1C}
