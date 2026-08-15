@@ -201,16 +201,14 @@ Import: `import OwnStockServiceModal from "./components/OwnStockServiceModal";`
 
 ---
 
-## 5. Régi útvonal — finom terelés, nem eltávolítás
+## 5. "Kinek?" legördülő teljes eltávolítása a munkalap-formról
 
-**`src/components/TicketFormModal.jsx`** — a "Kinek?" legördülő (66–76. sor) maradjon (szerkesztésnél még mindig ez a form nyílik meg egy meglévő saját-tickethez, ha valaki a Szerviz fülről módosítja), de új munkalap létrehozásnál tegyél alá egy halvány útmutatást, ha valaki mégis ezt választja:
-```jsx
-{!isEdit && isOwnStock && (
-  <div style={{ fontSize: 11.5, color: "#9CA3AF", marginTop: -4, marginBottom: 10 }}>
-    Tipp: saját készlet szervizt egyszerűbb a telefon adatlapjáról indítani (Telefonok fül → nyisd meg a terméket → "Szerviz előkészítés indítása").
-  </div>
-)}
-```
+A `TicketFormModal.jsx`-en (`src/components/TicketFormModal.jsx`) a "Kinek?" választó (jelenleg 66–76. sor) **teljesen kikerül**. Ez a form mostantól kizárólag ügyfél-munkalapot hoz létre — a saját készlet indítása innentől kizárólag a telefon adatlapjáról megy (2–4. pont).
+
+- Töröld a "Kinek?" `<div className="field">` blokkot (66–76. sor) teljesen.
+- Az `f` kezdőállapotban (18. sor) a `ticketKind` maradjon `ticket?.ticketKind || "Ügyfél"` — ez fontos: **szerkesztésnél** (ha egy meglévő saját-készletes munkalapot nyitsz meg "Szerkesztés"-sel a `DetailPanel`-ből) a form továbbra is helyesen jeleníti meg a termék-mezőt ügyfél-mezők helyett (92–131. sor változatlan marad, az `isOwnStock` változó is marad), csak már nincs mód új ticketnél átváltani rá — mert újnál a `ticketKind` mindig `"Ügyfél"` lesz, hiszen a `onChange`-es váltógomb megszűnt.
+- A `set("ticketKind")`-et használó `onChange` és a hozzá tartozó `<option>`-ök törlődnek a `<select>`-tel együtt — semmi más helyen nincs rá hivatkozás.
+- Eredmény: a Szerviz fülön a "+ Új munkalap" gomb mostantól kizárólag ügyfél-munkalapot hoz létre; a saját készlet előkészítése/garanciális javítása kizárólag a Telefonok fülről, a termék adatlapjáról indítható (2–4. pont szerint).
 
 ---
 
@@ -222,6 +220,6 @@ Import: `import OwnStockServiceModal from "./components/OwnStockServiceModal";`
 - Létrehozás után a telefon adatlapján azonnal megjelenik a vizuális alkatrész-választó (`PhonePartsPicker`), alkatrész hozzáadásakor a telefon beszerzési ára (`costPrice`) frissül (ez a szinkron már működik)
 - Egy eladott telefon adatlapján a gomb neve "Garanciális javítás felvétele", és `ticketKind = "Saját készlet - garanciális"` jön létre
 - "Munkalap megnyitása" gombra a teljes munkalap-részletnézet nyílik meg (státuszváltás stb. onnan megy, ahogy eddig)
-- Az ügyfél-szerviz felvétele (Szerviz fül, "+ Új munkalap", "Kinek? → Ügyfél") változatlanul működik
-- A régi "Kinek? → Saját készlet" útvonal is még működik (nem törtük el), csak van alatta egy tipp-szöveg
+- A Szerviz fül "+ Új munkalap" gombja mostantól kizárólag ügyfél-munkalapot hoz létre, "Kinek?" választó nincs a formon
+- Egy meglévő saját-készletes munkalap "Szerkesztés"-e a `DetailPanel`-ből még mindig helyesen jeleníti meg a termék-mezőt (nem tört el a szerkesztő nézet)
 - Nincs `git push`, csak lokális commit
