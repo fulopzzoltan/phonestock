@@ -97,16 +97,16 @@ export default function StockValueChart({ history }) {
               {fmtDate(p.date)}
             </text>
           ))}
-          <path d={areaPath} fill="#22C55E" opacity="0.1" stroke="none" />
-          <path d={path} fill="none" stroke="#22C55E" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-          <circle cx={last.x} cy={last.y} r="4" fill="#22C55E" stroke="#fff" strokeWidth="2" />
+          <path d={areaPath} fill="var(--primary)" opacity="0.1" stroke="none" />
+          <path d={path} fill="none" stroke="var(--primary)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+          <circle cx={last.x} cy={last.y} r="4" fill="var(--primary)" stroke="#fff" strokeWidth="2" />
           <text x={last.x} y={last.y - 12} textAnchor="end" fontSize="11" fontWeight="700" fill="#111827">
             {money(last.value)}
           </text>
           {hp && (
             <>
               <line x1={hp.x} y1={PAD_T} x2={hp.x} y2={H - PAD_B} stroke="#D1D5DB" strokeWidth="1" />
-              <circle cx={hp.x} cy={hp.y} r="4" fill="#22C55E" stroke="#fff" strokeWidth="2" />
+              <circle cx={hp.x} cy={hp.y} r="4" fill="var(--primary)" stroke="#fff" strokeWidth="2" />
             </>
           )}
         </svg>

@@ -891,6 +891,15 @@ function AppShell() {
     return transactions.filter((t) => t.locationId === effectiveLocFilter);
   }, [transactions, effectiveLocFilter]);
 
+  const dailyIncomeTrend = useMemo(() => {
+    const days = [];
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      days.push(d.toISOString().slice(0, 10));
+    }
+    return days.map((d) => filteredTransactions.filter((t) => t.date === d && t.type === "income").reduce((s, t) => s + (Number(t.amount) || 0), 0));
+  }, [filteredTransactions]);
+
   const filteredTickets = useMemo(() => {
     let t = effectiveLocFilter === "all" ? tickets : tickets.filter((x) => x.locationId === effectiveLocFilter);
     const q = svcSearch.trim().toLowerCase();
@@ -1176,6 +1185,7 @@ function AppShell() {
             svcStats={svcStats} monthlyTrendSummary={monthlyTrendSummary} currentMonthLive={currentMonthLive}
             monthlySummaries={monthlySummaries} locations={locations} txStats={txStats} partsStats={partsStats} customerStats={customerStats}
             todoItems={todoItems} setDetailId={setDetailId} setWarrantyDetailKey={setWarrantyDetailKey} setTab={setTab}
+            stockSparkline={stockHistory.slice(-14).map((h) => h.value)} dailyIncomeTrend={dailyIncomeTrend}
           />
         )}
 

@@ -1,6 +1,7 @@
 import { money, displayName, ticketCode } from "../lib/utils";
 import StockValueChart from "../components/StockValueChart";
 import MonthlyTrendChart from "../components/MonthlyTrendChart";
+import Sparkline from "../components/Sparkline";
 import { PhoneCaseIcon, ServiceIcon, FinanceIcon, PartsIcon, CustomersIcon, WarningIcon } from "../components/icons";
 
 const SectionHead = ({ icon: Icon, children }) => (
@@ -13,6 +14,7 @@ export default function DashboardTab({
   effectiveLocFilter, locName, stockStats, stockHistory, svcStats,
   monthlyTrendSummary, currentMonthLive, monthlySummaries, locations,
   txStats, partsStats, customerStats, todoItems, setDetailId, setWarrantyDetailKey, setTab,
+  stockSparkline, dailyIncomeTrend,
 }) {
   const todoCount = (todoItems?.slaTickets.length || 0) + (todoItems?.soonWarranties.length || 0);
 
@@ -60,7 +62,11 @@ export default function DashboardTab({
       )}
       <div className="statrow c4">
         <div className="statcard accent"><div className="lbl">Raktáron</div><div className="val">{stockStats.count} db</div></div>
-        <div className="statcard"><div className="lbl">Készlet értéke</div><div className="val">{money(stockStats.value)}</div></div>
+        <div className="statcard">
+          <div className="lbl">Készlet értéke</div>
+          <div className="val">{money(stockStats.value)}</div>
+          {stockSparkline.length > 1 && <div style={{ marginTop: 8 }}><Sparkline data={stockSparkline} variant="line" /></div>}
+        </div>
         <div className="statcard"><div className="lbl">Besz. érték</div><div className="val">{money(stockStats.cost)}</div></div>
         <div className="statcard"><div className="lbl">Várható profit</div><div className="val" style={{ color: "#22C55E" }}>{money(stockStats.profit)}</div></div>
       </div>
@@ -129,7 +135,11 @@ export default function DashboardTab({
       </div>
       <div className="statrow c4" style={{ marginBottom: 26 }}>
         <div className="statcard accent"><div className="lbl">Tranzakciók</div><div className="val">{txStats.count}</div></div>
-        <div className="statcard"><div className="lbl">Bevétel</div><div className="val" style={{ color: "#15803D" }}>{money(txStats.income)}</div></div>
+        <div className="statcard">
+          <div className="lbl">Bevétel</div>
+          <div className="val" style={{ color: "#15803D" }}>{money(txStats.income)}</div>
+          {dailyIncomeTrend.length > 1 && <div style={{ marginTop: 8 }}><Sparkline data={dailyIncomeTrend} variant="bars" /></div>}
+        </div>
         <div className="statcard"><div className="lbl">Kiadás</div><div className="val" style={{ color: "#B91C1C" }}>{money(txStats.expense)}</div></div>
         <div className="statcard"><div className="lbl">Nettó eredmény</div><div className="val">{money(txStats.net)}</div></div>
       </div>
