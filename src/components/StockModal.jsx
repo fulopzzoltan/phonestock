@@ -1,7 +1,7 @@
 import { useState } from "react";
 import LocationField from "./LocationField";
 import { CloseIcon } from "./icons";
-import { WARRANTIES, SOURCES } from "../lib/utils";
+import { WARRANTIES, SOURCES, STOCK_STATUSES } from "../lib/utils";
 
 export default function StockModal({ product, prefill, locations, onClose, onSave, busy, defaultLocId }) {
   const isEdit = !!product;
@@ -19,7 +19,7 @@ export default function StockModal({ product, prefill, locations, onClose, onSav
     source: product?.source || "",
     batteryHealth: product?.batteryHealth ?? "",
     newPrice: product?.newPrice ?? "",
-    onShelf: product?.onShelf !== false,
+    stockStatus: product?.stockStatus || "polcon",
   });
   const [locId, setLocId] = useState(product?.locationId || prefill?.locationId || defaultLocId || locations[0]?.id || "");
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
@@ -80,9 +80,12 @@ export default function StockModal({ product, prefill, locations, onClose, onSav
         {f.condition === "Refurbished" && (
           <div className="field"><label>Akkuállapot (%)</label><input type="number" min="0" max="100" value={f.batteryHealth} onChange={set("batteryHealth")} placeholder="100" /></div>
         )}
-        <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#374151", fontWeight: 500, margin: "2px 0 4px", cursor: "pointer" }}>
-          <input type="checkbox" className="chk" checked={f.onShelf} onChange={(e) => setF({ ...f, onShelf: e.target.checked })} /> Polcon (látszik a nyilvános webshopban)
-        </label>
+        <div className="field">
+          <label>Állapot <span style={{ color: "#9CA3AF", fontWeight: 400 }}>— csak "Polcon" látszik a nyilvános webshopban</span></label>
+          <select value={f.stockStatus} onChange={set("stockStatus")}>
+            {STOCK_STATUSES.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
+          </select>
+        </div>
         <div className="modal-actions">
           <button className="btn sec" onClick={onClose}>Mégse</button>
           <button className="btn" disabled={!valid || busy} onClick={() => valid && onSave(f, locId)}>{busy ? "Mentés..." : isEdit ? "Mentés" : "Hozzáadás"}</button>

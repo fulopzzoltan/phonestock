@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { money, displayName, phoneCode, daysOnShelf, isSlowMoving } from "../lib/utils";
+import { money, displayName, phoneCode, daysOnShelf, isSlowMoving, stockStatusLabel } from "../lib/utils";
 import { SearchIcon, EditIcon, ListViewIcon, GridViewIcon, PhoneCaseIcon } from "../components/icons";
 import ConfirmDelete from "../components/ConfirmDelete";
 import Thumb from "../components/Thumb";
@@ -105,7 +105,8 @@ export default function StockTab({
                               <div>
                                 <div className="stk-name">
                                   {displayName(i.brand, i.model)}
-                                  {!i.onShelf && <span style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }} title="Nem látszik a webshopban">nem polcon</span>}
+                                  {i.stockStatus === "javitando" && <span className="tag" style={{ background: "var(--danger-soft)", color: "var(--danger-ink)", fontWeight: 700 }} title="Nem látszik a webshopban">Javítandó</span>}
+                                  {i.stockStatus === "lefoglalt" && <span style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }} title="Nem látszik a webshopban">{stockStatusLabel(i.stockStatus)}</span>}
                                   {isSlowMoving(i) && <span className="tag" style={{ background: "var(--warning-soft)", color: "var(--warning-ink)", fontWeight: 700 }}>{daysOnShelf(i.dateAdded)} napja a polcon</span>}
                                 </div>
                                 <div className="stk-sub">{[phoneCode(i.productNo), i.storage, i.color].filter(Boolean).join(" · ") || "—"}</div>
@@ -142,7 +143,8 @@ export default function StockTab({
                       </div>
                       <div className="stk-card-name">
                         {displayName(i.brand, i.model)}
-                        {!i.onShelf && <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }} title="Nem látszik a webshopban">nem polcon</span>}
+                        {i.stockStatus === "javitando" && <span className="tag" style={{ marginLeft: 6, background: "var(--danger-soft)", color: "var(--danger-ink)", fontWeight: 700 }} title="Nem látszik a webshopban">Javítandó</span>}
+                        {i.stockStatus === "lefoglalt" && <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }} title="Nem látszik a webshopban">{stockStatusLabel(i.stockStatus)}</span>}
                         {isSlowMoving(i) && <span className="tag" style={{ marginLeft: 6, background: "var(--warning-soft)", color: "var(--warning-ink)", fontWeight: 700 }}>{daysOnShelf(i.dateAdded)} napja a polcon</span>}
                       </div>
                       <div className="stk-card-sub">{[phoneCode(i.productNo), i.storage, i.color].filter(Boolean).join(" · ") || "—"}{i.warranty ? ` · ${i.warranty} gar.` : ""}</div>

@@ -115,6 +115,13 @@ export const SOURCES = ["Konszignáció", "Számla"];
 export const PAYMENTS = ["Készpénz", "Kártya", "Átutalás"];
 export const CATEGORIES = ["Fix", "Készlet", "Marketing", "Eszköz", "Szerviz", "Egyéb"];
 
+export const STOCK_STATUSES = [
+  { key: "polcon", label: "Polcon" },
+  { key: "lefoglalt", label: "Lefoglalt" },
+  { key: "javitando", label: "Javítandó" },
+];
+export const stockStatusLabel = (s) => STOCK_STATUSES.find((x) => x.key === s)?.label || s;
+
 // Felvásárlás állapot-kérdései — a publikus /eladom flow és az admin levonási-szabály
 // szerkesztő is ezt használja, hogy a question_key/answer_key kulcsok ne csúszhassanak szét.
 export const BUYBACK_CONDITION_QUESTIONS = [

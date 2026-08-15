@@ -23,7 +23,7 @@ export const pFromApi = (r) => ({
   batteryHealth: r.battery_health,
   locationId: r.location_id,
   newPrice: r.new_price,
-  onShelf: r.on_shelf,
+  stockStatus: r.stock_status,
   productNo: r.product_no,
   dateAdded: r.date_added,
 });
@@ -43,7 +43,7 @@ export const pToApi = (p, locId) => ({
   battery_health: p.batteryHealth === "" || p.batteryHealth == null ? null : Number(p.batteryHealth),
   location_id: locId,
   new_price: p.newPrice === "" || p.newPrice == null ? null : Number(p.newPrice),
-  on_shelf: p.onShelf !== false,
+  stock_status: p.stockStatus || "polcon",
 });
 
 export const txFromApi = (r) => ({
