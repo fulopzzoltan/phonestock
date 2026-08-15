@@ -282,6 +282,9 @@ export const internalMessageFromApi = (r) => ({
   body: r.body,
   linkedTicketId: r.linked_ticket_id,
   linkedProductId: r.linked_product_id,
+  linkedPartId: r.linked_part_id,
+  linkedCustomerId: r.linked_customer_id,
+  linkedWarrantyId: r.linked_warranty_id,
   createdAt: r.created_at,
 });
 

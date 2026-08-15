@@ -1489,10 +1489,17 @@ function AppShell() {
           users={users}
           tickets={tickets}
           stock={stock}
+          parts={parts}
+          customersTable={customersTable}
+          warranties={warranties}
+          locName={locName}
           currentUserId={profile?.id}
           onSend={sendChatMessage}
           onOpenTicket={(id) => { setChatOpen(false); setDetailId(id); }}
           onOpenProduct={(id) => { setChatOpen(false); setProductDetailId(id); }}
+          onOpenPart={(id) => { setChatOpen(false); setPartDetailId(id); }}
+          onOpenCustomer={(id) => { setChatOpen(false); setCustomerKey(id); }}
+          onOpenWarranty={(id) => { setChatOpen(false); setTab("warranty"); setWarrantyDetailKey(`manual-${id}`); }}
           onClose={() => setChatOpen(false)}
         />
       )}

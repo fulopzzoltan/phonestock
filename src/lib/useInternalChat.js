@@ -36,9 +36,11 @@ export function useInternalChat(profile) {
     return () => { cancelled = true; supabase.removeChannel(channel); };
   }, [profile?.id]);
 
-  const send = useCallback(async (body, linkedTicketId = null, linkedProductId = null) => {
+  const send = useCallback(async (body, linkedTicketId = null, linkedProductId = null, linkedPartId = null, linkedCustomerId = null, linkedWarrantyId = null) => {
     unwrap(await supabase.from("internal_messages").insert({
-      sender_id: profile?.id, body, linked_ticket_id: linkedTicketId, linked_product_id: linkedProductId,
+      sender_id: profile?.id, body,
+      linked_ticket_id: linkedTicketId, linked_product_id: linkedProductId,
+      linked_part_id: linkedPartId, linked_customer_id: linkedCustomerId, linked_warranty_id: linkedWarrantyId,
     }));
   }, [profile?.id]);
 
