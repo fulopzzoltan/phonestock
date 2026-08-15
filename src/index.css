@@ -96,6 +96,9 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
 .statcard.accent .lbl{color:var(--sidebar-text)}
 .statcard .val{font-size:21px;font-weight:800;color:#111827}
 .statcard.accent .val{color:#fff}
+.statcard.warn{background:var(--warning-soft);border-color:var(--warning-soft)}
+.statcard.warn .lbl{color:var(--warning-ink)}
+.statcard.warn .val{color:var(--warning-ink)}
 
 /* TABLE */
 .tw{background:#fff;border-radius:18px;border:1px solid #EEF0F2;overflow:hidden;overflow-x:auto;box-shadow:var(--shadow-card)}
