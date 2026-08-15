@@ -46,6 +46,11 @@ Kb. 1 hét fejlesztés alatt (aug 7–12) egy éles, működő appot építettü
 
 ## Most — stabilizálás
 
+**🔴 Biztonság — sürgős, mert nemsokára regisztrál az első kollega (2026-08-12/13):**
+- **Kész, élesben javítva:** self-privilege-escalation lezárva (senki nem tudta magának admin szerepkört adni), több tábla (`customers`, `parts`, `service_parts`, `internal_messages`, `locations`, `stock_value_history`) szűkítve, hogy csak admin vagy már jóváhagyott (helyszínhez rendelt) user érje el — eddig bárki, aki regisztrált, ezekhez hozzáfért, mielőtt admin hozzárendelte volna egy helyszínhez.
+- **Hátravan:** a nyílt "Regisztráció" fül leváltása admin-meghívós folyamatra (ld. `TASKS_AUTH_BIZTONSAG.md`) — amíg ez nincs kész, technikailag biztonságos új fiókot regisztrálni (a fenti javítások megvédik), de ez nem a végleges, szabványos megoldás.
+
+
 A 2026-08-12-i átnézésben talált 4 pont (kötelező telefonszám, SMS-hiba jelzés, garanciális hívás/SMS gomb, Kuka végleges törlés) **kész és a repóban van** (lásd `TASKS.md`, 4 külön commit — még nincs pusholva/deployolva).
 
 Hátravan még:
@@ -53,10 +58,16 @@ Hátravan még:
 - Jogosultság-teszt: employee tényleg csak a saját helyszínét látja/módosítja-e mindenhol
 - Deploy-folyamat tisztázása — mikor és hogyan megy éles egy-egy változtatás (jelenleg csak lokális commit a szabály, amíg nem szólsz) — a 4 friss commit is push-ra vár, ha jónak látod
 
+**Garancia fül átépítés (2026-08-13, ld. `TASKS_GARANCIA.md`):** fül átnevezve "Garancia"-ra, Mind/Telefon/Szerviz szűrő, jobb oldali detail panel, szerkesztés+törlés (kötött tételnél csak a garancia mezőre, az eladás/munkalap érintetlen marad), nyomtatás gomb, és manuális (eladáshoz/munkalaphoz nem kötött) garancia-felvétel lehetősége. Implementálásra vár.
+
 ## Következő — ami több pénzt hoz, nem csak adminisztrál
 
 Hormozi-elv: a legjobb feature az, ami vagy pénzt hoz be gyorsabban, vagy visszahozza az ügyfelet.
 
+- **SEO + GEO (AI-kereshetőség) + kétnyelvűség HU/RO** (ld. `TASKS_SEO_GEO.md`, 2026-08-14) — igazolt tény: a GPTBot/ClaudeBot/PerplexityBot nem futtat JS-t, a jelenlegi SPA HTML-je üres nekik, tehát jelenleg AI-keresésből láthatatlanok vagyunk. Ez a feladat előre-renderelést (Netlify Prerender extension), robots.txt/sitemap.xml/llms.txt-t, JSON-LD-t, és egy `/ro` előtaggal tükrözött román nyelvű verziót vezet be a publikus oldalakra (a belső admin marad magyar). Mivel a `PhoneDetail.jsx`/`RepairEstimator.jsx` még nincs megírva, ezt ELŐBB kell elolvasni/beépíteni, mint a `TASKS_WEBSHOP.md`/`TASKS_SZERVIZ_ARBECSLO.md`-t.
+- **Publikus szerviz árbecslő (`/becsles`)** (ld. `TASKS_SZERVIZ_ARBECSLO.md`, 2026-08-13) — 3 lépéses varázsló (modell → probléma → azonnali ár), modellcsalád-szintű mátrixárazással a 4 kiszámítható javításra (Kijelző, Akku, Csatlakozó, Kamera), OEM/utángyártott váltással. Az igazi differenciátor: a `parts` tábla élő készletéhez kötve megmutatja, hogy MA megcsinálható-e a javítás, nem csak árat ad. Lead-elkapás minden esetben ("Foglald le a helyed"), ami egy kattintással valódi munkalappá alakítható admin oldalon.
+- **Publikus vitrin (`/keszlet`) webshop-szintre húzása** (ld. `TASKS_WEBSHOP.md`, 2026-08-13-i Flip.ro-kutatás) — horgony-ár ("új korban X Lei, spórolsz Y Lei"), szűkösség-jelzés egyedi darabokra, saját termék-részletoldal `/telefon/:id`-n. Ez a legkisebb-effort/legnagyobb-hatás lépés most, mert a `/keszlet` már megvan, csak konverziós elemek hiányoznak róla — nem kell új modul, csak ráépítés. DB-oldal (új_ár mező + RPC) már kész.
+- **Publikus "Add el a telefonod" felvásárló szolgáltatás** (ld. `TASKS_BUYBACK.md`, 2026-08-12-i UX-kutatás Backmarket/Flip.ro/ShowMe.hu tényleges felvásárló-eszközein) — nem csak bolti eszköz, hanem bejelentkezés nélküli publikus oldal (`/eladom`), pszichológiai elvekre építve (horgonyzás: "akár X Lei" azonnal a modellválasztón; lépésszámláló a sunk-cost effektusért; élő ár-frissítés minden válasznál). A ti egyedi előnyötök a tisztán online versenytársakhoz képest: **személyes átadás 2 boltban, azonnali kifizetéssel** — ezt kell kiemelni, nem elsüllyeszteni a postai opció mellett. Nagy feature, saját adatmodellel (`buyback_models`, `buyback_offers`), staff-oldali kanbannal és "Termékké alakítás" göbmmal a Telefonok készletbe. Szándékosan nincs benne (külön döntés kell hozzá): automata banki kifizetés/IBAN-gyűjtés, futár-API integráció.
 - **Riportolás** — heti/havi export, hogy lásd melyik helyszín / termékkategória hozza ténylegesen a pénzt
 - **Tartozék-upsell mélyítése** — a gyorsgomb megvan, ebből lehet valódi ajánlat: pl. telefon eladásnál automatikusan felajánlott tok+fólia csomag
 - **Garancia-emlékeztető rendszeresítése** — a gomb megvan a Garanciális tabon, de valakinek még mindig be kell mennie és rendszeresen végignéznie a listát; érdemes megnézni, hogy legyen-e ebből automata/heti rutin (pl. dashboard-figyelmeztetés a hamarosan lejáró garanciákra)

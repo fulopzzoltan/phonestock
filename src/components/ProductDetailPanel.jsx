@@ -1,4 +1,4 @@
-import { money } from "../lib/utils";
+import { money, phoneCode } from "../lib/utils";
 import { CloseIcon } from "./icons";
 import Row from "./DetailRow";
 import ConfirmDelete from "./ConfirmDelete";
@@ -21,6 +21,7 @@ export default function ProductDetailPanel({ product, saleTx, locName, onClose, 
           <ProductPhotos productId={product.id} />
           <div className="dp-section">
             <div className="dp-section-title">Termék adatok</div>
+            <Row k="Kód" v={<span className="mono" style={{ fontWeight: 700 }}>{phoneCode(product.productNo)}</span>} />
             <Row k="Márka" v={product.brand} />
             <Row k="Modell" v={product.model} />
             <Row k="Állapot" v={product.condition === "New" ? "Új" : `Felújított${product.grade ? " (" + product.grade + ")" : ""}`} />

@@ -1,4 +1,4 @@
-import { money, subStatusCls, subStatusLabel, slaInfo, displayName } from "../lib/utils";
+import { money, subStatusCls, subStatusLabel, slaInfo, displayName, ticketCode } from "../lib/utils";
 import { ClockIcon } from "./icons";
 import CallLink from "./CallLink";
 import Thumb from "./Thumb";
@@ -11,7 +11,7 @@ export default function TicketCard({ ticket, locName, onOpen }) {
   return (
     <div className={`t-card${kindCls}${sla && sla.level !== "ok" ? ` t-card-sla-${sla.level}` : ""}`} onClick={() => onOpen(ticket.id)}>
       <div className="t-card-top">
-        <span className="t-sn">#{ticket.ticketNo}</span>
+        <span className="t-sn">{ticketCode(ticket.ticketNo, locName(ticket.intakeLocationId || ticket.locationId))}</span>
         <span className="t-loc">{locName(ticket.locationId)}</span>
       </div>
       {ticket.ticketKind !== "Ügyfél" && (

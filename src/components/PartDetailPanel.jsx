@@ -1,4 +1,4 @@
-import { money } from "../lib/utils";
+import { money, partCode } from "../lib/utils";
 import { CloseIcon } from "./icons";
 import Row from "./DetailRow";
 import ConfirmDelete from "./ConfirmDelete";
@@ -9,7 +9,7 @@ export default function PartDetailPanel({ part, onClose, onEdit, onDelete, busy 
       <div className="detail-panel">
         <div className="dp-head">
           <div>
-            <div className="dp-sn">{part.partNo}</div>
+            <div className="dp-sn">{partCode(part.partNo)}</div>
             <div className="dp-name">{part.name}</div>
           </div>
           <button className="iconbtn" onClick={onClose}><CloseIcon /></button>

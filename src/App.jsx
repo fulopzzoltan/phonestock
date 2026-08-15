@@ -307,6 +307,36 @@ function AppShell() {
     });
   }
 
+  async function hardDeleteAllTrash() {
+    await withBusy(async () => {
+      const errors = [];
+      const productIds = trash.products.map((p) => p.id);
+      if (productIds.length > 0) {
+        try {
+          const { data: photos } = await supabase.from("product_photos").select("storage_path").in("product_id", productIds);
+          if (photos && photos.length > 0) {
+            await supabase.storage.from("product-photos").remove(photos.map((p) => p.storage_path)).catch(() => {});
+          }
+          unwrap(await supabase.from("products").delete().in("id", productIds));
+        } catch (e) { errors.push("Telefonok: " + e.message); }
+      }
+      if (trash.transactions.length > 0) {
+        try { unwrap(await supabase.from("transactions").delete().in("id", trash.transactions.map((t) => t.id))); }
+        catch (e) { errors.push("Tranzakciók: " + e.message); }
+      }
+      if (trash.tickets.length > 0) {
+        try { unwrap(await supabase.from("service_tickets").delete().in("id", trash.tickets.map((t) => t.id))); }
+        catch (e) { errors.push("Munkalapok: " + e.message); }
+      }
+      if (trash.parts.length > 0) {
+        const { error } = await supabase.from("parts").delete().in("id", trash.parts.map((p) => p.id));
+        if (error) errors.push(error.code === "23503" ? "Alkatrészek: néhány tétel nem törölhető, mert szerviz munkalaphoz van kötve." : error.message);
+      }
+      await loadTrash();
+      if (errors.length > 0) throw new Error(errors.join(" "));
+    });
+  }
+
   async function withBusy(fn) {
     setBusy(true);
     try { await fn(); setError(""); }
@@ -1106,6 +1136,7 @@ function AppShell() {
             trashLoading={trashLoading} trash={trash} busy={busy} restoreProduct={restoreProduct} hardDeleteProduct={hardDeleteProduct}
             restorePart={restorePart} hardDeletePart={hardDeletePart} restoreTransaction={restoreTransaction}
             hardDeleteTransaction={hardDeleteTransaction} restoreTicket={restoreTicket} hardDeleteTicket={hardDeleteTicket}
+            hardDeleteAllTrash={hardDeleteAllTrash}
           />
         )}
       </div>
@@ -1287,7 +1318,7 @@ function AppShell() {
         />
       )}
       <div id="print-slip-root">
-        {printTicket && <PrintSlip ticket={printTicket} location={locations.find((l) => l.id === printTicket.locationId)} />}
+        {printTicket && <PrintSlip ticket={printTicket} location={locations.find((l) => l.id === printTicket.locationId)} intakeLocation={locations.find((l) => l.id === (printTicket.intakeLocationId || printTicket.locationId))} />}
         {printReceipt && <PrintReceiptSlip tx={printReceipt} location={locations.find((l) => l.id === printReceipt.locationId)} />}
         {printWarranty && <PrintWarrantySlip w={printWarranty} location={locations.find((l) => l.id === printWarranty.locationId)} />}
       </div>

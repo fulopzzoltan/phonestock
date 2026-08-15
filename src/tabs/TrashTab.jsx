@@ -3,12 +3,22 @@ import ConfirmDelete from "../components/ConfirmDelete";
 
 export default function TrashTab({
   trashLoading, trash, busy, restoreProduct, hardDeleteProduct, restorePart, hardDeletePart,
-  restoreTransaction, hardDeleteTransaction, restoreTicket, hardDeleteTicket,
+  restoreTransaction, hardDeleteTransaction, restoreTicket, hardDeleteTicket, hardDeleteAllTrash,
 }) {
+  const totalCount = trash ? trash.products.length + trash.parts.length + trash.transactions.length + trash.tickets.length : 0;
   return (
     <>
       <div className="topbar">
         <div><div className="page-title">Kuka</div><div className="page-sub">Törölt tételek — bármikor visszaállíthatók</div></div>
+        {totalCount > 0 && (
+          <ConfirmDelete
+            variant="full"
+            disabled={busy}
+            label="Kuka ürítése"
+            confirmLabel={`Biztos? ${totalCount} tétel véglegesen törlődik.`}
+            onConfirm={hardDeleteAllTrash}
+          />
+        )}
       </div>
       {trashLoading || !trash ? <div className="tw"><div className="empty">Betöltés...</div></div> : (
         <>

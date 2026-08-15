@@ -28,6 +28,25 @@ export function displayName(brand, model) {
   return [brand, model].filter(Boolean).join(" ");
 }
 
+// Rövid, kimondható azonosítók — kategóriánként egy betű, kötőjel nélkül.
+// T = Telefon, S(+helyszín) = Szerviz munkalap (pl. SCS235), A = Alkatrész.
+// A bizonylatszámhoz (receipt_no) szándékosan nem nyúlunk — az pénzügyi/könyvelési sorszám.
+export function phoneCode(productNo) {
+  return productNo == null ? null : `T${productNo}`;
+}
+export function partCode(partNo) {
+  return partNo == null ? null : `A${partNo}`;
+}
+const TICKET_LOCATION_LETTERS = { "Gyimes": "GY", "Szentgyörgy": "CS" };
+// locationName = a felvétel (intake) helyszínének neve — ez a munkalap létrehozásakor
+// örökre rögzül (intake_location_id), nem változik akkor sem, ha a javítás közben
+// másik boltba kerül a telefon (location_id az él, azt mutatja a helyszín-címke).
+export function ticketCode(ticketNo, locationName) {
+  if (ticketNo == null) return null;
+  const letter = TICKET_LOCATION_LETTERS[locationName] || "";
+  return `S${letter}${ticketNo}`;
+}
+
 // "key" = adatbázisban tárolt érték (ne változtasd, meglévő sorok erre hivatkoznak),
 // "label" = amit a kanban/UI mutat — ez bármikor finomítható a key érintése nélkül
 export const STATUSES = [

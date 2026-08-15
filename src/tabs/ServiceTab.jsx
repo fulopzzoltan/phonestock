@@ -1,4 +1,4 @@
-import { money, STATUSES, statusLabel, displayName } from "../lib/utils";
+import { money, STATUSES, statusLabel, displayName, ticketCode } from "../lib/utils";
 import { SearchIcon } from "../components/icons";
 import TicketCard from "../components/TicketCard";
 import Thumb from "../components/Thumb";
@@ -70,7 +70,7 @@ export default function ServiceTab({
                         <Thumb brand={t.brand} />
                         <div>
                           <div className="stk-name">{displayName(t.brand, t.model) || "—"}</div>
-                          <div className="stk-sub">#{t.ticketNo}</div>
+                          <div className="stk-sub">{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</div>
                         </div>
                       </div>
                     </td>

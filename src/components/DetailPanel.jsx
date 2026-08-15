@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { money, STATUSES, SUB_STATUSES, slaInfo, SITE_URL, statusLabel } from "../lib/utils";
+import { money, STATUSES, SUB_STATUSES, slaInfo, SITE_URL, statusLabel, ticketCode } from "../lib/utils";
 import { CloseIcon } from "./icons";
 import Row from "./DetailRow";
 import CallLink from "./CallLink";
@@ -31,7 +31,7 @@ export default function DetailPanel({ ticket, locName, parts, users = [], onClos
       <div className="detail-panel">
         <div className="dp-head">
           <div>
-            <div className="dp-sn">#{ticket.ticketNo}</div>
+            <div className="dp-sn">{ticketCode(ticket.ticketNo, locName(ticket.intakeLocationId || ticket.locationId))}</div>
             <div className="dp-name">{ticket.customerName} — {[ticket.brand, ticket.model].filter(Boolean).join(" ")}</div>
           </div>
           <button className="iconbtn" onClick={onClose}><CloseIcon /></button>

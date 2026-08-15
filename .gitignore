@@ -3,3 +3,5 @@ dist
 .env
 .env.local
 .netlify
+deploy-*.zip
+vite.config.js.timestamp-*.mjs

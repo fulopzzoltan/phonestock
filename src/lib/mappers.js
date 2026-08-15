@@ -24,6 +24,7 @@ export const pFromApi = (r) => ({
   locationId: r.location_id,
   newPrice: r.new_price,
   onShelf: r.on_shelf,
+  productNo: r.product_no,
 });
 
 export const pToApi = (p, locId) => ({
@@ -107,6 +108,7 @@ export const tFromApi = (r) => ({
   customerId: r.customer_id,
   ticketKind: r.ticket_kind,
   productId: r.product_id,
+  intakeLocationId: r.intake_location_id,
 });
 
 export const tToApi = (t, locId) => ({

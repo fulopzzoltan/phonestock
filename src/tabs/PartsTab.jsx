@@ -1,4 +1,4 @@
-import { money, PART_CATEGORIES } from "../lib/utils";
+import { money, PART_CATEGORIES, partCode } from "../lib/utils";
 import { SearchIcon, EditIcon } from "../components/icons";
 import ConfirmDelete from "../components/ConfirmDelete";
 
@@ -31,7 +31,7 @@ export default function PartsTab({
                   <tbody>
                     {items.map((p) => (
                       <tr key={p.id} style={{ cursor: "pointer" }} onClick={() => setPartDetailId(p.id)}>
-                        <td className="mono" style={{ color: "#9CA3AF" }}>{p.partNo}</td>
+                        <td className="mono" style={{ color: "#9CA3AF" }}>{partCode(p.partNo)}</td>
                         <td style={{ fontWeight: 600 }}>{p.name}</td>
                         <td style={{ color: "#6B7280", fontSize: 12 }}>{[p.brand, p.modelFit].filter(Boolean).join(" · ") || "—"}</td>
                         <td style={{ fontWeight: 700 }}>{p.quantity} db</td>

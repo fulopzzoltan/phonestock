@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { money, displayName } from "../lib/utils";
+import { money, displayName, phoneCode } from "../lib/utils";
 import { SearchIcon, EditIcon, ListViewIcon, GridViewIcon } from "../components/icons";
 import ConfirmDelete from "../components/ConfirmDelete";
 import Thumb from "../components/Thumb";
@@ -93,7 +93,7 @@ export default function StockTab({
                                   {displayName(i.brand, i.model)}
                                   {!i.onShelf && <span style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }} title="Nem látszik a webshopban">nem polcon</span>}
                                 </div>
-                                <div className="stk-sub">{[i.storage, i.color].filter(Boolean).join(" · ") || "—"}</div>
+                                <div className="stk-sub">{[phoneCode(i.productNo), i.storage, i.color].filter(Boolean).join(" · ") || "—"}</div>
                               </div>
                             </div>
                           </td>
@@ -129,7 +129,7 @@ export default function StockTab({
                         {displayName(i.brand, i.model)}
                         {!i.onShelf && <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }} title="Nem látszik a webshopban">nem polcon</span>}
                       </div>
-                      <div className="stk-card-sub">{[i.storage, i.color].filter(Boolean).join(" · ") || "—"}{i.warranty ? ` · ${i.warranty} gar.` : ""}</div>
+                      <div className="stk-card-sub">{[phoneCode(i.productNo), i.storage, i.color].filter(Boolean).join(" · ") || "—"}{i.warranty ? ` · ${i.warranty} gar.` : ""}</div>
                       <div className="stk-card-price">{money(i.salePrice)}</div>
                       <div className="stk-card-cost">besz. {money(i.costPrice)}</div>
                       <div className="stk-card-actions" onClick={(e) => e.stopPropagation()}>
@@ -160,7 +160,10 @@ export default function StockTab({
                     <td>
                       <div className="stk-row">
                         <Thumb brand={i.brand} />
-                        <div className="stk-name">{displayName(i.brand, i.model)}</div>
+                        <div>
+                          <div className="stk-name">{displayName(i.brand, i.model)}</div>
+                          <div className="stk-sub">{[phoneCode(i.productNo), i.imei].filter(Boolean).join(" · ") || "—"}</div>
+                        </div>
                       </div>
                     </td>
                     <td><span className="badge-loc">{locName(i.locationId)}</span></td>

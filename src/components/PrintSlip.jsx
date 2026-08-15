@@ -1,6 +1,6 @@
-import { money, subStatusLabel, warrantyExpiry, isWarrantyActive, SERVICE_WARRANTY_TERMS } from "../lib/utils";
+import { money, subStatusLabel, warrantyExpiry, isWarrantyActive, SERVICE_WARRANTY_TERMS, ticketCode } from "../lib/utils";
 
-export default function PrintSlip({ ticket, location }) {
+export default function PrintSlip({ ticket, location, intakeLocation }) {
   const probs = (ticket.issue || "").split(",").map((p) => p.trim()).filter(Boolean);
   const handedOver = ticket.subStatus === "Átadva";
   const expiry = handedOver ? warrantyExpiry(ticket.dateOut, ticket.warranty) : null;
@@ -21,7 +21,7 @@ export default function PrintSlip({ ticket, location }) {
           <div style={{ fontSize: 12, color: "#6B7280", marginTop: 2 }}>{location?.phone || ""}</div>
         </div>
         <div style={{ fontSize: 20, fontWeight: 800, textAlign: "center" }}>Szerviz átadási lap</div>
-        <div style={{ fontSize: 16, fontWeight: 700, color: "#6B7280" }}>{ticket.ticketNo}</div>
+        <div style={{ fontSize: 18, fontWeight: 800, color: "#111827" }}>{ticketCode(ticket.ticketNo, (intakeLocation || location)?.name)}</div>
       </div>
 
       <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, marginBottom: 24 }}>
