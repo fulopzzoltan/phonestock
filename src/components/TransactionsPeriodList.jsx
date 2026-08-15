@@ -4,15 +4,53 @@ import { EditIcon, FinanceIcon } from "./icons";
 import ConfirmDelete from "./ConfirmDelete";
 import { EmptyState } from "./EmptyState";
 
+// A napi csoporton belül a rows-t "belépési sorrendben" bontja szét: minden egyedi basket_id
+// elé egy összevont fejléc-bejegyzés kerül, a hozzá tartozó tételek pedig meg vannak jelölve
+// (inBasket), hogy a kártyás/táblás nézet vizuálisan összefoghassa őket. basket_id nélküli
+// (régi vagy egytételes) sorok változatlanul, önállóan jelennek meg.
+function buildBasketEntries(rows) {
+  const entries = [];
+  const seen = new Set();
+  rows.forEach((t) => {
+    if (t.basketId) {
+      if (!seen.has(t.basketId)) {
+        seen.add(t.basketId);
+        const items = rows.filter((r) => r.basketId === t.basketId);
+        const total = items.reduce((s, r) => s + (r.type === "income" ? Number(r.amount) || 0 : -(Number(r.amount) || 0)), 0);
+        entries.push({ kind: "basket-head", basketId: t.basketId, count: items.length, payment: items[0]?.payment, total });
+      }
+      entries.push({ kind: "row", tx: t, inBasket: true });
+    } else {
+      entries.push({ kind: "row", tx: t, inBasket: false });
+    }
+  });
+  return entries;
+}
+
 export default function TransactionsPeriodList({ transactions, locName, onEdit, onDelete, onOpenReceipt, busy }) {
   const currentKey = adaptivePeriodBucket(today()).key;
   const [expanded, setExpanded] = useState(() => new Set([currentKey]));
+  const [onlyOtherExpenses, setOnlyOtherExpenses] = useState(false);
 
-  if (transactions.length === 0) {
-    return <div className="tw"><EmptyState icon={FinanceIcon}>Nincs rögzített tranzakció.</EmptyState></div>;
+  const otherExpenseCount = transactions.filter((t) => t.type === "expense" && t.category === "Egyéb").length;
+  const visibleTransactions = onlyOtherExpenses ? transactions.filter((t) => t.type === "expense" && t.category === "Egyéb") : transactions;
+
+  const filterChip = otherExpenseCount > 0 && (
+    <span className="toggle-link" style={{ marginTop: 0, marginBottom: 14, display: "inline-block" }} onClick={() => setOnlyOtherExpenses((v) => !v)}>
+      {onlyOtherExpenses ? "Összes tranzakció mutatása" : `Egyéb kategóriás kiadások (${otherExpenseCount}) — átnézésre`}
+    </span>
+  );
+
+  if (visibleTransactions.length === 0) {
+    return (
+      <>
+        {filterChip}
+        <div className="tw"><EmptyState icon={FinanceIcon}>{onlyOtherExpenses ? "Nincs egyéb kategóriás kiadás." : "Nincs rögzített tranzakció."}</EmptyState></div>
+      </>
+    );
   }
   const groups = {};
-  transactions.forEach((t) => {
+  visibleTransactions.forEach((t) => {
     const { key, granularity } = adaptivePeriodBucket(t.date);
     if (!groups[key]) groups[key] = { granularity, rows: [] };
     groups[key].rows.push(t);
@@ -30,6 +68,7 @@ export default function TransactionsPeriodList({ transactions, locName, onEdit, 
 
   return (
     <>
+      {filterChip}
       {keys.map((key) => {
         const { granularity, rows } = groups[key];
         const income = rows.filter((r) => r.type === "income").reduce((a, r) => a + (Number(r.amount) || 0), 0);
@@ -70,10 +109,21 @@ export default function TransactionsPeriodList({ transactions, locName, onEdit, 
                 <table>
                   <thead><tr><th>Leírás</th><th>Típus</th><th>Kategória</th><th>Helyszín</th><th>Fizetés</th><th>Haszon</th><th>Összeg</th><th></th></tr></thead>
                   <tbody>
-                    {rows.map((t) => {
+                    {buildBasketEntries(rows).map((entry) => {
+                      if (entry.kind === "basket-head") {
+                        return (
+                          <tr key={`bh-${entry.basketId}`} className="basket-head-row">
+                            <td colSpan={8}>
+                              Blokk · {entry.count} tétel · {entry.payment || "—"} ·{" "}
+                              <b>{entry.total >= 0 ? "+" : ""}{money(entry.total)}</b>
+                            </td>
+                          </tr>
+                        );
+                      }
+                      const t = entry.tx;
                       const isSale = t.type === "income" && t.category === "Készlet";
                       return (
-                        <tr key={t.id} style={isSale ? { cursor: "pointer" } : undefined} onClick={isSale ? () => onOpenReceipt(t.id) : undefined}>
+                        <tr key={t.id} className={entry.inBasket ? "basket-item-tr" : undefined} style={isSale ? { cursor: "pointer" } : undefined} onClick={isSale ? () => onOpenReceipt(t.id) : undefined}>
                           <td style={{ fontWeight: 500, color: "#111827" }}>{t.description}</td>
                           <td>{t.type === "income" ? <span className="badge-income">Bevétel</span> : <span className="badge-expense">Kiadás</span>}</td>
                           <td style={{ color: "#6B7280" }}>{t.category}</td>
@@ -95,10 +145,19 @@ export default function TransactionsPeriodList({ transactions, locName, onEdit, 
                   </tbody>
                 </table>
                 <div className="mob-cards">
-                  {rows.map((t) => {
+                  {buildBasketEntries(rows).map((entry) => {
+                    if (entry.kind === "basket-head") {
+                      return (
+                        <div key={`bh-${entry.basketId}`} className="basket-head-mob">
+                          Blokk · {entry.count} tétel · {entry.payment || "—"} ·{" "}
+                          <b>{entry.total >= 0 ? "+" : ""}{money(entry.total)}</b>
+                        </div>
+                      );
+                    }
+                    const t = entry.tx;
                     const isSale = t.type === "income" && t.category === "Készlet";
                     return (
-                      <div key={t.id} className="mob-row" onClick={isSale ? () => onOpenReceipt(t.id) : undefined} style={isSale ? undefined : { cursor: "default" }}>
+                      <div key={t.id} className={`mob-row${entry.inBasket ? " basket-item-mob" : ""}`} onClick={isSale ? () => onOpenReceipt(t.id) : undefined} style={isSale ? undefined : { cursor: "default" }}>
                         <div className="mob-row-top">
                           <div className="mob-row-main"><span>{t.description}</span></div>
                           <span className="mob-row-amount" style={{ color: t.type === "income" ? "#15803D" : "#B91C1C" }}>

@@ -131,6 +131,23 @@ tr:hover td{background:#FAFAFA}
 .quick-sale-btn:hover{background:#F0FDF4;border-color:#BBF7D0;color:var(--accent-dark)}
 .quick-sale-btn:disabled{opacity:.6;cursor:default}
 
+/* KOSÁR / POS-jellegű bevitel (Bevételek & Kiadások) */
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px;max-width:220px}
+.keypad-btn{padding:13px 0;font-size:16px;font-weight:700;font-family:inherit;border-radius:var(--radius-md);border:1px solid #E5E7EB;background:#F9FAFB;color:#111827;cursor:pointer}
+.keypad-btn:hover{background:#F3F4F6}
+.keypad-ok{background:var(--primary);color:#fff;border-color:var(--primary)}
+.keypad-ok:hover{background:var(--primary-dark)}
+.basket-bar{background:#fff;border:1px solid #E5E7EB;border-radius:14px;padding:14px 18px;margin-bottom:16px}
+.basket-items{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.basket-item-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 10px;background:#F9FAFB;border-radius:9px;font-size:12.5px}
+.basket-item-remove{border:none;background:none;color:#9CA3AF;cursor:pointer;padding:2px;display:flex}
+.basket-item-remove:hover{color:#DC2626}
+.basket-total{display:flex;align-items:center;justify-content:space-between;padding-top:8px;margin-top:4px;border-top:1px solid #F3F4F6;font-weight:700;font-size:13px}
+.basket-head-row td{background:var(--primary-soft);color:var(--primary-ink);font-size:11px;font-weight:700;padding:7px 16px}
+.basket-item-tr td:first-child{border-left:3px solid var(--primary);padding-left:13px}
+.basket-head-mob{background:var(--primary-soft);color:var(--primary-ink);font-size:11px;font-weight:700;padding:7px 16px;border-bottom:1px solid #F3F4F6}
+.basket-item-mob{border-left:3px solid var(--primary);padding-left:13px}
+
 /* BADGES */
 /* Közös alap minden címke-jellegű elemhez (st-*, badge-*, prob-pill, gar-pill,
    sla-badge) — mindegyik ugyanazt a pill-formát kövesse, a szín a módosító. */

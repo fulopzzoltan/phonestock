@@ -63,6 +63,7 @@ export const txFromApi = (r) => ({
   customerId: r.customer_id,
   locationId: r.location_id,
   date: r.date,
+  basketId: r.basket_id,
 });
 
 export const txToApi = (t, locId) => ({
@@ -78,6 +79,7 @@ export const txToApi = (t, locId) => ({
   customer_phone: t.customerPhone || null,
   location_id: locId,
   date: t.date || undefined,
+  basket_id: t.basketId || null,
 });
 
 export const tFromApi = (r) => ({

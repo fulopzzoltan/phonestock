@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
 import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi } from "./lib/mappers";
-import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving } from "./lib/utils";
+import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, QUICK_SALES } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
 import StockModal from "./components/StockModal";
@@ -708,6 +708,22 @@ function AppShell() {
     });
   }
 
+  // BasketBar checkout — items: [{label, amount, cost, category, kind, stockKind?}]
+  // Csak 2+ tételnél kap közös basket_id-t (egyetlen tétel nem "blokk", marad sima sor).
+  async function checkoutBasket(items, payment, locId) {
+    const basketId = items.length > 1 ? crypto.randomUUID() : null;
+    for (const item of items) {
+      await addTransaction({
+        type: item.kind, description: item.label, amount: item.amount,
+        costPrice: item.cost || 0, category: item.category, payment, basketId,
+      }, locId);
+    }
+    const stockItem = items.find((it) => it.stockKind === "Telefon");
+    const partItem = items.find((it) => it.stockKind === "Alkatrész");
+    if (stockItem) setStockModal({ costPrice: stockItem.amount, locationId: locId });
+    if (partItem) setPartModal({ costPrice: partItem.amount, source: partItem.label });
+  }
+
   // SERVICE
   async function addTicket(data, locId) {
     await withBusy(async () => {
@@ -940,6 +956,30 @@ function AppShell() {
   const activeTickets = useMemo(() => filteredTickets.filter((t) => t.subStatus !== "Átadva"), [filteredTickets]);
   const handedOverTickets = useMemo(() => filteredTickets.filter((t) => t.subStatus === "Átadva"), [filteredTickets]);
 
+  // a fix QUICK_SALES lista helyett a tényleges, elmúlt 60 napi tartozék-eladásokból számolt
+  // gyors-gombok (a telefon-eladások — amiknek van product_id-ja — nem tartozékok, kihagyjuk őket)
+  const smartQuickItems = useMemo(() => {
+    const cutoff = new Date(Date.now() - 60 * 86400000).toISOString().slice(0, 10);
+    const recentSales = transactions.filter((t) => t.type === "income" && t.category === "Készlet" && !t.productId && t.date >= cutoff);
+    const grouped = {};
+    recentSales.forEach((t) => {
+      const key = t.description;
+      if (!grouped[key]) grouped[key] = { label: key, amounts: [], costs: [], count: 0 };
+      grouped[key].amounts.push(Number(t.amount) || 0);
+      grouped[key].costs.push(Number(t.costPrice) || 0);
+      grouped[key].count += 1;
+    });
+    const computed = Object.values(grouped)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6)
+      .map((g) => ({
+        label: g.label,
+        amount: Math.round(g.amounts.reduce((s, a) => s + a, 0) / g.amounts.length),
+        cost: Math.round(g.costs.reduce((s, a) => s + a, 0) / g.costs.length),
+      }));
+    return computed.length ? computed : QUICK_SALES;
+  }, [transactions]);
+
   const svcStats = useMemo(() => {
     const customerTickets = filteredTickets.filter((t) => t.ticketKind === "Ügyfél");
     const sikertelenCount = customerTickets.filter((t) => t.subStatus === "Sikertelen").length;
@@ -1150,10 +1190,10 @@ function AppShell() {
         {!noLocationAssigned && tab === "finance" && (
           <FinanceTab
             effectiveLocFilter={effectiveLocFilter} locName={locName}
-            allowedLocations={allowedLocations} defaultLocId={defaultLocId} addTransaction={addTransaction} busy={busy}
+            allowedLocations={allowedLocations} defaultLocId={defaultLocId} busy={busy}
             loadingData={loadingData} filteredTransactions={filteredTransactions} setTxModal={setTxModal}
             deleteTransaction={deleteTransaction} setReceiptTxId={setReceiptTxId}
-            setStockModal={setStockModal} setPartModal={setPartModal}
+            smartQuickItems={smartQuickItems} checkoutBasket={checkoutBasket}
           />
         )}
 
