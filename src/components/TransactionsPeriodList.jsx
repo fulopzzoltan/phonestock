@@ -62,7 +62,7 @@ export default function TransactionsPeriodList({ transactions, locName, onEdit, 
                 <span style={{ fontSize: 13, fontWeight: 700, color: "#15803D" }}>+{money(income)}</span>
                 <span style={{ fontSize: 13, fontWeight: 700, color: "#B91C1C" }}>-{money(expense)}</span>
                 <span className="pgh-hide-mob" style={{ fontSize: 12, color: "#6B7280" }}>haszon {money(margin)}</span>
-                <span style={{ fontSize: 13, fontWeight: 800, color: "#111827" }}>{money(income - expense)}</span>
+                <span style={{ fontSize: 13, fontWeight: 800, color: "#111827" }} title="Profit (bevétel − kiadás)">{money(income - expense)}</span>
               </div>
             </div>
             {isOpen && (

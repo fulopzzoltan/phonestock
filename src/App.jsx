@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, shiftCloseFromApi } from "./lib/mappers";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, shiftCloseFromApi, partnerSettlementFromApi } from "./lib/mappers";
 import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
@@ -124,6 +124,7 @@ function AppShell() {
   const [repairPrices, setRepairPrices] = useState([]);
   const [repairLeads, setRepairLeads] = useState([]);
   const [shiftCloses, setShiftCloses] = useState([]);
+  const [partnerSettlements, setPartnerSettlements] = useState([]);
   const [repairPriceModal, setRepairPriceModal] = useState(null); // null | { familyKey, problemTag }
   const [repairLeadFilter, setRepairLeadFilter] = useState("Új");
   const [repairLeadConvert, setRepairLeadConvert] = useState(null); // lead obj being converted to a ticket
@@ -153,7 +154,7 @@ function AppShell() {
   async function loadAll() {
     setLoadingData(true);
     try {
-      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, lTypes, lBalances, lRequests, rPrices, rLeads, sClosesRes] = await Promise.all([
+      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, lTypes, lBalances, lRequests, rPrices, rLeads, sClosesRes, pSettlements] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         fetchAllRows(() => supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false })),
         fetchAllRows(() => supabase.from("transactions").select("*").is("deleted_at", null).order("date", { ascending: false })),
@@ -173,6 +174,7 @@ function AppShell() {
         supabase.from("repair_prices").select("*"),
         supabase.from("repair_leads").select("*").order("created_at", { ascending: false }),
         supabase.from("shift_closes").select("*").order("close_date", { ascending: false }),
+        supabase.from("partner_settlements").select("*").order("settled_through_date", { ascending: false }),
       ]);
       setLocations(unwrap(locs) || []);
       const prodRows = unwrap(prods) || [];
@@ -196,6 +198,7 @@ function AppShell() {
       setRepairPrices((unwrap(rPrices) || []).map(repairPriceFromApi));
       setRepairLeads((unwrap(rLeads) || []).map(repairLeadFromApi));
       setShiftCloses((unwrap(sClosesRes) || []).map(shiftCloseFromApi));
+      setPartnerSettlements((unwrap(pSettlements) || []).map(partnerSettlementFromApi));
       const historyRows = unwrap(hist) || [];
       setStockHistory(historyRows.map((r) => ({ date: r.date, value: Number(r.value) || 0 })));
       maybeSnapshotStockValue(prodRows, historyRows);
@@ -513,6 +516,15 @@ function AppShell() {
       ).select());
       const updated = shiftCloseFromApi(r[0]);
       setShiftCloses([updated, ...shiftCloses.filter((s) => !(s.locationId === updated.locationId && s.closeDate === updated.closeDate))]);
+    });
+  }
+
+  async function settlePartner(throughDate, totalAmount) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("partner_settlements").insert({
+        settled_through_date: throughDate, total_amount: totalAmount, settled_by: user.id,
+      }).select());
+      setPartnerSettlements([partnerSettlementFromApi(r[0]), ...partnerSettlements]);
     });
   }
 
@@ -1149,6 +1161,7 @@ function AppShell() {
           <ShiftCloseTab
             busy={busy} isAdmin={isAdmin} myLocationId={myLocationId} allowedLocations={allowedLocations} locName={locName}
             transactions={transactions} shiftCloses={shiftCloses} saveShiftClose={saveShiftClose} users={users}
+            partnerSettlements={partnerSettlements} settlePartner={settlePartner}
           />
         )}
 

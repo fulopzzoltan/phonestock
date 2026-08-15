@@ -233,6 +233,11 @@ export const shiftCloseFromApi = (r) => ({
   closedBy: r.closed_by, closedAt: r.closed_at,
 });
 
+export const partnerSettlementFromApi = (r) => ({
+  id: r.id, settledThroughDate: r.settled_through_date, totalAmount: Number(r.total_amount) || 0,
+  settledBy: r.settled_by, settledAt: r.settled_at,
+});
+
 export const repairPriceFromApi = (r) => ({
   familyKey: r.family_key, problemTag: r.problem_tag,
   priceOem: r.price_oem != null ? Number(r.price_oem) : null,
