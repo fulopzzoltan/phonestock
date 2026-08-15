@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
-import { supabase, unwrap } from "./lib/supabaseClient";
+import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
 import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi } from "./lib/mappers";
 import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
@@ -153,14 +153,14 @@ function AppShell() {
     try {
       const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, lTypes, lBalances, lRequests, rPrices, rLeads] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
-        supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false }),
-        supabase.from("transactions").select("*").is("deleted_at", null).order("date", { ascending: false }),
-        supabase.from("service_tickets").select("*").is("deleted_at", null).order("created_at", { ascending: false }),
+        fetchAllRows(() => supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false })),
+        fetchAllRows(() => supabase.from("transactions").select("*").is("deleted_at", null).order("date", { ascending: false })),
+        fetchAllRows(() => supabase.from("service_tickets").select("*").is("deleted_at", null).order("created_at", { ascending: false })),
         supabase.from("parts").select("*").is("deleted_at", null).order("name", { ascending: true }),
         supabase.from("service_parts").select("*"),
         supabase.from("profiles").select("*").order("full_name", { ascending: true }),
         supabase.from("stock_value_history").select("*").order("date", { ascending: true }),
-        supabase.from("customers").select("*").is("deleted_at", null),
+        fetchAllRows(() => supabase.from("customers").select("*").is("deleted_at", null)),
         supabase.from("monthly_summaries").select("*").order("year").order("month"),
         supabase.from("warranties").select("*").is("deleted_at", null),
         supabase.from("buyback_models").select("*").is("deleted_at", null).order("brand", { ascending: true }),
@@ -226,10 +226,10 @@ function AppShell() {
     setTrashLoading(true);
     try {
       const [prods, prs, txs, tcks] = await Promise.all([
-        supabase.from("products").select("*").not("deleted_at", "is", null).order("deleted_at", { ascending: false }),
+        fetchAllRows(() => supabase.from("products").select("*").not("deleted_at", "is", null).order("deleted_at", { ascending: false })),
         supabase.from("parts").select("*").not("deleted_at", "is", null).order("deleted_at", { ascending: false }),
-        supabase.from("transactions").select("*").not("deleted_at", "is", null).order("deleted_at", { ascending: false }),
-        supabase.from("service_tickets").select("*").not("deleted_at", "is", null).order("deleted_at", { ascending: false }),
+        fetchAllRows(() => supabase.from("transactions").select("*").not("deleted_at", "is", null).order("deleted_at", { ascending: false })),
+        fetchAllRows(() => supabase.from("service_tickets").select("*").not("deleted_at", "is", null).order("deleted_at", { ascending: false })),
       ]);
       setTrash({
         products: (unwrap(prods) || []).map(pFromApi),
