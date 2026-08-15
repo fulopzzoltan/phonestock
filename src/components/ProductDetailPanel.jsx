@@ -3,8 +3,12 @@ import { CloseIcon } from "./icons";
 import Row from "./DetailRow";
 import ConfirmDelete from "./ConfirmDelete";
 import ProductPhotos from "./ProductPhotos";
+import PhonePartsPicker from "./PhonePartsPicker";
 
-export default function ProductDetailPanel({ product, saleTx, locName, onClose, onSell, onEdit, onDelete, busy }) {
+export default function ProductDetailPanel({
+  product, saleTx, locName, onClose, onSell, onEdit, onDelete, busy,
+  users = [], activeServiceTicket, parts = [], onAddPart, onRemovePart, onStartService, onOpenTicket,
+}) {
   const profit = (Number(product.salePrice) || 0) - (Number(product.costPrice) || 0);
   const isSold = product.status === "sold";
   return (
@@ -32,6 +36,30 @@ export default function ProductDetailPanel({ product, saleTx, locName, onClose, 
             <Row k="Garancia" v={product.warranty ? <span className="gar-pill">{product.warranty}</span> : null} />
             <Row k="Forrás" v={product.source} />
             {product.condition === "Refurbished" && <Row k="Akkuállapot" v={product.batteryHealth != null ? `${product.batteryHealth}%` : null} />}
+          </div>
+          <div className="dp-section">
+            <div className="dp-section-title">Előkészítés / szerviz</div>
+            {activeServiceTicket ? (
+              <>
+                <div style={{ fontSize: 12, color: "#6B7280", marginBottom: 10 }}>
+                  {activeServiceTicket.ticketKind === "Saját készlet - garanciális" ? "Garanciális javítás folyamatban" : "Előkészítés folyamatban"}
+                  {activeServiceTicket.assignedTo && ` — ${users.find((u) => u.id === activeServiceTicket.assignedTo)?.fullName || ""}`}
+                </div>
+                <PhonePartsPicker
+                  usedParts={activeServiceTicket.usedParts || []}
+                  availableParts={parts.filter((p) => Number(p.quantity) > 0)}
+                  allParts={parts}
+                  onAdd={(part, qty) => onAddPart(activeServiceTicket.id, part, qty)}
+                  onRemove={(sp) => onRemovePart(activeServiceTicket.id, sp)}
+                  busy={busy}
+                />
+                <button type="button" className="btn sec sm" style={{ marginTop: 10 }} onClick={() => onOpenTicket(activeServiceTicket.id)}>Munkalap megnyitása (státusz, probléma)</button>
+              </>
+            ) : (
+              <button type="button" className="btn sec sm" disabled={busy} onClick={() => onStartService(product)}>
+                {isSold ? "Garanciális javítás felvétele" : "Szerviz előkészítés indítása"}
+              </button>
+            )}
           </div>
           <div className="dp-section">
             <div className="dp-section-title">Pénzügyek</div>

@@ -11,6 +11,7 @@ import PartModal from "./components/PartModal";
 import DetailPanel from "./components/DetailPanel";
 import ProductDetailPanel from "./components/ProductDetailPanel";
 import PartDetailPanel from "./components/PartDetailPanel";
+import OwnStockServiceModal from "./components/OwnStockServiceModal";
 import TicketFormModal from "./components/TicketFormModal";
 import DashboardTab from "./tabs/DashboardTab";
 import StockTab from "./tabs/StockTab";
@@ -94,6 +95,7 @@ function AppShell() {
   const [partModal, setPartModal] = useState(null); // null | "add" | part obj (edit)
   const [txModal, setTxModal] = useState(null); // null | tx obj (edit)
   const [ticketModal, setTicketModal] = useState(null); // null | "add" | ticket obj (edit)
+  const [ownServiceModal, setOwnServiceModal] = useState(null); // { product, kind } | null
   const [detailId, setDetailId] = useState(null);
   const [productDetailId, setProductDetailId] = useState(null);
   const [partDetailId, setPartDetailId] = useState(null);
@@ -752,6 +754,16 @@ function AppShell() {
       }
     });
   }
+  function openOwnServiceModal(product) {
+    const kind = product.status === "sold" ? "Saját készlet - garanciális" : "Saját készlet - előkészítés";
+    setOwnServiceModal({ product, kind });
+  }
+  async function saveOwnServiceTicket(data, locId) {
+    await addTicket(data, locId);
+    setOwnServiceModal(null);
+    // szándékosan NEM zárjuk be a ProductDetailPanel-t — a felhasználó rögtön lássa
+    // a most létrejött "Előkészítés / szerviz" szekciót és kezdje címkézni az alkatrészeket.
+  }
   async function saveTicketEdit(id, data, locId) {
     await withBusy(async () => {
       const r = unwrap(await supabase.from("service_tickets").update(tToApi(data, locId)).eq("id", id).select());
@@ -1182,6 +1194,10 @@ function AppShell() {
       .flatMap((t) => (t.usedParts || []).map((sp) => ({ ...sp, ticket: t })))
       .sort((a, b) => (b.usedAt || "").localeCompare(a.usedAt || ""));
   }, [tickets]);
+  const activeServiceTicket = useMemo(() => {
+    if (!detailProduct) return null;
+    return tickets.find((t) => t.productId === detailProduct.id && t.ticketKind !== "Ügyfél" && t.subStatus !== "Átadva") || null;
+  }, [tickets, detailProduct]);
   const editingTicket = ticketModal && ticketModal !== "add" ? ticketModal : null;
 
   const noLocationAssigned = !isAdmin && !myLocationId;
@@ -1392,10 +1408,28 @@ function AppShell() {
           saleTx={detailProduct.status === "sold" ? txByProductId.get(detailProduct.id) : null}
           locName={locName}
           busy={busy}
+          users={users}
+          parts={parts}
+          activeServiceTicket={activeServiceTicket}
+          onAddPart={addPartToTicket}
+          onRemovePart={removePartFromTicket}
+          onStartService={openOwnServiceModal}
+          onOpenTicket={(id) => { setProductDetailId(null); setDetailId(id); }}
           onClose={() => setProductDetailId(null)}
           onSell={(p) => { setProductDetailId(null); setSellModal(p); }}
           onEdit={(p) => { setProductDetailId(null); setStockModal(p); }}
           onDelete={(id) => { deleteProduct(id); setProductDetailId(null); }}
+        />
+      )}
+      {ownServiceModal && (
+        <OwnStockServiceModal
+          product={ownServiceModal.product}
+          kind={ownServiceModal.kind}
+          locations={locations}
+          users={users}
+          busy={busy}
+          onClose={() => setOwnServiceModal(null)}
+          onSave={saveOwnServiceTicket}
         />
       )}
       {detailPart && (

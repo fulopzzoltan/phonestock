@@ -63,17 +63,6 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
     <div className="overlay" onClick={onClose}>
       <div className="modal" style={{ maxWidth: 560 }} onClick={(e) => e.stopPropagation()}>
         <h2>{isEdit ? "Munkalap szerkesztése" : "Új szerviz munkalap"} <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
-        <div className="field">
-          <label>Kinek?</label>
-          <select
-            value={f.ticketKind}
-            onChange={(e) => setF({ ...f, ticketKind: e.target.value, customerName: e.target.value === "Ügyfél" ? f.customerName : "Saját készlet", productId: e.target.value === "Ügyfél" ? null : f.productId })}
-          >
-            <option value="Ügyfél">Ügyfél</option>
-            <option value="Saját készlet - előkészítés">Saját készlet — előkészítés eladás előtt</option>
-            <option value="Saját készlet - garanciális">Saját készlet — garanciális visszahozás</option>
-          </select>
-        </div>
         <div className="row2">
           <LocationField locations={locations} value={locId} onChange={setLocId} />
           <div className="field"><label>Státusz</label>
