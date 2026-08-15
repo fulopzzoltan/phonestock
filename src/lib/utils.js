@@ -40,7 +40,7 @@ export function isSlowMoving(p) {
 
 export const READY_STALE_DAYS = 90;
 export function isStaleReady(t) {
-  if (t.status !== "Átadásra" || t.subStatus || !t.readyAt) return false;
+  if (t.status !== "Átadásra" || t.subStatus === "Átadva" || !t.readyAt) return false;
   return Math.floor((Date.now() - new Date(t.readyAt)) / 86400000) >= READY_STALE_DAYS;
 }
 

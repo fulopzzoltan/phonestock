@@ -764,14 +764,14 @@ function AppShell() {
   async function setTicketStatus(id, status, subStatus = null) {
     await withBusy(async () => {
       const ticket = tickets.find((t) => t.id === id);
-      const becameReady = status === "Átadásra" && subStatus === null && !(ticket && ticket.status === "Átadásra" && ticket.subStatus === null);
+      const becameReady = status === "Átadásra" && !(ticket && ticket.status === "Átadásra");
       const patch = { status, sub_status: subStatus };
       if (subStatus === "Átadva") patch.date_out = today();
       if (becameReady) patch.ready_at = new Date().toISOString();
       unwrap(await supabase.from("service_tickets").update(patch).eq("id", id));
       setTickets(tickets.map((t) => (t.id === id ? { ...t, status, subStatus, dateOut: subStatus === "Átadva" ? today() : t.dateOut, readyAt: becameReady ? patch.ready_at : t.readyAt } : t)));
 
-      if (becameReady && ticket && ticket.customerPhone) {
+      if (becameReady && subStatus === null && ticket && ticket.customerPhone) {
         const device = [ticket.brand, ticket.model].filter(Boolean).join(" ");
         const message = stripAccents(`Szia! A(z) ${device} javítása elkészült, átveheted nálunk (${locName(ticket.locationId)}). Részletek: ${SITE_URL}/s/${ticket.shortCode}`);
         supabase.functions.invoke("send-sms", { body: { phone: ticket.customerPhone, message } }).catch((err) => {
@@ -1030,7 +1030,8 @@ function AppShell() {
       active: customerTickets.filter((t) => t.status !== "Átadásra").length,
       inHouse: activeTickets.length,
       kesz: customerTickets.filter((t) => t.status === "Átadásra" && !t.subStatus).length,
-      staleReady: customerTickets.filter(isStaleReady).length,
+      staleReady: customerTickets.filter((t) => isStaleReady(t) && !t.subStatus).length,
+      staleFailed: customerTickets.filter((t) => isStaleReady(t) && t.subStatus === "Sikertelen").length,
       sikertelen: sikertelenCount,
       kiadva: kiadvaCount,
       kiadvaRecent,
