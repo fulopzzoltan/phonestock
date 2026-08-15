@@ -108,7 +108,7 @@ export function slaInfo(ticket) {
 }
 
 export const PROBLEM_TAGS = ["LCD", "FRP", "Csatlakozó", "Akku", "Kamera", "Szoftver", "Egyéb"];
-export const PART_CATEGORIES = ["Kijelző", "Akkumulátor"];
+export const PART_CATEGORIES = ["Kijelző", "Akkumulátor", "Hátlap", "Csatlakozó"];
 export const PART_ORIGINS = ["OEM", "Utángyártott"];
 export const WARRANTIES = ["1 hó", "3 hó", "6 hó", "1 év", "2 év"];
 export const SOURCES = ["Konszignáció", "Számla"];

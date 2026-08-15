@@ -856,6 +856,16 @@ function AppShell() {
       }
       const newMatCost = Math.max(0, (Number(ticket.matCost) || 0) - (Number(usedPart.costPrice) || 0) * usedPart.quantity);
       unwrap(await supabase.from("service_tickets").update({ mat_cost: newMatCost }).eq("id", ticketId));
+
+      if (ticket.ticketKind === "Saját készlet - előkészítés" && ticket.productId) {
+        const product = stock.find((p) => p.id === ticket.productId);
+        if (product) {
+          const newCostPrice = Math.max(0, (Number(product.costPrice) || 0) - (Number(usedPart.costPrice) || 0) * usedPart.quantity);
+          unwrap(await supabase.from("products").update({ cost_price: newCostPrice }).eq("id", ticket.productId));
+          setStock(stock.map((p) => (p.id === ticket.productId ? { ...p, costPrice: newCostPrice } : p)));
+        }
+      }
+
       setTickets(tickets.map((t) => (t.id === ticketId ? { ...t, matCost: newMatCost, usedParts: (t.usedParts || []).filter((sp) => sp.id !== usedPart.id) } : t)));
     });
   }
@@ -1359,6 +1369,7 @@ function AppShell() {
           locName={locName}
           busy={busy}
           parts={parts}
+          stock={stock}
           users={users}
           onClose={() => setDetailId(null)}
           onStatusChange={setTicketStatus}

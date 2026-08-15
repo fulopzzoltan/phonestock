@@ -5,8 +5,9 @@ import Row from "./DetailRow";
 import CallLink from "./CallLink";
 import ConfirmDelete from "./ConfirmDelete";
 import TicketPhotos from "./TicketPhotos";
+import PhonePartsPicker from "./PhonePartsPicker";
 
-export default function DetailPanel({ ticket, locName, parts, users = [], onClose, onStatusChange, onCompleteQc, onEdit, onDelete, busy, onAddPart, onRemovePart, onPrint }) {
+export default function DetailPanel({ ticket, locName, parts, stock, users = [], onClose, onStatusChange, onCompleteQc, onEdit, onDelete, busy, onAddPart, onRemovePart, onPrint }) {
   const [copied, setCopied] = useState(false);
   const [showAddPart, setShowAddPart] = useState(false);
   const [selPartId, setSelPartId] = useState("");
@@ -117,41 +118,54 @@ export default function DetailPanel({ ticket, locName, parts, users = [], onClos
           </div>
           <div className="dp-section">
             <div className="dp-section-title">Felhasznált alkatrészek</div>
-            {usedParts.length > 0 && usedParts.map((sp) => (
-              <div key={sp.id} className="dp-row">
-                <span className="dp-key">{sp.partName} ×{sp.quantity}</span>
-                <span className="dp-val" style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "flex-end" }}>
-                  {money((sp.costPrice || 0) * sp.quantity)}
-                  <ConfirmDelete disabled={busy} onConfirm={() => onRemovePart(ticket.id, sp)} />
-                </span>
-              </div>
-            ))}
-            {showAddPart ? (
-              <div style={{ marginTop: 8 }}>
-                <input
-                  type="text"
-                  placeholder="Keresés név vagy kód szerint (pl. A123)..."
-                  value={partFilter}
-                  onChange={(e) => setPartFilter(e.target.value)}
-                  style={{ marginBottom: 6, width: "100%", background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 9, padding: "8px 10px", fontFamily: "inherit", fontSize: 12.5 }}
-                />
-                <div className="row2" style={{ alignItems: "flex-end" }}>
-                  <div className="field" style={{ margin: 0 }}>
-                    <select value={selPartId} onChange={(e) => setSelPartId(e.target.value)}>
-                      <option value="">— Alkatrész ({shownParts.length}) —</option>
-                      {shownParts.map((p) => <option key={p.id} value={p.id}>{partCode(p.partNo)} — {p.name} ({p.quantity} db)</option>)}
-                    </select>
-                  </div>
-                  <div style={{ display: "flex", gap: 6 }}>
-                    <input type="number" min="1" max={selPart?.quantity || 1} value={qty} onChange={(e) => setQty(Number(e.target.value))}
-                      style={{ width: 56, background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 9, padding: "9px 8px", fontFamily: "inherit", fontSize: 13 }} />
-                    <button className="btn sm" disabled={!selPart || busy} onClick={() => { if (selPart) { onAddPart(ticket.id, selPart, qty); setShowAddPart(false); setSelPartId(""); setQty(1); setPartFilter(""); } }}>OK</button>
-                    <button className="iconbtn" onClick={() => { setShowAddPart(false); setPartFilter(""); }}><CloseIcon width={14} height={14} /></button>
-                  </div>
-                </div>
-              </div>
+            {ticket.ticketKind === "Saját készlet - előkészítés" ? (
+              <PhonePartsPicker
+                usedParts={usedParts}
+                availableParts={availableParts}
+                allParts={parts || []}
+                onAdd={(part, qty) => onAddPart(ticket.id, part, qty)}
+                onRemove={(sp) => onRemovePart(ticket.id, sp)}
+                busy={busy}
+              />
             ) : (
-              <button type="button" className="btn sec sm" style={{ marginTop: usedParts.length ? 8 : 0 }} onClick={() => setShowAddPart(true)}>+ Alkatrész hozzáadása</button>
+              <>
+                {usedParts.length > 0 && usedParts.map((sp) => (
+                  <div key={sp.id} className="dp-row">
+                    <span className="dp-key">{sp.partName} ×{sp.quantity}</span>
+                    <span className="dp-val" style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "flex-end" }}>
+                      {money((sp.costPrice || 0) * sp.quantity)}
+                      <ConfirmDelete disabled={busy} onConfirm={() => onRemovePart(ticket.id, sp)} />
+                    </span>
+                  </div>
+                ))}
+                {showAddPart ? (
+                  <div style={{ marginTop: 8 }}>
+                    <input
+                      type="text"
+                      placeholder="Keresés név vagy kód szerint (pl. A123)..."
+                      value={partFilter}
+                      onChange={(e) => setPartFilter(e.target.value)}
+                      style={{ marginBottom: 6, width: "100%", background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 9, padding: "8px 10px", fontFamily: "inherit", fontSize: 12.5 }}
+                    />
+                    <div className="row2" style={{ alignItems: "flex-end" }}>
+                      <div className="field" style={{ margin: 0 }}>
+                        <select value={selPartId} onChange={(e) => setSelPartId(e.target.value)}>
+                          <option value="">— Alkatrész ({shownParts.length}) —</option>
+                          {shownParts.map((p) => <option key={p.id} value={p.id}>{partCode(p.partNo)} — {p.name} ({p.quantity} db)</option>)}
+                        </select>
+                      </div>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <input type="number" min="1" max={selPart?.quantity || 1} value={qty} onChange={(e) => setQty(Number(e.target.value))}
+                          style={{ width: 56, background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 9, padding: "9px 8px", fontFamily: "inherit", fontSize: 13 }} />
+                        <button className="btn sm" disabled={!selPart || busy} onClick={() => { if (selPart) { onAddPart(ticket.id, selPart, qty); setShowAddPart(false); setSelPartId(""); setQty(1); setPartFilter(""); } }}>OK</button>
+                        <button className="iconbtn" onClick={() => { setShowAddPart(false); setPartFilter(""); }}><CloseIcon width={14} height={14} /></button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <button type="button" className="btn sec sm" style={{ marginTop: usedParts.length ? 8 : 0 }} onClick={() => setShowAddPart(true)}>+ Alkatrész hozzáadása</button>
+                )}
+              </>
             )}
           </div>
           <div className="dp-section">
@@ -159,6 +173,9 @@ export default function DetailPanel({ ticket, locName, parts, users = [], onClos
             <Row k="Árajánlat" v={money(ticket.price)} />
             <Row k="Anyagköltség" v={money(ticket.matCost)} />
             <Row k="Profit" v={<span style={{ color: "#22C55E", fontWeight: 700 }}>{money(profit)}</span>} />
+            {ticket.ticketKind === "Saját készlet - előkészítés" && ticket.productId && (
+              <Row k="Telefon beszerzési ára most" v={<span style={{ fontWeight: 700 }}>{money(stock?.find((p) => p.id === ticket.productId)?.costPrice)}</span>} />
+            )}
           </div>
         </div>
         <div className="dp-actions">
