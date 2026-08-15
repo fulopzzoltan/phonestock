@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { money, STATUSES, SUB_STATUSES, slaInfo, SITE_URL, statusLabel, ticketCode } from "../lib/utils";
+import { money, STATUSES, SUB_STATUSES, slaInfo, SITE_URL, statusLabel, ticketCode, partCode } from "../lib/utils";
 import { CloseIcon } from "./icons";
 import Row from "./DetailRow";
 import CallLink from "./CallLink";
@@ -12,10 +12,15 @@ export default function DetailPanel({ ticket, locName, parts, users = [], onClos
   const [selPartId, setSelPartId] = useState("");
   const [qty, setQty] = useState(1);
   const [qcUserId, setQcUserId] = useState("");
+  const [partFilter, setPartFilter] = useState("");
   const userName = (id) => users.find((u) => u.id === id)?.fullName || users.find((u) => u.id === id)?.email || "—";
   const usedParts = ticket.usedParts || [];
   const availableParts = (parts || []).filter((p) => Number(p.quantity) > 0);
   const selPart = availableParts.find((p) => p.id === selPartId);
+  const partFilterQ = partFilter.trim().toLowerCase();
+  const shownParts = partFilterQ
+    ? availableParts.filter((p) => (p.name || "").toLowerCase().includes(partFilterQ) || (partCode(p.partNo) || "").toLowerCase().includes(partFilterQ))
+    : availableParts;
   const probs = (ticket.issue || "").split(",").map((p) => p.trim()).filter(Boolean);
   const profit = (Number(ticket.price) || 0) - (Number(ticket.matCost) || 0);
   const statusLink = `${SITE_URL}/status/${ticket.publicToken}`;
@@ -122,18 +127,27 @@ export default function DetailPanel({ ticket, locName, parts, users = [], onClos
               </div>
             ))}
             {showAddPart ? (
-              <div className="row2" style={{ marginTop: 8, alignItems: "flex-end" }}>
-                <div className="field" style={{ margin: 0 }}>
-                  <select value={selPartId} onChange={(e) => setSelPartId(e.target.value)}>
-                    <option value="">— Alkatrész —</option>
-                    {availableParts.map((p) => <option key={p.id} value={p.id}>{p.name} ({p.quantity} db)</option>)}
-                  </select>
-                </div>
-                <div style={{ display: "flex", gap: 6 }}>
-                  <input type="number" min="1" max={selPart?.quantity || 1} value={qty} onChange={(e) => setQty(Number(e.target.value))}
-                    style={{ width: 56, background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 9, padding: "9px 8px", fontFamily: "inherit", fontSize: 13 }} />
-                  <button className="btn sm" disabled={!selPart || busy} onClick={() => { if (selPart) { onAddPart(ticket.id, selPart, qty); setShowAddPart(false); setSelPartId(""); setQty(1); } }}>OK</button>
-                  <button className="iconbtn" onClick={() => setShowAddPart(false)}><CloseIcon width={14} height={14} /></button>
+              <div style={{ marginTop: 8 }}>
+                <input
+                  type="text"
+                  placeholder="Keresés név vagy kód szerint (pl. A123)..."
+                  value={partFilter}
+                  onChange={(e) => setPartFilter(e.target.value)}
+                  style={{ marginBottom: 6, width: "100%", background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 9, padding: "8px 10px", fontFamily: "inherit", fontSize: 12.5 }}
+                />
+                <div className="row2" style={{ alignItems: "flex-end" }}>
+                  <div className="field" style={{ margin: 0 }}>
+                    <select value={selPartId} onChange={(e) => setSelPartId(e.target.value)}>
+                      <option value="">— Alkatrész ({shownParts.length}) —</option>
+                      {shownParts.map((p) => <option key={p.id} value={p.id}>{partCode(p.partNo)} — {p.name} ({p.quantity} db)</option>)}
+                    </select>
+                  </div>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <input type="number" min="1" max={selPart?.quantity || 1} value={qty} onChange={(e) => setQty(Number(e.target.value))}
+                      style={{ width: 56, background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 9, padding: "9px 8px", fontFamily: "inherit", fontSize: 13 }} />
+                    <button className="btn sm" disabled={!selPart || busy} onClick={() => { if (selPart) { onAddPart(ticket.id, selPart, qty); setShowAddPart(false); setSelPartId(""); setQty(1); setPartFilter(""); } }}>OK</button>
+                    <button className="iconbtn" onClick={() => { setShowAddPart(false); setPartFilter(""); }}><CloseIcon width={14} height={14} /></button>
+                  </div>
                 </div>
               </div>
             ) : (
