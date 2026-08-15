@@ -909,13 +909,50 @@ function AppShell() {
 
   const svcStats = useMemo(() => {
     const customerTickets = filteredTickets.filter((t) => t.ticketKind === "Ügyfél");
+    const sikertelenCount = customerTickets.filter((t) => t.subStatus === "Sikertelen").length;
+    const kiadvaCount = handedOverTickets.length;
+    const resolvedCount = kiadvaCount + sikertelenCount;
+
+    const withMargin = handedOverTickets.filter((t) => t.price != null && t.matCost != null);
+    const avgMargin = withMargin.length
+      ? Math.round(withMargin.reduce((s, t) => s + (Number(t.price) - Number(t.matCost)), 0) / withMargin.length)
+      : null;
+
+    const withTAT = handedOverTickets.filter((t) => t.dateIn && t.dateOut);
+    const avgTAT = withTAT.length
+      ? Math.round((withTAT.reduce((s, t) => s + (new Date(t.dateOut) - new Date(t.dateIn)), 0) / withTAT.length / 86400000) * 10) / 10
+      : null;
+
+    const modelCounts = {};
+    customerTickets.forEach((t) => {
+      const key = [t.brand, t.model].filter(Boolean).join(" ").trim();
+      if (key) modelCounts[key] = (modelCounts[key] || 0) + 1;
+    });
+    const topModels = Object.entries(modelCounts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([name, count]) => ({ name, count }));
+
+    const problemCounts = {};
+    let problemsSample = 0;
+    customerTickets.forEach((t) => {
+      const probs = (t.issue || "").split(",").map((p) => p.trim()).filter(Boolean);
+      if (probs.length) problemsSample++;
+      probs.forEach((p) => { problemCounts[p] = (problemCounts[p] || 0) + 1; });
+    });
+    const topProblems = Object.entries(problemCounts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([name, count]) => ({ name, count }));
+
     return {
       total: filteredTickets.length,
       active: customerTickets.filter((t) => t.status !== "Átadásra").length,
       kesz: customerTickets.filter((t) => t.status === "Átadásra" && !t.subStatus).length,
-      sikertelen: customerTickets.filter((t) => t.subStatus === "Sikertelen").length,
-      kiadva: handedOverTickets.length,
+      sikertelen: sikertelenCount,
+      kiadva: kiadvaCount,
       ownStock: filteredTickets.filter((t) => t.ticketKind !== "Ügyfél" && t.subStatus !== "Átadva").length,
+      sikertelenPct: resolvedCount ? Math.round((sikertelenCount / resolvedCount) * 1000) / 10 : null,
+      avgMargin,
+      avgTAT,
+      topModels,
+      topProblems,
+      problemsSample,
+      problemsTotal: customerTickets.length,
     };
   }, [filteredTickets, handedOverTickets]);
 
