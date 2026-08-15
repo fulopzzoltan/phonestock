@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
 import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi } from "./lib/mappers";
-import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays } from "./lib/utils";
+import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
 import StockModal from "./components/StockModal";
@@ -939,12 +939,17 @@ function AppShell() {
     });
     const topProblems = Object.entries(problemCounts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([name, count]) => ({ name, count }));
 
+    const weekStart = rollingBusinessWeekStart();
+    const kiadvaRecent = handedOverTickets.filter((t) => t.dateOut && t.dateOut >= weekStart).length;
+
     return {
       total: filteredTickets.length,
       active: customerTickets.filter((t) => t.status !== "Átadásra").length,
+      inHouse: activeTickets.length,
       kesz: customerTickets.filter((t) => t.status === "Átadásra" && !t.subStatus).length,
       sikertelen: sikertelenCount,
       kiadva: kiadvaCount,
+      kiadvaRecent,
       ownStock: filteredTickets.filter((t) => t.ticketKind !== "Ügyfél" && t.subStatus !== "Átadva").length,
       sikertelenPct: resolvedCount ? Math.round((sikertelenCount / resolvedCount) * 1000) / 10 : null,
       avgMargin,
@@ -1118,6 +1123,7 @@ function AppShell() {
           <PartsTab
             busy={busy} setPartModal={setPartModal} partSearch={partSearch} setPartSearch={setPartSearch}
             loadingData={loadingData} filteredParts={filteredParts} setPartDetailId={setPartDetailId} deletePart={deletePart}
+            partsStats={partsStats}
           />
         )}
 
@@ -1125,6 +1131,7 @@ function AppShell() {
           <CustomersTab
             effectiveLocFilter={effectiveLocFilter} locName={locName} busy={busy} setCustomerModal={setCustomerModal}
             custSearch={custSearch} setCustSearch={setCustSearch} loadingData={loadingData} customers={customers} setCustomerKey={setCustomerKey}
+            customerStats={customerStats}
           />
         )}
 
@@ -1132,7 +1139,7 @@ function AppShell() {
           <WarrantyTab
             busy={busy} setWarrantyModal={setWarrantyModal} activeWarranties={activeWarranties}
             warrantyFilter={warrantyFilter} setWarrantyFilter={setWarrantyFilter} loadingData={loadingData}
-            filteredWarranties={filteredWarranties} setWarrantyDetailKey={setWarrantyDetailKey} locName={locName} setError={setError}
+            filteredWarranties={filteredWarranties} setWarrantyDetailKey={setWarrantyDetailKey} locName={locName}
           />
         )}
 

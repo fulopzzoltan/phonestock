@@ -14,12 +14,11 @@ export default function ServiceTab({
         <button className="btn" disabled={busy} onClick={() => setTicketModal("add")}>+ Új munkalap</button>
       </div>
 
-      <div className={`statrow ${svcStats.ownStock > 0 ? "c6" : "c5"}`}>
-        <div className="statcard accent"><div className="lbl">Összes</div><div className="val">{svcStats.total}</div></div>
-        <div className="statcard"><div className="lbl">Aktív (ügyfél)</div><div className="val">{svcStats.active}</div></div>
+      <div className={`statrow ${svcStats.ownStock > 0 ? "c5" : "c4"}`}>
+        <div className="statcard accent"><div className="lbl">Összes (bent)</div><div className="val">{svcStats.inHouse}</div></div>
         <div className="statcard"><div className="lbl">Kész (ügyfél)</div><div className="val" style={{ color: "#15803D" }}>{svcStats.kesz}</div></div>
         <div className="statcard"><div className="lbl">Sikertelen (ügyfél)</div><div className="val" style={{ color: "#9D174D" }}>{svcStats.sikertelen}</div></div>
-        <div className="statcard"><div className="lbl">Kiadva</div><div className="val">{svcStats.kiadva}</div></div>
+        <div className="statcard"><div className="lbl">Kiadva (elmúlt hét)</div><div className="val">{svcStats.kiadvaRecent}</div></div>
         {svcStats.ownStock > 0 && (
           <div className="statcard"><div className="lbl">Saját készlet szervizben</div><div className="val">{svcStats.ownStock}</div></div>
         )}

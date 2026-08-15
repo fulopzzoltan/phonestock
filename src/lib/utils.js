@@ -220,6 +220,19 @@ export function isWarrantyActive(fromDateStr, warranty) {
   return exp >= today();
 }
 
+// Az elmúlt "görgő hét" kezdete úgy, hogy pontosan 7 nyitvatartási (nem vasárnapi)
+// nap essen bele — ha vasárnap közbeesik, a kezdet eggyel korábbra tolódik, hogy
+// a zárva tartás ne rontsa le a heti "kiadva" számot.
+export function rollingBusinessWeekStart(days = 7) {
+  let d = new Date(today() + "T00:00:00Z");
+  let counted = 0;
+  while (counted < days) {
+    if (d.getUTCDay() !== 0) counted++;
+    if (counted < days) d.setUTCDate(d.getUTCDate() - 1);
+  }
+  return d.toISOString().slice(0, 10);
+}
+
 export function startOfWeek(d) {
   // UTC-ban számol (nem helyi idő), hogy a toISOString()-es visszaalakítás
   // ne csússzon egy nappal pozitív időzóna-eltolásnál (pl. Románia UTC+2/+3).
