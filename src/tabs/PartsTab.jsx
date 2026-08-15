@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
-import { money, PART_CATEGORIES, partCode } from "../lib/utils";
+import { money, PART_CATEGORIES, partCode, ticketCode } from "../lib/utils";
 import { SearchIcon, EditIcon, PartsIcon } from "../components/icons";
 import ConfirmDelete from "../components/ConfirmDelete";
 import Thumb from "../components/Thumb";
 import { EmptyState, LoadingState } from "../components/EmptyState";
+import HistorySection from "../components/HistorySection";
 
 const SORTS = [
   { key: "recent", label: "Legújabb elöl" },
@@ -25,6 +26,7 @@ const CATS = [...PART_CATEGORIES, "Egyéb"];
 
 export default function PartsTab({
   busy, setPartModal, partSearch, setPartSearch, loadingData, filteredParts, setPartDetailId, deletePart, partsStats,
+  allUsedParts = [], locName, setDetailId,
 }) {
   const [catFilter, setCatFilter] = useState("all");
   const [sortBy, setSortBy] = useState("recent");
@@ -105,6 +107,32 @@ export default function PartsTab({
           );
         })
       )}
+
+      <HistorySection
+        icon={PartsIcon}
+        label="Felhasznált alkatrészek"
+        items={allUsedParts}
+        searchPlaceholder="Keresés alkatrész, munkalap vagy vevő szerint..."
+        filterFn={(sp, q) => [sp.partName, sp.ticket.customerName, sp.ticket.brand, sp.ticket.model, ticketCode(sp.ticket.ticketNo, locName(sp.ticket.intakeLocationId || sp.ticket.locationId))].filter(Boolean).join(" ").toLowerCase().includes(q)}
+      >
+        {(rows) => (
+          <table>
+            <thead><tr><th>Alkatrész</th><th>Munkalap</th><th>Vevő</th><th>Menny.</th><th>Ár</th><th>Dátum</th></tr></thead>
+            <tbody>
+              {rows.map((sp) => (
+                <tr key={sp.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(sp.ticket.id)}>
+                  <td style={{ fontWeight: 600 }}>{sp.partName}</td>
+                  <td>{ticketCode(sp.ticket.ticketNo, locName(sp.ticket.intakeLocationId || sp.ticket.locationId))}</td>
+                  <td>{sp.ticket.customerName || "—"}</td>
+                  <td style={{ fontWeight: 700 }}>{sp.quantity} db</td>
+                  <td className="mono" style={{ fontWeight: 700 }}>{money((sp.costPrice || 0) * sp.quantity)}</td>
+                  <td className="mono" style={{ color: "#9CA3AF" }}>{(sp.usedAt || "").slice(0, 10) || "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </HistorySection>
     </>
   );
 }

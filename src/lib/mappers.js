@@ -307,4 +307,5 @@ export const spFromApi = (r) => ({
   quantity: r.quantity,
   unitPrice: r.unit_price,
   costPrice: r.cost_price,
+  usedAt: r.created_at,
 });

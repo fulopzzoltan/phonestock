@@ -1177,6 +1177,11 @@ function AppShell() {
       .flatMap((t) => (t.usedParts || []).filter((sp) => sp.partId === partDetailId).map((sp) => ({ ...sp, ticket: t })))
       .sort((a, b) => (b.ticket.dateIn || "").localeCompare(a.ticket.dateIn || ""));
   }, [tickets, partDetailId]);
+  const allUsedParts = useMemo(() => {
+    return tickets
+      .flatMap((t) => (t.usedParts || []).map((sp) => ({ ...sp, ticket: t })))
+      .sort((a, b) => (b.usedAt || "").localeCompare(a.usedAt || ""));
+  }, [tickets]);
   const editingTicket = ticketModal && ticketModal !== "add" ? ticketModal : null;
 
   const noLocationAssigned = !isAdmin && !myLocationId;
@@ -1247,7 +1252,7 @@ function AppShell() {
           <PartsTab
             busy={busy} setPartModal={setPartModal} partSearch={partSearch} setPartSearch={setPartSearch}
             loadingData={loadingData} filteredParts={filteredParts} setPartDetailId={setPartDetailId} deletePart={deletePart}
-            partsStats={partsStats}
+            partsStats={partsStats} allUsedParts={allUsedParts} locName={locName} setDetailId={setDetailId}
           />
         )}
 
