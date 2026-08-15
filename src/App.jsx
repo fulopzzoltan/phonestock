@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
 import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi } from "./lib/mappers";
-import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart } from "./lib/utils";
+import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
 import StockModal from "./components/StockModal";
@@ -1015,6 +1015,19 @@ function AppShell() {
   }, [transactions, tickets, warranties]);
   const filteredWarranties = warrantyFilter === "all" ? activeWarranties : activeWarranties.filter((w) => w.kind === warrantyFilter);
 
+  const todoItems = useMemo(() => {
+    const slaTickets = activeTickets
+      .map((t) => ({ ticket: t, sla: slaInfo(t) }))
+      .filter((x) => x.sla && (x.sla.level === "warn" || x.sla.level === "overdue"))
+      .sort((a, b) => a.sla.days - b.sla.days);
+    const soonWarranties = activeWarranties.filter((w) => {
+      if (!w.expiry) return false;
+      const daysLeft = Math.ceil((new Date(w.expiry) - new Date(today())) / 86400000);
+      return daysLeft <= 14 && daysLeft >= 0;
+    }).sort((a, b) => (a.expiry || "").localeCompare(b.expiry || ""));
+    return { slaTickets, soonWarranties };
+  }, [activeTickets, activeWarranties]);
+
   const leaveYear = new Date().getFullYear();
   const leaveBalanceByUser = useMemo(() => {
     const map = {};
@@ -1087,6 +1100,7 @@ function AppShell() {
             effectiveLocFilter={effectiveLocFilter} locName={locName} stockStats={stockStats} stockHistory={stockHistory}
             svcStats={svcStats} monthlyTrendSummary={monthlyTrendSummary} currentMonthLive={currentMonthLive}
             monthlySummaries={monthlySummaries} locations={locations} txStats={txStats} partsStats={partsStats} customerStats={customerStats}
+            todoItems={todoItems} setDetailId={setDetailId} setWarrantyDetailKey={setWarrantyDetailKey} setTab={setTab}
           />
         )}
 

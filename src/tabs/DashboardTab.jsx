@@ -1,7 +1,7 @@
-import { money } from "../lib/utils";
+import { money, displayName, ticketCode } from "../lib/utils";
 import StockValueChart from "../components/StockValueChart";
 import MonthlyTrendChart from "../components/MonthlyTrendChart";
-import { PhoneCaseIcon, ServiceIcon, FinanceIcon, PartsIcon, CustomersIcon } from "../components/icons";
+import { PhoneCaseIcon, ServiceIcon, FinanceIcon, PartsIcon, CustomersIcon, WarningIcon } from "../components/icons";
 
 const SectionHead = ({ icon: Icon, children }) => (
   <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>
@@ -12,13 +12,45 @@ const SectionHead = ({ icon: Icon, children }) => (
 export default function DashboardTab({
   effectiveLocFilter, locName, stockStats, stockHistory, svcStats,
   monthlyTrendSummary, currentMonthLive, monthlySummaries, locations,
-  txStats, partsStats, customerStats,
+  txStats, partsStats, customerStats, todoItems, setDetailId, setWarrantyDetailKey, setTab,
 }) {
+  const todoCount = (todoItems?.slaTickets.length || 0) + (todoItems?.soonWarranties.length || 0);
+
   return (
     <>
       <div className="topbar">
         <div><div className="page-title">Áttekintés</div><div className="page-sub">{effectiveLocFilter === "all" ? "Mindkét helyszín" : locName(effectiveLocFilter)}</div></div>
       </div>
+
+      {todoCount > 0 && (
+        <>
+          <SectionHead icon={WarningIcon}>Ma figyelni kell rá</SectionHead>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginBottom: 26 }}>
+            {todoItems.slaTickets.length > 0 && (
+              <div className="statcard">
+                <div className="dp-section-title">Lejáró/lejárt munkalapok</div>
+                {todoItems.slaTickets.map(({ ticket: t, sla }) => (
+                  <div key={t.id} className="dp-row" style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
+                    <span className="dp-key">{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))} — {displayName(t.brand, t.model) || t.customerName}</span>
+                    <span className="tag" style={{ background: sla.level === "overdue" ? "var(--danger-soft)" : "var(--warning-soft)", color: sla.level === "overdue" ? "var(--danger-ink)" : "var(--warning-ink)" }}>{sla.label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            {todoItems.soonWarranties.length > 0 && (
+              <div className="statcard">
+                <div className="dp-section-title">Hamarosan lejáró garanciák</div>
+                {todoItems.soonWarranties.map((w) => (
+                  <div key={w.key} className="dp-row" style={{ cursor: "pointer" }} onClick={() => { setTab("warranty"); setWarrantyDetailKey(w.key); }}>
+                    <span className="dp-key">{w.customerName || "—"} — {w.label || "—"}</span>
+                    <span className="tag" style={{ background: "var(--warning-soft)", color: "var(--warning-ink)" }}>{w.expiry}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
       <SectionHead icon={PhoneCaseIcon}>Telefonok</SectionHead>
       <div className="statrow c4">
