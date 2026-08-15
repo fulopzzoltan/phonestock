@@ -148,7 +148,7 @@ export const ChevronDownIcon = (props) => (
   </svg>
 );
 
-export const ShiftCloseIcon = (props) => (
+export const CashSettlementIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...props}>
     <rect x="4" y="3" width="16" height="18" rx="2" />
     <path d="M8 3v3M16 3v3M8 13l2.5 2.5L16 10" />

@@ -2,7 +2,7 @@ import { useState } from "react";
 import LocationField from "./LocationField";
 import { CATEGORIES, PAYMENTS } from "../lib/utils";
 
-export default function TransactionQuickAdd({ locations, defaultLocId, onAdd, busy }) {
+export default function TransactionQuickAdd({ locations, defaultLocId, onAdd, busy, openStockModal, openPartModal }) {
   const [type, setType] = useState("income");
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
@@ -10,15 +10,23 @@ export default function TransactionQuickAdd({ locations, defaultLocId, onAdd, bu
   const [category, setCategory] = useState("Készlet");
   const [payment, setPayment] = useState("Készpénz");
   const [locId, setLocId] = useState(defaultLocId || locations[0]?.id || "");
+  const [stockKind, setStockKind] = useState("Egyéb"); // "Telefon" | "Alkatrész" | "Egyéb"
   const [err, setErr] = useState("");
 
   function submit() {
     if (!description.trim() || !amount) { setErr("Leírás és összeg kötelező!"); return; }
     setErr("");
     onAdd({ type, description: description.trim(), amount, costPrice: type === "income" ? (costPrice || 0) : 0, category, payment, locationId: locId }, locId);
+
+    if (type === "expense" && category === "Készlet") {
+      if (stockKind === "Telefon") openStockModal({ costPrice: Number(amount) || 0, locationId: locId });
+      if (stockKind === "Alkatrész") openPartModal({ costPrice: Number(amount) || 0, source: description.trim() || undefined });
+    }
+
     setDescription("");
     setAmount("");
     setCostPrice("");
+    setStockKind("Egyéb");
   }
 
   return (
@@ -49,7 +57,7 @@ export default function TransactionQuickAdd({ locations, defaultLocId, onAdd, bu
         <div className="field" style={{ margin: 0 }}>
           <label>Kategória</label>
           <select value={category} onChange={(e) => setCategory(e.target.value)}>
-            {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
+            {CATEGORIES.map((c) => <option key={c} value={c}>{c === "Eszköz" ? "Eszköz (befektetés)" : c}</option>)}
           </select>
         </div>
         <div className="field" style={{ margin: 0 }}>
@@ -68,6 +76,16 @@ export default function TransactionQuickAdd({ locations, defaultLocId, onAdd, bu
         ) : <div />}
         <button className="btn" disabled={busy} onClick={submit} style={{ whiteSpace: "nowrap" }}>Rögzít</button>
       </div>
+      {type === "expense" && category === "Készlet" && (
+        <div className="field" style={{ margin: "10px 0 0" }}>
+          <label>Mi érkezett?</label>
+          <div className="seg">
+            {["Telefon", "Alkatrész", "Egyéb"].map((k) => (
+              <button key={k} type="button" className={stockKind === k ? "active" : ""} onClick={() => setStockKind(k)}>{k}</button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

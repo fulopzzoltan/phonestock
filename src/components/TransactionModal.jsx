@@ -31,7 +31,7 @@ export default function TransactionModal({ tx, locations, defaultLocId, onClose,
           </div>
           <div className="field"><label>Kategória</label>
             <select value={f.category} onChange={set("category")}>
-              {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
+              {CATEGORIES.map((c) => <option key={c} value={c}>{c === "Eszköz" ? "Eszköz (befektetés)" : c}</option>)}
             </select>
           </div>
         </div>

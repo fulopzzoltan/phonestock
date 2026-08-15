@@ -2,7 +2,7 @@ import { useState } from "react";
 import { CloseIcon } from "./icons";
 import { PART_CATEGORIES, PART_ORIGINS } from "../lib/utils";
 
-export default function PartModal({ part, onClose, onSave, busy }) {
+export default function PartModal({ part, prefill, onClose, onSave, busy }) {
   const isEdit = !!part;
   const [f, setF] = useState({
     name: part?.name || "",
@@ -10,8 +10,8 @@ export default function PartModal({ part, onClose, onSave, busy }) {
     brand: part?.brand || "",
     modelFit: part?.modelFit || "",
     quantity: part?.quantity ?? "",
-    costPrice: part?.costPrice ?? "",
-    source: part?.source || "",
+    costPrice: part?.costPrice ?? prefill?.costPrice ?? "",
+    source: part?.source || prefill?.source || "",
     origin: part?.origin || "",
     supplierSku: part?.supplierSku || "",
   });

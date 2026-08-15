@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, shiftCloseFromApi, partnerSettlementFromApi } from "./lib/mappers";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi } from "./lib/mappers";
 import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
@@ -15,7 +15,7 @@ import TicketFormModal from "./components/TicketFormModal";
 import DashboardTab from "./tabs/DashboardTab";
 import StockTab from "./tabs/StockTab";
 import FinanceTab from "./tabs/FinanceTab";
-import ShiftCloseTab from "./tabs/ShiftCloseTab";
+import CashSettlementTab from "./tabs/CashSettlementTab";
 import ServiceTab from "./tabs/ServiceTab";
 import PartsTab from "./tabs/PartsTab";
 import CustomersTab from "./tabs/CustomersTab";
@@ -123,8 +123,8 @@ function AppShell() {
   const [leaveBalanceModal, setLeaveBalanceModal] = useState(null); // null | user obj
   const [repairPrices, setRepairPrices] = useState([]);
   const [repairLeads, setRepairLeads] = useState([]);
-  const [shiftCloses, setShiftCloses] = useState([]);
-  const [partnerSettlements, setPartnerSettlements] = useState([]);
+  const [cashHolders, setCashHolders] = useState([]);
+  const [cashSettlements, setCashSettlements] = useState([]);
   const [repairPriceModal, setRepairPriceModal] = useState(null); // null | { familyKey, problemTag }
   const [repairLeadFilter, setRepairLeadFilter] = useState("Új");
   const [repairLeadConvert, setRepairLeadConvert] = useState(null); // lead obj being converted to a ticket
@@ -154,7 +154,7 @@ function AppShell() {
   async function loadAll() {
     setLoadingData(true);
     try {
-      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, lTypes, lBalances, lRequests, rPrices, rLeads, sClosesRes, pSettlements] = await Promise.all([
+      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         fetchAllRows(() => supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false })),
         fetchAllRows(() => supabase.from("transactions").select("*").is("deleted_at", null).order("date", { ascending: false })),
@@ -173,8 +173,8 @@ function AppShell() {
         supabase.from("leave_requests").select("*").order("start_date", { ascending: true }),
         supabase.from("repair_prices").select("*"),
         supabase.from("repair_leads").select("*").order("created_at", { ascending: false }),
-        supabase.from("shift_closes").select("*").order("close_date", { ascending: false }),
-        supabase.from("partner_settlements").select("*").order("settled_through_date", { ascending: false }),
+        supabase.from("cash_holders").select("*").order("name", { ascending: true }),
+        supabase.from("cash_settlements").select("*").order("period_end", { ascending: false }),
       ]);
       setLocations(unwrap(locs) || []);
       const prodRows = unwrap(prods) || [];
@@ -197,8 +197,8 @@ function AppShell() {
       setLeaveRequests((unwrap(lRequests) || []).map(leaveRequestFromApi));
       setRepairPrices((unwrap(rPrices) || []).map(repairPriceFromApi));
       setRepairLeads((unwrap(rLeads) || []).map(repairLeadFromApi));
-      setShiftCloses((unwrap(sClosesRes) || []).map(shiftCloseFromApi));
-      setPartnerSettlements((unwrap(pSettlements) || []).map(partnerSettlementFromApi));
+      setCashHolders((unwrap(cHolders) || []).map(cashHolderFromApi));
+      setCashSettlements((unwrap(cSettlements) || []).map(cashSettlementFromApi));
       const historyRows = unwrap(hist) || [];
       setStockHistory(historyRows.map((r) => ({ date: r.date, value: Number(r.value) || 0 })));
       maybeSnapshotStockValue(prodRows, historyRows);
@@ -513,29 +513,17 @@ function AppShell() {
     });
   }
 
-  async function saveShiftClose(data) {
+  async function saveCashSettlement(data) {
     await withBusy(async () => {
-      const r = unwrap(await supabase.from("shift_closes").upsert(
-        {
-          location_id: data.locationId, close_date: data.closeDate,
-          cash_expected: data.cashExpected, cash_counted: data.cashCounted,
-          card_income: data.cardIncome, transfer_income: data.transferIncome,
-          total_expense: data.totalExpense, note: data.note || null,
-          closed_by: user.id, closed_at: new Date().toISOString(),
-        },
-        { onConflict: "location_id,close_date" }
-      ).select());
-      const updated = shiftCloseFromApi(r[0]);
-      setShiftCloses([updated, ...shiftCloses.filter((s) => !(s.locationId === updated.locationId && s.closeDate === updated.closeDate))]);
-    });
-  }
-
-  async function settlePartner(throughDate, totalAmount) {
-    await withBusy(async () => {
-      const r = unwrap(await supabase.from("partner_settlements").insert({
-        settled_through_date: throughDate, total_amount: totalAmount, settled_by: user.id,
+      const r = unwrap(await supabase.from("cash_settlements").insert({
+        period_start: data.periodStart, period_end: data.periodEnd,
+        cash_income: data.cashIncome, cash_expense: data.cashExpense,
+        cash_counted_total: data.cashCountedTotal, cash_by_holder: data.cashByHolder,
+        card_income: data.cardIncome, transfer_income: data.transferIncome,
+        other_expense: data.otherExpense, note: data.note || null,
+        settled_by: user.id,
       }).select());
-      setPartnerSettlements([partnerSettlementFromApi(r[0]), ...partnerSettlements]);
+      setCashSettlements([cashSettlementFromApi(r[0]), ...cashSettlements]);
     });
   }
 
@@ -1165,14 +1153,14 @@ function AppShell() {
             allowedLocations={allowedLocations} defaultLocId={defaultLocId} addTransaction={addTransaction} busy={busy}
             loadingData={loadingData} filteredTransactions={filteredTransactions} setTxModal={setTxModal}
             deleteTransaction={deleteTransaction} setReceiptTxId={setReceiptTxId}
+            setStockModal={setStockModal} setPartModal={setPartModal}
           />
         )}
 
-        {!noLocationAssigned && tab === "shift-close" && (
-          <ShiftCloseTab
-            busy={busy} isAdmin={isAdmin} myLocationId={myLocationId} allowedLocations={allowedLocations} locName={locName}
-            transactions={transactions} shiftCloses={shiftCloses} saveShiftClose={saveShiftClose} users={users}
-            partnerSettlements={partnerSettlements} settlePartner={settlePartner}
+        {isAdmin && tab === "cash-settlement" && (
+          <CashSettlementTab
+            busy={busy} transactions={transactions} cashHolders={cashHolders} cashSettlements={cashSettlements}
+            saveCashSettlement={saveCashSettlement} users={users}
           />
         )}
 
@@ -1254,21 +1242,23 @@ function AppShell() {
 
       {stockModal && (
         <StockModal
-          product={stockModal !== "add" ? stockModal : null}
+          product={typeof stockModal === "object" && stockModal?.id ? stockModal : null}
+          prefill={typeof stockModal === "object" && !stockModal?.id ? stockModal : null}
           locations={stockLocations}
           onClose={() => setStockModal(null)}
           busy={busy}
           defaultLocId={defaultStockLocId}
-          onSave={(data, locId) => (stockModal !== "add" ? editProduct(stockModal.id, data, locId) : addProduct(data, locId))}
+          onSave={(data, locId) => (typeof stockModal === "object" && stockModal?.id ? editProduct(stockModal.id, data, locId) : addProduct(data, locId))}
         />
       )}
       {sellModal && <SellModal item={sellModal} locName={locName} customers={customersTable} onClose={() => setSellModal(null)} onSave={sellProduct} busy={busy} />}
       {partModal && (
         <PartModal
-          part={partModal !== "add" ? partModal : null}
+          part={typeof partModal === "object" && partModal?.id ? partModal : null}
+          prefill={typeof partModal === "object" && !partModal?.id ? partModal : null}
           onClose={() => setPartModal(null)}
           busy={busy}
-          onSave={(data) => (partModal !== "add" ? editPart(partModal.id, data) : addPart(data))}
+          onSave={(data) => (typeof partModal === "object" && partModal?.id ? editPart(partModal.id, data) : addPart(data))}
         />
       )}
       {txModal && (

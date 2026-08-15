@@ -225,17 +225,24 @@ export const leaveRequestFromApi = (r) => ({
   status: r.status, requestedAt: r.requested_at, decidedBy: r.decided_by, decidedAt: r.decided_at,
 });
 
-export const shiftCloseFromApi = (r) => ({
-  id: r.id, locationId: r.location_id, closeDate: r.close_date,
-  cashExpected: Number(r.cash_expected) || 0, cashCounted: Number(r.cash_counted) || 0,
-  cardIncome: Number(r.card_income) || 0, transferIncome: Number(r.transfer_income) || 0,
-  totalExpense: Number(r.total_expense) || 0, note: r.note || "",
-  closedBy: r.closed_by, closedAt: r.closed_at,
-});
+export const cashHolderFromApi = (r) => ({ id: r.id, name: r.name, active: r.active !== false });
 
-export const partnerSettlementFromApi = (r) => ({
-  id: r.id, settledThroughDate: r.settled_through_date, totalAmount: Number(r.total_amount) || 0,
-  settledBy: r.settled_by, settledAt: r.settled_at,
+export const cashSettlementFromApi = (r) => ({
+  id: r.id,
+  periodStart: r.period_start,
+  periodEnd: r.period_end,
+  cashIncome: Number(r.cash_income) || 0,
+  cashExpense: Number(r.cash_expense) || 0,
+  cashExpected: Number(r.cash_expected) || 0,
+  cashCountedTotal: Number(r.cash_counted_total) || 0,
+  cashByHolder: r.cash_by_holder || {},
+  cardIncome: Number(r.card_income) || 0,
+  transferIncome: Number(r.transfer_income) || 0,
+  otherExpense: Number(r.other_expense) || 0,
+  totalProfit: Number(r.total_profit) || 0,
+  note: r.note || "",
+  settledBy: r.settled_by,
+  settledAt: r.settled_at,
 });
 
 export const repairPriceFromApi = (r) => ({

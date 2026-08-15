@@ -1,6 +1,6 @@
 import {
   EditIcon, DashboardIcon, ServiceIcon, PhoneCaseIcon,
-  PartsIcon, FinanceIcon, CustomersIcon, WarrantyIcon, UsersNavIcon, TrashNavIcon, LogoutIcon, BuybackIcon, LeaveIcon, RepairPriceIcon, ShiftCloseIcon,
+  PartsIcon, FinanceIcon, CustomersIcon, WarrantyIcon, UsersNavIcon, TrashNavIcon, LogoutIcon, BuybackIcon, LeaveIcon, RepairPriceIcon, CashSettlementIcon,
 } from "./icons";
 
 export default function Sidebar({
@@ -22,7 +22,9 @@ export default function Sidebar({
 
         <div className="nav-lbl">Pénzügyek</div>
         <button className={`navbtn ${tab === "finance" ? "active" : ""}`} onClick={() => setTab("finance")}><FinanceIcon className="nav-ic" />Bevételek &amp; Kiadások</button>
-        <button className={`navbtn ${tab === "shift-close" ? "active" : ""}`} onClick={() => setTab("shift-close")}><ShiftCloseIcon className="nav-ic" />Napi zárás</button>
+        {isAdmin && (
+          <button className={`navbtn ${tab === "cash-settlement" ? "active" : ""}`} onClick={() => setTab("cash-settlement")}><CashSettlementIcon className="nav-ic" />Elszámolás</button>
+        )}
 
         {!isAdmin && (
           <button className={`navbtn ${tab === "leave" ? "active" : ""}`} onClick={() => setTab("leave")}><LeaveIcon className="nav-ic" />Szabadság</button>

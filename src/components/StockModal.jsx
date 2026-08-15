@@ -3,7 +3,7 @@ import LocationField from "./LocationField";
 import { CloseIcon } from "./icons";
 import { WARRANTIES, SOURCES } from "../lib/utils";
 
-export default function StockModal({ product, locations, onClose, onSave, busy, defaultLocId }) {
+export default function StockModal({ product, prefill, locations, onClose, onSave, busy, defaultLocId }) {
   const isEdit = !!product;
   const [f, setF] = useState({
     brand: product?.brand || "",
@@ -13,7 +13,7 @@ export default function StockModal({ product, locations, onClose, onSave, busy, 
     storage: product?.storage || "",
     color: product?.color || "",
     imei: product?.imei || "",
-    costPrice: product?.costPrice ?? "",
+    costPrice: product?.costPrice ?? prefill?.costPrice ?? "",
     salePrice: product?.salePrice ?? "",
     warranty: product?.warranty || "",
     source: product?.source || "",
@@ -21,7 +21,7 @@ export default function StockModal({ product, locations, onClose, onSave, busy, 
     newPrice: product?.newPrice ?? "",
     onShelf: product?.onShelf !== false,
   });
-  const [locId, setLocId] = useState(product?.locationId || defaultLocId || locations[0]?.id || "");
+  const [locId, setLocId] = useState(product?.locationId || prefill?.locationId || defaultLocId || locations[0]?.id || "");
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const valid = f.brand.trim() && f.model.trim() && f.salePrice !== "" && locId;
   return (
