@@ -18,10 +18,10 @@ export default function ServiceTab({
       </div>
 
       <div className={`statrow ${svcStats.ownStock > 0 ? "c5" : "c4"}`}>
-        <div className="statcard accent"><div className="lbl">Összes (bent)</div><div className="val">{svcStats.inHouse}</div></div>
-        <div className="statcard"><div className="lbl">Kész (ügyfél)</div><div className="val" style={{ color: "#15803D" }}>{svcStats.kesz}</div></div>
-        <div className="statcard"><div className="lbl">Sikertelen (ügyfél)</div><div className="val" style={{ color: "#9D174D" }}>{svcStats.sikertelen}</div></div>
-        <div className="statcard"><div className="lbl">Kiadva (elmúlt hét)</div><div className="val">{svcStats.kiadvaRecent}</div></div>
+        <div className="statcard accent"><div className="lbl">Aktív munkák</div><div className="val">{svcStats.inHouse}</div></div>
+        <div className="statcard"><div className="lbl">Átvehető (ügyfél)</div><div className="val" style={{ color: "#15803D" }}>{svcStats.kesz}</div></div>
+        <div className="statcard"><div className="lbl">Nem javítható (ügyfél)</div><div className="val" style={{ color: "#9D174D" }}>{svcStats.sikertelen}</div></div>
+        <div className="statcard"><div className="lbl">Kiadva (utolsó 7 munkanap)</div><div className="val">{svcStats.kiadvaRecent}</div></div>
         {svcStats.ownStock > 0 && (
           <div className="statcard"><div className="lbl">Saját készlet szervizben</div><div className="val">{svcStats.ownStock}</div></div>
         )}
