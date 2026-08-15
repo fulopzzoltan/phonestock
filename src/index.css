@@ -164,8 +164,8 @@ tr:hover td{background:#FAFAFA}
 .stk-badges{display:flex;gap:4px;flex-wrap:wrap}
 .loc-group-head{display:flex;align-items:center;justify-content:space-between;margin:0 0 8px 2px}
 .stk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
-.stk-card{background:#fff;border-radius:var(--radius-lg);border:1px solid #EEF0F2;box-shadow:var(--shadow-card);padding:15px;cursor:pointer}
-.stk-card:hover{box-shadow:0 4px 16px rgba(16,24,40,.09);border-color:#E5E7EB}
+.stk-card{background:#fff;border-radius:var(--radius-lg);border:1px solid #EEF0F2;box-shadow:var(--shadow-card);padding:15px;cursor:pointer;transition:transform .12s,box-shadow .12s,border-color .12s}
+.stk-card:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(16,24,40,.09);border-color:#E5E7EB}
 .stk-card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:11px}
 .stk-card-name{font-weight:700;font-size:13.5px;color:#111827;line-height:1.3}
 .stk-card-sub{font-size:11px;color:#9CA3AF;margin-top:2px;font-family:'JetBrains Mono',monospace}
@@ -190,8 +190,8 @@ tr:hover td{background:#FAFAFA}
 .k-collapse-toggle svg{width:11px;height:11px;transition:transform .15s}
 
 /* TICKET CARD */
-.t-card{background:#fff;border:1px solid #EEF0F2;border-radius:var(--radius-lg);padding:12px 13px;cursor:pointer;transition:box-shadow .12s,border-color .12s;box-shadow:var(--shadow-card)}
-.t-card:hover{box-shadow:0 4px 16px rgba(16,24,40,.1);border-color:#D1D5DB}
+.t-card{background:#fff;border:1px solid #EEF0F2;border-radius:var(--radius-lg);padding:12px 13px;cursor:pointer;transition:transform .12s,box-shadow .12s,border-color .12s;box-shadow:var(--shadow-card)}
+.t-card:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(16,24,40,.1);border-color:#D1D5DB}
 .t-card-sla-warn{border-color:#FDE68A;background:#FFFDF7}
 .t-card-sla-overdue{border-color:#FCA5A5;background:#FFFBFB}
 .t-card-kind-prep{background:#F8FAFC;border-left:3px solid #64748B}
