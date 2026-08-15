@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
 import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi } from "./lib/mappers";
-import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, QUICK_SALES } from "./lib/utils";
+import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
 import StockModal from "./components/StockModal";
@@ -764,12 +764,13 @@ function AppShell() {
   async function setTicketStatus(id, status, subStatus = null) {
     await withBusy(async () => {
       const ticket = tickets.find((t) => t.id === id);
+      const becameReady = status === "Átadásra" && subStatus === null && !(ticket && ticket.status === "Átadásra" && ticket.subStatus === null);
       const patch = { status, sub_status: subStatus };
       if (subStatus === "Átadva") patch.date_out = today();
+      if (becameReady) patch.ready_at = new Date().toISOString();
       unwrap(await supabase.from("service_tickets").update(patch).eq("id", id));
-      setTickets(tickets.map((t) => (t.id === id ? { ...t, status, subStatus, dateOut: subStatus === "Átadva" ? today() : t.dateOut } : t)));
+      setTickets(tickets.map((t) => (t.id === id ? { ...t, status, subStatus, dateOut: subStatus === "Átadva" ? today() : t.dateOut, readyAt: becameReady ? patch.ready_at : t.readyAt } : t)));
 
-      const becameReady = status === "Átadásra" && subStatus === null && !(ticket && ticket.status === "Átadásra" && ticket.subStatus === null);
       if (becameReady && ticket && ticket.customerPhone) {
         const device = [ticket.brand, ticket.model].filter(Boolean).join(" ");
         const message = stripAccents(`Szia! A(z) ${device} javítása elkészült, átveheted nálunk (${locName(ticket.locationId)}). Részletek: ${SITE_URL}/s/${ticket.shortCode}`);
@@ -1020,6 +1021,7 @@ function AppShell() {
       active: customerTickets.filter((t) => t.status !== "Átadásra").length,
       inHouse: activeTickets.length,
       kesz: customerTickets.filter((t) => t.status === "Átadásra" && !t.subStatus).length,
+      staleReady: customerTickets.filter(isStaleReady).length,
       sikertelen: sikertelenCount,
       kiadva: kiadvaCount,
       kiadvaRecent,

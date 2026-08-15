@@ -1,4 +1,4 @@
-import { money, subStatusCls, subStatusLabel, slaInfo, displayName, ticketCode } from "../lib/utils";
+import { money, subStatusCls, subStatusLabel, slaInfo, displayName, ticketCode, isStaleReady } from "../lib/utils";
 import { ClockIcon, ServiceIcon, WarrantyIcon } from "./icons";
 import CallLink from "./CallLink";
 import Thumb from "./Thumb";
@@ -6,6 +6,7 @@ import Thumb from "./Thumb";
 export default function TicketCard({ ticket, locName, onOpen }) {
   const probs = (ticket.issue || "").split(",").map((p) => p.trim()).filter(Boolean);
   const sla = slaInfo(ticket);
+  const staleReady = isStaleReady(ticket);
   const kindCls = ticket.ticketKind === "Saját készlet - előkészítés" ? " t-card-kind-prep"
     : ticket.ticketKind === "Saját készlet - garanciális" ? " t-card-kind-warranty" : "";
   return (
@@ -23,6 +24,11 @@ export default function TicketCard({ ticket, locName, onOpen }) {
       {sla && (sla.level === "warn" || sla.level === "overdue") && (
         <div style={{ marginBottom: 4 }}>
           <span className={`sla-badge sla-${sla.level}`}><ClockIcon width={11} height={11} />{sla.label}</span>
+        </div>
+      )}
+      {staleReady && (
+        <div style={{ marginBottom: 4 }}>
+          <span className="sla-badge sla-overdue"><ClockIcon width={11} height={11} />90+ napja várja az átvételt</span>
         </div>
       )}
       {ticket.subStatus && (

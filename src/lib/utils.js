@@ -38,6 +38,12 @@ export function isSlowMoving(p) {
   return days != null && days >= SLOW_MOVING_DAYS;
 }
 
+export const READY_STALE_DAYS = 90;
+export function isStaleReady(t) {
+  if (t.status !== "Átadásra" || t.subStatus || !t.readyAt) return false;
+  return Math.floor((Date.now() - new Date(t.readyAt)) / 86400000) >= READY_STALE_DAYS;
+}
+
 // Rövid, kimondható azonosítók — kategóriánként egy betű, kötőjel nélkül.
 // T = Telefon, S(+helyszín) = Szerviz munkalap (pl. SCS235), A = Alkatrész.
 // A bizonylatszámhoz (receipt_no) szándékosan nem nyúlunk — az pénzügyi/könyvelési sorszám.

@@ -19,7 +19,15 @@ export default function ServiceTab({
 
       <div className={`statrow ${svcStats.ownStock > 0 ? "c5" : "c4"}`}>
         <div className="statcard accent"><div className="lbl">Aktív munkák</div><div className="val">{svcStats.inHouse}</div></div>
-        <div className="statcard"><div className="lbl">Átvehető (ügyfél)</div><div className="val" style={{ color: "#15803D" }}>{svcStats.kesz}</div></div>
+        <div className="statcard">
+          <div className="lbl">Átvehető (ügyfél)</div>
+          <div className="val" style={{ color: "#15803D" }}>{svcStats.kesz}</div>
+          {svcStats.staleReady > 0 && (
+            <div style={{ fontSize: 11, color: "#9D174D", fontWeight: 600, marginTop: 2 }}>
+              90+ napja várakozó: {svcStats.staleReady} db
+            </div>
+          )}
+        </div>
         <div className="statcard"><div className="lbl">Nem javítható (ügyfél)</div><div className="val" style={{ color: "#9D174D" }}>{svcStats.sikertelen}</div></div>
         <div className="statcard"><div className="lbl">Kiadva (utolsó 7 munkanap)</div><div className="val">{svcStats.kiadvaRecent}</div></div>
         {svcStats.ownStock > 0 && (

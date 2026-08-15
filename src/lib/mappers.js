@@ -102,6 +102,7 @@ export const tFromApi = (r) => ({
   subStatus: r.sub_status,
   dateIn: r.date_in,
   dateOut: r.date_out,
+  readyAt: r.ready_at,
   locationId: r.location_id,
   imei: r.imei,
   qcBy: r.qc_by,
