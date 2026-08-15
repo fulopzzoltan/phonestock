@@ -282,6 +282,7 @@ tr:hover td{background:#FAFAFA}
 /* PRINT */
 #print-slip-root{display:none}
 @media print{
+  @page{ size: A4; margin: 8mm; }
   body *{visibility:hidden}
   #print-slip-root,#print-slip-root *{visibility:visible}
   #print-slip-root{display:block;position:fixed;inset:0;background:#fff}

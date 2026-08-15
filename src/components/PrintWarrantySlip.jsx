@@ -10,7 +10,7 @@ export default function PrintWarrantySlip({ w, location }) {
     </tr>
   );
   return (
-    <div style={{ fontFamily: "Inter, sans-serif", color: "#111827", padding: "30px 36px", maxWidth: 760 }}>
+    <div style={{ fontFamily: "Inter, sans-serif", color: "#111827", padding: "18px 24px", maxWidth: 760 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 26 }}>
         <div>
           <div style={{ fontSize: 18, fontWeight: 800 }}>TELEF<span style={{ color: "#22C55E" }}>O</span>NOS</div>
@@ -29,7 +29,7 @@ export default function PrintWarrantySlip({ w, location }) {
           {row("Garanciaidő", `${w.warranty} (${active ? "érvényes" : "lejárt"} ${expiry}-ig)`)}
         </tbody>
       </table>
-      <div style={{ fontSize: 10.5, color: "#374151", lineHeight: 1.6, whiteSpace: "pre-line", borderTop: "1px solid #E5E7EB", paddingTop: 16 }}>
+      <div style={{ fontSize: 9.5, color: "#374151", lineHeight: 1.45, whiteSpace: "pre-line", borderTop: "1px solid #E5E7EB", paddingTop: 16 }}>
         {SERVICE_WARRANTY_TERMS}
       </div>
     </div>

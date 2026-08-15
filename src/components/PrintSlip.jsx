@@ -2,9 +2,8 @@ import { money, subStatusLabel, warrantyExpiry, isWarrantyActive, SERVICE_WARRAN
 
 export default function PrintSlip({ ticket, location, intakeLocation }) {
   const probs = (ticket.issue || "").split(",").map((p) => p.trim()).filter(Boolean);
-  const handedOver = ticket.subStatus === "Átadva";
-  const expiry = handedOver ? warrantyExpiry(ticket.dateOut, ticket.warranty) : null;
-  const active = handedOver ? isWarrantyActive(ticket.dateOut, ticket.warranty) : false;
+  const expiry = ticket.dateOut ? warrantyExpiry(ticket.dateOut, ticket.warranty) : null;
+  const active = ticket.dateOut ? isWarrantyActive(ticket.dateOut, ticket.warranty) : true;
 
   const row = (k, v) => (
     <tr>
@@ -14,7 +13,7 @@ export default function PrintSlip({ ticket, location, intakeLocation }) {
   );
 
   return (
-    <div style={{ fontFamily: "Inter, sans-serif", color: "#111827", padding: "30px 36px", maxWidth: 760 }}>
+    <div style={{ fontFamily: "Inter, sans-serif", color: "#111827", padding: "18px 24px", maxWidth: 760 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 26 }}>
         <div>
           <div style={{ fontSize: 18, fontWeight: 800 }}>TELEF<span style={{ color: "#22C55E" }}>O</span>NOS</div>
@@ -35,11 +34,11 @@ export default function PrintSlip({ ticket, location, intakeLocation }) {
           {row("Átvéve", ticket.dateIn || "—")}
           {row("Elkészülés / átadás dátuma", ticket.dateOut || "—")}
           {row("Státusz", ticket.subStatus ? subStatusLabel(ticket.status, ticket.subStatus) : ticket.status)}
-          {row("Garanciaidő", !handedOver ? "—" : ticket.warranty ? `${ticket.warranty} (${active ? "érvényes" : "lejárt"} ${expiry}-ig)` : "Nincs")}
+          {row("Garanciaidő", ticket.warranty ? (expiry ? `${ticket.warranty} (${active ? "érvényes" : "lejárt"} ${expiry}-ig)` : ticket.warranty) : "Nincs")}
         </tbody>
       </table>
 
-      <div style={{ fontSize: 10.5, color: "#374151", lineHeight: 1.6, whiteSpace: "pre-line", borderTop: "1px solid #E5E7EB", paddingTop: 16 }}>
+      <div style={{ fontSize: 9.5, color: "#374151", lineHeight: 1.45, whiteSpace: "pre-line", borderTop: "1px solid #E5E7EB", paddingTop: 16 }}>
         {SERVICE_WARRANTY_TERMS}
       </div>
     </div>
