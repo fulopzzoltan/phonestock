@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { CloseIcon } from "./icons";
+import { CloseIcon, ChatIcon, ServiceIcon, PhoneCaseIcon } from "./icons";
 
 function timeLabel(iso) {
   if (!iso) return "";
@@ -67,7 +67,7 @@ export default function TeamChatPanel({ messages, users, tickets, stock, current
   return (
     <div className="chat-panel">
       <div className="chat-panel-head">
-        <div>💬 Csapat-chat</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 7 }}><ChatIcon width={15} height={15} /> Csapat-chat</div>
         <button className="iconbtn" onClick={onClose}><CloseIcon /></button>
       </div>
       <div className="chat-panel-list" ref={listRef}>
@@ -81,7 +81,7 @@ export default function TeamChatPanel({ messages, users, tickets, stock, current
             <div className="chat-msg-body">{m.body}</div>
             {m.linkedTicketId && (
               <button type="button" className="chat-chip" onClick={() => onOpenTicket(m.linkedTicketId)}>
-                🔧 {(() => {
+                <ServiceIcon width={11} height={11} /> {(() => {
                   const t = tickets.find((x) => x.id === m.linkedTicketId);
                   return t ? `#${t.ticketNo} — ${[t.brand, t.model].filter(Boolean).join(" ")}` : "Munkalap";
                 })()}
@@ -89,7 +89,7 @@ export default function TeamChatPanel({ messages, users, tickets, stock, current
             )}
             {m.linkedProductId && (
               <button type="button" className="chat-chip" onClick={() => onOpenProduct(m.linkedProductId)}>
-                📦 {(() => {
+                <PhoneCaseIcon width={11} height={11} /> {(() => {
                   const p = stock.find((x) => x.id === m.linkedProductId);
                   return p ? [p.brand, p.model].filter(Boolean).join(" ") : "Termék";
                 })()}
@@ -100,15 +100,15 @@ export default function TeamChatPanel({ messages, users, tickets, stock, current
       </div>
       {link && (
         <div className="chat-link-preview">
-          {link.type === "ticket" ? "🔧" : "📦"} {link.label}
+          {link.type === "ticket" ? <ServiceIcon width={12} height={12} /> : <PhoneCaseIcon width={12} height={12} />} {link.label}
           <button type="button" onClick={() => setLink(null)}><CloseIcon width={12} height={12} /></button>
         </div>
       )}
       {mentionMatches.length > 0 && (
         <div className="chat-mentions">
           {mentionMatches.map((m) => (
-            <div key={m.type + m.id} className="chat-mention-item" onClick={() => pickMention(m)}>
-              {m.type === "ticket" ? "🔧" : "📦"} {m.label}
+            <div key={m.type + m.id} className="chat-mention-item" style={{ display: "flex", alignItems: "center", gap: 6 }} onClick={() => pickMention(m)}>
+              {m.type === "ticket" ? <ServiceIcon width={12} height={12} /> : <PhoneCaseIcon width={12} height={12} />} {m.label}
             </div>
           ))}
         </div>

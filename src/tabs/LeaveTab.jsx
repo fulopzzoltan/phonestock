@@ -1,5 +1,5 @@
 import { LEAVE_STATUS_CLS } from "../lib/utils";
-import { EditIcon } from "../components/icons";
+import { EditIcon, WarningIcon } from "../components/icons";
 
 export default function LeaveTab({
   leaveYear, busy, setLeaveRequestModal, coverageWarnings, locName, users, leaveBalanceByUser, isAdmin,
@@ -14,7 +14,7 @@ export default function LeaveTab({
 
       {coverageWarnings.length > 0 && (
         <div className="leave-warn">
-          <div className="leave-warn-title">⚠ Ezeken a napokon egy helyszínen mindenki szabadságon lesz</div>
+          <div className="leave-warn-title" style={{ display: "flex", alignItems: "center", gap: 6 }}><WarningIcon width={14} height={14} /> Ezeken a napokon egy helyszínen mindenki szabadságon lesz</div>
           {coverageWarnings.map((w, i) => (
             <div key={i} className="leave-warn-item">{w.date} — {locName(w.locationId)}</div>
           ))}

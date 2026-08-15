@@ -1,5 +1,5 @@
 import { money, subStatusCls, subStatusLabel, slaInfo, displayName, ticketCode } from "../lib/utils";
-import { ClockIcon } from "./icons";
+import { ClockIcon, ServiceIcon, WarrantyIcon } from "./icons";
 import CallLink from "./CallLink";
 import Thumb from "./Thumb";
 
@@ -15,7 +15,10 @@ export default function TicketCard({ ticket, locName, onOpen }) {
         <span className="t-loc">{locName(ticket.locationId)}</span>
       </div>
       {ticket.ticketKind !== "Ügyfél" && (
-        <span className="t-kind-pill">{ticket.ticketKind === "Saját készlet - előkészítés" ? "🔧 Saját — előkészítés" : "↩️ Saját — garanciális"}</span>
+        <span className="t-kind-pill">
+          {ticket.ticketKind === "Saját készlet - előkészítés" ? <ServiceIcon width={11} height={11} /> : <WarrantyIcon width={11} height={11} />}
+          {ticket.ticketKind === "Saját készlet - előkészítés" ? "Saját — előkészítés" : "Saját — garanciális"}
+        </span>
       )}
       {sla && (sla.level === "warn" || sla.level === "overdue") && (
         <div style={{ marginBottom: 4 }}>

@@ -41,7 +41,7 @@ import BuybackRuleModal from "./components/BuybackRuleModal";
 import LeaveRequestModal from "./components/LeaveRequestModal";
 import LeaveBalanceModal from "./components/LeaveBalanceModal";
 import RepairPriceModal from "./components/RepairPriceModal";
-import { CloseIcon } from "./components/icons";
+import { CloseIcon, ChatIcon } from "./components/icons";
 import Sidebar from "./components/Sidebar";
 import TeamChatPanel from "./components/TeamChatPanel";
 import InviteEmployeeModal from "./components/InviteEmployeeModal";
@@ -464,7 +464,7 @@ function AppShell() {
       }).select());
       setLeaveRequests([...leaveRequests, leaveRequestFromApi(r[0])].sort((a, b) => a.startDate.localeCompare(b.startDate)));
       setLeaveRequestModal(false);
-      sendChatMessage(`📅 ${profile?.fullName || "Valaki"} szabadságot kért: ${startDate} – ${endDate} (${days} munkanap)`);
+      sendChatMessage(`${profile?.fullName || "Valaki"} szabadságot kért: ${startDate} – ${endDate} (${days} munkanap)`);
     });
   }
   async function decideLeaveRequest(id, status) {
@@ -474,7 +474,7 @@ function AppShell() {
       setLeaveRequests(leaveRequests.map((lr) => (lr.id === id ? updated : lr)));
       if (status === "Jóváhagyva") {
         const reqUser = users.find((u) => u.id === updated.userId);
-        sendChatMessage(`✅ ${reqUser?.fullName || "Kolléga"} szabadsága jóváhagyva: ${updated.startDate} – ${updated.endDate}`);
+        sendChatMessage(`${reqUser?.fullName || "Kolléga"} szabadsága jóváhagyva: ${updated.startDate} – ${updated.endDate}`);
       }
     });
   }
@@ -1383,7 +1383,7 @@ function AppShell() {
         className="chat-fab"
         onClick={() => { setChatOpen((o) => !o); if (!chatOpen) markChatRead(); }}
       >
-        💬
+        <ChatIcon width={22} height={22} />
         {chatUnread > 0 && <span className="chat-fab-badge">{chatUnread > 9 ? "9+" : chatUnread}</span>}
       </button>
       {chatOpen && (

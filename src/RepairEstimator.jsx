@@ -6,6 +6,7 @@ import { PROBLEM_TAGS } from "./lib/utils";
 import { t } from "./lib/i18n";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
+import { CallIcon, PinIcon } from "./components/icons";
 
 const SITE = "https://phonestock-manager.netlify.app";
 const OTHER_PROBLEMS = PROBLEM_TAGS.filter((tag) => !PRICED_PROBLEMS.includes(tag));
@@ -174,8 +175,8 @@ export default function RepairEstimator({ lang = "hu" }) {
             <div className="bb-done-icon">✓</div>
             <h1>{s.repairDoneTitle}</h1>
             <div className="bb-done-promises">
-              <div>{s.repairDoneCall}</div>
-              <div>{s.repairDoneVisit}</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}><CallIcon width={13} height={13} /> {s.repairDoneCall}</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}><PinIcon width={14} height={14} /> {s.repairDoneVisit}</div>
             </div>
             <a href={lang === "ro" ? "/ro/telefoane" : "/"} className="pub-ask-btn" style={{ marginTop: 18 }}>{s.backToHome}</a>
           </div>

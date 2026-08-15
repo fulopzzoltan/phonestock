@@ -192,7 +192,8 @@ tr:hover td{background:#FAFAFA}
 .t-card-kind-prep .t-kind-pill{background:#F1F5F9;color:#475569}
 .t-card-kind-warranty{background:#FDF2F8;border-left:3px solid #DB2777}
 .t-card-kind-warranty .t-kind-pill{background:#FCE7F3;color:#BE185D}
-.t-kind-pill{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;margin-bottom:4px}
+.t-kind-pill{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;margin-bottom:4px}
+.t-kind-pill svg{flex-shrink:0}
 .t-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .t-sn{font-size:10px;font-weight:700;color:#9CA3AF;font-family:'JetBrains Mono',monospace}
 .t-loc{font-size:10px;padding:1px 6px;border-radius:999px;background:#F0FDF4;color:#15803D;font-weight:600;border:1px solid #BBF7D0}

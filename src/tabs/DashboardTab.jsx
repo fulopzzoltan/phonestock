@@ -1,6 +1,13 @@
 import { money } from "../lib/utils";
 import StockValueChart from "../components/StockValueChart";
 import MonthlyTrendChart from "../components/MonthlyTrendChart";
+import { PhoneCaseIcon, ServiceIcon, FinanceIcon, PartsIcon, CustomersIcon } from "../components/icons";
+
+const SectionHead = ({ icon: Icon, children }) => (
+  <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>
+    <Icon width={14} height={14} />{children}
+  </div>
+);
 
 export default function DashboardTab({
   effectiveLocFilter, locName, stockStats, stockHistory, svcStats,
@@ -13,7 +20,7 @@ export default function DashboardTab({
         <div><div className="page-title">Áttekintés</div><div className="page-sub">{effectiveLocFilter === "all" ? "Mindkét helyszín" : locName(effectiveLocFilter)}</div></div>
       </div>
 
-      <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>📱 Telefonok</div>
+      <SectionHead icon={PhoneCaseIcon}>Telefonok</SectionHead>
       <div className="statrow c4">
         <div className="statcard accent"><div className="lbl">Raktáron</div><div className="val">{stockStats.count} db</div></div>
         <div className="statcard"><div className="lbl">Készlet értéke</div><div className="val">{money(stockStats.value)}</div></div>
@@ -24,7 +31,7 @@ export default function DashboardTab({
         <StockValueChart history={stockHistory} />
       </div>
 
-      <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>🔧 Szerviz</div>
+      <SectionHead icon={ServiceIcon}>Szerviz</SectionHead>
       <div className={`statrow ${svcStats.ownStock > 0 ? "c6" : "c5"}`} style={{ marginBottom: 26 }}>
         <div className="statcard accent"><div className="lbl">Összes</div><div className="val">{svcStats.total}</div></div>
         <div className="statcard"><div className="lbl">Aktív (ügyfél)</div><div className="val">{svcStats.active}</div></div>
@@ -73,7 +80,7 @@ export default function DashboardTab({
         </div>
       </div>
 
-      <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>💰 Bevételek &amp; Kiadások</div>
+      <SectionHead icon={FinanceIcon}>Bevételek &amp; Kiadások</SectionHead>
       {monthlyTrendSummary && (
         <div style={{ fontSize: 13, color: "#374151", margin: "0 0 10px 2px", lineHeight: 1.6 }}>
           Ez a hónap eddig: <b>{money(currentMonthLive.revenue)}</b> — {monthlyTrendSummary.dayOfMonth} nap alatt. Múlt hónap ilyenkor ({monthlyTrendSummary.dayOfMonth}. napon): {money(monthlyTrendSummary.projected)} volt →{" "}
@@ -92,13 +99,13 @@ export default function DashboardTab({
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
         <div>
-          <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>🔩 Alkatrészek</div>
+          <SectionHead icon={PartsIcon}>Alkatrészek</SectionHead>
           <div className="statrow c1">
             <div className="statcard accent"><div className="lbl">Raktár értéke</div><div className="val">{money(partsStats.value)}</div></div>
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>👤 Kliensek</div>
+          <SectionHead icon={CustomersIcon}>Kliensek</SectionHead>
           <div className="statrow c3">
             <div className="statcard accent"><div className="lbl">Ügyfelek</div><div className="val">{customerStats.count}</div></div>
             <div className="statcard"><div className="lbl">Bevétel tőlük</div><div className="val" style={{ color: "#15803D" }}>{money(customerStats.revenue)}</div></div>

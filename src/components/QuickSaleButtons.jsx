@@ -21,7 +21,7 @@ export default function QuickSaleButtons({ locations, defaultLocId, onAdd, busy 
 
   return (
     <div style={{ background: "#fff", border: "1px solid #E5E7EB", borderRadius: 14, padding: "14px 18px", marginBottom: 16 }}>
-      <div style={{ fontSize: 13, fontWeight: 700, color: "#111827", marginBottom: 10 }}>⚡ Gyors eladás</div>
+      <div style={{ fontSize: 13, fontWeight: 700, color: "#111827", marginBottom: 10 }}>Gyors eladás</div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
         {QUICK_SALES.map((item) => (
           <button

@@ -5,6 +5,7 @@ import { BUYBACK_CONDITION_QUESTIONS as CONDITION_QUESTIONS } from "./lib/utils"
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 import BuybackPriceBar from "./components/BuybackPriceBar";
+import { ClockIcon, FinanceIcon, CallIcon, PinIcon, PartsIcon } from "./components/icons";
 
 const COLORS = ["Fekete", "Fehér", "Kék", "Zöld", "Ezüst", "Egyéb"];
 
@@ -151,9 +152,9 @@ export default function BuybackFlow() {
             <h1>Szuper ajánlatot kaptál!</h1>
             <div className="bb-done-price">{done.price.toLocaleString("hu-HU")} Lei</div>
             <div className="bb-done-promises">
-              <div>⏱ Feldolgozás <b>1 munkanapon belül</b></div>
-              <div>💶 Fizetés <b>{deliveryMethod === "Személyes átadás" ? "azonnal, helyben" : "átvétel után"}</b></div>
-              <div>📞 Hamarosan hívunk, hogy egyeztessük a részleteket</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}><ClockIcon width={14} height={14} /> Feldolgozás <b>1 munkanapon belül</b></div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}><FinanceIcon width={14} height={14} /> Fizetés <b>{deliveryMethod === "Személyes átadás" ? "azonnal, helyben" : "átvétel után"}</b></div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}><CallIcon width={13} height={13} /> Hamarosan hívunk, hogy egyeztessük a részleteket</div>
             </div>
             <a href="/" className="pub-ask-btn" style={{ marginTop: 18 }}>Vissza a főoldalra</a>
           </div>
@@ -267,18 +268,18 @@ export default function BuybackFlow() {
             <h1 className="bb-h1">Ajánlatunk erre a készülékre</h1>
             <div className="bb-offer-price">{pricing.price.toLocaleString("hu-HU")} Lei</div>
             <div className="bb-done-promises">
-              <div>⏱ Feldolgozás <b>1 munkanapon belül</b></div>
-              <div>💶 Fizetés <b>átvételkor</b></div>
-              <div>📞 Utána hívunk egyeztetni</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}><ClockIcon width={14} height={14} /> Feldolgozás <b>1 munkanapon belül</b></div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}><FinanceIcon width={14} height={14} /> Fizetés <b>átvételkor</b></div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}><CallIcon width={13} height={13} /> Utána hívunk egyeztetni</div>
             </div>
             <div className="bb-label" style={{ marginTop: 18 }}>Hogyan add le a készüléket?</div>
             <div className="bb-delivery-row">
               <button type="button" className={`bb-delivery-card featured${deliveryMethod === "Személyes átadás" ? " active" : ""}`} onClick={() => setDeliveryMethod("Személyes átadás")}>
-                <div className="bb-delivery-title">📍 Személyes átadás</div>
+                <div className="bb-delivery-title" style={{ display: "flex", alignItems: "center", gap: 6 }}><PinIcon width={14} height={14} /> Személyes átadás</div>
                 <div className="bb-delivery-desc">Hozd be Gyimesbe vagy Szentgyörgyre, és <b>azonnal</b> viheted a pénzt.</div>
               </button>
               <button type="button" className={`bb-delivery-card${deliveryMethod === "Postai" ? " active" : ""}`} onClick={() => setDeliveryMethod("Postai")}>
-                <div className="bb-delivery-title">📦 Postai küldés</div>
+                <div className="bb-delivery-title" style={{ display: "flex", alignItems: "center", gap: 6 }}><PartsIcon width={14} height={14} /> Postai küldés</div>
                 <div className="bb-delivery-desc">Egyeztetünk telefonon a részletekről.</div>
               </button>
             </div>
