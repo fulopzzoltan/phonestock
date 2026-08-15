@@ -130,12 +130,16 @@ function AppShell() {
   const [repairLeadConvert, setRepairLeadConvert] = useState(null); // lead obj being converted to a ticket
 
   function printTicketSlip(ticket) {
+    setPrintReceipt(null);
+    setPrintWarranty(null);
     setPrintTicket(ticket);
     requestAnimationFrame(() => {
       window.print();
     });
   }
   function printReceiptSlip(tx) {
+    setPrintTicket(null);
+    setPrintWarranty(null);
     setPrintReceipt(tx);
     requestAnimationFrame(() => {
       window.print();
@@ -147,6 +151,8 @@ function AppShell() {
       printTicketSlip(tickets.find((t) => t.id === w.refId));
       return;
     }
+    setPrintTicket(null);
+    setPrintReceipt(null);
     setPrintWarranty(w);
     requestAnimationFrame(() => window.print());
   }
