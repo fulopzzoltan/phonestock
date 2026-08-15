@@ -317,27 +317,38 @@ function AppShell() {
   async function hardDeleteAllTrash() {
     await withBusy(async () => {
       const errors = [];
+      const CHUNK = 100;
+      const chunks = (arr) => { const out = []; for (let i = 0; i < arr.length; i += CHUNK) out.push(arr.slice(i, i + CHUNK)); return out; };
+
       const productIds = trash.products.map((p) => p.id);
       if (productIds.length > 0) {
         try {
-          const { data: photos } = await supabase.from("product_photos").select("storage_path").in("product_id", productIds);
-          if (photos && photos.length > 0) {
-            await supabase.storage.from("product-photos").remove(photos.map((p) => p.storage_path)).catch(() => {});
+          for (const ids of chunks(productIds)) {
+            const { data: photos } = await supabase.from("product_photos").select("storage_path").in("product_id", ids);
+            if (photos && photos.length > 0) {
+              await supabase.storage.from("product-photos").remove(photos.map((p) => p.storage_path)).catch(() => {});
+            }
+            unwrap(await supabase.from("products").delete().in("id", ids));
           }
-          unwrap(await supabase.from("products").delete().in("id", productIds));
         } catch (e) { errors.push("Telefonok: " + e.message); }
       }
       if (trash.transactions.length > 0) {
-        try { unwrap(await supabase.from("transactions").delete().in("id", trash.transactions.map((t) => t.id))); }
-        catch (e) { errors.push("Tranzakciók: " + e.message); }
+        try {
+          for (const ids of chunks(trash.transactions.map((t) => t.id))) unwrap(await supabase.from("transactions").delete().in("id", ids));
+        } catch (e) { errors.push("Tranzakciók: " + e.message); }
       }
       if (trash.tickets.length > 0) {
-        try { unwrap(await supabase.from("service_tickets").delete().in("id", trash.tickets.map((t) => t.id))); }
-        catch (e) { errors.push("Munkalapok: " + e.message); }
+        try {
+          for (const ids of chunks(trash.tickets.map((t) => t.id))) unwrap(await supabase.from("service_tickets").delete().in("id", ids));
+        } catch (e) { errors.push("Munkalapok: " + e.message); }
       }
       if (trash.parts.length > 0) {
-        const { error } = await supabase.from("parts").delete().in("id", trash.parts.map((p) => p.id));
-        if (error) errors.push(error.code === "23503" ? "Alkatrészek: néhány tétel nem törölhető, mert szerviz munkalaphoz van kötve." : error.message);
+        try {
+          for (const ids of chunks(trash.parts.map((p) => p.id))) {
+            const { error } = await supabase.from("parts").delete().in("id", ids);
+            if (error) throw error;
+          }
+        } catch (e) { errors.push(e.code === "23503" ? "Alkatrészek: néhány tétel nem törölhető, mert szerviz munkalaphoz van kötve." : "Alkatrészek: " + e.message); }
       }
       await loadTrash();
       if (errors.length > 0) throw new Error(errors.join(" "));
