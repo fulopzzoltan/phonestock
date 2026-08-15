@@ -58,7 +58,7 @@ export default function StockTab({
       </div>
 
       <div className="statrow c4">
-        <div className="statcard accent"><div className="lbl">Raktáron</div><div className="val">{stockStats.count} db</div></div>
+        <div className="statcard"><div className="lbl">Raktáron</div><div className="val">{stockStats.count} db</div></div>
         <div className="statcard"><div className="lbl">Készlet értéke</div><div className="val">{money(stockStats.value)}</div></div>
         <div className="statcard"><div className="lbl">Besz. érték</div><div className="val">{money(stockStats.cost)}</div></div>
         <div className="statcard"><div className="lbl">Várható profit</div><div className="val" style={{ color: "#22C55E" }}>{money(stockStats.profit)}</div></div>

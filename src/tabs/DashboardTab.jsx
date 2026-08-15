@@ -61,7 +61,7 @@ export default function DashboardTab({
         </div>
       )}
       <div className="statrow c4">
-        <div className="statcard accent"><div className="lbl">Raktáron</div><div className="val">{stockStats.count} db</div></div>
+        <div className="statcard"><div className="lbl">Raktáron</div><div className="val">{stockStats.count} db</div></div>
         <div className="statcard">
           <div className="lbl">Készlet értéke</div>
           <div className="val">{money(stockStats.value)}</div>
@@ -76,7 +76,7 @@ export default function DashboardTab({
 
       <SectionHead icon={ServiceIcon}>Szerviz</SectionHead>
       <div className={`statrow ${svcStats.ownStock > 0 ? "c6" : "c5"}`} style={{ marginBottom: 26 }}>
-        <div className="statcard accent"><div className="lbl">Összes</div><div className="val">{svcStats.total}</div></div>
+        <div className="statcard"><div className="lbl">Összes</div><div className="val">{svcStats.total}</div></div>
         <div className="statcard"><div className="lbl">Aktív (ügyfél)</div><div className="val">{svcStats.active}</div></div>
         <div className="statcard"><div className="lbl">Kész (ügyfél)</div><div className="val" style={{ color: "#15803D" }}>{svcStats.kesz}</div></div>
         <div className="statcard"><div className="lbl">Sikertelen (ügyfél)</div><div className="val" style={{ color: "#9D174D" }}>{svcStats.sikertelen}</div></div>
@@ -134,7 +134,7 @@ export default function DashboardTab({
         <MonthlyTrendChart summaries={monthlySummaries} liveMonth={currentMonthLive} locations={locations} locFilter={effectiveLocFilter} locName={locName} />
       </div>
       <div className="statrow c4" style={{ marginBottom: 26 }}>
-        <div className="statcard accent"><div className="lbl">Tranzakciók</div><div className="val">{txStats.count}</div></div>
+        <div className="statcard"><div className="lbl">Tranzakciók</div><div className="val">{txStats.count}</div></div>
         <div className="statcard">
           <div className="lbl">Bevétel</div>
           <div className="val" style={{ color: "#15803D" }}>{money(txStats.income)}</div>
@@ -148,13 +148,13 @@ export default function DashboardTab({
         <div>
           <SectionHead icon={PartsIcon}>Alkatrészek</SectionHead>
           <div className="statrow c1">
-            <div className="statcard accent"><div className="lbl">Raktár értéke</div><div className="val">{money(partsStats.value)}</div></div>
+            <div className="statcard"><div className="lbl">Raktár értéke</div><div className="val">{money(partsStats.value)}</div></div>
           </div>
         </div>
         <div>
           <SectionHead icon={CustomersIcon}>Kliensek</SectionHead>
           <div className="statrow c3">
-            <div className="statcard accent"><div className="lbl">Ügyfelek</div><div className="val">{customerStats.count}</div></div>
+            <div className="statcard"><div className="lbl">Ügyfelek</div><div className="val">{customerStats.count}</div></div>
             <div className="statcard"><div className="lbl">Bevétel tőlük</div><div className="val" style={{ color: "#15803D" }}>{money(customerStats.revenue)}</div></div>
           </div>
         </div>

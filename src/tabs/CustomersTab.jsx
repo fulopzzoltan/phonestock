@@ -40,7 +40,7 @@ export default function CustomersTab({
       </div>
 
       <div className="statrow c3">
-        <div className="statcard accent"><div className="lbl">Ügyfelek</div><div className="val">{customerStats.count} db</div></div>
+        <div className="statcard"><div className="lbl">Ügyfelek</div><div className="val">{customerStats.count} db</div></div>
         <div className="statcard"><div className="lbl">Összes bevétel</div><div className="val">{money(customerStats.revenue)}</div></div>
         <div className="statcard"><div className="lbl">Átlag / ügyfél</div><div className="val">{money(customerStats.avg)}</div></div>
       </div>

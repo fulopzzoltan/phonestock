@@ -43,7 +43,7 @@ export default function PartsTab({
       </div>
 
       <div className="statrow c2">
-        <div className="statcard accent"><div className="lbl">Tételek</div><div className="val">{filteredParts.length} db</div></div>
+        <div className="statcard"><div className="lbl">Tételek</div><div className="val">{filteredParts.length} db</div></div>
         <div className="statcard"><div className="lbl">Készlet érték</div><div className="val">{money(partsStats.value)}</div></div>
       </div>
 

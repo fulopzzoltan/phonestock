@@ -34,7 +34,7 @@ export default function WarrantyTab({
       </div>
 
       <div className="statrow c2">
-        <div className="statcard accent"><div className="lbl">Aktív garancia</div><div className="val">{activeWarranties.length} db</div></div>
+        <div className="statcard"><div className="lbl">Aktív garancia</div><div className="val">{activeWarranties.length} db</div></div>
         <div className="statcard"><div className="lbl">Lejár 14 napon belül</div><div className="val" style={{ color: expiringSoon > 0 ? "#DC2626" : undefined }}>{expiringSoon} db</div></div>
       </div>
 
