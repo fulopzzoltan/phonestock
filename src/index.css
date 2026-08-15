@@ -130,6 +130,8 @@ tr:hover td{background:#FAFAFA}
 .seg button.active{background:#fff;color:var(--accent-dark);box-shadow:0 1px 3px rgba(0,0,0,.1)}
 .toggle-link{color:#6B7280;font-size:12px;cursor:pointer;text-decoration:underline;margin-top:14px;display:inline-block}
 .toggle-link:hover{color:var(--accent-dark)}
+.history-toggle{display:flex;align-items:center;gap:8px;width:100%;background:#fff;border:1px solid #EEF0F2;border-radius:14px;padding:12px 16px;font-family:inherit;font-size:13px;font-weight:600;color:#374151;cursor:pointer;box-shadow:var(--shadow-card)}
+.history-toggle:hover{border-color:#D1D5DB}
 .quick-sale-btn{display:inline-flex;align-items:center;gap:6px;background:#F7F8FA;border:1px solid #E5E7EB;border-radius:999px;padding:9px 15px;font-family:inherit;font-size:12.5px;font-weight:600;color:#374151;cursor:pointer;transition:background .12s,border-color .12s,color .12s}
 .quick-sale-btn:hover{background:#F0FDF4;border-color:#BBF7D0;color:var(--accent-dark)}
 .quick-sale-btn:disabled{opacity:.6;cursor:default}

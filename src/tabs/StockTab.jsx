@@ -4,6 +4,7 @@ import { SearchIcon, EditIcon, ListViewIcon, GridViewIcon, PhoneCaseIcon } from 
 import ConfirmDelete from "../components/ConfirmDelete";
 import Thumb from "../components/Thumb";
 import { EmptyState, LoadingState } from "../components/EmptyState";
+import HistorySection from "../components/HistorySection";
 
 const SORTS = [
   { key: "recent", label: "Legújabb elöl" },
@@ -25,7 +26,7 @@ function sortItems(items, sortBy) {
 export default function StockTab({
   effectiveLocFilter, locName, busy, setStockModal, search, setSearch, loadingData, filteredStock,
   locations, reserveLocId, setProductDetailId, deleteProduct, setSellModal, stockStats,
-  showSold, setShowSold, soldStock,
+  soldStock,
 }) {
   const [condFilter, setCondFilter] = useState("all"); // all | New | Refurbished
   const [sortBy, setSortBy] = useState("recent");
@@ -161,37 +162,38 @@ export default function StockTab({
         })
       )}
 
-      <span className="toggle-link" onClick={() => setShowSold((v) => !v)}>
-        {showSold ? "Eladott telefonok elrejtése" : `Eladott telefonok megtekintése (${soldStock.length})`}
-      </span>
-      {showSold && (
-        <div className="tw" style={{ marginTop: 12 }}>
-          {soldStock.length === 0 ? <EmptyState icon={PhoneCaseIcon}>Nincs eladott telefon.</EmptyState> : (
-            <table>
-              <thead><tr><th>Termék</th><th>Helyszín</th><th>Eladva</th><th>Vevő</th><th>Ár</th></tr></thead>
-              <tbody>
-                {soldStock.map((i) => (
-                  <tr key={i.id} style={{ cursor: "pointer" }} onClick={() => setProductDetailId(i.id)}>
-                    <td>
-                      <div className="stk-row">
-                        <Thumb brand={i.brand} />
-                        <div>
-                          <div className="stk-name">{displayName(i.brand, i.model)}</div>
-                          <div className="stk-sub">{[phoneCode(i.productNo), i.imei].filter(Boolean).join(" · ") || "—"}</div>
-                        </div>
+      <HistorySection
+        icon={PhoneCaseIcon}
+        label="Eladott telefonok"
+        items={soldStock}
+        searchPlaceholder="Keresés márka, modell, vevő szerint..."
+        filterFn={(i, q) => [i.brand, i.model, i.saleTx?.customerName, phoneCode(i.productNo)].filter(Boolean).join(" ").toLowerCase().includes(q)}
+      >
+        {(rows) => (
+          <table>
+            <thead><tr><th>Termék</th><th>Helyszín</th><th>Eladva</th><th>Vevő</th><th>Ár</th></tr></thead>
+            <tbody>
+              {rows.map((i) => (
+                <tr key={i.id} style={{ cursor: "pointer" }} onClick={() => setProductDetailId(i.id)}>
+                  <td>
+                    <div className="stk-row">
+                      <Thumb brand={i.brand} />
+                      <div>
+                        <div className="stk-name">{displayName(i.brand, i.model)}</div>
+                        <div className="stk-sub">{[phoneCode(i.productNo), i.imei].filter(Boolean).join(" · ") || "—"}</div>
                       </div>
-                    </td>
-                    <td><span className="badge-loc">{locName(i.locationId)}</span></td>
-                    <td className="mono">{i.saleTx?.date || "—"}</td>
-                    <td>{i.saleTx?.customerName || "—"}</td>
-                    <td className="mono" style={{ fontWeight: 700 }}>{money(i.salePrice)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
+                    </div>
+                  </td>
+                  <td><span className="badge-loc">{locName(i.locationId)}</span></td>
+                  <td className="mono">{i.saleTx?.date || "—"}</td>
+                  <td>{i.saleTx?.customerName || "—"}</td>
+                  <td className="mono" style={{ fontWeight: 700 }}>{money(i.salePrice)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </HistorySection>
     </>
   );
 }

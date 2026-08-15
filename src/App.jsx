@@ -97,8 +97,6 @@ function AppShell() {
   const [detailId, setDetailId] = useState(null);
   const [productDetailId, setProductDetailId] = useState(null);
   const [partDetailId, setPartDetailId] = useState(null);
-  const [showHandedOver, setShowHandedOver] = useState(false);
-  const [showSold, setShowSold] = useState(false);
   const [customerKey, setCustomerKey] = useState(null);
   const [customerModal, setCustomerModal] = useState(null);
   const [printTicket, setPrintTicket] = useState(null);
@@ -1073,31 +1071,33 @@ function AppShell() {
     avg: customers.length ? customers.reduce((s, c) => s + c.purchaseTotal + c.ticketTotal, 0) / customers.length : 0,
   }), [customers]);
 
-  const activeWarranties = useMemo(() => {
+  function buildWarrantyItems(active) {
     const saleItems = transactions
-      .filter((t) => t.category === "Készlet" && t.warranty && isWarrantyActive(t.date, t.warranty))
+      .filter((t) => t.category === "Készlet" && t.warranty && isWarrantyActive(t.date, t.warranty) === active)
       .map((t) => ({
         key: `sale-${t.id}`, kind: "sale", source: "linked", refId: t.id,
         customerName: t.customerName, customerPhone: t.customerPhone,
         label: t.description, warranty: t.warranty, from: t.date, expiry: warrantyExpiry(t.date, t.warranty), locationId: t.locationId,
       }));
     const serviceItems = tickets
-      .filter((t) => t.subStatus === "Átadva" && t.warranty && isWarrantyActive(t.dateOut, t.warranty))
+      .filter((t) => t.subStatus === "Átadva" && t.warranty && isWarrantyActive(t.dateOut, t.warranty) === active)
       .map((t) => ({
         key: `svc-${t.id}`, kind: "service", source: "linked", refId: t.id,
         customerName: t.customerName, customerPhone: t.customerPhone,
         label: [t.brand, t.model].filter(Boolean).join(" "), warranty: t.warranty, from: t.dateOut, expiry: warrantyExpiry(t.dateOut, t.warranty), locationId: t.locationId,
       }));
     const manualItems = warranties
-      .filter((w) => isWarrantyActive(w.fromDate, w.warranty))
+      .filter((w) => isWarrantyActive(w.fromDate, w.warranty) === active)
       .map((w) => ({
         key: `manual-${w.id}`, kind: w.kind, source: "manual", refId: w.id,
         customerName: w.customerName, customerPhone: w.customerPhone,
         label: w.label, warranty: w.warranty, from: w.fromDate, expiry: warrantyExpiry(w.fromDate, w.warranty), locationId: w.locationId,
         note: w.note,
       }));
-    return [...saleItems, ...serviceItems, ...manualItems].sort((a, b) => (a.expiry || "").localeCompare(b.expiry || ""));
-  }, [transactions, tickets, warranties]);
+    return [...saleItems, ...serviceItems, ...manualItems];
+  }
+  const activeWarranties = useMemo(() => buildWarrantyItems(true).sort((a, b) => (a.expiry || "").localeCompare(b.expiry || "")), [transactions, tickets, warranties]);
+  const expiredWarranties = useMemo(() => buildWarrantyItems(false).sort((a, b) => (b.expiry || "").localeCompare(a.expiry || "")), [transactions, tickets, warranties]);
   const filteredWarranties = warrantyFilter === "all" ? activeWarranties : activeWarranties.filter((w) => w.kind === warrantyFilter);
 
   const todoItems = useMemo(() => {
@@ -1161,6 +1161,12 @@ function AppShell() {
   const detailTicket = detailId ? tickets.find((t) => t.id === detailId) : null;
   const detailProduct = productDetailId ? stock.find((i) => i.id === productDetailId) : null;
   const detailPart = partDetailId ? parts.find((p) => p.id === partDetailId) : null;
+  const partUsage = useMemo(() => {
+    if (!partDetailId) return [];
+    return tickets
+      .flatMap((t) => (t.usedParts || []).filter((sp) => sp.partId === partDetailId).map((sp) => ({ ...sp, ticket: t })))
+      .sort((a, b) => (b.ticket.dateIn || "").localeCompare(a.ticket.dateIn || ""));
+  }, [tickets, partDetailId]);
   const editingTicket = ticketModal && ticketModal !== "add" ? ticketModal : null;
 
   const noLocationAssigned = !isAdmin && !myLocationId;
@@ -1196,7 +1202,7 @@ function AppShell() {
             search={search} setSearch={setSearch} loadingData={loadingData} filteredStock={filteredStock}
             locations={locations} reserveLocId={reserveLocId} setProductDetailId={setProductDetailId}
             deleteProduct={deleteProduct} setSellModal={setSellModal} stockStats={stockStats}
-            showSold={showSold} setShowSold={setShowSold} soldStock={soldStock}
+            soldStock={soldStock}
           />
         )}
 
@@ -1222,7 +1228,7 @@ function AppShell() {
             effectiveLocFilter={effectiveLocFilter} locName={locName} busy={busy} setTicketModal={setTicketModal}
             svcSearch={svcSearch} setSvcSearch={setSvcSearch} svcKindFilter={svcKindFilter} setSvcKindFilter={setSvcKindFilter}
             loadingData={loadingData} activeTickets={activeTickets} setDetailId={setDetailId}
-            showHandedOver={showHandedOver} setShowHandedOver={setShowHandedOver} handedOverTickets={handedOverTickets}
+            handedOverTickets={handedOverTickets}
             svcStats={svcStats}
           />
         )}
@@ -1248,6 +1254,7 @@ function AppShell() {
             busy={busy} setWarrantyModal={setWarrantyModal} activeWarranties={activeWarranties}
             warrantyFilter={warrantyFilter} setWarrantyFilter={setWarrantyFilter} loadingData={loadingData}
             filteredWarranties={filteredWarranties} setWarrantyDetailKey={setWarrantyDetailKey} locName={locName}
+            expiredWarranties={expiredWarranties}
           />
         )}
 
@@ -1382,6 +1389,9 @@ function AppShell() {
           onClose={() => setPartDetailId(null)}
           onEdit={(p) => { setPartDetailId(null); setPartModal(p); }}
           onDelete={(id) => { deletePart(id); setPartDetailId(null); }}
+          partUsage={partUsage}
+          onOpenTicket={(id) => { setPartDetailId(null); setDetailId(id); }}
+          locName={locName}
         />
       )}
       {detailCustomer && (
@@ -1405,7 +1415,7 @@ function AppShell() {
         <SaleReceiptPanel tx={receiptTx} locName={locName} onClose={() => setReceiptTxId(null)} onPrint={printReceiptSlip} />
       )}
       {warrantyDetailKey && (() => {
-        const w = activeWarranties.find((x) => x.key === warrantyDetailKey);
+        const w = activeWarranties.find((x) => x.key === warrantyDetailKey) || expiredWarranties.find((x) => x.key === warrantyDetailKey);
         if (!w) return null;
         return (
           <WarrantyDetailPanel

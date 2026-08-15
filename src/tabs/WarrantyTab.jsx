@@ -4,12 +4,13 @@ import { SearchIcon, WarrantyIcon } from "../components/icons";
 import CallLink from "../components/CallLink";
 import Thumb from "../components/Thumb";
 import { EmptyState, LoadingState } from "../components/EmptyState";
+import HistorySection from "../components/HistorySection";
 
 const FILTERS = [["all", "Mind"], ["sale", "Telefon garancia"], ["service", "Szerviz garancia"]];
 
 export default function WarrantyTab({
   busy, setWarrantyModal, activeWarranties, warrantyFilter, setWarrantyFilter, loadingData, filteredWarranties,
-  setWarrantyDetailKey, locName,
+  setWarrantyDetailKey, locName, expiredWarranties,
 }) {
   const [search, setSearch] = useState("");
 
@@ -102,6 +103,32 @@ export default function WarrantyTab({
           </>
         )}
       </div>
+
+      <HistorySection
+        icon={WarrantyIcon}
+        label="Lejárt garanciák"
+        items={expiredWarranties}
+        searchPlaceholder="Keresés ügyfél vagy termék szerint..."
+        filterFn={(w, q) => [w.customerName, w.label].filter(Boolean).join(" ").toLowerCase().includes(q)}
+      >
+        {(rows) => (
+          <table>
+            <thead><tr><th>Típus</th><th>Ügyfél</th><th>Termék / Eszköz</th><th>Garancia</th><th>Lejárt</th><th>Helyszín</th></tr></thead>
+            <tbody>
+              {rows.map((w) => (
+                <tr key={w.key} style={{ cursor: "pointer" }} onClick={() => setWarrantyDetailKey(w.key)}>
+                  <td>{w.kind === "sale" ? <span className="badge-income">Eladás</span> : <span className="badge-loc">Szerviz</span>}</td>
+                  <td style={{ fontWeight: 600 }}>{w.customerName || "—"}</td>
+                  <td><div className="stk-row"><Thumb brand={w.label || "?"} size="sm" /><div>{w.label || "—"}</div></div></td>
+                  <td><span className="gar-pill">{w.warranty}</span></td>
+                  <td className="mono" style={{ color: "#9CA3AF" }}>{w.expiry}</td>
+                  <td><span className="badge-loc">{locName(w.locationId)}</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </HistorySection>
     </>
   );
 }

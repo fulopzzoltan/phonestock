@@ -3,11 +3,12 @@ import { money, STATUSES, statusLabel, displayName, ticketCode } from "../lib/ut
 import { SearchIcon, ChevronDownIcon, ServiceIcon } from "../components/icons";
 import TicketCard from "../components/TicketCard";
 import Thumb from "../components/Thumb";
-import { EmptyState, LoadingState } from "../components/EmptyState";
+import { LoadingState } from "../components/EmptyState";
+import HistorySection from "../components/HistorySection";
 
 export default function ServiceTab({
   effectiveLocFilter, locName, busy, setTicketModal, svcSearch, setSvcSearch, svcKindFilter, setSvcKindFilter,
-  loadingData, activeTickets, setDetailId, showHandedOver, setShowHandedOver, handedOverTickets, svcStats,
+  loadingData, activeTickets, setDetailId, handedOverTickets, svcStats,
 }) {
   const [showFailedInCol, setShowFailedInCol] = useState(false);
   return (
@@ -82,38 +83,39 @@ export default function ServiceTab({
           </div>
         </div>
       )}
-      <span className="toggle-link" onClick={() => setShowHandedOver((v) => !v)}>
-        {showHandedOver ? "Átadott munkalapok elrejtése" : `Átadott munkalapok megtekintése (${handedOverTickets.length})`}
-      </span>
-      {showHandedOver && (
-        <div className="tw" style={{ marginTop: 12 }}>
-          {handedOverTickets.length === 0 ? <EmptyState icon={ServiceIcon}>Nincs átadott munkalap.</EmptyState> : (
-            <table>
-              <thead><tr><th>Eszköz</th><th>Helyszín</th><th>Bejött</th><th>Átadva</th><th>Vevő</th><th>Díj</th></tr></thead>
-              <tbody>
-                {handedOverTickets.map((t) => (
-                  <tr key={t.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
-                    <td>
-                      <div className="stk-row">
-                        <Thumb brand={t.brand} />
-                        <div>
-                          <div className="stk-name">{displayName(t.brand, t.model) || "—"}</div>
-                          <div className="stk-sub">{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</div>
-                        </div>
+      <HistorySection
+        icon={ServiceIcon}
+        label="Átadott munkalapok"
+        items={handedOverTickets}
+        searchPlaceholder="Keresés vevő, márka, modell szerint..."
+        filterFn={(t, q) => [t.customerName, t.brand, t.model, ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))].filter(Boolean).join(" ").toLowerCase().includes(q)}
+      >
+        {(rows) => (
+          <table>
+            <thead><tr><th>Eszköz</th><th>Helyszín</th><th>Bejött</th><th>Átadva</th><th>Vevő</th><th>Díj</th></tr></thead>
+            <tbody>
+              {rows.map((t) => (
+                <tr key={t.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
+                  <td>
+                    <div className="stk-row">
+                      <Thumb brand={t.brand} />
+                      <div>
+                        <div className="stk-name">{displayName(t.brand, t.model) || "—"}</div>
+                        <div className="stk-sub">{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</div>
                       </div>
-                    </td>
-                    <td><span className="badge-loc">{locName(t.locationId)}</span></td>
-                    <td className="mono">{t.dateIn}</td>
-                    <td className="mono">{t.dateOut || "—"}</td>
-                    <td>{t.customerName}</td>
-                    <td className="mono" style={{ fontWeight: 700 }}>{money(t.price)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
+                    </div>
+                  </td>
+                  <td><span className="badge-loc">{locName(t.locationId)}</span></td>
+                  <td className="mono">{t.dateIn}</td>
+                  <td className="mono">{t.dateOut || "—"}</td>
+                  <td>{t.customerName}</td>
+                  <td className="mono" style={{ fontWeight: 700 }}>{money(t.price)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </HistorySection>
     </>
   );
 }

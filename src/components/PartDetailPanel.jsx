@@ -1,9 +1,9 @@
-import { money, partCode } from "../lib/utils";
+import { money, partCode, ticketCode } from "../lib/utils";
 import { CloseIcon } from "./icons";
 import Row from "./DetailRow";
 import ConfirmDelete from "./ConfirmDelete";
 
-export default function PartDetailPanel({ part, onClose, onEdit, onDelete, busy }) {
+export default function PartDetailPanel({ part, onClose, onEdit, onDelete, busy, partUsage = [], onOpenTicket, locName }) {
   return (
     <div className="detail-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="detail-panel">
@@ -29,6 +29,17 @@ export default function PartDetailPanel({ part, onClose, onEdit, onDelete, busy 
             <div className="dp-section-title">Pénzügyek</div>
             <Row k="Beérkezési ár" v={money(part.costPrice)} />
             <Row k="Raktár értéke" v={money((Number(part.costPrice) || 0) * (Number(part.quantity) || 0))} />
+          </div>
+          <div className="dp-section">
+            <div className="dp-section-title">Felhasználási előzmény</div>
+            {partUsage.length === 0 ? (
+              <div style={{ fontSize: 12.5, color: "#9CA3AF" }}>Ez az alkatrész még nem lett felhasználva munkalapon.</div>
+            ) : partUsage.map((sp) => (
+              <div key={sp.id} className="dp-row" style={{ cursor: "pointer" }} onClick={() => onOpenTicket(sp.ticket.id)}>
+                <span className="dp-key">{ticketCode(sp.ticket.ticketNo, locName(sp.ticket.intakeLocationId || sp.ticket.locationId))} — {[sp.ticket.brand, sp.ticket.model].filter(Boolean).join(" ")}</span>
+                <span className="dp-val">{sp.quantity} db · {sp.ticket.dateIn}</span>
+              </div>
+            ))}
           </div>
         </div>
         <div className="dp-actions">
