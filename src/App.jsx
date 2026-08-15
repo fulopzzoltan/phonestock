@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
 import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi } from "./lib/mappers";
-import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES } from "./lib/utils";
+import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
 import StockModal from "./components/StockModal";
@@ -887,7 +887,7 @@ function AppShell() {
     let s = stock.filter((i) => i.status === "in_stock");
     if (effectiveLocFilter !== "all") s = s.filter((i) => i.locationId === effectiveLocFilter || i.locationId === reserveLocId);
     const q = search.trim().toLowerCase();
-    if (q) s = s.filter((i) => [i.brand, i.model, i.imei, i.color].join(" ").toLowerCase().includes(q));
+    if (q) s = s.filter((i) => [i.brand, i.model, i.imei, i.color, phoneCode(i.productNo)].join(" ").toLowerCase().includes(q));
     return [...s].sort((a, b) => (a.brand || "").localeCompare(b.brand || "", "hu") || (a.model || "").localeCompare(b.model || "", "hu"));
   }, [stock, effectiveLocFilter, search, reserveLocId]);
 
@@ -901,7 +901,7 @@ function AppShell() {
     let s = stock.filter((i) => i.status === "sold");
     if (effectiveLocFilter !== "all") s = s.filter((i) => i.locationId === effectiveLocFilter || i.locationId === reserveLocId);
     const q = search.trim().toLowerCase();
-    if (q) s = s.filter((i) => [i.brand, i.model, i.imei, i.color].join(" ").toLowerCase().includes(q));
+    if (q) s = s.filter((i) => [i.brand, i.model, i.imei, i.color, phoneCode(i.productNo)].join(" ").toLowerCase().includes(q));
     const withTx = s.map((i) => ({ ...i, saleTx: txByProductId.get(i.id) || null }));
     return withTx.sort((a, b) => (b.saleTx?.date || "").localeCompare(a.saleTx?.date || ""));
   }, [stock, effectiveLocFilter, search, reserveLocId, txByProductId]);
