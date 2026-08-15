@@ -278,11 +278,30 @@ tr:hover td{background:#FAFAFA}
 @media (max-width:900px){
   .statrow.c4,.statrow.c5,.statrow.c6{grid-template-columns:repeat(2,1fr)}
 }
+/* Mobil kártyás fallback a sűrű táblázatokhoz (Bevételek/Kliensek/Garancia) —
+   640px alatt a <table> helyett ez fut, hogy pultnál ne kelljen oldalra görgetni. */
+.mob-cards{display:none}
+.mob-row{padding:12px 16px;border-bottom:1px solid #F3F4F6;cursor:pointer}
+.mob-row:last-child{border-bottom:none}
+.mob-row-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.mob-row-main{display:flex;align-items:center;gap:8px;min-width:0;font-weight:600;color:#111827;font-size:13px}
+.mob-row-main>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mob-row-amount{font-weight:700;font-family:'JetBrains Mono',monospace;font-size:13px;flex-shrink:0}
+.mob-row-sub{margin-top:5px;font-size:11.5px;color:#6B7280;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pgh{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 14px;background:#F9FAFB;border:1px solid #E5E7EB;cursor:pointer;user-select:none}
+.pgh-left{display:flex;align-items:center;gap:8px;min-width:0}
+.pgh-right{display:flex;gap:16px;align-items:center;flex-shrink:0}
+
 @media (max-width:640px){
   .shell{flex-direction:column}
   .sidebar{width:100%;height:auto;position:static}
   .row2,.row3{grid-template-columns:1fr}
   .statrow.c3,.statrow.c4,.statrow.c5,.statrow.c6{grid-template-columns:1fr 1fr}
+  .tw table{display:none}
+  .mob-cards{display:block}
+  .pgh{flex-wrap:wrap}
+  .pgh-right{gap:10px}
+  .pgh-hide-mob{display:none}
 }
 
 /* ====== TERMÉKFOTÓK ====== */

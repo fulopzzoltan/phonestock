@@ -59,26 +59,44 @@ export default function CustomersTab({
 
       <div className="tw">
         {loadingData ? <LoadingState /> : sorted.length === 0 ? <EmptyState icon={CustomersIcon}>Nincs ügyfél.</EmptyState> : (
-          <table>
-            <thead><tr><th>Név</th><th>Telefonszám</th><th>Típus</th><th>Vásárlások</th><th>Szerviz</th><th>Utolsó aktivitás</th></tr></thead>
-            <tbody>
+          <>
+            <table>
+              <thead><tr><th>Név</th><th>Telefonszám</th><th>Típus</th><th>Vásárlások</th><th>Szerviz</th><th>Utolsó aktivitás</th></tr></thead>
+              <tbody>
+                {sorted.map((c) => (
+                  <tr key={c.key} style={{ cursor: "pointer" }} onClick={() => setCustomerKey(c.key)}>
+                    <td>
+                      <div className="stk-row">
+                        <Thumb brand={c.name || "?"} />
+                        <div className="stk-name">{c.name || "Névtelen"}</div>
+                      </div>
+                    </td>
+                    <td className="mono">{c.phone || "—"}</td>
+                    <td>{c.isNew ? <span className="badge-loc">Új</span> : <span className="badge-income">Visszatérő</span>}</td>
+                    <td>{c.purchases.length} db · <span className="mono">{money(c.purchaseTotal)}</span></td>
+                    <td>{c.tickets.length} db · <span className="mono">{money(c.ticketTotal)}</span></td>
+                    <td className="mono" style={{ color: "#6B7280" }}>{c.lastActivity || "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="mob-cards">
               {sorted.map((c) => (
-                <tr key={c.key} style={{ cursor: "pointer" }} onClick={() => setCustomerKey(c.key)}>
-                  <td>
-                    <div className="stk-row">
-                      <Thumb brand={c.name || "?"} />
-                      <div className="stk-name">{c.name || "Névtelen"}</div>
-                    </div>
-                  </td>
-                  <td className="mono">{c.phone || "—"}</td>
-                  <td>{c.isNew ? <span className="badge-loc">Új</span> : <span className="badge-income">Visszatérő</span>}</td>
-                  <td>{c.purchases.length} db · <span className="mono">{money(c.purchaseTotal)}</span></td>
-                  <td>{c.tickets.length} db · <span className="mono">{money(c.ticketTotal)}</span></td>
-                  <td className="mono" style={{ color: "#6B7280" }}>{c.lastActivity || "—"}</td>
-                </tr>
+                <div key={c.key} className="mob-row" onClick={() => setCustomerKey(c.key)}>
+                  <div className="mob-row-top">
+                    <div className="mob-row-main"><Thumb brand={c.name || "?"} size="sm" /><span>{c.name || "Névtelen"}</span></div>
+                    {c.isNew ? <span className="badge-loc">Új</span> : <span className="badge-income">Visszatérő</span>}
+                  </div>
+                  <div className="mob-row-sub">
+                    <span className="mono">{c.phone || "—"}</span>
+                    <span>{c.purchases.length} vásárlás · {money(c.purchaseTotal)}</span>
+                    <span>{c.tickets.length} szerviz · {money(c.ticketTotal)}</span>
+                    <span>{c.lastActivity || "—"}</span>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </>
         )}
       </div>
     </>

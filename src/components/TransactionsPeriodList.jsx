@@ -39,14 +39,13 @@ export default function TransactionsPeriodList({ transactions, locName, onEdit, 
         return (
           <div key={key} style={{ marginBottom: 14 }}>
             <div
+              className="pgh"
               onClick={() => toggle(key)}
               style={{
-                display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 14px",
-                background: "#F9FAFB", border: "1px solid #E5E7EB", cursor: "pointer", userSelect: "none",
                 borderRadius: isOpen ? "10px 10px 0 0" : "10px", borderBottom: isOpen ? "none" : "1px solid #E5E7EB",
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div className="pgh-left">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2.5"
                   style={{ transform: isOpen ? "rotate(90deg)" : "rotate(0deg)", transition: "transform .12s", flexShrink: 0 }}>
                   <polyline points="9 6 15 12 9 18" />
@@ -58,11 +57,11 @@ export default function TransactionsPeriodList({ transactions, locName, onEdit, 
                   </span>
                 )}
               </div>
-              <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-                <span style={{ fontSize: 12, color: "#6B7280" }}>{rows.length} tétel</span>
+              <div className="pgh-right">
+                <span className="pgh-hide-mob" style={{ fontSize: 12, color: "#6B7280" }}>{rows.length} tétel</span>
                 <span style={{ fontSize: 13, fontWeight: 700, color: "#15803D" }}>+{money(income)}</span>
                 <span style={{ fontSize: 13, fontWeight: 700, color: "#B91C1C" }}>-{money(expense)}</span>
-                <span style={{ fontSize: 12, color: "#6B7280" }}>haszon {money(margin)}</span>
+                <span className="pgh-hide-mob" style={{ fontSize: 12, color: "#6B7280" }}>haszon {money(margin)}</span>
                 <span style={{ fontSize: 13, fontWeight: 800, color: "#111827" }}>{money(income - expense)}</span>
               </div>
             </div>
@@ -95,6 +94,31 @@ export default function TransactionsPeriodList({ transactions, locName, onEdit, 
                     })}
                   </tbody>
                 </table>
+                <div className="mob-cards">
+                  {rows.map((t) => {
+                    const isSale = t.type === "income" && t.category === "Készlet";
+                    return (
+                      <div key={t.id} className="mob-row" onClick={isSale ? () => onOpenReceipt(t.id) : undefined} style={isSale ? undefined : { cursor: "default" }}>
+                        <div className="mob-row-top">
+                          <div className="mob-row-main"><span>{t.description}</span></div>
+                          <span className="mob-row-amount" style={{ color: t.type === "income" ? "#15803D" : "#B91C1C" }}>
+                            {t.type === "income" ? "+" : "-"}{money(t.amount)}
+                          </span>
+                        </div>
+                        <div className="mob-row-sub">
+                          {t.type === "income" ? <span className="badge-income">Bevétel</span> : <span className="badge-expense">Kiadás</span>}
+                          <span>{t.category}</span>
+                          <span className="badge-loc">{locName(t.locationId)}</span>
+                          <span>{t.payment || "—"}</span>
+                          <span onClick={(e) => e.stopPropagation()} style={{ display: "inline-flex", gap: 5, marginLeft: "auto" }}>
+                            <button className="iconbtn" disabled={busy} onClick={() => onEdit(t)}><EditIcon /></button>
+                            <ConfirmDelete disabled={busy} onConfirm={() => onDelete(t.id)} />
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>
