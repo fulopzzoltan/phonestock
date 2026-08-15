@@ -1,12 +1,15 @@
 import { brandColor } from "../lib/utils";
-import { AppleIcon } from "./icons";
+import { AppleIcon, SamsungIcon } from "./icons";
+
+const BRAND_ICONS = { Apple: AppleIcon, Samsung: SamsungIcon };
 
 // Márka-monogramos színes avatar — Telefonok táblázat/kártya és Szerviz kanban/history közös eleme.
-// Apple-nél a monogram helyett a felismerhető alma-logó jelenik meg.
+// Néhány márkánál (Apple, Samsung) a monogram helyett egy felismerhető ikon jelenik meg.
 export default function Thumb({ brand, size }) {
+  const Icon = BRAND_ICONS[brand];
   return (
     <div className={`stk-thumb${size === "sm" ? " sm" : ""}`} style={{ background: brandColor(brand) }}>
-      {brand === "Apple" ? <AppleIcon /> : (brand || "?").slice(0, 1).toUpperCase()}
+      {Icon ? <Icon /> : (brand || "?").slice(0, 1).toUpperCase()}
     </div>
   );
 }
