@@ -1,10 +1,9 @@
-import { today, stripAccents } from "../lib/utils";
-import { supabase } from "../lib/supabaseClient";
+import { today } from "../lib/utils";
 import CallLink from "../components/CallLink";
 
 export default function WarrantyTab({
   busy, setWarrantyModal, activeWarranties, warrantyFilter, setWarrantyFilter, loadingData, filteredWarranties,
-  setWarrantyDetailKey, locName, setError,
+  setWarrantyDetailKey, locName,
 }) {
   return (
     <>
@@ -30,13 +29,6 @@ export default function WarrantyTab({
             <tbody>
               {filteredWarranties.map((w) => {
                 const daysLeft = w.expiry ? Math.ceil((new Date(w.expiry) - new Date(today())) / 86400000) : null;
-                function sendReminder(e) {
-                  e.stopPropagation();
-                  const message = stripAccents(`Szia! A(z) ${w.label} garanciája hamarosan lejár (${w.expiry}). Ha bármi gond van a készülékkel, keress minket!`);
-                  supabase.functions.invoke("send-sms", { body: { phone: w.customerPhone, message } })
-                    .then(() => alert("SMS elküldve."))
-                    .catch((err) => { console.error(err); setError("Az SMS nem ment ki."); });
-                }
                 return (
                   <tr key={w.key} style={{ cursor: "pointer" }} onClick={() => setWarrantyDetailKey(w.key)}>
                     <td>{w.kind === "sale" ? <span className="badge-income">Eladás</span> : <span className="badge-loc">Szerviz</span>}</td>
@@ -49,7 +41,6 @@ export default function WarrantyTab({
                     <td><span className="badge-loc">{locName(w.locationId)}</span></td>
                     <td style={{ display: "flex", gap: 6 }} onClick={(e) => e.stopPropagation()}>
                       <CallLink phone={w.customerPhone} />
-                      <button type="button" className="btn sec sm" disabled={!w.customerPhone} onClick={sendReminder}>Emlékeztető SMS</button>
                     </td>
                   </tr>
                 );
