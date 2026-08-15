@@ -148,6 +148,13 @@ export const ChevronDownIcon = (props) => (
   </svg>
 );
 
+export const ShiftCloseIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <rect x="4" y="3" width="16" height="18" rx="2" />
+    <path d="M8 3v3M16 3v3M8 13l2.5 2.5L16 10" />
+  </svg>
+);
+
 export const WarningIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
     <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi } from "./lib/mappers";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, shiftCloseFromApi } from "./lib/mappers";
 import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
@@ -15,6 +15,7 @@ import TicketFormModal from "./components/TicketFormModal";
 import DashboardTab from "./tabs/DashboardTab";
 import StockTab from "./tabs/StockTab";
 import FinanceTab from "./tabs/FinanceTab";
+import ShiftCloseTab from "./tabs/ShiftCloseTab";
 import ServiceTab from "./tabs/ServiceTab";
 import PartsTab from "./tabs/PartsTab";
 import CustomersTab from "./tabs/CustomersTab";
@@ -122,6 +123,7 @@ function AppShell() {
   const [leaveBalanceModal, setLeaveBalanceModal] = useState(null); // null | user obj
   const [repairPrices, setRepairPrices] = useState([]);
   const [repairLeads, setRepairLeads] = useState([]);
+  const [shiftCloses, setShiftCloses] = useState([]);
   const [repairPriceModal, setRepairPriceModal] = useState(null); // null | { familyKey, problemTag }
   const [repairLeadFilter, setRepairLeadFilter] = useState("Új");
   const [repairLeadConvert, setRepairLeadConvert] = useState(null); // lead obj being converted to a ticket
@@ -151,7 +153,7 @@ function AppShell() {
   async function loadAll() {
     setLoadingData(true);
     try {
-      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, lTypes, lBalances, lRequests, rPrices, rLeads] = await Promise.all([
+      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, lTypes, lBalances, lRequests, rPrices, rLeads, sClosesRes] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         fetchAllRows(() => supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false })),
         fetchAllRows(() => supabase.from("transactions").select("*").is("deleted_at", null).order("date", { ascending: false })),
@@ -170,6 +172,7 @@ function AppShell() {
         supabase.from("leave_requests").select("*").order("start_date", { ascending: true }),
         supabase.from("repair_prices").select("*"),
         supabase.from("repair_leads").select("*").order("created_at", { ascending: false }),
+        supabase.from("shift_closes").select("*").order("close_date", { ascending: false }),
       ]);
       setLocations(unwrap(locs) || []);
       const prodRows = unwrap(prods) || [];
@@ -192,6 +195,7 @@ function AppShell() {
       setLeaveRequests((unwrap(lRequests) || []).map(leaveRequestFromApi));
       setRepairPrices((unwrap(rPrices) || []).map(repairPriceFromApi));
       setRepairLeads((unwrap(rLeads) || []).map(repairLeadFromApi));
+      setShiftCloses((unwrap(sClosesRes) || []).map(shiftCloseFromApi));
       const historyRows = unwrap(hist) || [];
       setStockHistory(historyRows.map((r) => ({ date: r.date, value: Number(r.value) || 0 })));
       maybeSnapshotStockValue(prodRows, historyRows);
@@ -492,6 +496,23 @@ function AppShell() {
       const updated = leaveBalanceFromApi(r[0]);
       setLeaveBalances([...leaveBalances.filter((b) => !(b.userId === userId && b.year === year)), updated]);
       setLeaveBalanceModal(null);
+    });
+  }
+
+  async function saveShiftClose(data) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("shift_closes").upsert(
+        {
+          location_id: data.locationId, close_date: data.closeDate,
+          cash_expected: data.cashExpected, cash_counted: data.cashCounted,
+          card_income: data.cardIncome, transfer_income: data.transferIncome,
+          total_expense: data.totalExpense, note: data.note || null,
+          closed_by: user.id, closed_at: new Date().toISOString(),
+        },
+        { onConflict: "location_id,close_date" }
+      ).select());
+      const updated = shiftCloseFromApi(r[0]);
+      setShiftCloses([updated, ...shiftCloses.filter((s) => !(s.locationId === updated.locationId && s.closeDate === updated.closeDate))]);
     });
   }
 
@@ -1121,6 +1142,13 @@ function AppShell() {
             allowedLocations={allowedLocations} defaultLocId={defaultLocId} addTransaction={addTransaction} busy={busy}
             loadingData={loadingData} filteredTransactions={filteredTransactions} setTxModal={setTxModal}
             deleteTransaction={deleteTransaction} setReceiptTxId={setReceiptTxId}
+          />
+        )}
+
+        {!noLocationAssigned && tab === "shift-close" && (
+          <ShiftCloseTab
+            busy={busy} isAdmin={isAdmin} myLocationId={myLocationId} allowedLocations={allowedLocations} locName={locName}
+            transactions={transactions} shiftCloses={shiftCloses} saveShiftClose={saveShiftClose} users={users}
           />
         )}
 

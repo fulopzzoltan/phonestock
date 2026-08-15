@@ -1,6 +1,6 @@
 import {
   EditIcon, DashboardIcon, ServiceIcon, PhoneCaseIcon,
-  PartsIcon, FinanceIcon, CustomersIcon, WarrantyIcon, UsersNavIcon, TrashNavIcon, LogoutIcon, BuybackIcon, LeaveIcon, RepairPriceIcon,
+  PartsIcon, FinanceIcon, CustomersIcon, WarrantyIcon, UsersNavIcon, TrashNavIcon, LogoutIcon, BuybackIcon, LeaveIcon, RepairPriceIcon, ShiftCloseIcon,
 } from "./icons";
 
 export default function Sidebar({
@@ -22,17 +22,23 @@ export default function Sidebar({
 
         <div className="nav-lbl">Pénzügyek</div>
         <button className={`navbtn ${tab === "finance" ? "active" : ""}`} onClick={() => setTab("finance")}><FinanceIcon className="nav-ic" />Bevételek &amp; Kiadások</button>
+        <button className={`navbtn ${tab === "shift-close" ? "active" : ""}`} onClick={() => setTab("shift-close")}><ShiftCloseIcon className="nav-ic" />Napi zárás</button>
 
-        <button className={`navbtn ${tab === "leave" ? "active" : ""}`} onClick={() => setTab("leave")}><LeaveIcon className="nav-ic" />Szabadság</button>
+        {!isAdmin && (
+          <button className={`navbtn ${tab === "leave" ? "active" : ""}`} onClick={() => setTab("leave")}><LeaveIcon className="nav-ic" />Szabadság</button>
+        )}
 
         {isAdmin && (
           <>
             <div className="nav-lbl">Admin</div>
             <button className={`navbtn ${tab === "dashboard" ? "active" : ""}`} onClick={() => setTab("dashboard")}><DashboardIcon className="nav-ic" />Áttekintés</button>
-            <button className={`navbtn ${tab === "buyback" ? "active" : ""}`} onClick={() => setTab("buyback")}><BuybackIcon className="nav-ic" />Felvásárlás</button>
-            <button className={`navbtn ${tab === "repair-prices" ? "active" : ""}`} onClick={() => setTab("repair-prices")}><RepairPriceIcon className="nav-ic" />Szerviz árbecslő</button>
+            <button className={`navbtn ${tab === "leave" ? "active" : ""}`} onClick={() => setTab("leave")}><LeaveIcon className="nav-ic" />Szabadság</button>
             <button className={`navbtn ${tab === "users" ? "active" : ""}`} onClick={() => setTab("users")}><UsersNavIcon className="nav-ic" />Felhasználók</button>
             <button className={`navbtn ${tab === "trash" ? "active" : ""}`} onClick={() => setTab("trash")}><TrashNavIcon className="nav-ic" />Kuka</button>
+
+            <div className="nav-lbl">Webshop</div>
+            <button className={`navbtn ${tab === "buyback" ? "active" : ""}`} onClick={() => setTab("buyback")}><BuybackIcon className="nav-ic" />Felvásárlás</button>
+            <button className={`navbtn ${tab === "repair-prices" ? "active" : ""}`} onClick={() => setTab("repair-prices")}><RepairPriceIcon className="nav-ic" />Szerviz árbecslő</button>
           </>
         )}
       </div>

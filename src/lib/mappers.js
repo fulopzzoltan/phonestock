@@ -225,6 +225,14 @@ export const leaveRequestFromApi = (r) => ({
   status: r.status, requestedAt: r.requested_at, decidedBy: r.decided_by, decidedAt: r.decided_at,
 });
 
+export const shiftCloseFromApi = (r) => ({
+  id: r.id, locationId: r.location_id, closeDate: r.close_date,
+  cashExpected: Number(r.cash_expected) || 0, cashCounted: Number(r.cash_counted) || 0,
+  cardIncome: Number(r.card_income) || 0, transferIncome: Number(r.transfer_income) || 0,
+  totalExpense: Number(r.total_expense) || 0, note: r.note || "",
+  closedBy: r.closed_by, closedAt: r.closed_at,
+});
+
 export const repairPriceFromApi = (r) => ({
   familyKey: r.family_key, problemTag: r.problem_tag,
   priceOem: r.price_oem != null ? Number(r.price_oem) : null,
