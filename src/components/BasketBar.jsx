@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from "react";
-import AmountKeypad from "./AmountKeypad";
+import { useEffect, useState } from "react";
 import { CloseIcon } from "./icons";
 import { CATEGORIES, PAYMENTS } from "../lib/utils";
 
@@ -18,25 +17,14 @@ export default function BasketBar({ locations, defaultLocId, busy, smartQuickIte
   const [costPrice, setCostPrice] = useState("");
   const [category, setCategory] = useState("Készlet");
   const [stockKind, setStockKind] = useState("Egyéb"); // Telefon | Alkatrész | Egyéb
-  const [keypadOpen, setKeypadOpen] = useState(false);
   const [err, setErr] = useState("");
-  const amountWrapRef = useRef(null);
 
   useEffect(() => {
     setCategory(mode === "income" ? "Készlet" : "Egyéb");
   }, [mode]);
 
-  useEffect(() => {
-    if (!keypadOpen) return;
-    function handleClick(e) {
-      if (amountWrapRef.current && !amountWrapRef.current.contains(e.target)) setKeypadOpen(false);
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [keypadOpen]);
-
   function resetFree() {
-    setDescription(""); setAmount(""); setCostPrice(""); setStockKind("Egyéb"); setFreeOpen(false); setKeypadOpen(false);
+    setDescription(""); setAmount(""); setCostPrice(""); setStockKind("Egyéb"); setFreeOpen(false);
   }
 
   function addQuickToBasket(item) {
@@ -108,14 +96,9 @@ export default function BasketBar({ locations, defaultLocId, busy, smartQuickIte
               <label>Leírás</label>
               <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="pl. tok eladás, hirdetés..." autoFocus />
             </div>
-            <div className="field" style={{ margin: 0, position: "relative" }} ref={amountWrapRef}>
+            <div className="field" style={{ margin: 0 }}>
               <label>Összeg (Lei)</label>
-              <input value={amount} onFocus={() => setKeypadOpen(true)} onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, ""))} placeholder="0" />
-              {keypadOpen && (
-                <div style={{ position: "absolute", top: "100%", left: 0, zIndex: 10, background: "#fff", border: "1px solid #E5E7EB", borderRadius: 12, padding: 8, boxShadow: "var(--shadow-lg)" }}>
-                  <AmountKeypad value={amount} onChange={setAmount} onDone={() => setKeypadOpen(false)} />
-                </div>
-              )}
+              <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0" />
             </div>
             {mode === "income" && (
               <div className="field" style={{ margin: 0 }}>
