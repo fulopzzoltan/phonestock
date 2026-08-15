@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { money, STATUSES, statusLabel, displayName, ticketCode } from "../lib/utils";
-import { SearchIcon } from "../components/icons";
+import { SearchIcon, ChevronDownIcon } from "../components/icons";
 import TicketCard from "../components/TicketCard";
 import Thumb from "../components/Thumb";
 
@@ -7,6 +8,7 @@ export default function ServiceTab({
   effectiveLocFilter, locName, busy, setTicketModal, svcSearch, setSvcSearch, svcKindFilter, setSvcKindFilter,
   loadingData, activeTickets, setDetailId, showHandedOver, setShowHandedOver, handedOverTickets, svcStats,
 }) {
+  const [showFailedInCol, setShowFailedInCol] = useState(false);
   return (
     <>
       <div className="topbar">
@@ -37,6 +39,9 @@ export default function ServiceTab({
           <div className="kanban">
             {STATUSES.map((col) => {
               const items = activeTickets.filter((t) => t.status === col.key);
+              const isReadyCol = col.key === "Átadásra";
+              const shownItems = isReadyCol ? items.filter((t) => t.subStatus !== "Sikertelen") : items;
+              const failedItems = isReadyCol ? items.filter((t) => t.subStatus === "Sikertelen") : [];
               return (
                 <div className="k-col" key={col.key} style={{ "--col-color": col.color }}>
                   <div className="k-col-head">
@@ -45,7 +50,16 @@ export default function ServiceTab({
                   </div>
                   <div className="k-col-body">
                     {items.length === 0 && <div className="k-empty">Üres</div>}
-                    {items.map((t) => <TicketCard key={t.id} ticket={t} locName={locName} onOpen={setDetailId} />)}
+                    {shownItems.map((t) => <TicketCard key={t.id} ticket={t} locName={locName} onOpen={setDetailId} />)}
+                    {failedItems.length > 0 && (
+                      <>
+                        <button type="button" className="k-collapse-toggle" onClick={() => setShowFailedInCol((v) => !v)}>
+                          <ChevronDownIcon style={{ transform: showFailedInCol ? "rotate(180deg)" : undefined }} />
+                          {showFailedInCol ? "Sikertelenek elrejtése" : `Sikertelenek (${failedItems.length})`}
+                        </button>
+                        {showFailedInCol && failedItems.map((t) => <TicketCard key={t.id} ticket={t} locName={locName} onOpen={setDetailId} />)}
+                      </>
+                    )}
                   </div>
                 </div>
               );
