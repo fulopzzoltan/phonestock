@@ -30,24 +30,19 @@ function sortItems(items, sortBy) {
 
 export default function StockTab({
   effectiveLocFilter, locName, busy, setStockModal, search, setSearch, loadingData, filteredStock,
-  locations, reserveLocId, setProductDetailId, setSellModal, stockStats,
+  locations, reserveLocId, setProductDetailId, setSellModal,
   soldStock,
 }) {
   const [condFilter, setCondFilter] = useState("all"); // all | New | Refurbished
   const [sortBy, setSortBy] = useState("recent");
   const [view, setView] = useState("list"); // list | grid
-  const [slowOnly, setSlowOnly] = useState(false);
   const [collapsedOverride, setCollapsedOverride] = useState({}); // loc.id -> bool
   const isCollapsed = (loc) => collapsedOverride[loc.id] ?? loc.name === "Tartalék";
   const toggleCollapse = (loc) => setCollapsedOverride((c) => ({ ...c, [loc.id]: !isCollapsed(loc) }));
 
-  const slowMovingCount = useMemo(() => filteredStock.filter((p) => isSlowMoving(p, reserveLocId)).length, [filteredStock, reserveLocId]);
-
   const condFiltered = useMemo(() => {
-    let items = condFilter === "all" ? filteredStock : filteredStock.filter((i) => i.condition === condFilter);
-    if (slowOnly) items = items.filter((p) => isSlowMoving(p, reserveLocId));
-    return items;
-  }, [filteredStock, condFilter, slowOnly, reserveLocId]);
+    return condFilter === "all" ? filteredStock : filteredStock.filter((i) => i.condition === condFilter);
+  }, [filteredStock, condFilter]);
 
   const visibleLocations = effectiveLocFilter === "all" ? locations : locations.filter((l) => l.id === effectiveLocFilter || l.id === reserveLocId);
 
@@ -55,21 +50,7 @@ export default function StockTab({
     <>
       <div className="topbar">
         <div><div className="page-title">Telefonok</div><div className="page-sub">{effectiveLocFilter === "all" ? "Mindkét helyszín" : locName(effectiveLocFilter)}</div></div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          {slowMovingCount > 0 && (
-            <button type="button" className="btn sec sm" style={slowOnly ? { borderColor: "var(--warning)", color: "var(--warning-ink)", background: "var(--warning-soft)" } : undefined} onClick={() => setSlowOnly((v) => !v)}>
-              Lassan mozgó: {slowMovingCount} db
-            </button>
-          )}
-          <button className="btn" disabled={busy} onClick={() => setStockModal("add")}>+ Új termék</button>
-        </div>
-      </div>
-
-      <div className="statrow c4">
-        <div className="statcard"><div className="lbl">Raktáron</div><div className="val">{stockStats.count} db</div></div>
-        <div className="statcard"><div className="lbl">Készlet értéke</div><div className="val">{money(stockStats.value)}</div></div>
-        <div className="statcard"><div className="lbl">Besz. érték</div><div className="val">{money(stockStats.cost)}</div></div>
-        <div className="statcard"><div className="lbl">Várható profit</div><div className="val" style={{ color: "#22C55E" }}>{money(stockStats.profit)}</div></div>
+        <button className="btn" disabled={busy} onClick={() => setStockModal("add")}>+ Új termék</button>
       </div>
 
       <div className="filter-row">

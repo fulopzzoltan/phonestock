@@ -1248,7 +1248,7 @@ function AppShell() {
             effectiveLocFilter={effectiveLocFilter} locName={locName} busy={busy} setStockModal={setStockModal}
             search={search} setSearch={setSearch} loadingData={loadingData} filteredStock={filteredStock}
             locations={locations} reserveLocId={reserveLocId} setProductDetailId={setProductDetailId}
-            setSellModal={setSellModal} stockStats={stockStats}
+            setSellModal={setSellModal}
             soldStock={soldStock}
           />
         )}
