@@ -101,6 +101,18 @@ export const ClockIcon = (props) => (
   </svg>
 );
 
+export const BoardIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <rect x="3" y="4" width="18" height="16" rx="2" /><path d="M8 4v4M16 4v4M3 11h18" />
+  </svg>
+);
+
+export const NoteIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M4 4h13l3 3v13H4z" /><path d="M17 4v3h3" /><path d="M8 11h8M8 15h5" />
+  </svg>
+);
+
 export const CalendarIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
     <rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 9h18M8 3v4M16 3v4" />

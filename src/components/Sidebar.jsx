@@ -1,5 +1,5 @@
 import {
-  EditIcon, DashboardIcon, ServiceIcon, PhoneCaseIcon,
+  EditIcon, DashboardIcon, ServiceIcon, PhoneCaseIcon, BoardIcon,
   PartsIcon, FinanceIcon, CustomersIcon, WarrantyIcon, UsersNavIcon, TrashNavIcon, LogoutIcon, BuybackIcon, LeaveIcon, RepairPriceIcon, CashSettlementIcon,
 } from "./icons";
 
@@ -11,6 +11,7 @@ export default function Sidebar({
     <div className="sidebar">
       <div className="sidebar-inner">
         <div className="nav-lbl">Napi munka</div>
+        <button className={`navbtn ${tab === "pult" ? "active" : ""}`} onClick={() => setTab("pult")}><BoardIcon className="nav-ic" />Pult</button>
         <div className="navrow">
           <button className={`navbtn ${tab === "service" ? "active" : ""}`} onClick={() => setTab("service")}><ServiceIcon className="nav-ic" />Szerviz</button>
           <button type="button" className="nav-quick-add" title="Új munkalap" onClick={() => { setTab("service"); setTicketModal("add"); }}>+</button>

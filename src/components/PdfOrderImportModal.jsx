@@ -64,7 +64,7 @@ export default function PdfOrderImportModal({ locations, defaultLocId, busy, onC
             </div>
             <div className="tw" style={{ marginBottom: 10 }}>
               <table>
-                <thead><tr><th>Megnevezés</th><th>Db</th><th>Egységár</th><th>Típus</th><th>Kategória</th><th>Sor össz.</th><th></th></tr></thead>
+                <thead><tr><th>Megnevezés</th><th>Db</th><th>Egységár</th><th>Típus</th><th>Kategória</th><th>Kinek várjuk</th><th>Sor össz.</th><th></th></tr></thead>
                 <tbody>
                   {rows.map((r, i) => (
                     <tr key={i} style={!r.confident ? { background: "var(--warning-soft)" } : undefined}>
@@ -91,6 +91,7 @@ export default function PdfOrderImportModal({ locations, defaultLocId, busy, onC
                           <span style={{ fontSize: 11, color: "#9CA3AF" }}>Rögzítéskor kérjük a részleteket</span>
                         ) : "—"}
                       </td>
+                      <td><input value={r.waitingFor || ""} onChange={(e) => updateRow(i, { waitingFor: e.target.value })} placeholder="Ha ügyfélnek várjuk" style={{ width: 90, fontSize: 11 }} /></td>
                       <td className="mono" style={{ fontWeight: 700 }}>{money(r.lineTotal)}</td>
                       <td><button type="button" className="iconbtn" onClick={() => removeRow(i)}><CloseIcon width={14} height={14} /></button></td>
                     </tr>

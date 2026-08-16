@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { CloseIcon, ChatIcon, ServiceIcon, PhoneCaseIcon, PartsIcon, CustomersIcon, WarrantyIcon } from "./icons";
 import { EmptyState } from "./EmptyState";
-import { ticketCode, phoneCode, partCode } from "../lib/utils";
+import { searchMentions } from "../lib/mentions";
+import { ticketCode } from "../lib/utils";
 
 function timeLabel(iso) {
   if (!iso) return "";
@@ -42,31 +43,10 @@ export default function TeamChatPanel({
     return m ? m[1] : null;
   }, [text]);
 
-  const mentionMatches = useMemo(() => {
-    if (!mentionQuery) return [];
-    const q = mentionQuery.toLowerCase();
-    const ticketMatches = tickets
-      .filter((t) => ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))?.toLowerCase().includes(q) || String(t.ticketNo).startsWith(q))
-      .slice(0, 5)
-      .map((t) => ({ type: "ticket", id: t.id, label: `${ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))} — ${[t.brand, t.model].filter(Boolean).join(" ")}` }));
-    const productMatches = stock
-      .filter((p) => phoneCode(p.productNo)?.toLowerCase().includes(q) || (p.imei || "").toLowerCase().includes(q) || [p.brand, p.model].join(" ").toLowerCase().includes(q))
-      .slice(0, 5)
-      .map((p) => ({ type: "product", id: p.id, label: `${phoneCode(p.productNo)} — ${[p.brand, p.model].filter(Boolean).join(" ")}` }));
-    const partMatches = parts
-      .filter((pt) => partCode(pt.partNo)?.toLowerCase().includes(q) || (pt.name || "").toLowerCase().includes(q))
-      .slice(0, 5)
-      .map((pt) => ({ type: "part", id: pt.id, label: `${partCode(pt.partNo)} — ${pt.name}` }));
-    const customerMatches = customersTable
-      .filter((c) => (c.name || "").toLowerCase().includes(q) || (c.phone || "").includes(q))
-      .slice(0, 5)
-      .map((c) => ({ type: "customer", id: c.id, label: `${c.name || "Névtelen"}${c.phone ? " — " + c.phone : ""}` }));
-    const warrantyMatches = warranties
-      .filter((w) => (w.customerName || "").toLowerCase().includes(q) || (w.label || "").toLowerCase().includes(q))
-      .slice(0, 5)
-      .map((w) => ({ type: "warranty", id: w.id, label: `Garancia — ${w.customerName || "?"} (${w.label || "?"})` }));
-    return [...ticketMatches, ...productMatches, ...partMatches, ...customerMatches, ...warrantyMatches];
-  }, [mentionQuery, tickets, stock, parts, customersTable, warranties, locName]);
+  const mentionMatches = useMemo(
+    () => (mentionQuery ? searchMentions(mentionQuery, { tickets, stock, parts, customersTable, warranties, locName }) : []),
+    [mentionQuery, tickets, stock, parts, customersTable, warranties, locName]
+  );
 
   function pickMention(m) {
     setText((t) => t.replace(/#(\S*)$/, ""));

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi } from "./lib/mappers";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi } from "./lib/mappers";
 import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, normalizeImei, money, ticketCode } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
@@ -17,6 +17,7 @@ import OwnStockServiceModal from "./components/OwnStockServiceModal";
 import TicketFormModal from "./components/TicketFormModal";
 import DashboardTab from "./tabs/DashboardTab";
 import StockTab from "./tabs/StockTab";
+import PultTab from "./tabs/PultTab";
 import FinanceTab from "./tabs/FinanceTab";
 import CashSettlementTab from "./tabs/CashSettlementTab";
 import ServiceTab from "./tabs/ServiceTab";
@@ -67,7 +68,7 @@ function AppShell() {
   const isAdmin = profile?.role === "admin";
   const myLocationId = profile?.locationId || null;
 
-  const [tab, setTab] = useState(isAdmin ? "dashboard" : "service");
+  const [tab, setTab] = useState("pult");
   const [locFilter, setLocFilter] = useState("all");
   const [locations, setLocations] = useState([]);
   const [stock, setStock] = useState([]);
@@ -108,6 +109,8 @@ function AppShell() {
   const [receiptTxId, setReceiptTxId] = useState(null);
   const [printReceipt, setPrintReceipt] = useState(null);
   const [warranties, setWarranties] = useState([]);
+  const [notes, setNotes] = useState([]);
+  const [waitingItems, setWaitingItems] = useState([]);
   const [warrantyModal, setWarrantyModal] = useState(null); // null | "add" | manual warranty object (edit)
   const [warrantyDetailKey, setWarrantyDetailKey] = useState(null);
   const [warrantyFilter, setWarrantyFilter] = useState("all"); // all | sale | service
@@ -163,7 +166,7 @@ function AppShell() {
   async function loadAll() {
     setLoadingData(true);
     try {
-      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements] = await Promise.all([
+      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         fetchAllRows(() => supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false })),
         fetchAllRows(() => supabase.from("transactions").select("*").is("deleted_at", null).order("date", { ascending: false })),
@@ -184,6 +187,8 @@ function AppShell() {
         supabase.from("repair_leads").select("*").order("created_at", { ascending: false }),
         supabase.from("cash_holders").select("*").order("name", { ascending: true }),
         supabase.from("cash_settlements").select("*").order("period_end", { ascending: false }),
+        supabase.from("board_notes").select("*").order("created_at", { ascending: false }),
+        supabase.from("waiting_items").select("*").order("created_at", { ascending: false }),
       ]);
       setLocations(unwrap(locs) || []);
       const prodRows = unwrap(prods) || [];
@@ -208,6 +213,8 @@ function AppShell() {
       setRepairLeads((unwrap(rLeads) || []).map(repairLeadFromApi));
       setCashHolders((unwrap(cHolders) || []).map(cashHolderFromApi));
       setCashSettlements((unwrap(cSettlements) || []).map(cashSettlementFromApi));
+      setNotes((unwrap(bNotes) || []).map(noteFromApi));
+      setWaitingItems((unwrap(wItems) || []).map(waitingFromApi));
       const historyRows = unwrap(hist) || [];
       setStockHistory(historyRows.map((r) => ({ date: r.date, value: Number(r.value) || 0 })));
       maybeSnapshotStockValue(prodRows, historyRows);
@@ -741,6 +748,56 @@ function AppShell() {
     });
   }
 
+  // PULT: CETLIK
+  async function addNote(body, { assignedTo, dueScope, link }) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("board_notes").insert({
+        body, author_id: user.id, assigned_to_id: assignedTo, due_scope: dueScope || null,
+        linked_ticket_id: link?.type === "ticket" ? link.id : null,
+        linked_product_id: link?.type === "product" ? link.id : null,
+        linked_part_id: link?.type === "part" ? link.id : null,
+        linked_customer_id: link?.type === "customer" ? link.id : null,
+        linked_warranty_id: link?.type === "warranty" ? link.id : null,
+      }).select());
+      setNotes((prev) => [noteFromApi(r[0]), ...prev]);
+    });
+  }
+  async function completeNote(id) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("board_notes").update({ status: "done", done_at: new Date().toISOString(), done_by: user.id }).eq("id", id).select());
+      setNotes((prev) => prev.map((n) => (n.id === id ? noteFromApi(r[0]) : n)));
+    });
+  }
+  async function reopenNote(id) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("board_notes").update({ status: "open", done_at: null, done_by: null }).eq("id", id).select());
+      setNotes((prev) => prev.map((n) => (n.id === id ? noteFromApi(r[0]) : n)));
+    });
+  }
+  async function deleteNote(id) {
+    await withBusy(async () => { unwrap(await supabase.from("board_notes").delete().eq("id", id)); setNotes((prev) => prev.filter((n) => n.id !== id)); });
+  }
+
+  // PULT: VÁRAKOZIK VALAMIRE
+  async function addWaitingItem(data, status = "megrendelve") {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("waiting_items").insert({
+        description: data.description, customer_name: data.customerName, supplier: data.supplier,
+        status, location_id: data.locationId || defaultLocId, created_by: user.id,
+      }).select());
+      setWaitingItems((prev) => [waitingFromApi(r[0]), ...prev]);
+    });
+  }
+  async function advanceWaiting(id, nextStatus) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("waiting_items").update({ status: nextStatus, updated_at: new Date().toISOString() }).eq("id", id).select());
+      setWaitingItems((prev) => prev.map((w) => (w.id === id ? waitingFromApi(r[0]) : w)));
+    });
+  }
+  async function deleteWaitingItem(id) {
+    await withBusy(async () => { unwrap(await supabase.from("waiting_items").delete().eq("id", id)); setWaitingItems((prev) => prev.filter((w) => w.id !== id)); });
+  }
+
   // PDF RENDELÉS IMPORT
   const [pdfImportModal, setPdfImportModal] = useState(false);
   const [stockImportQueue, setStockImportQueue] = useState([]); // hátralévő "Telefon"-ként jelölt egységek
@@ -760,6 +817,9 @@ function AppShell() {
         }
       }
       await addTransaction({ type: "expense", category: "Készlet", description: row.name, amount: row.lineTotal, costPrice: 0, payment, basketId }, locId);
+      if (row.waitingFor) {
+        await addWaitingItem({ description: row.name, customerName: row.waitingFor, supplier, locationId: locId }, "megerkezett");
+      }
     }
     setPdfImportModal(false);
     if (phoneQueue.length > 0) {
@@ -1329,6 +1389,20 @@ function AppShell() {
         {info && <div className="banner ok">{info} <button type="button" className="banner-close" onClick={() => setInfo("")}><CloseIcon width={12} height={12} /></button></div>}
         {noLocationAssigned && (
           <div className="banner warn">Nincs helyszín hozzárendelve a fiókodhoz. Kérj meg egy adminisztrátort, hogy rendeljen hozzá egy helyszínt, addig nem látsz adatokat.</div>
+        )}
+
+        {!noLocationAssigned && tab === "pult" && (
+          <PultTab
+            effectiveLocFilter={effectiveLocFilter} locName={locName} filteredTickets={filteredTickets} setDetailId={setDetailId}
+            notes={notes} addNote={addNote} completeNote={completeNote} reopenNote={reopenNote} deleteNote={deleteNote}
+            waitingItems={waitingItems} addWaitingItem={addWaitingItem} advanceWaiting={advanceWaiting} deleteWaitingItem={deleteWaitingItem}
+            users={users} currentUserId={profile?.id} tickets={tickets} stock={stock} parts={parts} customersTable={customersTable} warranties={warranties}
+            onOpenTicket={(id) => setDetailId(id)}
+            onOpenProduct={(id) => setProductDetailId(id)}
+            onOpenPart={(id) => setPartDetailId(id)}
+            onOpenCustomer={(id) => setCustomerKey(id)}
+            onOpenWarranty={(id) => { setTab("warranty"); setWarrantyDetailKey(`manual-${id}`); }}
+          />
         )}
 
         {!noLocationAssigned && isAdmin && tab === "dashboard" && (

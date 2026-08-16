@@ -289,6 +289,38 @@ export const internalMessageFromApi = (r) => ({
   createdAt: r.created_at,
 });
 
+export const noteFromApi = (r) => ({
+  id: r.id,
+  body: r.body,
+  authorId: r.author_id,
+  assignedToId: r.assigned_to_id,
+  dueScope: r.due_scope,
+  status: r.status,
+  doneAt: r.done_at,
+  doneBy: r.done_by,
+  linkedTicketId: r.linked_ticket_id,
+  linkedProductId: r.linked_product_id,
+  linkedPartId: r.linked_part_id,
+  linkedCustomerId: r.linked_customer_id,
+  linkedWarrantyId: r.linked_warranty_id,
+  createdAt: r.created_at,
+});
+
+export const waitingFromApi = (r) => ({
+  id: r.id,
+  description: r.description,
+  customerName: r.customer_name,
+  customerPhone: r.customer_phone,
+  supplier: r.supplier,
+  status: r.status,
+  locationId: r.location_id,
+  linkedPartId: r.linked_part_id,
+  linkedProductId: r.linked_product_id,
+  createdBy: r.created_by,
+  createdAt: r.created_at,
+  updatedAt: r.updated_at,
+});
+
 export const warrantyFromApi = (r) => ({
   id: r.id, kind: r.kind, customerName: r.customer_name, customerPhone: r.customer_phone || "",
   label: r.label, warranty: r.warranty, fromDate: r.from_date, locationId: r.location_id,
