@@ -164,18 +164,16 @@ export default function StockTab({
                           {i.storage && <span className="spec-pill">{i.storage}</span>}
                           {i.warranty && <span className="spec-pill">{i.warranty} gar.</span>}
                         </div>
-                        {i.color && <div className="stk-card-color">{i.color}</div>}
-                        <div className="stk-card-price-row">
+                        <div className="stk-card-price-row" title={`Beszerzési ár: ${money(i.costPrice)}`}>
                           <div className="stk-card-price">{money(i.salePrice)}</div>
                           <div className={`stk-card-days${slow ? " warn" : ""}`}><CalendarIcon width={13} height={13} />{daysOnShelf(i.dateAdded)}</div>
                         </div>
-                        <div className="stk-card-cost">besz. {money(i.costPrice)}</div>
                         <div className="stk-card-actions">
                           <div className="stk-card-icons" onClick={(e) => e.stopPropagation()}>
                             <button className="iconbtn stk-card-iconbtn edit" disabled={busy} onClick={() => setStockModal(i)}><EditIcon /></button>
                             <ConfirmDelete disabled={busy} className="stk-card-iconbtn delete" onConfirm={() => deleteProduct(i.id)} />
                           </div>
-                          <button className="btn sm pill" disabled={busy} onClick={(e) => { e.stopPropagation(); setSellModal(i); }}>Eladás</button>
+                          <button className="btn sm" disabled={busy} onClick={(e) => { e.stopPropagation(); setSellModal(i); }}>Eladás</button>
                         </div>
                       </div>
                     );
