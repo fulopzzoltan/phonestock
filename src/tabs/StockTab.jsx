@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
-import { money, displayName, phoneCode, daysOnShelf, isSlowMoving, stockStatusLabel } from "../lib/utils";
-import { SearchIcon, EditIcon, ListViewIcon, GridViewIcon, PhoneCaseIcon, ChevronDownIcon, CalendarIcon } from "../components/icons";
-import ConfirmDelete from "../components/ConfirmDelete";
+import { money, displayName, phoneCode, daysOnShelf, isSlowMoving, stockStatusLabel, conditionGradeLabel } from "../lib/utils";
+import { SearchIcon, EditIcon, ListViewIcon, GridViewIcon, PhoneCaseIcon, ChevronDownIcon, CalendarIcon, WarrantyIcon } from "../components/icons";
 import Thumb from "../components/Thumb";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import HistorySection from "../components/HistorySection";
@@ -13,10 +12,16 @@ const SORTS = [
   { key: "name", label: "Név A–Z" },
 ];
 
+const BRAND_PRIORITY = ["Apple", "Samsung", "Huawei"];
+function brandRank(brand) {
+  const i = BRAND_PRIORITY.indexOf(brand);
+  return i === -1 ? BRAND_PRIORITY.length : i;
+}
+
 function sortItems(items, sortBy) {
-  if (sortBy === "recent") return items;
   const arr = [...items];
-  if (sortBy === "price-desc") arr.sort((a, b) => (Number(b.salePrice) || 0) - (Number(a.salePrice) || 0));
+  if (sortBy === "recent") arr.sort((a, b) => brandRank(a.brand) - brandRank(b.brand));
+  else if (sortBy === "price-desc") arr.sort((a, b) => (Number(b.salePrice) || 0) - (Number(a.salePrice) || 0));
   else if (sortBy === "price-asc") arr.sort((a, b) => (Number(a.salePrice) || 0) - (Number(b.salePrice) || 0));
   else if (sortBy === "name") arr.sort((a, b) => `${a.brand} ${a.model}`.localeCompare(`${b.brand} ${b.model}`));
   return arr;
@@ -25,7 +30,7 @@ function sortItems(items, sortBy) {
 
 export default function StockTab({
   effectiveLocFilter, locName, busy, setStockModal, search, setSearch, loadingData, filteredStock,
-  locations, reserveLocId, setProductDetailId, deleteProduct, setSellModal, stockStats,
+  locations, reserveLocId, setProductDetailId, setSellModal, stockStats,
   soldStock,
 }) {
   const [condFilter, setCondFilter] = useState("all"); // all | New | Refurbished
@@ -108,7 +113,7 @@ export default function StockTab({
               {collapsed ? null : view === "list" ? (
                 <div className="tw">
                   <table>
-                    <thead><tr><th>Termék</th><th>Állapot</th><th>Ár</th><th>Besz.</th><th></th></tr></thead>
+                    <thead><tr><th>Termék</th><th>Állapot</th><th>Ár</th><th></th></tr></thead>
                     <tbody>
                       {items.map((i) => (
                         <tr key={i.id} style={{ cursor: "pointer" }} onClick={() => setProductDetailId(i.id)}>
@@ -122,22 +127,20 @@ export default function StockTab({
                                   {i.stockStatus === "lefoglalt" && <span style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }} title="Nem látszik a webshopban">{stockStatusLabel(i.stockStatus)}</span>}
                                   {isSlowMoving(i, reserveLocId) && <span className="tag" style={{ background: "var(--warning-soft)", color: "var(--warning-ink)", fontWeight: 700 }}>{daysOnShelf(i.dateAdded)} napja a polcon</span>}
                                 </div>
-                                <div className="stk-sub">{[phoneCode(i.productNo), i.storage, i.color].filter(Boolean).join(" · ") || "—"}</div>
+                                <div className="stk-sub">{[phoneCode(i.productNo), i.storage].filter(Boolean).join(" · ") || "—"}</div>
                               </div>
                             </div>
                           </td>
                           <td>
                             <div className="stk-badges">
-                              <span className={`st ${i.condition === "New" ? "st-kesz" : "st-beveve"}`}>{i.condition === "New" ? "Új" : `Felúj. ${i.grade || ""}`}</span>
-                              {i.warranty && <span className="gar-pill">{i.warranty}</span>}
+                              <span className={`st ${i.condition === "New" ? "st-kesz" : "st-beveve"}`}>{conditionGradeLabel(i.condition, i.grade)}</span>
+                              {i.warranty && <span className="gar-pill"><WarrantyIcon width={10} height={10} />{i.warranty}</span>}
                             </div>
                           </td>
-                          <td className="mono" style={{ fontWeight: 700 }}>{money(i.salePrice)}</td>
-                          <td className="mono" style={{ color: "#6B7280" }}>{money(i.costPrice)}</td>
+                          <td className="mono" style={{ fontWeight: 800 }} title={`Beszerzési ár: ${money(i.costPrice)}`}>{money(i.salePrice)}</td>
                           <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
                             <button className="btn sec sm" disabled={busy} onClick={() => setSellModal(i)}>Eladás</button>
                             <button className="iconbtn" disabled={busy} onClick={() => setStockModal(i)}><EditIcon /></button>
-                            <ConfirmDelete disabled={busy} onConfirm={() => deleteProduct(i.id)} />
                           </td>
                         </tr>
                       ))}
@@ -159,20 +162,16 @@ export default function StockTab({
                           {i.stockStatus === "javitando" && <span className="tag" style={{ marginLeft: 6, background: "var(--danger-soft)", color: "var(--danger-ink)", fontWeight: 700 }}>Javítandó</span>}
                           {i.stockStatus === "lefoglalt" && <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }}>{stockStatusLabel(i.stockStatus)}</span>}
                         </div>
-                        <div className="stk-card-specs">
-                          <span className="spec-pill">{i.condition === "New" ? "Új" : `Felújított${i.grade ? " " + i.grade : ""}`}</span>
-                          {i.storage && <span className="spec-pill">{i.storage}</span>}
-                          {i.warranty && <span className="spec-pill">{i.warranty} gar.</span>}
+                        <div className="stk-card-meta">
+                          {[conditionGradeLabel(i.condition, i.grade), i.storage].filter(Boolean).join(" · ")}
+                          {i.warranty && <span className="stk-card-warranty">{(i.condition || i.storage) && " · "}{i.warranty}<WarrantyIcon width={11} height={11} /></span>}
                         </div>
                         <div className="stk-card-price-row" title={`Beszerzési ár: ${money(i.costPrice)}`}>
                           <div className="stk-card-price">{money(i.salePrice)}</div>
                           <div className={`stk-card-days${slow ? " warn" : ""}`}><CalendarIcon width={13} height={13} />{daysOnShelf(i.dateAdded)}</div>
                         </div>
                         <div className="stk-card-actions">
-                          <div className="stk-card-icons" onClick={(e) => e.stopPropagation()}>
-                            <button className="iconbtn stk-card-iconbtn edit" disabled={busy} onClick={() => setStockModal(i)}><EditIcon /></button>
-                            <ConfirmDelete disabled={busy} className="stk-card-iconbtn delete" onConfirm={() => deleteProduct(i.id)} />
-                          </div>
+                          <button className="iconbtn stk-card-iconbtn edit" disabled={busy} onClick={(e) => { e.stopPropagation(); setStockModal(i); }}><EditIcon /></button>
                           <button className="btn sm" disabled={busy} onClick={(e) => { e.stopPropagation(); setSellModal(i); }}>Eladás</button>
                         </div>
                       </div>

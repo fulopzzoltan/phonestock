@@ -123,6 +123,18 @@ export const STOCK_STATUSES = [
 ];
 export const stockStatusLabel = (s) => STOCK_STATUSES.find((x) => x.key === s)?.label || s;
 
+// Fizikai állapot skála — egy egységes 4 lépcsős lista, ami a products.condition
+// ("New"/"Refurbished") + products.grade ("A"/"B"/"C") párost egyetlen választható
+// értékként jeleníti meg. A DB séma nem változott, csak a megjelenítés lett egységes.
+export const CONDITION_GRADES = [
+  { key: "New", label: "Új" },
+  { key: "A", label: "Újszerű" },
+  { key: "B", label: "Nagyon jó" },
+  { key: "C", label: "Jó" },
+];
+export const conditionGradeKey = (condition, grade) => (condition === "New" ? "New" : (grade || "A"));
+export const conditionGradeLabel = (condition, grade) => CONDITION_GRADES.find((g) => g.key === conditionGradeKey(condition, grade))?.label || "Felújított";
+
 // Felvásárlás állapot-kérdései — a publikus /eladom flow és az admin levonási-szabály
 // szerkesztő is ezt használja, hogy a question_key/answer_key kulcsok ne csúszhassanak szét.
 export const BUYBACK_CONDITION_QUESTIONS = [

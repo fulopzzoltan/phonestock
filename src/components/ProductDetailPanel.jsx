@@ -1,4 +1,4 @@
-import { money, phoneCode } from "../lib/utils";
+import { money, phoneCode, conditionGradeLabel } from "../lib/utils";
 import { CloseIcon } from "./icons";
 import Row from "./DetailRow";
 import ConfirmDelete from "./ConfirmDelete";
@@ -16,7 +16,7 @@ export default function ProductDetailPanel({
       <div className="detail-panel">
         <div className="dp-head">
           <div>
-            <div className="dp-sn">{product.condition === "New" ? "Új" : `Felújított${product.grade ? " " + product.grade : ""}`}</div>
+            <div className="dp-sn">{conditionGradeLabel(product.condition, product.grade)}</div>
             <div className="dp-name">{product.brand} {product.model}</div>
           </div>
           <button className="iconbtn" onClick={onClose}><CloseIcon /></button>
@@ -28,7 +28,7 @@ export default function ProductDetailPanel({
             <Row k="Kód" v={<span className="mono" style={{ fontWeight: 700 }}>{phoneCode(product.productNo)}</span>} />
             <Row k="Márka" v={product.brand} />
             <Row k="Modell" v={product.model} />
-            <Row k="Állapot" v={product.condition === "New" ? "Új" : `Felújított${product.grade ? " (" + product.grade + ")" : ""}`} />
+            <Row k="Állapot" v={conditionGradeLabel(product.condition, product.grade)} />
             <Row k="Tárhely" v={product.storage} />
             <Row k="Szín" v={product.color} />
             <Row k="IMEI" v={product.imei ? <span className="mono">{product.imei}</span> : null} />

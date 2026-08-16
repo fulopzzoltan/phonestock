@@ -1,7 +1,7 @@
 import { useState } from "react";
 import LocationField from "./LocationField";
 import { CloseIcon } from "./icons";
-import { WARRANTIES, SOURCES, STOCK_STATUSES } from "../lib/utils";
+import { WARRANTIES, SOURCES, STOCK_STATUSES, CONDITION_GRADES, conditionGradeKey } from "../lib/utils";
 
 export default function StockModal({ product, prefill, locations, onClose, onSave, busy, defaultLocId }) {
   const isEdit = !!product;
@@ -33,22 +33,16 @@ export default function StockModal({ product, prefill, locations, onClose, onSav
           <div className="field"><label>Márka</label><input value={f.brand} onChange={set("brand")} placeholder="Samsung" /></div>
           <div className="field"><label>Modell</label><input value={f.model} onChange={set("model")} placeholder="Galaxy S23" /></div>
         </div>
-        <div className="row2">
-          <div className="field"><label>Állapot</label>
-            <select value={f.condition} onChange={set("condition")}>
-              <option value="New">Új</option>
-              <option value="Refurbished">Felújított</option>
-            </select>
-          </div>
-          {f.condition === "Refurbished" && (
-            <div className="field"><label>Minőség</label>
-              <select value={f.grade} onChange={set("grade")}>
-                <option value="A">A — kiváló</option>
-                <option value="B">B — jó</option>
-                <option value="C">C</option>
-              </select>
-            </div>
-          )}
+        <div className="field"><label>Állapot</label>
+          <select
+            value={conditionGradeKey(f.condition, f.grade)}
+            onChange={(e) => {
+              const key = e.target.value;
+              setF(key === "New" ? { ...f, condition: "New", grade: "" } : { ...f, condition: "Refurbished", grade: key });
+            }}
+          >
+            {CONDITION_GRADES.map((g) => <option key={g.key} value={g.key}>{g.label}</option>)}
+          </select>
         </div>
         <div className="row2">
           <div className="field"><label>Tárhely</label><input value={f.storage} onChange={set("storage")} placeholder="128GB" /></div>
@@ -81,7 +75,7 @@ export default function StockModal({ product, prefill, locations, onClose, onSav
           <div className="field"><label>Akkuállapot (%)</label><input type="number" min="0" max="100" value={f.batteryHealth} onChange={set("batteryHealth")} placeholder="100" /></div>
         )}
         <div className="field">
-          <label>Állapot <span style={{ color: "#9CA3AF", fontWeight: 400 }}>— csak "Polcon" látszik a nyilvános webshopban</span></label>
+          <label>Raktár állapot <span style={{ color: "#9CA3AF", fontWeight: 400 }}>— csak "Polcon" látszik a nyilvános webshopban</span></label>
           <select value={f.stockStatus} onChange={set("stockStatus")}>
             {STOCK_STATUSES.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
           </select>
