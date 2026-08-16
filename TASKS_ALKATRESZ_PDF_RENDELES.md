@@ -85,18 +85,20 @@ const CATEGORY_WORDS = [
   { category: "Fólia", words: ["folie", "sticla", "protectie display", "fólia"] },
 ];
 
-// Visszaad: { isPart, category, confident, reason }
+// Visszaad: { kind: "part" | "expense", category, confident, reason }
 // FONTOS: ha semmi nem illik rá biztosan (se szállítás, se tok, se kategória-kulcsszó),
 // a biztonságos alapértelmezés "csak kiadás", NEM alkatrész — mert egy rosszul felismert
 // tétel (pl. egy telefon, ami nem alkatrész) nem kerülhet be tévesen a raktárba. Ilyenkor
 // a sor "confident: false" jelzést kap, a felhasználói felületen ki kell emelni, hogy nézze át.
+// Telefont a rendszer NEM próbál automatikusan felismerni (ez túl bizonytalan lenne kulcsszó
+// alapján) — azt a felhasználó a review-táblán választja ki kézzel, ld. 5. pont "Típus" oszlop.
 export function classifyLine(description) {
   const d = (description || "").toLowerCase();
-  if (SHIPPING_WORDS.some((w) => d.includes(w))) return { isPart: false, category: null, confident: true, reason: "szállítás" };
-  if (CASE_WORDS.some((w) => d.includes(w))) return { isPart: false, category: null, confident: true, reason: "tok/tartozék" };
+  if (SHIPPING_WORDS.some((w) => d.includes(w))) return { kind: "expense", category: null, confident: true, reason: "szállítás" };
+  if (CASE_WORDS.some((w) => d.includes(w))) return { kind: "expense", category: null, confident: true, reason: "tok/tartozék" };
   const match = CATEGORY_WORDS.find((c) => c.words.some((w) => d.includes(w)));
-  if (match) return { isPart: true, category: match.category, confident: true, reason: match.category };
-  return { isPart: false, category: null, confident: false, reason: "nem ismert fel egyértelműen" };
+  if (match) return { kind: "part", category: match.category, confident: true, reason: match.category };
+  return { kind: "expense", category: null, confident: false, reason: "nem ismert fel egyértelműen" };
 }
 ```
 
@@ -167,7 +169,7 @@ export function buildReviewRow(raw, supplier) {
     qty: raw.qty,
     unitPrice,
     lineTotal: unitPrice * raw.qty,
-    isPart: cls.isPart,
+    kind: cls.kind, // "part" | "expense" | (kézzel átállítható "phone"-ra is a review-táblán)
     category: cls.category || "Egyéb",
     confident: cls.confident,
     supplier,
@@ -219,7 +221,7 @@ export default function PdfOrderImportModal({ locations, defaultLocId, busy, onC
     setRows((rs) => rs.filter((_, idx) => idx !== i));
   }
   function addManualRow() {
-    setRows((rs) => [...(rs || []), { name: "", qty: 1, unitPrice: 0, lineTotal: 0, isPart: true, category: "Egyéb", confident: true, supplier }]);
+    setRows((rs) => [...(rs || []), { name: "", qty: 1, unitPrice: 0, lineTotal: 0, kind: "part", category: "Egyéb", confident: true, supplier }]);
   }
 
   const total = (rows || []).reduce((s, r) => s + (Number(r.lineTotal) || 0), 0);
@@ -257,17 +259,20 @@ export default function PdfOrderImportModal({ locations, defaultLocId, busy, onC
                       <td><input type="number" min="1" value={r.qty} onChange={(e) => { const qty = Number(e.target.value) || 1; updateRow(i, { qty, lineTotal: qty * r.unitPrice }); }} style={{ width: 50 }} /></td>
                       <td><input type="number" min="0" value={r.unitPrice} onChange={(e) => { const unitPrice = Number(e.target.value) || 0; updateRow(i, { unitPrice, lineTotal: r.qty * unitPrice }); }} style={{ width: 70 }} /></td>
                       <td>
-                        <select value={r.isPart ? "part" : "expense"} onChange={(e) => updateRow(i, { isPart: e.target.value === "part" })}>
+                        <select value={r.kind} onChange={(e) => updateRow(i, { kind: e.target.value })}>
                           <option value="part">Alkatrész</option>
+                          <option value="phone">Telefon</option>
                           <option value="expense">Csak kiadás</option>
                         </select>
                       </td>
                       <td>
-                        {r.isPart ? (
+                        {r.kind === "part" ? (
                           <select value={r.category} onChange={(e) => updateRow(i, { category: e.target.value })}>
                             {PART_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
                             <option value="Egyéb">Egyéb</option>
                           </select>
+                        ) : r.kind === "phone" ? (
+                          <span style={{ fontSize: 11, color: "#9CA3AF" }}>Rögzítéskor kérjük a részleteket</span>
                         ) : "—"}
                       </td>
                       <td className="mono" style={{ fontWeight: 700 }}>{money(r.lineTotal)}</td>
@@ -313,22 +318,44 @@ export default function PdfOrderImportModal({ locations, defaultLocId, busy, onC
 ```
 Új prop: `setPdfImportModal`.
 
-**b) `src/App.jsx`** — új state, handler és render:
+**b) `src/App.jsx`** — új state, handler és render. A "Telefon"-nak jelölt sorok nem tölthetők fel automatikusan a `products` táblába (túl sok hiányzó mező: állapot, tárhely, szín, IMEI, eladási ár — ezeket az `StockModal` kéri be), ezért ezekhez **egyenként megnyitjuk a meglévő "Új termék" modalt**, előre kitöltve azzal, amit tudunk (márka/modell szöveg, beérkezési ár, helyszín, forrás) — pontosan úgy, ahogy a már meglévő `checkoutBasket` is teszi `stockKind === "Telefon"`-nál (751–754. sor). Ha egy sor `qty > 1` és "Telefon"-ként van megjelölve, annyi különálló egyedi terméket kell felvenni, ahány darab van — ezért egy kis sorban-állót (`stockImportQueue`) vezetünk be, ami darabonként, egymás után nyitja meg a modalt.
 ```js
 const [pdfImportModal, setPdfImportModal] = useState(false);
+const [stockImportQueue, setStockImportQueue] = useState([]); // hátralévő "Telefon"-ként jelölt egységek
 
 async function importPdfOrder(rows, supplier, payment, locId) {
   const basketId = rows.length > 1 ? crypto.randomUUID() : null;
+  const phoneQueue = [];
   for (const row of rows) {
-    if (row.isPart) {
+    if (row.kind === "part") {
       await addPart({ name: row.name, category: row.category, quantity: row.qty, costPrice: row.unitPrice, source: supplier, brand: "", modelFit: "", origin: "", supplierSku: "" });
+    }
+    if (row.kind === "phone") {
+      for (let i = 0; i < row.qty; i++) {
+        phoneQueue.push({ model: row.name, costPrice: row.unitPrice, locationId: locId, source: supplier });
+      }
     }
     await addTransaction({ type: "expense", category: "Készlet", description: row.name, amount: row.lineTotal, costPrice: 0, payment, basketId }, locId);
   }
   setPdfImportModal(false);
+  if (phoneQueue.length > 0) {
+    setStockImportQueue(phoneQueue.slice(1));
+    setStockModal({ model: phoneQueue[0].model, costPrice: phoneQueue[0].costPrice, locationId: phoneQueue[0].locationId, source: phoneQueue[0].source });
+  }
 }
+
+// Amint a "Telefon"-felvevő modal bezárul (mentve vagy mégse), és van még hátralévő
+// darab a sorban-állóban, nyissuk meg a következőt — így egyenként, emberi ellenőrzéssel
+// mennek fel a telefonok (állapot, tárhely, szín, IMEI, eladási ár mindig kézzel kell).
+useEffect(() => {
+  if (stockModal === null && stockImportQueue.length > 0) {
+    const [next, ...rest] = stockImportQueue;
+    setStockImportQueue(rest);
+    setStockModal({ model: next.model, costPrice: next.costPrice, locationId: next.locationId, source: next.source });
+  }
+}, [stockModal]);
 ```
-(Az `addPart` és `addTransaction` már léteznek — 443. és 713. sor körül —, mindkettő saját `withBusy`-t és state-frissítést csinál, ezért egyszerű ciklusban meghívhatók, ugyanúgy, ahogy a meglévő `checkoutBasket` is teszi a 743–755. sorok között.)
+(Az `addPart` és `addTransaction` már léteznek — 443. és 713. sor körül —, mindkettő saját `withBusy`-t és state-frissítést csinál, ezért egyszerű ciklusban meghívhatók, ugyanúgy, ahogy a meglévő `checkoutBasket` is teszi a 743–755. sorok között. A `useEffect` már importálva van a fájl tetején.)
 
 Render (a `PartModal` renderelése mellé):
 ```jsx
@@ -343,6 +370,15 @@ Render (a `PartModal` renderelése mellé):
 )}
 ```
 Import: `import PdfOrderImportModal from "./components/PdfOrderImportModal";`
+
+**c) `src/components/StockModal.jsx`** — a `prefill` jelenleg csak `costPrice`-t és helyszínt olvas ki (16. és 24. sor). Egészítsd ki, hogy `model`/`source`-t is átvegye, hogy a fenti sorban-álló előtöltse a modell-szöveget és a beszállítót:
+```js
+brand: product?.brand || "",
+model: product?.model || prefill?.model || "",
+...
+source: product?.source || prefill?.source || "",
+```
+(A `brand`-et szándékosan nem töltjük elő — a számla-leírásból nem lehet megbízhatóan szétszedni márkára és modellre, pl. "PHILIPS E171"-ből a "PHILIPS" a márka, de ez általános szöveg-feldolgozással törékeny lenne. Egyszerűbb, ha a modell-mezőbe kerül a teljes szöveg, és a felhasználó egy kattintással átmásolja/kiigazítja a márkát is mentés előtt.)
 
 Az így létrejövő tranzakciók automatikusan egy "Blokk"-ként jelennek meg a Bevételek & Kiadások fülön (`TransactionsPeriodList.jsx` már kezeli a `basketId`-t — ehhez nem kell semmit módosítani, ez már megvan).
 
@@ -362,7 +398,7 @@ Az így létrejövő tranzakciók automatikusan egy "Blokk"-ként jelennek meg a
 **`sep-pelda.pdf`**:
 | Megnevezés | Db | Egységár | Típus | Sor össz. |
 |---|---|---|---|---|
-| PHILIPS E171 | 2 | 135 | Csak kiadás — **nem ismeri fel egyértelműen** (ez valójában egy telefon, nem alkatrész — helyesen kell, hogy sárgán kiemelje "ellenőrizd" jelzéssel) | -270 |
+| PHILIPS E171 | 2 | 135 | Csak kiadás — **nem ismeri fel egyértelműen**, sárgán kiemelve "ellenőrizd" jelzéssel (ez valójában egy telefon — a felhasználó a Típus oszlopban "Telefon"-ra tudja állítani, ekkor Rögzítéskor 2×, egyenként nyílik meg az "Új termék" modal, előre kitöltve 135 Lei beszerzési árral és "SEP" forrással) | -270 |
 | Folie protectie display sticla Privacy | 4 | 14 | Alkatrész — Fólia | -56 |
 | Transport | 1 | 20 | Csak kiadás (szállítás) | -20 |
 
@@ -379,5 +415,6 @@ Ha a parser ezekhez közeli eredményt ad (a leírás-szöveg pontos tördelése
 - A "PHILIPS E171" sor (vagy bármi, amit a rendszer nem ismer fel biztosan) sárgán kiemelve, "ellenőrizd" felirattal jelenik meg, és alapból **nem** alkatrészként van beállítva
 - "tok"/"husa" szavas sorok alapból "Csak kiadás"-ként vannak jelölve, nem kerülnek fel alkatrésznek
 - Rögzítés után: az alkatrészek felkerülnek az Alkatrészek fülre a megfelelő mennyiséggel és kerekített árral; a Bevételek & Kiadások fülön egy "Blokk"-ként jelenik meg az egész rendelés, minden tétel negatív összeggel, alul az összesített végösszeggel
+- Ha egy sor Típusa "Telefon", Rögzítés után annyiszor nyílik meg egymás után az "Új termék" modal, ahány darab volt a soron, mindig előre kitöltve a beszerzési árral, helyszínnel és forrással — a modell/márka/állapot/ár/IMEI-t a felhasználó tölti ki egyenként
 - Kézzel is fel lehet venni/törölni sort a beolvasás előtt vagy után, ismeretlen számla-formátumnál is használható a funkció (üres táblával indul)
 - Nincs `git push`, csak lokális commit — a `dev-fixtures/` mappa is kerüljön be a commitba, hogy tesztelni lehessen vele
