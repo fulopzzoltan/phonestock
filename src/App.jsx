@@ -8,6 +8,7 @@ import Login from "./Login";
 import StockModal from "./components/StockModal";
 import SellModal from "./components/SellModal";
 import PartModal from "./components/PartModal";
+import PdfOrderImportModal from "./components/PdfOrderImportModal";
 import DetailPanel from "./components/DetailPanel";
 import ProductDetailPanel from "./components/ProductDetailPanel";
 import DeviceHistoryPanel from "./components/DeviceHistoryPanel";
@@ -445,7 +446,7 @@ function AppShell() {
   async function addPart(data) {
     await withBusy(async () => {
       const r = unwrap(await supabase.from("parts").insert(partToApi(data)).select());
-      setParts([partFromApi(r[0]), ...parts]);
+      setParts((prev) => [partFromApi(r[0]), ...prev]);
       setPartModal(null);
     });
   }
@@ -723,7 +724,7 @@ function AppShell() {
         await supabase.from("customers").update({ marketing_consent: true, marketing_consent_at: new Date().toISOString() }).eq("id", customerId);
       }
       const r = unwrap(await supabase.from("transactions").insert({ ...txToApi(data, locId), customer_id: customerId }).select());
-      setTransactions([txFromApi(r[0]), ...transactions]);
+      setTransactions((prev) => [txFromApi(r[0]), ...prev]);
     });
   }
   async function editTransaction(id, data, locId) {
@@ -739,6 +740,44 @@ function AppShell() {
       setTransactions(transactions.filter((t) => t.id !== id));
     });
   }
+
+  // PDF RENDELÉS IMPORT
+  const [pdfImportModal, setPdfImportModal] = useState(false);
+  const [stockImportQueue, setStockImportQueue] = useState([]); // hátralévő "Telefon"-ként jelölt egységek
+
+  async function importPdfOrder(rows, supplier, payment, locId) {
+    const basketId = rows.length > 1 ? crypto.randomUUID() : null;
+    const phoneQueue = [];
+    for (const row of rows) {
+      if (row.kind === "part") {
+        await addPart({ name: row.name, category: row.category, quantity: row.qty, costPrice: row.unitPrice, source: supplier, brand: "", modelFit: "", origin: "", supplierSku: "" });
+      }
+      if (row.kind === "phone") {
+        // A products.source mező itt Konszignáció/Számla besorolást jelent (nem beszállító-nevet,
+        // ld. StockModal.jsx SOURCES) — mivel ez egy valódi számláról (Factura) importált tétel, "Számla".
+        for (let i = 0; i < row.qty; i++) {
+          phoneQueue.push({ model: row.name, costPrice: row.unitPrice, locationId: locId, source: "Számla" });
+        }
+      }
+      await addTransaction({ type: "expense", category: "Készlet", description: row.name, amount: row.lineTotal, costPrice: 0, payment, basketId }, locId);
+    }
+    setPdfImportModal(false);
+    if (phoneQueue.length > 0) {
+      setStockImportQueue(phoneQueue.slice(1));
+      setStockModal({ model: phoneQueue[0].model, costPrice: phoneQueue[0].costPrice, locationId: phoneQueue[0].locationId, source: phoneQueue[0].source });
+    }
+  }
+
+  // Amint a "Telefon"-felvevő modal bezárul (mentve vagy mégse), és van még hátralévő
+  // darab a sorban-állóban, nyissuk meg a következőt — így egyenként, emberi ellenőrzéssel
+  // mennek fel a telefonok (állapot, tárhely, szín, IMEI, eladási ár mindig kézzel kell).
+  useEffect(() => {
+    if (stockModal === null && stockImportQueue.length > 0) {
+      const [next, ...rest] = stockImportQueue;
+      setStockImportQueue(rest);
+      setStockModal({ model: next.model, costPrice: next.costPrice, locationId: next.locationId, source: next.source });
+    }
+  }, [stockModal]);
 
   // BasketBar checkout — items: [{label, amount, cost, category, kind, stockKind?}]
   // Csak 2+ tételnél kap közös basket_id-t (egyetlen tétel nem "blokk", marad sima sor).
@@ -1344,6 +1383,7 @@ function AppShell() {
             busy={busy} setPartModal={setPartModal} partSearch={partSearch} setPartSearch={setPartSearch}
             loadingData={loadingData} filteredParts={filteredParts} setPartDetailId={setPartDetailId} deletePart={deletePart}
             partsStats={partsStats} allUsedParts={allUsedParts} locName={locName} setDetailId={setDetailId}
+            setPdfImportModal={setPdfImportModal}
           />
         )}
 
@@ -1425,6 +1465,15 @@ function AppShell() {
           onClose={() => setPartModal(null)}
           busy={busy}
           onSave={(data) => (typeof partModal === "object" && partModal?.id ? editPart(partModal.id, data) : addPart(data))}
+        />
+      )}
+      {pdfImportModal && (
+        <PdfOrderImportModal
+          locations={allowedLocations}
+          defaultLocId={defaultLocId}
+          busy={busy}
+          onClose={() => setPdfImportModal(false)}
+          onImport={importPdfOrder}
         />
       )}
       {txModal && (

@@ -26,7 +26,7 @@ const CATS = [...PART_CATEGORIES, "Egyéb"];
 
 export default function PartsTab({
   busy, setPartModal, partSearch, setPartSearch, loadingData, filteredParts, setPartDetailId, deletePart, partsStats,
-  allUsedParts = [], locName, setDetailId,
+  allUsedParts = [], locName, setDetailId, setPdfImportModal,
 }) {
   const [catFilter, setCatFilter] = useState("all");
   const [sortBy, setSortBy] = useState("recent");
@@ -41,7 +41,10 @@ export default function PartsTab({
     <>
       <div className="topbar">
         <div><div className="page-title">Alkatrész raktár</div><div className="page-sub">Közös raktár — mindkét helyszín</div></div>
-        <button className="btn" disabled={busy} onClick={() => setPartModal("add")}>+ Új alkatrész</button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button className="btn sec" disabled={busy} onClick={() => setPdfImportModal(true)}>+ Rendelés PDF-ből</button>
+          <button className="btn" disabled={busy} onClick={() => setPartModal("add")}>+ Új alkatrész</button>
+        </div>
       </div>
 
       <div className="statrow c2">

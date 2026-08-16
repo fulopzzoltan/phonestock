@@ -7,7 +7,7 @@ export default function StockModal({ product, prefill, locations, onClose, onSav
   const isEdit = !!product;
   const [f, setF] = useState({
     brand: product?.brand || "",
-    model: product?.model || "",
+    model: product?.model || prefill?.model || "",
     condition: product?.condition || "New",
     grade: product?.grade || "A",
     storage: product?.storage || "",
@@ -16,7 +16,7 @@ export default function StockModal({ product, prefill, locations, onClose, onSav
     costPrice: product?.costPrice ?? prefill?.costPrice ?? "",
     salePrice: product?.salePrice ?? "",
     warranty: product?.warranty || "",
-    source: product?.source || "",
+    source: product?.source || prefill?.source || "",
     batteryHealth: product?.batteryHealth ?? "",
     newPrice: product?.newPrice ?? "",
     stockStatus: product?.stockStatus || "polcon",
