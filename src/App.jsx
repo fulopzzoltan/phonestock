@@ -407,10 +407,24 @@ function AppShell() {
       if (txData.marketingConsent && customerId) {
         await supabase.from("customers").update({ marketing_consent: true, marketing_consent_at: new Date().toISOString() }).eq("id", customerId);
       }
+      const product = stock.find((p) => p.id === txData.productId);
       unwrap(await supabase.from("products").update({ status: "sold" }).eq("id", txData.productId));
-      const r = unwrap(await supabase.from("transactions").insert({ ...txToApi(txData, locId), customer_id: customerId }).select());
+
+      const accessories = [{ description: "Fólia", amount: 10 }];
+      if (product?.condition === "Refurbished") accessories.push({ description: "Kábel", amount: 5 });
+      const basketId = crypto.randomUUID();
+
+      const r = unwrap(await supabase.from("transactions").insert({ ...txToApi({ ...txData, basketId }, locId), customer_id: customerId }).select());
+      const newTxs = [txFromApi(r[0])];
+      for (const acc of accessories) {
+        const ar = unwrap(await supabase.from("transactions").insert(
+          txToApi({ type: "expense", category: "Készlet", description: acc.description, amount: acc.amount, basketId }, locId)
+        ).select());
+        newTxs.push(txFromApi(ar[0]));
+      }
+
       setStock(stock.map((i) => (i.id === txData.productId ? { ...i, status: "sold" } : i)));
-      setTransactions([txFromApi(r[0]), ...transactions]);
+      setTransactions([...newTxs, ...transactions]);
       setSellModal(null);
     });
   }
