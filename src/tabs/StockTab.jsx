@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { money, displayName, phoneCode, daysOnShelf, isSlowMoving, stockStatusLabel } from "../lib/utils";
-import { SearchIcon, EditIcon, ListViewIcon, GridViewIcon, PhoneCaseIcon, ChevronDownIcon } from "../components/icons";
+import { SearchIcon, EditIcon, ListViewIcon, GridViewIcon, PhoneCaseIcon, ChevronDownIcon, CalendarIcon } from "../components/icons";
 import ConfirmDelete from "../components/ConfirmDelete";
 import Thumb from "../components/Thumb";
 import { EmptyState, LoadingState } from "../components/EmptyState";
@@ -146,30 +146,40 @@ export default function StockTab({
                 </div>
               ) : (
                 <div className="stk-grid">
-                  {items.map((i) => (
-                    <div key={i.id} className="stk-card" onClick={() => setProductDetailId(i.id)}>
-                      <div className="stk-card-top">
-                        <Thumb brand={i.brand} />
-                        <div className="stk-badges" style={{ justifyContent: "flex-end" }}>
-                          <span className={`st ${i.condition === "New" ? "st-kesz" : "st-beveve"}`}>{i.condition === "New" ? "Új" : `Felúj. ${i.grade || ""}`}</span>
+                  {items.map((i) => {
+                    const slow = isSlowMoving(i, reserveLocId);
+                    return (
+                      <div key={i.id} className="stk-card" onClick={() => setProductDetailId(i.id)}>
+                        <div className="stk-card-top">
+                          <Thumb brand={i.brand} size="lg" />
+                          <span className="stk-card-code">{phoneCode(i.productNo)}</span>
+                        </div>
+                        <div className="stk-card-name">
+                          {displayName(i.brand, i.model)}
+                          {i.stockStatus === "javitando" && <span className="tag" style={{ marginLeft: 6, background: "var(--danger-soft)", color: "var(--danger-ink)", fontWeight: 700 }}>Javítandó</span>}
+                          {i.stockStatus === "lefoglalt" && <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }}>{stockStatusLabel(i.stockStatus)}</span>}
+                        </div>
+                        <div className="stk-card-specs">
+                          <span className="spec-pill">{i.condition === "New" ? "Új" : `Felújított${i.grade ? " " + i.grade : ""}`}</span>
+                          {i.storage && <span className="spec-pill">{i.storage}</span>}
+                          {i.warranty && <span className="spec-pill">{i.warranty} gar.</span>}
+                        </div>
+                        {i.color && <div className="stk-card-color">{i.color}</div>}
+                        <div className="stk-card-price-row">
+                          <div className="stk-card-price">{money(i.salePrice)}</div>
+                          <div className={`stk-card-days${slow ? " warn" : ""}`}><CalendarIcon width={13} height={13} />{daysOnShelf(i.dateAdded)}</div>
+                        </div>
+                        <div className="stk-card-cost">besz. {money(i.costPrice)}</div>
+                        <div className="stk-card-actions">
+                          <div className="stk-card-icons" onClick={(e) => e.stopPropagation()}>
+                            <button className="iconbtn stk-card-iconbtn edit" disabled={busy} onClick={() => setStockModal(i)}><EditIcon /></button>
+                            <ConfirmDelete disabled={busy} className="stk-card-iconbtn delete" onConfirm={() => deleteProduct(i.id)} />
+                          </div>
+                          <button className="btn sm pill" disabled={busy} onClick={(e) => { e.stopPropagation(); setSellModal(i); }}>Eladás</button>
                         </div>
                       </div>
-                      <div className="stk-card-name">
-                        {displayName(i.brand, i.model)}
-                        {i.stockStatus === "javitando" && <span className="tag" style={{ marginLeft: 6, background: "var(--danger-soft)", color: "var(--danger-ink)", fontWeight: 700 }} title="Nem látszik a webshopban">Javítandó</span>}
-                        {i.stockStatus === "lefoglalt" && <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }} title="Nem látszik a webshopban">{stockStatusLabel(i.stockStatus)}</span>}
-                        {isSlowMoving(i, reserveLocId) && <span className="tag" style={{ marginLeft: 6, background: "var(--warning-soft)", color: "var(--warning-ink)", fontWeight: 700 }}>{daysOnShelf(i.dateAdded)} napja a polcon</span>}
-                      </div>
-                      <div className="stk-card-sub">{[phoneCode(i.productNo), i.storage, i.color].filter(Boolean).join(" · ") || "—"}{i.warranty ? ` · ${i.warranty} gar.` : ""}</div>
-                      <div className="stk-card-price">{money(i.salePrice)}</div>
-                      <div className="stk-card-cost">besz. {money(i.costPrice)}</div>
-                      <div className="stk-card-actions" onClick={(e) => e.stopPropagation()}>
-                        <button className="btn sec sm" disabled={busy} onClick={() => setSellModal(i)}>Eladás</button>
-                        <button className="iconbtn" disabled={busy} onClick={() => setStockModal(i)}><EditIcon /></button>
-                        <ConfirmDelete disabled={busy} onConfirm={() => deleteProduct(i.id)} />
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

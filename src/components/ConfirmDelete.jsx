@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { TrashIcon } from "./icons";
 
-export default function ConfirmDelete({ onConfirm, disabled, variant = "icon", label = "Törlés", confirmLabel = "Biztos?" }) {
+export default function ConfirmDelete({ onConfirm, disabled, variant = "icon", label = "Törlés", confirmLabel = "Biztos?", className = "" }) {
   const [confirming, setConfirming] = useState(false);
   const stop = (e) => e.stopPropagation();
 
@@ -21,6 +21,6 @@ export default function ConfirmDelete({ onConfirm, disabled, variant = "icon", l
     );
   }
   return (
-    <button type="button" className="iconbtn" disabled={disabled} onClick={(e) => { stop(e); setConfirming(true); }}><TrashIcon /></button>
+    <button type="button" className={`iconbtn ${className}`} disabled={disabled} onClick={(e) => { stop(e); setConfirming(true); }}><TrashIcon /></button>
   );
 }

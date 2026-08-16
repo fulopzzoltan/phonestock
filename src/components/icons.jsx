@@ -101,6 +101,12 @@ export const ClockIcon = (props) => (
   </svg>
 );
 
+export const CalendarIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 9h18M8 3v4M16 3v4" />
+  </svg>
+);
+
 export const BuybackIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...props}>
     <circle cx="8" cy="12" r="5" /><path d="M13 7.5a5 5 0 010 9M16 9.3l2-1.8-2-1.8M18 15.5l2 1.8-2 1.8" opacity=".55" />
