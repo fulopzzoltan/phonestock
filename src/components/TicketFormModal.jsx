@@ -1,7 +1,7 @@
 import { useState } from "react";
 import LocationField from "./LocationField";
 import { CloseIcon } from "./icons";
-import { PROBLEM_TAGS, WARRANTIES, STATUSES, SUB_STATUSES, statusLabel } from "../lib/utils";
+import { PROBLEM_TAGS, WARRANTIES, STATUSES, SUB_STATUSES, statusLabel, normalizeImei, money, ticketCode } from "../lib/utils";
 import CustomerAutocomplete from "./CustomerAutocomplete";
 
 function parseIssue(issue) {
@@ -11,7 +11,7 @@ function parseIssue(issue) {
   return { tags, extra };
 }
 
-export default function TicketFormModal({ ticket, prefill, locations, users = [], customers = [], stock = [], defaultLocId, onClose, onSave, busy }) {
+export default function TicketFormModal({ ticket, prefill, locations, users = [], customers = [], stock = [], tickets = [], defaultLocId, onClose, onSave, busy }) {
   const isEdit = !!ticket;
   const parsed = parseIssue(ticket?.issue);
   const [productQuery, setProductQuery] = useState("");
@@ -51,6 +51,12 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
         return hay.includes(q);
       }).slice(0, 8)
     : [];
+  const imeiKey = normalizeImei(f.imei);
+  const imeiMatch = imeiKey.length >= 6 ? {
+    product: stock.find((p) => normalizeImei(p.imei) === imeiKey),
+    tickets: tickets.filter((t) => normalizeImei(t.imei) === imeiKey && t.id !== ticket?.id),
+  } : null;
+  const hasImeiMatch = imeiMatch && (imeiMatch.product || imeiMatch.tickets.length > 0);
 
   function submit() {
     if (!valid) return;
@@ -131,6 +137,17 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
             </select>
           </div>
         </div>
+        {hasImeiMatch && (
+          <div style={{ marginTop: -4, marginBottom: 12, padding: "10px 12px", background: "var(--primary-soft)", border: "1px solid var(--primary)", borderRadius: 10, fontSize: 12.5 }}>
+            <div style={{ fontWeight: 700, marginBottom: 4, color: "var(--primary-ink)" }}>Ezzel a készülékkel már dolgoztunk:</div>
+            {imeiMatch.product && (
+              <div>— nálunk vásárolt telefon ({imeiMatch.product.condition === "New" ? "új" : "felújított"}, {money(imeiMatch.product.salePrice)}{imeiMatch.product.status === "sold" ? ", eladva" : ", raktáron"})</div>
+            )}
+            {imeiMatch.tickets.map((t) => (
+              <div key={t.id}>— korábbi szerviz: {t.dateIn} · {(t.issue || "").split(",").filter(Boolean).join(", ") || "—"}</div>
+            ))}
+          </div>
+        )}
         <div className="field"><label>Probléma {!hasIssue && <span style={{ color: "#DC2626", fontWeight: 400, textTransform: "none" }}>— válassz egy tag-et vagy írj leírást</span>}</label>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
             {PROBLEM_TAGS.map((tag) => (

@@ -7,7 +7,7 @@ import ConfirmDelete from "./ConfirmDelete";
 import TicketPhotos from "./TicketPhotos";
 import PhonePartsPicker from "./PhonePartsPicker";
 
-export default function DetailPanel({ ticket, locName, parts, stock, users = [], onClose, onStatusChange, onCompleteQc, onEdit, onDelete, busy, onAddPart, onRemovePart, onPrint }) {
+export default function DetailPanel({ ticket, locName, parts, stock, users = [], onClose, onStatusChange, onCompleteQc, onEdit, onDelete, busy, onAddPart, onRemovePart, onPrint, onShowHistory }) {
   const [copied, setCopied] = useState(false);
   const [showAddPart, setShowAddPart] = useState(false);
   const [selPartId, setSelPartId] = useState("");
@@ -84,6 +84,9 @@ export default function DetailPanel({ ticket, locName, parts, stock, users = [],
             <Row k="Márka" v={ticket.brand} />
             <Row k="Modell" v={ticket.model} />
             <Row k="IMEI" v={ticket.imei ? <span className="mono">{ticket.imei}</span> : null} />
+            {ticket.imei && (
+              <button type="button" className="btn sec sm" style={{ marginTop: 4, marginBottom: 4 }} onClick={() => onShowHistory(ticket.imei)}>Eszköz előzmény megtekintése</button>
+            )}
             <Row k="Probléma" v={probs.length ? probs.map((p, i) => <span key={i} className="prob-pill">{p}</span>) : null} />
             <Row k="Garancia" v={ticket.warranty ? <span className="gar-pill">{ticket.warranty}</span> : null} />
             <Row k="Fólia" v={ticket.folia ? <span style={{ color: "#22C55E", fontWeight: 700 }}>✓ Igen</span> : "Nem"} />

@@ -7,7 +7,7 @@ import PhonePartsPicker from "./PhonePartsPicker";
 
 export default function ProductDetailPanel({
   product, saleTx, locName, onClose, onSell, onEdit, onDelete, busy,
-  users = [], activeServiceTicket, parts = [], onAddPart, onRemovePart, onStartService, onOpenTicket, onReturnToStock,
+  users = [], activeServiceTicket, parts = [], onAddPart, onRemovePart, onStartService, onOpenTicket, onReturnToStock, onShowHistory,
 }) {
   const profit = (Number(product.salePrice) || 0) - (Number(product.costPrice) || 0);
   const isSold = product.status === "sold";
@@ -36,6 +36,9 @@ export default function ProductDetailPanel({
             <Row k="Garancia" v={product.warranty ? <span className="gar-pill">{product.warranty}</span> : null} />
             <Row k="Forrás" v={product.source} />
             {product.condition === "Refurbished" && <Row k="Akkuállapot" v={product.batteryHealth != null ? `${product.batteryHealth}%` : null} />}
+            {product.imei && (
+              <button type="button" className="btn sec sm" style={{ marginTop: 8 }} onClick={() => onShowHistory(product.imei)}>Eszköz előzmény megtekintése</button>
+            )}
           </div>
           <div className="dp-section">
             <div className="dp-section-title">Előkészítés / szerviz</div>

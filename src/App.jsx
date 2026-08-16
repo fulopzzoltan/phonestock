@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
 import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi } from "./lib/mappers";
-import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode } from "./lib/utils";
+import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, normalizeImei, money, ticketCode } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
 import StockModal from "./components/StockModal";
@@ -10,6 +10,7 @@ import SellModal from "./components/SellModal";
 import PartModal from "./components/PartModal";
 import DetailPanel from "./components/DetailPanel";
 import ProductDetailPanel from "./components/ProductDetailPanel";
+import DeviceHistoryPanel from "./components/DeviceHistoryPanel";
 import PartDetailPanel from "./components/PartDetailPanel";
 import OwnStockServiceModal from "./components/OwnStockServiceModal";
 import TicketFormModal from "./components/TicketFormModal";
@@ -99,6 +100,7 @@ function AppShell() {
   const [detailId, setDetailId] = useState(null);
   const [productDetailId, setProductDetailId] = useState(null);
   const [partDetailId, setPartDetailId] = useState(null);
+  const [deviceHistoryImei, setDeviceHistoryImei] = useState(null);
   const [customerKey, setCustomerKey] = useState(null);
   const [customerModal, setCustomerModal] = useState(null);
   const [printTicket, setPrintTicket] = useState(null);
@@ -1228,6 +1230,49 @@ function AppShell() {
     if (!detailProduct) return null;
     return tickets.find((t) => t.productId === detailProduct.id && t.ticketKind !== "Ügyfél" && t.subStatus !== "Átadva") || null;
   }, [tickets, detailProduct]);
+
+  function buildDeviceHistory(rawImei) {
+    const key = normalizeImei(rawImei);
+    if (!key) return null;
+    const relatedProducts = stock.filter((p) => normalizeImei(p.imei) === key);
+    const relatedTickets = tickets.filter((t) => normalizeImei(t.imei) === key);
+    if (relatedProducts.length === 0 && relatedTickets.length === 0) return null;
+    const ref = relatedProducts[0] || relatedTickets[0];
+
+    const timeline = [];
+    relatedProducts.forEach((p) => {
+      timeline.push({
+        date: p.dateAdded, kind: "purchase",
+        label: p.condition === "New" ? "Beszerezve (új)" : "Beszerezve (felújított)",
+        detail: `besz. ár ${money(p.costPrice)}${p.grade ? " · " + p.grade : ""}`,
+        onOpen: () => { setProductDetailId(p.id); setDeviceHistoryImei(null); },
+      });
+      const saleTx = transactions.find((t) => t.productId === p.id && t.type === "income");
+      if (saleTx) {
+        timeline.push({ date: saleTx.date, kind: "sale", label: "Eladva", detail: `${saleTx.customerName || "—"} — ${money(saleTx.amount)}` });
+      }
+    });
+    relatedTickets.forEach((t) => {
+      const kindLabel = t.ticketKind === "Ügyfél" ? "Ügyfél szerviz"
+        : t.ticketKind === "Saját készlet - garanciális" ? "Garanciális javítás (saját)" : "Előkészítés (saját)";
+      timeline.push({
+        date: t.dateIn, kind: "ticket",
+        label: kindLabel,
+        status: t.status, subStatus: t.subStatus,
+        detail: `${ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))} — ${(t.issue || "").split(",").filter(Boolean).join(", ") || "—"}${t.price ? " · " + money(t.price) : ""}`,
+        onOpen: () => { setDetailId(t.id); setDeviceHistoryImei(null); },
+      });
+    });
+    timeline.sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+
+    return { imei: ref.imei, brand: ref.brand, model: ref.model, repeatCount: relatedProducts.length, timeline };
+  }
+
+  const deviceHistory = useMemo(
+    () => (deviceHistoryImei ? buildDeviceHistory(deviceHistoryImei) : null),
+    [deviceHistoryImei, stock, tickets, transactions]
+  );
+
   const editingTicket = ticketModal && ticketModal !== "add" ? ticketModal : null;
 
   const noLocationAssigned = !isAdmin && !myLocationId;
@@ -1408,6 +1453,7 @@ function AppShell() {
           users={users}
           customers={customersTable}
           stock={stock}
+          tickets={tickets}
           defaultLocId={defaultLocId}
           onClose={() => { setTicketModal(null); setRepairLeadConvert(null); }}
           busy={busy}
@@ -1430,6 +1476,7 @@ function AppShell() {
           onAddPart={addPartToTicket}
           onRemovePart={removePartFromTicket}
           onPrint={printTicketSlip}
+          onShowHistory={(imei) => setDeviceHistoryImei(imei)}
         />
       )}
       {detailProduct && (
@@ -1450,7 +1497,11 @@ function AppShell() {
           onEdit={(p) => { setProductDetailId(null); setStockModal(p); }}
           onDelete={(id) => { deleteProduct(id); setProductDetailId(null); }}
           onReturnToStock={returnProductToStock}
+          onShowHistory={(imei) => setDeviceHistoryImei(imei)}
         />
+      )}
+      {deviceHistoryImei && (
+        <DeviceHistoryPanel history={deviceHistory} onClose={() => setDeviceHistoryImei(null)} />
       )}
       {ownServiceModal && (
         <OwnStockServiceModal

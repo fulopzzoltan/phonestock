@@ -54,6 +54,9 @@ export function phoneCode(productNo) {
 export function partCode(partNo) {
   return partNo == null ? null : `A${partNo}`;
 }
+export function normalizeImei(imei) {
+  return (imei || "").replace(/\D/g, "");
+}
 const TICKET_LOCATION_LETTERS = { "Gyimes": "GY", "Szentgyörgy": "CS" };
 // locationName = a felvétel (intake) helyszínének neve — ez a munkalap létrehozásakor
 // örökre rögzül (intake_location_id), nem változik akkor sem, ha a javítás közben
