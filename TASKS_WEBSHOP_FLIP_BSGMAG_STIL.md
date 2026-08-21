@@ -49,13 +49,36 @@ Mind a flip.ro, mind a bsgmag.ro **4 fokozatú esztétikai skálát** használ m
 
 **Ne vedd át a flip.ro/bsgmag.ro tényleges színeit** (flip: kék/lila akcentek, bsgmag: piros/narancs) — a `src/index.css` gyökér-tokenjeit használd (`--primary`, `--primary-soft`, `--warning`, `--danger` stb.), pontosan ahogy a korábbi Figma-alapú telefonkártya-redesignnál is történt (`TASKS_TELEFON_KARTYA_REDESIGN.md`). Amit átveszünk, az a **elrendezés, információs hierarchia és bizalmi elemek típusa**, nem a márkaszínek.
 
-## 6. Döntést igénylő pont: mi legyen a "Kosárba"/CTA gomb szerepe?
+## 6. Kosár + valódi rendelés (nem foglalás) — a user pontosítása szerint
 
-A flip/bsgmag mindkettő "Adauga in cos" → valódi kosár → checkout → fizetés/szállítás. Nálunk jelenleg egyetlen `tel:` hívás-gomb van. Javaslat (alapértelmezésben ezt építjük be, szólj ha mást szeretnél):
+**Korrekció:** nem foglalási/érdeklődési flow kell, hanem valódi "Megveszem" — a vásárló ténylegesen leadja a rendelést, ahogy flip.ro/bsgmag.ro-n. Ez a webshop gerince, ezért részletesen:
 
-**"Lefoglalom" gomb** — nem valódi vásárlás, hanem egy könnyű foglalási űrlap (név + telefonszám + melyik üzletben venné át), ami egy `reservation_requests` sorba kerül (hasonló minta, mint a most spec'olt `customer_requests` — staff RLS-sel látja mindet, ügyfél csak beküldi). A Pulton megjelenne egy ötödik `.pult-section`-ként vagy a meglévő "Ügyfél-kérések" szekcióba integrálva, staff pedig telefonon/személyesen visszaigazolja és foglalja a darabot (pl. a `ProductDetailPanel`-en egy "Foglalt" jelölő, hogy más ne foglalja le ugyanazt duplán). A jelenlegi `tel:` gomb megmarad másodlagos opcióként ("Inkább hívnálak").
+### a) Kosár
+"Kosárba" gomb minden kártyán/terméklapon (a jelenlegi `tel:` gomb helyett/mellett) → egyszerű kliens-oldali kosár-állapot (React context vagy `localStorage`), mivel minden telefon **egyedi, darabra egyszeri tétel** (nem raktárkészlet-SKU), a kosár inkább "kiválasztott egyedi darabok listája", nem mennyiség-alapú.
 
-Ez közelebb hozza a webshopot a flip/bsgmag "egy kattintással lefoglalom" élményéhez, de a te üzletmeneted maradna: fizikai átvétel, staff-jóváhagyás, nincs online fizetés/szállítás-komplexitás.
+### b) Checkout
+Külön oldal (`/penztar` vagy a kosár-oldal maga): név, telefonszám, email (opcionális, de kell számlához/visszaigazoláshoz), **átvételi helyszín** (Gyimes vagy Szentgyörgy — nincs házhozszállítás, hacsak nem szeretnéd bevezetni), majd rendelés leadása.
+
+### c) Fizetés — ez az egyetlen igazi döntési pont, kérlek válaszolj rá
+
+Két alapvetően más irány, más build-mérettel:
+
+1. **Fizetés átvételkor** (készpénz/kártya a boltban) — a webshop csak "lefoglalja és leveszi a listáról" a darabot, a pénz mozgás a boltban történik, ahogy eddig is. Ez **napok alatt megépíthető**, nincs online fizetési szolgáltató, nincs PCI/kártyaadat-kezelési felelősség, nincs internetes távértékesítési (OUG 34/2014) visszaküldési-jog bonyodalom, mert a fizetés/átadás személyesen történik.
+2. **Valódi online bankkártyás fizetés** (pl. Netopia/EuPlătesc/Stripe integráció) — ez már **hetes nagyságrendű munka**: fizetési szolgáltató szerződés+integráció, webhook-fogadó (Supabase Edge Function kell hozzá, mert most nincs backend szerverünk), számlázás automatizálása, és a román táv-értékesítési jog miatt kötelező 14 napos elállási jog kezelése egy fizikai, egyedi darabos terméknél (ami bonyolultabb, mint egy raktárkészletes shopnál).
+
+**Amíg nem válaszolsz, az 1-es (fizetés átvételkor) az alapértelmezett irány ebben a specben** — ez adja a leggyorsabb utat egy valódi "rendelést leadok" élményhez, online fizetés nélkül. Ha a 2-est akarod, szólj és külön specbe kerül (nagyobb, saját döntési kör: melyik fizetési szolgáltató, kinek a nevén megy a szerződés stb.).
+
+### d) Készlet-zárolás — kritikus, egyedi darabok miatt
+
+Mivel minden telefon egyedi (nem darabszám-alapú SKU), a rendelés pillanatában **azonnal** el kell tűnnie a nyilvános listáról, különben két vásárló is megrendelheti ugyanazt a fizikai darabot. Megoldás: a rendelés leadásakor egy DB-tranzakción belül `products.status` (vagy egy új, erre dedikált mező) `'rendelve'`-re vált, és a `get_public_stock()` RPC ezt kiszűri — ugyanaz a minta, mint ma a `soldStock` kezelése, csak a "eladva" állapot előtt egy új "rendelve, fizetésre/átvételre vár" köztes állapot kerül be.
+
+### e) Rendelések — staff oldal
+
+Új `web_orders` (+ `web_order_items`, ha egyszerre több telefont is rendelhet) tábla, állapot-workflow: **Új rendelés → Visszaigazolva → Átvéve/Lezárva** (+ **Lemondva**, ha a vásárló nem jön el vagy staff törli). Ez a Pulton kap egy saját `.pult-section`-t ("Webes rendelések"), és a rendelés elfogadásakor/lezárásakor a meglévő eladási flow-ba (transactions/`category='Készlet'`) fut bele, ugyanúgy, mint egy helyben leadott eladás — nem külön logika, csak más a belépési pont.
+
+### f) Vendég-rendelés + bejelentkezett vásárló
+
+Nem kötelező fiókot nyitni a vásárláshoz (ez rontaná a konverziót) — vendégként is rendelhet (email+telefonszám alapján), de ha az imént spec'olt `TASKS_UGYFEL_FIOK.md` szerinti fiókkal jelentkezik be, a rendelés `customer_profile_id`-vel is összekötésre kerül, és megjelenik a "Vásárlásaim" nézetében. Vendég-rendelés követéséhez a meglévő `/status`/`/receipt` minta szerint egy `/rendeles/:token` publikus lekérdező oldal kell (rendelésszám + telefonszám alapján, RPC-n keresztül, nem nyílt táblahozzáféréssel).
 
 ## 7. Új (bontatlan) telefonok — a fő eltérés flip/bsgmag-tól, külön kell kezelni
 
@@ -63,7 +86,7 @@ Sem a flip.ro, sem a bsgmag.ro nem árul bontatlan, gyári új telefont — kiz�
 
 1. **3. pont (esztétikai fokozat) — Újnál nincs értelmezve.** A `pub-cond-pill`/cím ne mutasson "Kiváló"/"Nagyon jó"-t Újnál, csak simán "Új" / "Bontatlan" jelzőt, ahogy ma is. A `aesthetic_grade` mező (ha bevezetjük) `New`-nál mindig `null`, és az admin UI-ban is inaktív/rejtett Új státuszú terméknél.
 2. **4.2 pont (bizalmi checklist) — két külön verzió kell.** Felújítottnál a "mit ellenőrzünk" lista (kijelző, akku-egészség, gombok, vízkár, IMEI stb.) van értelmezve. Újnál ez félrevezető lenne ("ellenőriztük a vízkárt" egy bontatlan dobozon értelmetlen) — helyette egy másik, rövid checklist: **Bontatlan, gyári fólia**, **Eredeti tartozékok**, **Gyártói/forgalmazói garancia**, **Számla/blokk**. Két konstans tömb (`NEW_TRUST_POINTS`, `REFURB_TRUST_POINTS`) a `condition` alapján választva.
-3. **6. pont (Lefoglalom-gomb) — mindkettőnél érvényes**, nincs különbség: mindkét típusnál ugyanúgy foglalható/érdeklődhető.
+3. **6. pont (Kosár/rendelés) — mindkettőnél érvényes**, nincs különbség: mindkét típus ugyanúgy kosárba tehető és megrendelhető.
 4. **Listaoldal tetején Új/Használt megkülönböztetés hangsúlyosabbá tétele**: a jelenlegi `pub-chip-row`-beli "Új"/"Felújított" chip marad a szűrő-mechanizmus, de érdemes vizuálisan kicsit kiemelni (pl. nagyobb, tab-szerű megjelenés a keresősáv alatt, nem egyenrangú a többi apró chippel) — mert ez nálunk alapvetőbb vásárlói elágazás (más árszint, más elvárás), mint a flip/bsgmag-nál, ahol ez a kérdés fel sem merül.
 5. **Terméklap címe**: Refurbished-nél a cím végén ott a fokozat (pl. "iPhone 14 128GB, Midnight — Nagyon jó", ld. 3. pont), Újnál nincs ilyen utótag, helyette egy jól látható "Bontatlan, gyári garancia" alcím jelenjen meg a cím alatt.
 
@@ -75,7 +98,9 @@ Sem a flip.ro, sem a bsgmag.ro nem árul bontatlan, gyári új telefont — kiz�
 - Listaoldal: tárhely-szűrő működik, aktív szűrők törölhetők, kártya-pill mutatja az esztétikai fokozatot (ha bevezetted a 3. pontot)
 - Terméklap: morzsamenü, bizalmi-checklist, termékkód, hasonló telefonok, sticky CTA mind megjelenik
 - A saját színpaletta maradt, semmi flip-kék/bsgmag-piros nem került be
-- Ha a 6. pont szerinti foglalás-flow bekerült: staff látja a Pulton az új foglalásokat, tud rá reagálni
+- Kosár → checkout → rendelés-leadás végigmegy, a megrendelt darab azonnal eltűnik a nyilvános listáról (nincs dupla-rendelés kockázat)
+- Staff látja a Pulton az új webes rendeléseket ("Webes rendelések" szekció), tudja léptetni az állapotukat, és lezáráskor a meglévő eladási flow-ba fut
+- Vendégként is lehet rendelni, `/rendeles/:token` oldalon nyomon követhető
 - RO oldal (`/ro/telefoane`, `/ro/telefon/:id`) ugyanezeket a változtatásokat tükrözi
 - Új (bontatlan) tételeknél nincs esztétikai fokozat, saját (nem felújított-jellegű) bizalmi checklist jelenik meg
 - Nincs `git push`, csak lokális commit
