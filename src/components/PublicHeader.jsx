@@ -42,7 +42,7 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
               <a className="pub-nav-link pub-lang-switch" href={resolvedLangHref}>{lang === "ro" ? "HU" : "RO"}</a>
             )}
             <a className="pub-nav-link pub-nav-cta" href="/eladom">{s.navBuyback}</a>
-            <a className={`pub-nav-link pub-nav-icon${activeNav === "login" ? " active" : ""}`} href="/admin" aria-label={s.navLogin} title={s.navLogin}>
+            <a className={`pub-nav-link pub-nav-icon${activeNav === "login" ? " active" : ""}`} href="/fiok" aria-label={s.navLogin} title={s.navLogin}>
               <UserIcon width={17} height={17} /><span className="pub-nav-icon-label">{s.navLogin}</span>
             </a>
           </nav>
