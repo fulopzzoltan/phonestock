@@ -12,6 +12,9 @@ export const STRINGS = {
     loading: "Betöltés...", noResults: "Nincs találat a szűrésre — próbálj más márkát vagy keresőszót.",
     warrantyTag: (w) => `${w} garancia`, interested: "Érdekel",
     footer: "Telefonos — az árak és a raktárkészlet folyamatosan frissülnek, végleges ár a szervizben/üzletben.",
+    footerShop: "Vásárlás", footerCart: "Kosár", footerAccount: "Fiók", footerMyAccount: "Fiókom",
+    footerLocations: "Üzleteink", footerLegal: "Jogi", footerTerms: "ÁSZF", footerPrivacy: "Adatvédelem",
+    footerRights: (y) => `© ${y} Telefonos — minden jog fenntartva.`,
     scarcity: "Utolsó darab", saveLabel: (n) => `Spórolsz ${n} Lei`,
     backToStock: "Vissza a készlethez", soldOut: "Ez a darab már elkelt, vagy nem található.",
 
@@ -58,6 +61,9 @@ export const STRINGS = {
     loading: "Se încarcă...", noResults: "Niciun rezultat — încearcă altă marcă sau alt cuvânt cheie.",
     warrantyTag: (w) => `garanție ${w}`, interested: "Sunt interesat",
     footer: "Telefonos — prețurile și stocul se actualizează constant, prețul final se stabilește în magazin/service.",
+    footerShop: "Cumpărături", footerCart: "Coș", footerAccount: "Cont", footerMyAccount: "Contul meu",
+    footerLocations: "Magazinele noastre", footerLegal: "Legal", footerTerms: "Termeni și condiții", footerPrivacy: "Confidențialitate",
+    footerRights: (y) => `© ${y} Telefonos — toate drepturile rezervate.`,
     scarcity: "Ultima bucată", saveLabel: (n) => `Economisești ${n} Lei`,
     backToStock: "Înapoi la stoc", soldOut: "Această bucată s-a vândut deja sau nu a fost găsită.",
 
