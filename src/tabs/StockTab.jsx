@@ -31,7 +31,7 @@ function sortItems(items, sortBy) {
 export default function StockTab({
   effectiveLocFilter, locName, busy, setStockModal, search, setSearch, loadingData, filteredStock,
   locations, reserveLocId, setProductDetailId, setSellModal,
-  soldStock,
+  soldStock, isAdmin = true, myLocationId = null,
 }) {
   const [condFilter, setCondFilter] = useState("all"); // all | New | Refurbished
   const [sortBy, setSortBy] = useState("recent");
@@ -39,6 +39,9 @@ export default function StockTab({
   const [collapsedOverride, setCollapsedOverride] = useState({}); // loc.id -> bool
   const isCollapsed = (loc) => collapsedOverride[loc.id] ?? loc.name === "Tartalék";
   const toggleCollapse = (loc) => setCollapsedOverride((c) => ({ ...c, [loc.id]: !isCollapsed(loc) }));
+  // Alkalmazott csak a saját helyszínén (és a közös Tartalékon) tud eladni/szerkeszteni —
+  // a másik helyszín készletét csak megtekintheti.
+  const canAct = (item) => isAdmin || item.locationId === myLocationId || item.locationId === reserveLocId;
 
   const condFiltered = useMemo(() => {
     return condFilter === "all" ? filteredStock : filteredStock.filter((i) => i.condition === condFilter);
@@ -120,8 +123,12 @@ export default function StockTab({
                           </td>
                           <td className="mono" style={{ fontWeight: 800 }} title={`Beszerzési ár: ${money(i.costPrice)}`}>{money(i.salePrice)}</td>
                           <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
-                            <button className="btn sec sm" disabled={busy} onClick={() => setSellModal(i)}>Eladás</button>
-                            <button className="iconbtn" disabled={busy} onClick={() => setStockModal(i)}><EditIcon /></button>
+                            {canAct(i) && (
+                              <>
+                                <button className="btn sec sm" disabled={busy} onClick={() => setSellModal(i)}>Eladás</button>
+                                <button className="iconbtn" disabled={busy} onClick={() => setStockModal(i)}><EditIcon /></button>
+                              </>
+                            )}
                           </td>
                         </tr>
                       ))}
@@ -151,10 +158,12 @@ export default function StockTab({
                           <div className="stk-card-price">{money(i.salePrice)}</div>
                           <div className={`stk-card-days${slow ? " warn" : ""}`}><CalendarIcon width={13} height={13} />{daysOnShelf(i.dateAdded)}</div>
                         </div>
-                        <div className="stk-card-actions">
-                          <button className="iconbtn stk-card-iconbtn edit" disabled={busy} onClick={(e) => { e.stopPropagation(); setStockModal(i); }}><EditIcon /></button>
-                          <button className="btn sm" disabled={busy} onClick={(e) => { e.stopPropagation(); setSellModal(i); }}>Eladás</button>
-                        </div>
+                        {canAct(i) && (
+                          <div className="stk-card-actions">
+                            <button className="iconbtn stk-card-iconbtn edit" disabled={busy} onClick={(e) => { e.stopPropagation(); setStockModal(i); }}><EditIcon /></button>
+                            <button className="btn sm" disabled={busy} onClick={(e) => { e.stopPropagation(); setSellModal(i); }}>Eladás</button>
+                          </div>
+                        )}
                       </div>
                     );
                   })}

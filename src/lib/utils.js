@@ -6,7 +6,17 @@ export const SITE_URL = "https://phonestock-manager.netlify.app";
 // ékezetek eltávolítása — SMS-eknél 1 szegmensben (160 karakter) marad az üzenet,
 // ékezetekkel a GSM-7 kódolás elesik és 70 karakterenként darabolódik (2x drágább)
 export const stripAccents = (str) => (str || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-export const today = () => new Date().toISOString().slice(0, 10);
+// FONTOS: helyi (böngésző) dátumot ad vissza, NEM UTC-t — new Date().toISOString() UTC-re
+// vált, ami Románia (UTC+2/+3) idézónájában éjfél után pár óráig a tegnapi dátumot adná
+// vissza (pl. helyi 01:00-kor UTC még előző nap 22:00/23:00), és emiatt a mai határidejű
+// munkalapok, garanciák stb. tévesen nem "mainak" számítanának.
+export const today = () => {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
 
 export const LOCS = { gyimes: "Gyimes", szentgy: "Szentgyörgy" };
 

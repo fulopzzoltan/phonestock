@@ -440,11 +440,24 @@ function AppShell() {
   }
   async function returnProductToStock(productId, txId) {
     await withBusy(async () => {
-      unwrap(await supabase.from("products").update({ status: "in_stock", stock_status: "polcon" }).eq("id", productId));
-      setStock(stock.map((i) => (i.id === productId ? { ...i, status: "in_stock", stockStatus: "polcon" } : i)));
+      const todayStr = today();
+      unwrap(await supabase.from("products").update({ status: "in_stock", stock_status: "polcon", date_added: todayStr }).eq("id", productId));
+      setStock(stock.map((i) => (i.id === productId ? { ...i, status: "in_stock", stockStatus: "polcon", dateAdded: todayStr } : i)));
       if (txId) {
         unwrap(await supabase.from("transactions").update({ warranty: null }).eq("id", txId));
-        setTransactions(transactions.map((t) => (t.id === txId ? { ...t, warranty: null } : t)));
+        // A visszavett termékkel együtt eladott tartozék-tételeket (fólia, kábel) is töröljük
+        // ugyanabból a blokkból, mert azokat fizikailag nem lehet visszavenni — ha a telefont
+        // újra eladjuk, akkor kerül fel megint tartozék-költség.
+        const saleTx = transactions.find((t) => t.id === txId);
+        let removedIds = [];
+        if (saleTx?.basketId) {
+          const basketTxs = unwrap(await supabase.from("transactions").select("id").eq("basket_id", saleTx.basketId).neq("id", txId).is("deleted_at", null));
+          removedIds = basketTxs.map((t) => t.id);
+          if (removedIds.length > 0) {
+            unwrap(await supabase.from("transactions").update({ deleted_at: new Date().toISOString() }).in("id", removedIds));
+          }
+        }
+        setTransactions(transactions.filter((t) => !removedIds.includes(t.id)).map((t) => (t.id === txId ? { ...t, warranty: null } : t)));
       }
     });
   }
@@ -1014,13 +1027,16 @@ function AppShell() {
   }
 
   // FILTERED DATA
+  // A Telefonok fülön az alkalmazottak is lássák mindkét helyszín készletét (csak megtekintés) —
+  // ezért ez a szűrő admin esetén a locFilter-t követi, alkalmazottnál mindig "all".
+  const stockLocFilter = isAdmin ? locFilter : "all";
   const filteredStock = useMemo(() => {
     let s = stock.filter((i) => i.status === "in_stock");
-    if (effectiveLocFilter !== "all") s = s.filter((i) => i.locationId === effectiveLocFilter || i.locationId === reserveLocId);
+    if (stockLocFilter !== "all") s = s.filter((i) => i.locationId === stockLocFilter || i.locationId === reserveLocId);
     const q = search.trim().toLowerCase();
     if (q) s = s.filter((i) => [i.brand, i.model, i.imei, i.color, phoneCode(i.productNo)].join(" ").toLowerCase().includes(q));
     return [...s].sort((a, b) => (a.brand || "").localeCompare(b.brand || "", "hu") || (a.model || "").localeCompare(b.model || "", "hu"));
-  }, [stock, effectiveLocFilter, search, reserveLocId]);
+  }, [stock, stockLocFilter, search, reserveLocId]);
 
   const txByProductId = useMemo(() => {
     const m = new Map();
@@ -1030,12 +1046,12 @@ function AppShell() {
 
   const soldStock = useMemo(() => {
     let s = stock.filter((i) => i.status === "sold");
-    if (effectiveLocFilter !== "all") s = s.filter((i) => i.locationId === effectiveLocFilter || i.locationId === reserveLocId);
+    if (stockLocFilter !== "all") s = s.filter((i) => i.locationId === stockLocFilter || i.locationId === reserveLocId);
     const q = search.trim().toLowerCase();
     if (q) s = s.filter((i) => [i.brand, i.model, i.imei, i.color, phoneCode(i.productNo)].join(" ").toLowerCase().includes(q));
     const withTx = s.map((i) => ({ ...i, saleTx: txByProductId.get(i.id) || null }));
     return withTx.sort((a, b) => (b.saleTx?.date || "").localeCompare(a.saleTx?.date || ""));
-  }, [stock, effectiveLocFilter, search, reserveLocId, txByProductId]);
+  }, [stock, stockLocFilter, search, reserveLocId, txByProductId]);
 
   const filteredTransactions = useMemo(() => {
     if (effectiveLocFilter === "all") return transactions;
@@ -1417,11 +1433,12 @@ function AppShell() {
 
         {!noLocationAssigned && tab === "stock" && (
           <StockTab
-            effectiveLocFilter={effectiveLocFilter} locName={locName} busy={busy} setStockModal={setStockModal}
+            effectiveLocFilter={stockLocFilter} locName={locName} busy={busy} setStockModal={setStockModal}
             search={search} setSearch={setSearch} loadingData={loadingData} filteredStock={filteredStock}
             locations={locations} reserveLocId={reserveLocId} setProductDetailId={setProductDetailId}
             setSellModal={setSellModal}
             soldStock={soldStock}
+            isAdmin={isAdmin} myLocationId={myLocationId}
           />
         )}
 
