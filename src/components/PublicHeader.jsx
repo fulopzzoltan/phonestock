@@ -29,9 +29,6 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
             <img src="/logo.png" alt="Telefonos" className="pub-logo-img" />
           </a>
           <div className="pub-mobile-icons">
-            <a className={`pub-nav-link pub-nav-icon${activeNav === "login" ? " active" : ""}`} href="/fiok" aria-label={s.navLogin} title={s.navLogin}>
-              <UserIcon width={16} height={16} />
-            </a>
             <a className={`pub-nav-link pub-nav-icon pub-mobile-repair-btn${activeNav === "repair" ? " active" : ""}`} href={repairHref}>
               <ServiceIcon width={16} height={16} />{s.navRepair}
             </a>
