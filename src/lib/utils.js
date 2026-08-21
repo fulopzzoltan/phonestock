@@ -55,27 +55,27 @@ export function isStaleReady(t) {
   return Math.floor((Date.now() - new Date(t.readyAt)) / 86400000) >= READY_STALE_DAYS;
 }
 
-// Rövid, kimondható azonosítók — kategóriánként egy betű, kötőjel nélkül.
-// T = Telefon, S(+helyszín) = Szerviz munkalap (pl. SCS235), A = Alkatrész.
+// Rövid, kimondható azonosítók — szám elöl, utána nagybetűs kategória-jelölés, kötőjel nélkül.
+// T = Telefon, GY/SGY+S = Szerviz munkalap (helyszín szerint, pl. 2199GYS), A = Alkatrész.
 // A bizonylatszámhoz (receipt_no) szándékosan nem nyúlunk — az pénzügyi/könyvelési sorszám.
 export function phoneCode(productNo) {
-  return productNo == null ? null : `T${productNo}`;
+  return productNo == null ? null : `${productNo}T`;
 }
 export function partCode(partNo) {
-  return partNo == null ? null : `A${partNo}`;
+  return partNo == null ? null : `${partNo}A`;
 }
 export function normalizeImei(imei) {
   return (imei || "").replace(/\D/g, "");
 }
-const TICKET_LOCATION_LETTERS = { "Gyimes": "gy", "Szentgyörgy": "sgy" };
+const TICKET_LOCATION_LETTERS = { "Gyimes": "GY", "Szentgyörgy": "SGY" };
 // locationName = a felvétel (intake) helyszínének neve — ez a munkalap létrehozásakor
 // örökre rögzül (intake_location_id), nem változik akkor sem, ha a javítás közben
 // másik boltba kerül a telefon (location_id az él, azt mutatja a helyszín-címke).
-// Formátum: szám elöl, utána a helyszín-rövidítés, végén "s" (=szerviz) — pl. 2199gys, 2227sgys.
+// Formátum: szám elöl, utána a helyszín-rövidítés, végén "S" (=szerviz) — pl. 2199GYS, 2227SGYS.
 export function ticketCode(ticketNo, locationName) {
   if (ticketNo == null) return null;
   const letter = TICKET_LOCATION_LETTERS[locationName] || "";
-  return `${ticketNo}${letter}s`;
+  return `${ticketNo}${letter}S`;
 }
 
 // "key" = adatbázisban tárolt érték (ne változtasd, meglévő sorok erre hivatkoznak),
