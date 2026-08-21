@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { today, phoneCode, displayName, money } from "../lib/utils";
-import { ClockIcon, NoteIcon, PartsIcon, PhoneCaseIcon } from "../components/icons";
+import { today, phoneCode, displayName, money, LEAVE_STATUS_CLS } from "../lib/utils";
+import { ClockIcon, NoteIcon, PartsIcon, PhoneCaseIcon, LeaveIcon } from "../components/icons";
 import TicketCard from "../components/TicketCard";
 import NoteComposer from "../components/NoteComposer";
 import NoteCard from "../components/NoteCard";
@@ -8,11 +8,14 @@ import WaitingList from "../components/WaitingList";
 import HistorySection from "../components/HistorySection";
 import { EmptyState } from "../components/EmptyState";
 
+const LEAVE_SOON_DAYS = 14;
+
 export default function PultTab({
   effectiveLocFilter, locName, filteredTickets, setDetailId,
   notes, addNote, completeNote, reopenNote, deleteNote,
   waitingItems, addWaitingItem, advanceWaiting, deleteWaitingItem,
   users, currentUserId, tickets, stock, parts, customersTable, warranties,
+  upcomingLeave, leaveTypes,
   onOpenTicket, onOpenProduct, onOpenPart, onOpenCustomer, onOpenWarranty,
 }) {
   const promisedToday = useMemo(() => {
@@ -23,6 +26,16 @@ export default function PultTab({
   const reservedPhones = useMemo(() => {
     return stock.filter((i) => i.status === "in_stock" && i.stockStatus === "lefoglalt" && (effectiveLocFilter === "all" || i.locationId === effectiveLocFilter));
   }, [stock, effectiveLocFilter]);
+
+  const leaveSoon = useMemo(() => {
+    const horizon = new Date();
+    horizon.setDate(horizon.getDate() + LEAVE_SOON_DAYS);
+    const horizonStr = horizon.toISOString().slice(0, 10);
+    return upcomingLeave.filter((r) => {
+      const reqUser = users.find((u) => u.id === r.userId);
+      return r.startDate <= horizonStr && (effectiveLocFilter === "all" || reqUser?.locationId === effectiveLocFilter);
+    });
+  }, [upcomingLeave, users, effectiveLocFilter]);
 
   const openNotes = notes.filter((n) => n.status === "open");
   const doneNotes = notes.filter((n) => n.status === "done");
@@ -91,6 +104,31 @@ export default function PultTab({
               </table>
             )}
           </HistorySection>
+        </div>
+
+        <div className="pult-section pult-full">
+          <div className="pult-section-head"><LeaveIcon width={16} height={16} />Közelgő szabadság{leaveSoon.length > 0 && <span className="cnt">{leaveSoon.length}</span>}</div>
+          {leaveSoon.length === 0 ? <EmptyState icon={LeaveIcon}>Nincs közelgő szabadság a következő {LEAVE_SOON_DAYS} napban.</EmptyState> : (
+            <div className="tw">
+              {leaveSoon.map((r) => {
+                const reqUser = users.find((u) => u.id === r.userId);
+                const lt = leaveTypes.find((t) => t.id === r.leaveTypeId);
+                return (
+                  <div key={r.id} className="dp-row" style={{ padding: "10px 14px" }}>
+                    <span className="dp-key">
+                      <span style={{ fontWeight: 600 }}>{reqUser?.fullName || "?"}</span>
+                      <span className="badge-loc" style={{ marginLeft: 8 }}>{locName(reqUser?.locationId)}</span>
+                      <span className="leave-type-chip" style={{ marginLeft: 8 }}><span className="leave-type-dot" style={{ background: lt?.color || "#9CA3AF" }} />{lt?.name || "—"}</span>
+                    </span>
+                    <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span className="mono">{r.startDate} – {r.endDate}</span>
+                      <span className={LEAVE_STATUS_CLS[r.status] || "badge-loc"}>{r.status}</span>
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </>

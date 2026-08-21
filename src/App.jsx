@@ -1413,6 +1413,7 @@ function AppShell() {
             notes={notes} addNote={addNote} completeNote={completeNote} reopenNote={reopenNote} deleteNote={deleteNote}
             waitingItems={waitingItems} addWaitingItem={addWaitingItem} advanceWaiting={advanceWaiting} deleteWaitingItem={deleteWaitingItem}
             users={users} currentUserId={profile?.id} tickets={tickets} stock={stock} parts={parts} customersTable={customersTable} warranties={warranties}
+            upcomingLeave={upcomingLeave} leaveTypes={leaveTypes}
             onOpenTicket={(id) => setDetailId(id)}
             onOpenProduct={(id) => setProductDetailId(id)}
             onOpenPart={(id) => setPartDetailId(id)}
