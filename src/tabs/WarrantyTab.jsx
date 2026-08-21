@@ -9,7 +9,7 @@ import HistorySection from "../components/HistorySection";
 const FILTERS = [["all", "Mind"], ["sale", "Telefon garancia"], ["service", "Szerviz garancia"]];
 
 export default function WarrantyTab({
-  busy, setWarrantyModal, activeWarranties, warrantyFilter, setWarrantyFilter, loadingData, filteredWarranties,
+  busy, setWarrantyModal, warrantyFilter, setWarrantyFilter, loadingData, filteredWarranties,
   setWarrantyDetailKey, locName, expiredWarranties,
 }) {
   const [search, setSearch] = useState("");
@@ -20,22 +20,11 @@ export default function WarrantyTab({
     return filteredWarranties.filter((w) => [w.customerName, w.label].join(" ").toLowerCase().includes(q));
   }, [filteredWarranties, search]);
 
-  const expiringSoon = useMemo(() => activeWarranties.filter((w) => {
-    if (!w.expiry) return false;
-    const daysLeft = Math.ceil((new Date(w.expiry) - new Date(today())) / 86400000);
-    return daysLeft <= 14;
-  }).length, [activeWarranties]);
-
   return (
     <>
       <div className="topbar">
         <div><div className="page-title">Garancia</div></div>
         <button className="btn" disabled={busy} onClick={() => setWarrantyModal("add")}>+ Garancia felvétele</button>
-      </div>
-
-      <div className="statrow c2">
-        <div className="statcard"><div className="lbl">Aktív garancia</div><div className="val">{activeWarranties.length} db</div></div>
-        <div className="statcard"><div className="lbl">Lejár 14 napon belül</div><div className="val" style={{ color: expiringSoon > 0 ? "#DC2626" : undefined }}>{expiringSoon} db</div></div>
       </div>
 
       <div className="filter-row">

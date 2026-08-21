@@ -19,7 +19,7 @@ function sortCustomers(items, sortBy) {
 }
 
 export default function CustomersTab({
-  effectiveLocFilter, locName, busy, setCustomerModal, custSearch, setCustSearch, loadingData, customers, setCustomerKey, customerStats,
+  effectiveLocFilter, locName, busy, setCustomerModal, custSearch, setCustSearch, loadingData, customers, setCustomerKey,
 }) {
   const [typeFilter, setTypeFilter] = useState("all"); // all | new | returning
   const [sortBy, setSortBy] = useState("recent");
@@ -37,12 +37,6 @@ export default function CustomersTab({
       <div className="topbar">
         <div><div className="page-title">Kliensek</div></div>
         <button className="btn" disabled={busy} onClick={() => setCustomerModal("add")}>+ Új ügyfél</button>
-      </div>
-
-      <div className="statrow c3">
-        <div className="statcard"><div className="lbl">Ügyfelek</div><div className="val">{customerStats.count} db</div></div>
-        <div className="statcard"><div className="lbl">Összes bevétel</div><div className="val">{money(customerStats.revenue)}</div></div>
-        <div className="statcard"><div className="lbl">Átlag / ügyfél</div><div className="val">{money(customerStats.avg)}</div></div>
       </div>
 
       <div className="filter-row">
