@@ -43,7 +43,6 @@ export default function DetailPanel({ ticket, locName, parts, stock, users = [],
           <button className="iconbtn" onClick={onClose}><CloseIcon /></button>
         </div>
         <div className="dp-body">
-          <TicketPhotos ticketId={ticket.id} />
           <div className="dp-section">
             <div className="dp-section-title">Státusz módosítás</div>
             <div className="dp-status-row">
@@ -180,6 +179,7 @@ export default function DetailPanel({ ticket, locName, parts, stock, users = [],
               <Row k="Telefon beszerzési ára most" v={<span style={{ fontWeight: 700 }}>{money(stock?.find((p) => p.id === ticket.productId)?.costPrice)}</span>} />
             )}
           </div>
+          <TicketPhotos ticketId={ticket.id} />
         </div>
         <div className="dp-actions">
           <button className="btn sec sm" onClick={() => onPrint(ticket)}>Nyomtatás</button>
