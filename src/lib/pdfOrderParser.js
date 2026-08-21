@@ -1,7 +1,14 @@
-import * as pdfjsLib from "pdfjs-dist";
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).href;
+// A pdfjs-dist (és a ~1.2MB-os worker fájlja) csak akkor töltődik be, amikor ténylegesen
+// PDF-et importálnak — nem terheli feleslegesen az admin-felület vagy a publikus oldalak
+// első betöltését, amik sosem használják ezt a funkciót.
+async function loadPdfjs() {
+  const pdfjsLib = await import("pdfjs-dist");
+  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).href;
+  return pdfjsLib;
+}
 
 export async function extractPdfText(file) {
+  const pdfjsLib = await loadPdfjs();
   const buf = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
   let fullText = "";
