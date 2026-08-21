@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { t } from "../lib/i18n";
 
 // Alapértelmezett nyelv-váltó célok oldalanként (aktív nav szerint) — a PhoneDetail.jsx ezt felülírja
@@ -9,6 +10,7 @@ const DEFAULT_LANG_TARGETS = {
 
 export default function PublicHeader({ children, activeNav = "stock", lang = "hu", langSwitchHref }) {
   const s = t(lang);
+  const [menuOpen, setMenuOpen] = useState(false);
   const stockHref = lang === "ro" ? "/ro/telefoane" : "/";
   const repairHref = lang === "ro" ? "/ro/estimare" : "/becsles";
   const otherLang = lang === "ro" ? "hu" : "ro";
@@ -19,15 +21,19 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
     <header className="pub-header">
       <div className="pub-header-inner">
         <div className="pub-brand-row">
-          <div className="pub-wordmark">
-            <div className="pub-mark">
-              <svg viewBox="0 0 24 24" style={{ width: 18, height: 18, fill: "none", stroke: "#fff", strokeWidth: 2 }}>
-                <rect x="6" y="2" width="12" height="20" rx="2.5" /><line x1="10" y1="18.5" x2="14" y2="18.5" />
-              </svg>
-            </div>
-            <div className="pub-name">TELEF<em>O</em>NOS</div>
-          </div>
-          <nav className="pub-nav">
+          <a className="pub-wordmark" href={stockHref} aria-label="Telefonos">
+            <img src="/logo.png" alt="Telefonos" className="pub-logo-img" />
+          </a>
+          <button
+            type="button"
+            className={`pub-menu-toggle${menuOpen ? " open" : ""}`}
+            aria-label={menuOpen ? "Menü bezárása" : "Menü megnyitása"}
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((v) => !v)}
+          >
+            <span /><span /><span />
+          </button>
+          <nav className={`pub-nav${menuOpen ? " open" : ""}`}>
             <a className={`pub-nav-link${activeNav === "stock" ? " active" : ""}`} href={stockHref}>{s.navStock}</a>
             <a className={`pub-nav-link${activeNav === "buyback" ? " active" : ""}`} href="/eladom">{s.navBuyback}</a>
             <a className={`pub-nav-link${activeNav === "repair" ? " active" : ""}`} href={repairHref}>{s.navRepair}</a>
