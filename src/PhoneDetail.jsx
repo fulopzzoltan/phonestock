@@ -124,7 +124,7 @@ export default function PhoneDetail({ id, lang = "hu" }) {
             {cart.some((c) => c.id === phone.id) ? (
               <a className="pub-ask-btn pub-ask-btn-added" style={{ padding: "13px 22px", fontSize: 14 }} href="/kosar"><CartIcon width={15} height={15} />Kosárban — tovább a kosárhoz</a>
             ) : (
-              <button type="button" className="pub-ask-btn" style={{ padding: "13px 22px", fontSize: 14 }} onClick={() => addToCart({ id: phone.id, brand: phone.brand, model: phone.model, storage: phone.storage, color: phone.color, salePrice: phone.sale_price, photoPath: photos[0] || null })}>
+              <button type="button" className="pub-ask-btn" style={{ padding: "13px 22px", fontSize: 14 }} onClick={() => addToCart({ id: phone.id, brand: phone.brand, model: phone.model, storage: phone.storage, color: phone.color, salePrice: phone.sale_price, photoPath: photos[0] || null, locationId: phone.location_id, locationName: phone.location_name })}>
                 <CartIcon width={15} height={15} />Kosárba
               </button>
             )}

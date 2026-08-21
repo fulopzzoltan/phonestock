@@ -212,7 +212,7 @@ export default function StockShowcase({ lang = "hu" }) {
                     ) : (
                       <button type="button" className="pub-ask-btn" onClick={(e) => {
                         e.stopPropagation();
-                        addToCart({ id: p.id, brand: p.brand, model: p.model, storage: p.storage, color: p.color, salePrice: p.sale_price, photoPath: p.photo_paths?.[0] || null });
+                        addToCart({ id: p.id, brand: p.brand, model: p.model, storage: p.storage, color: p.color, salePrice: p.sale_price, photoPath: p.photo_paths?.[0] || null, locationId: p.location_id, locationName: p.location_name });
                       }}><CartIcon width={13} height={13} />Kosárba</button>
                     )}
                   </div>

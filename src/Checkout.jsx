@@ -1,37 +1,49 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "./lib/supabaseClient";
-import { useCart, clearCart, cartTotal } from "./lib/cart";
+import { useCart, cartTotal } from "./lib/cart";
+import { money } from "./lib/utils";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 import { EmptyState } from "./components/EmptyState";
-import { CartIcon } from "./components/icons";
+import { CartIcon, ChevronDownIcon } from "./components/icons";
+
+function photoUrl(path) {
+  return supabase.storage.from("product-photos").getPublicUrl(path).data.publicUrl;
+}
 
 export default function Checkout() {
   const items = useCart();
-  const [locations, setLocations] = useState([]);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [locationId, setLocationId] = useState("");
+  const [touched, setTouched] = useState({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [summaryOpen, setSummaryOpen] = useState(false);
+
+  const locationIds = useMemo(() => [...new Set(items.map((i) => i.locationId).filter(Boolean))], [items]);
+  const singleLocation = locationIds.length === 1 ? items.find((i) => i.locationId === locationIds[0]) : null;
+  const mixedLocations = locationIds.length > 1;
+
+  const phoneError = touched.phone && phone.replace(/\D/g, "").length < 6 ? "Adj meg egy érvényes telefonszámot." : "";
+  const emailError = touched.email && email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? "Ez nem tűnik érvényes email-címnek." : "";
+  const nameError = touched.name && name.trim().length < 2 ? "Add meg a neved." : "";
+  const canSubmit = !mixedLocations && locationIds.length === 1 && name.trim().length >= 2 && phone.replace(/\D/g, "").length >= 6 && !emailError;
 
   useEffect(() => {
-    (async () => {
-      const { data } = await supabase.rpc("get_public_locations");
-      setLocations(data || []);
-      if (data && data.length > 0) setLocationId(data[0].id);
-    })();
+    document.title = "Pénztár — Telefonos";
   }, []);
 
   async function submit(e) {
     e.preventDefault();
+    setTouched({ name: true, phone: true, email: true });
+    if (!canSubmit) return;
     setError("");
     setBusy(true);
     try {
       const { data, error: err } = await supabase.rpc("create_web_order", {
         p_items: items.map((i) => i.id),
-        p_location_id: locationId,
+        p_location_id: locationIds[0],
         p_guest_name: name,
         p_guest_email: email || null,
         p_guest_phone: phone,
@@ -39,8 +51,7 @@ export default function Checkout() {
       if (err) throw err;
       const order = data?.[0];
       if (!order) throw new Error("Nem sikerült leadni a rendelést.");
-      clearCart();
-      window.location.href = `/rendeles/${order.public_token}`;
+      window.location.href = `/fizetes/${order.public_token}`;
     } catch (err) {
       setError(err.message || "Hiba történt a rendelés leadása közben.");
       setBusy(false);
@@ -65,47 +76,93 @@ export default function Checkout() {
     );
   }
 
+  const total = cartTotal(items);
+
+  const summary = (
+    <div className="checkout-summary">
+      <div className="checkout-summary-items">
+        {items.map((it) => (
+          <div key={it.id} className="checkout-item-row">
+            {it.photoPath ? <img src={photoUrl(it.photoPath)} alt="" className="checkout-item-thumb" /> : <div className="checkout-item-thumb checkout-item-thumb-empty" />}
+            <div className="checkout-item-info">
+              <div className="checkout-item-name">{it.brand} {it.model}</div>
+              <div className="checkout-item-sub">{[it.storage, it.color].filter(Boolean).join(" · ")}</div>
+            </div>
+            <div className="checkout-item-price mono">{money(it.salePrice)}</div>
+          </div>
+        ))}
+      </div>
+      <div className="checkout-totals">
+        <div className="checkout-totals-row"><span>Részösszeg</span><span className="mono">{money(total)}</span></div>
+        <div className="checkout-totals-row checkout-totals-final"><span>Végösszeg</span><span className="mono">{money(total)}</span></div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="pub-shop">
       <PublicHeader activeNav="cart" />
-      <main className="pub-lookup-main">
-        <div className="login-card" style={{ maxWidth: 460 }}>
-          <div className="login-title">Pénztár</div>
+      <main className="pub-lookup-main" style={{ maxWidth: 900 }}>
+        <div className="checkout-grid">
+          <div className="checkout-form-col">
+            <div className="login-title" style={{ marginBottom: 4 }}>Pénztár</div>
 
-          <div className="dp-section" style={{ marginBottom: 16 }}>
-            {items.map((it) => (
-              <div key={it.id} className="dp-row">
-                <span className="dp-key">{it.brand} {it.model}{it.storage ? ` · ${it.storage}` : ""}</span>
-                <span className="dp-val mono">{Number(it.salePrice).toLocaleString("hu-HU")} Lei</span>
-              </div>
-            ))}
-            <div className="dp-row" style={{ borderTop: "1px solid #EEF0F2", paddingTop: 10, marginTop: 4 }}>
-              <span className="dp-key" style={{ fontWeight: 700 }}>Összesen</span>
-              <span className="dp-val mono" style={{ fontWeight: 800, fontSize: 15 }}>{cartTotal(items).toLocaleString("hu-HU")} Lei</span>
-            </div>
-          </div>
-
-          {error && <div className="errbar">{error}</div>}
-          <form onSubmit={submit}>
-            <div className="field"><label>Név</label><input required value={name} onChange={(e) => setName(e.target.value)} placeholder="pl. Kovács János" /></div>
-            <div className="field"><label>Telefonszám</label><input required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="07xx xxx xxx" /></div>
-            <div className="field"><label>Email (opcionális)</label><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="te@pelda.hu" /></div>
-            <div className="field">
-              <label>Átvételi helyszín</label>
-              <select required value={locationId} onChange={(e) => setLocationId(e.target.value)}>
-                {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
-              </select>
-            </div>
-            <div className="login-note" style={{ marginBottom: 10 }}>
-              Nincs online bankkártyás fizetés — a rendelést a boltban, átvételkor fizeted ki. A kiválasztott telefonokat biztosan félretesszük neked.
-            </div>
-            <button className="btn" style={{ width: "100%", justifyContent: "center" }} disabled={busy || !locationId} type="submit">
-              {busy ? "Küldés..." : "Rendelés leadása"}
+            <button type="button" className="checkout-summary-toggle" onClick={() => setSummaryOpen((v) => !v)}>
+              Rendelés összegzése — {money(total)}
+              <ChevronDownIcon style={{ transform: summaryOpen ? "rotate(180deg)" : undefined }} />
             </button>
-          </form>
-          <div className="login-note" style={{ marginTop: 10, textAlign: "center" }}>
-            <a href="/kosar">← Vissza a kosárhoz</a>
+            {summaryOpen && summary}
+
+            {error && <div className="errbar" role="alert" aria-live="polite">{error}</div>}
+
+            <form onSubmit={submit} noValidate>
+              <div className="checkout-section-title">Kapcsolat</div>
+              <div className="field">
+                <label htmlFor="co-name">Név</label>
+                <input id="co-name" required autoComplete="name" value={name}
+                  onChange={(e) => setName(e.target.value)} onBlur={() => setTouched((t) => ({ ...t, name: true }))}
+                  placeholder="pl. Kovács János" />
+                {nameError && <div className="field-error" aria-live="polite">{nameError}</div>}
+              </div>
+              <div className="field">
+                <label htmlFor="co-phone">Telefonszám</label>
+                <input id="co-phone" required type="tel" inputMode="tel" autoComplete="tel" value={phone}
+                  onChange={(e) => setPhone(e.target.value)} onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
+                  placeholder="07xx xxx xxx" />
+                {phoneError && <div className="field-error" aria-live="polite">{phoneError}</div>}
+              </div>
+              <div className="field">
+                <label htmlFor="co-email">Email (nem kötelező)</label>
+                <input id="co-email" type="email" autoComplete="email" value={email}
+                  onChange={(e) => setEmail(e.target.value)} onBlur={() => setTouched((t) => ({ ...t, email: true }))}
+                  placeholder="te@pelda.hu" />
+                {emailError && <div className="field-error" aria-live="polite">{emailError}</div>}
+              </div>
+
+              <div className="checkout-section-title">Átvétel</div>
+              {mixedLocations ? (
+                <div className="errbar">A kosaradban különböző üzletekből (Gyimes és Szentgyörgy) származó telefonok vannak — egyszerre csak egy üzletből rendelhetsz. Vedd ki az egyik tételt a kosárból a folytatáshoz.</div>
+              ) : singleLocation ? (
+                <div className="checkout-pickup-line">Átvehető: <b>{singleLocation.locationName || "—"}</b></div>
+              ) : null}
+
+              <div className="checkout-trust">
+                <span>💳 Visa / Mastercard</span>
+                <span>🔒 Biztonságos fizetés — Netopia</span>
+              </div>
+              <div className="login-note" style={{ marginBottom: 10 }}>
+                Fizetés után azonnal foglaljuk a kiválasztott telefont — előkészítjük, és SMS-ben/telefonon szólunk, ha átvehető a boltban.
+              </div>
+
+              <button className="btn checkout-submit" disabled={busy || !canSubmit} type="submit">
+                {busy ? "Feldolgozás..." : `Fizetés — ${money(total)}`}
+              </button>
+            </form>
+            <div className="login-note" style={{ marginTop: 10, textAlign: "center" }}>
+              <a href="/kosar">← Vissza a kosárhoz</a>
+            </div>
           </div>
+          <div className="checkout-sidebar">{summary}</div>
         </div>
       </main>
       <PublicFooter />

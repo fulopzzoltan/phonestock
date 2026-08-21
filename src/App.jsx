@@ -216,7 +216,7 @@ function AppShell() {
         supabase.from("waiting_items").select("*").order("created_at", { ascending: false }),
         supabase.from("app_settings").select("*").eq("id", true).single(),
         supabase.from("customer_requests").select("*, customer_profiles(full_name, phone)").neq("status", "lezarva").order("created_at", { ascending: false }),
-        supabase.from("web_orders").select("*, locations(name), web_order_items(id, product_id, price, products(brand, model, storage, color))").in("status", ["uj", "visszaigazolva"]).order("created_at", { ascending: false }),
+        supabase.from("web_orders").select("*, locations(name), web_order_items(id, product_id, price, products(brand, model, storage, color))").in("status", ["fizetve", "visszaigazolva"]).order("created_at", { ascending: false }),
       ]);
       setLocations(unwrap(locs) || []);
       const prodRows = unwrap(prods) || [];

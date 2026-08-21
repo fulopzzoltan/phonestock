@@ -16,10 +16,14 @@ const NAV_ITEMS = [
 
 function AuthForm() {
   const { signIn, signUp } = useCustomerAuth();
-  const [mode, setMode] = useState("login"); // login | register
-  const [fullName, setFullName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
+  const prefill = new URLSearchParams(window.location.search);
+  const prefillEmail = prefill.get("email") || "";
+  const prefillPhone = prefill.get("phone") || "";
+  const prefillName = prefill.get("name") || "";
+  const [mode, setMode] = useState(prefillPhone ? "register" : "login"); // login | register
+  const [fullName, setFullName] = useState(prefillName);
+  const [phone, setPhone] = useState(prefillPhone);
+  const [email, setEmail] = useState(prefillEmail);
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");

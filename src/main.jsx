@@ -19,6 +19,7 @@ const Cart = lazy(() => import("./Cart.jsx"));
 const Checkout = lazy(() => import("./Checkout.jsx"));
 const OrderStatus = lazy(() => import("./OrderStatus.jsx"));
 const LegalPage = lazy(() => import("./LegalPage.jsx"));
+const PaymentMock = lazy(() => import("./PaymentMock.jsx"));
 
 function RouteFallback() {
   return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F4F6F3", color: "#6B7280", fontSize: 13 }}>Betöltés...</div>;
@@ -36,6 +37,7 @@ const accountMatch = window.location.pathname.match(/^\/fiok(\/.*)?$/i);
 const cartMatch = window.location.pathname.match(/^\/kosar\/?$/i);
 const checkoutMatch = window.location.pathname.match(/^\/penztar\/?$/i);
 const orderStatusMatch = window.location.pathname.match(/^\/rendeles\/([0-9a-f-]{36})\/?$/i);
+const paymentMockMatch = window.location.pathname.match(/^\/fizetes\/([0-9a-f-]{36})\/?$/i);
 const termsMatch = window.location.pathname.match(/^\/aszf\/?$/i);
 const privacyMatch = window.location.pathname.match(/^\/adatvedelem\/?$/i);
 // "/" és "/keszlet" is a nyilvános készletoldalt mutatja — ez az, amit valaki
@@ -60,6 +62,7 @@ function Root() {
   if (cartMatch) return <Cart />;
   if (checkoutMatch) return <Checkout />;
   if (orderStatusMatch) return <OrderStatus token={orderStatusMatch[1]} />;
+  if (paymentMockMatch) return <PaymentMock token={paymentMockMatch[1]} />;
   if (termsMatch) return <LegalPage title="Általános Szerződési Feltételek" />;
   if (privacyMatch) return <LegalPage title="Adatvédelmi tájékoztató" />;
   if (roPhoneDetailMatch) return <PhoneDetail id={roPhoneDetailMatch[1]} lang="ro" />;

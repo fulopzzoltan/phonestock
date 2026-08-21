@@ -58,7 +58,7 @@ export default function PultTab({
                 {webOrders.map((o) => (
                   <div key={o.id} className="dp-row" style={{ padding: "10px 14px", alignItems: "flex-start" }}>
                     <span className="dp-key">
-                      <span className={`st ${o.status === "uj" ? "st-alkatresz" : "st-garancialis"}`} style={{ marginRight: 8 }}>#{o.orderNo}</span>
+                      <span className={`st ${o.status === "fizetve" ? "st-alkatresz" : "st-garancialis"}`} style={{ marginRight: 8 }}>#{o.orderNo}</span>
                       {o.guestName} · {o.guestPhone}
                       <span className="badge-loc" style={{ marginLeft: 8 }}>{o.locationName}</span>
                       <div style={{ fontSize: 11.5, color: "#6B7280", marginTop: 3 }}>
@@ -68,7 +68,7 @@ export default function PultTab({
                     <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
                       <span className="mono" style={{ fontWeight: 700 }}>{money(o.totalAmount)}</span>
                       <span style={{ display: "flex", gap: 6 }}>
-                        {o.status === "uj" && <button type="button" className="btn sec sm" onClick={() => confirmWebOrder(o.id)}>Visszaigazolás</button>}
+                        {o.status === "fizetve" && <button type="button" className="btn sec sm" onClick={() => confirmWebOrder(o.id)}>Előkészítve</button>}
                         {o.status === "visszaigazolva" && <button type="button" className="btn sm" onClick={() => completeWebOrder(o.id)}>Átadva</button>}
                         <button type="button" className="btn sec sm" onClick={() => cancelWebOrder(o.id)}>Lemondás</button>
                       </span>
