@@ -45,7 +45,11 @@ Natív HTML5 drag&drop helyett (ami touch-eszközön/tableten megbízhatatlan, �
 
 `ServiceTab.jsx`-ben a Kanban-render résznél számítsd ki oszloponként az index alapján, hogy van-e előző/következő (`STATUSES` tömb sorrendje: Átvett → Javítás alatt → Minőségellenőrzés → Átadásra), és egy `handleStep(id, dir)` függvény hívja `setTicketStatus(id, STATUSES[newIndex].key, null)`-t — ugyanaz a logika, mint drag&dropnál, csak egy lépés balra/jobbra.
 
-`ChevronLeftIcon`/`ChevronRightIcon` — ha nincs még ilyen a `src/components/icons.jsx`-ben, vedd fel (a meglévő `ChevronDownIcon` mintájára, elforgatva vagy külön path-tal).
+`ChevronLeftIcon`/`ChevronRightIcon` — **ez már létezik** a `src/components/icons.jsx`-ben (169. és 175. sor), nincs új ikon felvétele, csak importálni kell őket a `TicketCard.jsx`-be.
+
+## 4b. Fotó blokk áthelyezése alulra — `DetailPanel.jsx`
+
+A user pontosította: a fotózás/kép-csatolás mind a Szerviz, mind a Telefon modulban a modal **aljára** kerüljön. A `DetailPanel.jsx`-ben (szerviz munkalap részletnézet) a `<TicketPhotos ticketId={ticket.id} />` jelenleg a 46. soron, a `.dp-body` legelején van. Mozgasd a Pénzügyek szekció (174-182. sor) **után**, a `.dp-actions` elé — vagyis a modal aljára, ahogy a user kérte. (A Telefon modul azonos jellegű változtatása külön specben: `TASKS_TELEFON_ADATLAP_KOMPAKT.md`.)
 
 ## 4. "Átvehető" oszlop — összeg-feliratú lezáró gomb
 
