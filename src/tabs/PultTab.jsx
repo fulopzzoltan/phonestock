@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { today, phoneCode, displayName, money, LEAVE_STATUS_CLS } from "../lib/utils";
-import { ClockIcon, NoteIcon, PartsIcon, PhoneCaseIcon, LeaveIcon, CustomersIcon } from "../components/icons";
+import { ClockIcon, NoteIcon, PartsIcon, PhoneCaseIcon, LeaveIcon, CustomersIcon, CartIcon } from "../components/icons";
 import TicketCard from "../components/TicketCard";
 import NoteComposer from "../components/NoteComposer";
 import NoteCard from "../components/NoteCard";
@@ -20,6 +20,7 @@ export default function PultTab({
   waitingItems, addWaitingItem, advanceWaiting, deleteWaitingItem,
   users, currentUserId, tickets, stock, parts, customersTable, warranties,
   upcomingLeave, leaveTypes, customerRequests, advanceCustomerRequest,
+  webOrders, confirmWebOrder, cancelWebOrder, completeWebOrder,
   onOpenTicket, onOpenProduct, onOpenPart, onOpenCustomer, onOpenWarranty,
 }) {
   const promisedToday = useMemo(() => {
@@ -50,6 +51,34 @@ export default function PultTab({
     <>
       <div className="pult-grid">
         <div className="pult-col">
+          <div className="pult-section">
+            <div className="pult-section-head"><CartIcon width={16} height={16} />Webes rendelések{webOrders.length > 0 && <span className="cnt">{webOrders.length}</span>}</div>
+            {webOrders.length === 0 ? <EmptyState icon={CartIcon}>Nincs függő webes rendelés.</EmptyState> : (
+              <div className="tw">
+                {webOrders.map((o) => (
+                  <div key={o.id} className="dp-row" style={{ padding: "10px 14px", alignItems: "flex-start" }}>
+                    <span className="dp-key">
+                      <span className={`st ${o.status === "uj" ? "st-alkatresz" : "st-garancialis"}`} style={{ marginRight: 8 }}>#{o.orderNo}</span>
+                      {o.guestName} · {o.guestPhone}
+                      <span className="badge-loc" style={{ marginLeft: 8 }}>{o.locationName}</span>
+                      <div style={{ fontSize: 11.5, color: "#6B7280", marginTop: 3 }}>
+                        {o.items.map((it) => [it.brand, it.model].filter(Boolean).join(" ")).join(", ")}
+                      </div>
+                    </span>
+                    <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+                      <span className="mono" style={{ fontWeight: 700 }}>{money(o.totalAmount)}</span>
+                      <span style={{ display: "flex", gap: 6 }}>
+                        {o.status === "uj" && <button type="button" className="btn sec sm" onClick={() => confirmWebOrder(o.id)}>Visszaigazolás</button>}
+                        {o.status === "visszaigazolva" && <button type="button" className="btn sm" onClick={() => completeWebOrder(o.id)}>Átadva</button>}
+                        <button type="button" className="btn sec sm" onClick={() => cancelWebOrder(o.id)}>Lemondás</button>
+                      </span>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div className="pult-section">
             <div className="pult-section-head"><ClockIcon width={16} height={16} />Ma ígért munkák{promisedToday.length > 0 && <span className="cnt">{promisedToday.length}</span>}</div>
             {promisedToday.length === 0 ? <EmptyState icon={ClockIcon}>Ma nincs konkrétan ígért munka.</EmptyState> : (

@@ -368,3 +368,14 @@ export const customerRequestFromApi = (r) => ({
   linkedTransactionId: r.linked_transaction_id, linkedTicketId: r.linked_ticket_id,
   staffNote: r.staff_note, createdAt: r.created_at,
 });
+
+export const webOrderFromApi = (r) => ({
+  id: r.id, orderNo: r.order_no, status: r.status, totalAmount: r.total_amount,
+  guestName: r.guest_name, guestPhone: r.guest_phone, guestEmail: r.guest_email,
+  locationId: r.location_id, locationName: r.locations?.name || "",
+  createdAt: r.created_at,
+  items: (r.web_order_items || []).map((it) => ({
+    id: it.id, productId: it.product_id, price: it.price,
+    brand: it.products?.brand, model: it.products?.model, storage: it.products?.storage, color: it.products?.color,
+  })),
+});

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi } from "./lib/mappers";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi } from "./lib/mappers";
 import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, normalizeImei, money, ticketCode } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
@@ -135,6 +135,7 @@ function AppShell() {
   const [notes, setNotes] = useState([]);
   const [waitingItems, setWaitingItems] = useState([]);
   const [customerRequests, setCustomerRequests] = useState([]);
+  const [webOrders, setWebOrders] = useState([]);
   const [warrantyModal, setWarrantyModal] = useState(null); // null | "add" | manual warranty object (edit)
   const [warrantyDetailKey, setWarrantyDetailKey] = useState(null);
   const [warrantyFilter, setWarrantyFilter] = useState("all"); // all | sale | service
@@ -190,7 +191,7 @@ function AppShell() {
   async function loadAll() {
     setLoadingData(true);
     try {
-      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs] = await Promise.all([
+      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         fetchAllRows(() => supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false })),
         fetchAllRows(() => supabase.from("transactions").select("*").is("deleted_at", null).order("date", { ascending: false })),
@@ -215,6 +216,7 @@ function AppShell() {
         supabase.from("waiting_items").select("*").order("created_at", { ascending: false }),
         supabase.from("app_settings").select("*").eq("id", true).single(),
         supabase.from("customer_requests").select("*, customer_profiles(full_name, phone)").neq("status", "lezarva").order("created_at", { ascending: false }),
+        supabase.from("web_orders").select("*, locations(name), web_order_items(id, product_id, price, products(brand, model, storage, color))").in("status", ["uj", "visszaigazolva"]).order("created_at", { ascending: false }),
       ]);
       setLocations(unwrap(locs) || []);
       const prodRows = unwrap(prods) || [];
@@ -242,6 +244,7 @@ function AppShell() {
       setNotes((unwrap(bNotes) || []).map(noteFromApi));
       setWaitingItems((unwrap(wItems) || []).map(waitingFromApi));
       setCustomerRequests((unwrap(custReqs) || []).map((r) => ({ ...customerRequestFromApi(r), customerName: r.customer_profiles?.full_name || "?", customerPhone: r.customer_profiles?.phone || "" })));
+      setWebOrders((unwrap(webOrds) || []).map(webOrderFromApi));
       const settingsRow = unwrap(appSettings);
       if (settingsRow) setSettings(settingsFromApi(settingsRow));
       const historyRows = unwrap(hist) || [];
@@ -859,6 +862,48 @@ function AppShell() {
       else setCustomerRequests((prev) => prev.map((r) => (r.id === id ? { ...r, status: nextStatus } : r)));
     });
   }
+  async function confirmWebOrder(id) {
+    await withBusy(async () => {
+      unwrap(await supabase.from("web_orders").update({ status: "visszaigazolva", updated_at: new Date().toISOString() }).eq("id", id));
+      setWebOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status: "visszaigazolva" } : o)));
+    });
+  }
+  async function cancelWebOrder(id) {
+    await withBusy(async () => {
+      const order = webOrders.find((o) => o.id === id);
+      if (!order) return;
+      const productIds = order.items.map((it) => it.productId);
+      unwrap(await supabase.from("products").update({ stock_status: "polcon" }).in("id", productIds));
+      unwrap(await supabase.from("web_orders").update({ status: "lemondva", updated_at: new Date().toISOString() }).eq("id", id));
+      setStock((prev) => prev.map((p) => (productIds.includes(p.id) ? { ...p, stockStatus: "polcon" } : p)));
+      setWebOrders((prev) => prev.filter((o) => o.id !== id));
+    });
+  }
+  async function completeWebOrder(id) {
+    await withBusy(async () => {
+      const order = webOrders.find((o) => o.id === id);
+      if (!order) return;
+      const { data: customerId } = await supabase.rpc("upsert_customer", { p_name: order.guestName, p_phone: order.guestPhone });
+      const productIds = order.items.map((it) => it.productId);
+      unwrap(await supabase.from("products").update({ status: "sold", stock_status: "polcon" }).in("id", productIds));
+      const newTxs = [];
+      for (const it of order.items) {
+        const r = unwrap(await supabase.from("transactions").insert({
+          ...txToApi({
+            type: "income", category: "Készlet",
+            description: `Webshop rendelés #${order.orderNo}: ${order.guestName} — ${[it.brand, it.model].filter(Boolean).join(" ")}`,
+            amount: it.price, productId: it.productId,
+          }, order.locationId),
+          customer_id: customerId || null,
+        }).select());
+        newTxs.push(txFromApi(r[0]));
+      }
+      unwrap(await supabase.from("web_orders").update({ status: "atadva", updated_at: new Date().toISOString() }).eq("id", id));
+      setStock((prev) => prev.map((p) => (productIds.includes(p.id) ? { ...p, status: "sold", stockStatus: "polcon" } : p)));
+      setTransactions((prev) => [...newTxs, ...prev]);
+      setWebOrders((prev) => prev.filter((o) => o.id !== id));
+    });
+  }
 
   // PDF RENDELÉS IMPORT
   const [pdfImportModal, setPdfImportModal] = useState(false);
@@ -1464,6 +1509,7 @@ function AppShell() {
             users={users} currentUserId={profile?.id} tickets={tickets} stock={stock} parts={parts} customersTable={customersTable} warranties={warranties}
             upcomingLeave={upcomingLeave} leaveTypes={leaveTypes}
             customerRequests={customerRequests} advanceCustomerRequest={advanceCustomerRequest}
+            webOrders={webOrders} confirmWebOrder={confirmWebOrder} cancelWebOrder={cancelWebOrder} completeWebOrder={completeWebOrder}
             onOpenTicket={(id) => setDetailId(id)}
             onOpenProduct={(id) => setProductDetailId(id)}
             onOpenPart={(id) => setPartDetailId(id)}

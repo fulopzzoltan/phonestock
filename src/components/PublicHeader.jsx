@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { t } from "../lib/i18n";
-import { UserIcon, PhoneCaseIcon, ServiceIcon, ClockIcon, BuybackIcon } from "./icons";
+import { UserIcon, PhoneCaseIcon, ServiceIcon, ClockIcon, BuybackIcon, CartIcon } from "./icons";
+import { useCart } from "../lib/cart";
 
 // Alapértelmezett nyelv-váltó célok oldalanként (aktív nav szerint) — a PhoneDetail.jsx ezt felülírja
 // a saját langSwitchHref propjával, mert ott a konkrét telefon id-jét is meg kell tartani.
@@ -15,6 +16,7 @@ const FALLBACK_LANG_TARGET = { hu: "/", ro: "/ro/telefoane" };
 export default function PublicHeader({ children, activeNav = "stock", lang = "hu", langSwitchHref }) {
   const s = t(lang);
   const [menuOpen, setMenuOpen] = useState(false);
+  const cartCount = useCart().length;
   const stockHref = lang === "ro" ? "/ro/telefoane" : "/";
   const repairHref = lang === "ro" ? "/ro/estimare" : "/becsles";
   const otherLang = lang === "ro" ? "hu" : "ro";
@@ -29,6 +31,10 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
             <img src="/logo.png" alt="Telefonos" className="pub-logo-img" />
           </a>
           <div className="pub-mobile-icons">
+            <a className={`pub-nav-link pub-nav-icon${activeNav === "cart" ? " active" : ""}`} href="/kosar" aria-label="Kosár" title="Kosár">
+              <CartIcon width={16} height={16} />
+              {cartCount > 0 && <span className="pub-cart-badge">{cartCount}</span>}
+            </a>
             <a className={`pub-nav-link pub-nav-icon pub-mobile-repair-btn${activeNav === "repair" ? " active" : ""}`} href={repairHref}>
               <ServiceIcon width={16} height={16} />{s.navRepair}
             </a>
@@ -61,6 +67,10 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
               </div>
             )}
             <a className="pub-nav-link pub-nav-cta" href="/eladom"><BuybackIcon className="pub-nav-link-icon" width={16} height={16} />{s.navBuyback}</a>
+            <a className={`pub-nav-link pub-nav-icon${activeNav === "cart" ? " active" : ""}`} href="/kosar" aria-label="Kosár" title="Kosár">
+              <CartIcon width={16} height={16} /><span className="pub-nav-icon-label">Kosár{cartCount > 0 ? ` (${cartCount})` : ""}</span>
+              {cartCount > 0 && <span className="pub-cart-badge">{cartCount}</span>}
+            </a>
             <a className={`pub-nav-link pub-nav-icon${activeNav === "login" ? " active" : ""}`} href="/fiok" aria-label={s.navLogin} title={s.navLogin}>
               <UserIcon width={16} height={16} /><span className="pub-nav-icon-label">{s.navLogin}</span>
             </a>

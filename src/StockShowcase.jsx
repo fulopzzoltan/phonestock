@@ -4,8 +4,9 @@ import { supabase } from "./lib/supabaseClient";
 import { t, translateColor, translateWarranty } from "./lib/i18n";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
-import { SearchIcon, FilterIcon } from "./components/icons";
+import { SearchIcon, FilterIcon, CartIcon } from "./components/icons";
 import { EmptyState, LoadingState } from "./components/EmptyState";
+import { addToCart, useCart } from "./lib/cart";
 
 const SITE = "https://phonestock-manager.netlify.app";
 
@@ -42,6 +43,7 @@ export default function StockShowcase({ lang = "hu" }) {
   const [cond, setCond] = useState("all");
   const [sort, setSort] = useState("recommended");
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const cart = useCart();
 
   useEffect(() => {
     (async () => {
@@ -205,7 +207,14 @@ export default function StockShowcase({ lang = "hu" }) {
                       )}
                       <div className="pub-price mono">{Number(p.sale_price).toLocaleString("hu-HU")}<span className="pub-cur">Lei</span></div>
                     </div>
-                    <a className="pub-ask-btn" href="tel:0773985278" onClick={(e) => e.stopPropagation()}>{s.interested}</a>
+                    {cart.some((c) => c.id === p.id) ? (
+                      <a className="pub-ask-btn pub-ask-btn-added" href="/kosar" onClick={(e) => e.stopPropagation()}><CartIcon width={13} height={13} />Kosárban</a>
+                    ) : (
+                      <button type="button" className="pub-ask-btn" onClick={(e) => {
+                        e.stopPropagation();
+                        addToCart({ id: p.id, brand: p.brand, model: p.model, storage: p.storage, color: p.color, salePrice: p.sale_price, photoPath: p.photo_paths?.[0] || null });
+                      }}><CartIcon width={13} height={13} />Kosárba</button>
+                    )}
                   </div>
                 </div>
               );

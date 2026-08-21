@@ -15,6 +15,9 @@ const PhoneDetail = lazy(() => import("./PhoneDetail.jsx"));
 const BuybackFlow = lazy(() => import("./BuybackFlow.jsx"));
 const RepairEstimator = lazy(() => import("./RepairEstimator.jsx"));
 const CustomerPortal = lazy(() => import("./CustomerPortal.jsx"));
+const Cart = lazy(() => import("./Cart.jsx"));
+const Checkout = lazy(() => import("./Checkout.jsx"));
+const OrderStatus = lazy(() => import("./OrderStatus.jsx"));
 
 function RouteFallback() {
   return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F4F6F3", color: "#6B7280", fontSize: 13 }}>Betöltés...</div>;
@@ -29,6 +32,9 @@ const phoneDetailMatch = window.location.pathname.match(/^\/telefon\/([0-9a-f-]{
 const buybackMatch = window.location.pathname.match(/^\/eladom\/?$/i);
 const repairMatch = window.location.pathname.match(/^\/becsles\/?$/i);
 const accountMatch = window.location.pathname.match(/^\/fiok(\/.*)?$/i);
+const cartMatch = window.location.pathname.match(/^\/kosar\/?$/i);
+const checkoutMatch = window.location.pathname.match(/^\/penztar\/?$/i);
+const orderStatusMatch = window.location.pathname.match(/^\/rendeles\/([0-9a-f-]{36})\/?$/i);
 // "/" és "/keszlet" is a nyilvános készletoldalt mutatja — ez az, amit valaki
 // a Netlify domain-re érkezve először lát, nem a bejelentkezés.
 const stockMatch = window.location.pathname.match(/^\/(keszlet\/?)?$/i);
@@ -48,6 +54,9 @@ function Root() {
     </AuthProvider>
   );
   if (accountMatch) return <CustomerPortal />;
+  if (cartMatch) return <Cart />;
+  if (checkoutMatch) return <Checkout />;
+  if (orderStatusMatch) return <OrderStatus token={orderStatusMatch[1]} />;
   if (roPhoneDetailMatch) return <PhoneDetail id={roPhoneDetailMatch[1]} lang="ro" />;
   if (phoneDetailMatch) return <PhoneDetail id={phoneDetailMatch[1]} lang="hu" />;
   if (buybackMatch) return <BuybackFlow />;

@@ -4,8 +4,9 @@ import { supabase } from "./lib/supabaseClient";
 import { t, translateColor, translateWarranty } from "./lib/i18n";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
-import { PhoneCaseIcon } from "./components/icons";
+import { PhoneCaseIcon, CartIcon } from "./components/icons";
 import { EmptyState, LoadingState } from "./components/EmptyState";
+import { addToCart, useCart } from "./lib/cart";
 
 const SITE = "https://phonestock-manager.netlify.app";
 
@@ -25,6 +26,7 @@ export default function PhoneDetail({ id, lang = "hu" }) {
   const [phone, setPhone] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activePhoto, setActivePhoto] = useState(0);
+  const cart = useCart();
 
   useEffect(() => {
     (async () => {
@@ -119,7 +121,14 @@ export default function PhoneDetail({ id, lang = "hu" }) {
               </div>
             )}
             <div className="pub-detail-price mono">{Number(phone.sale_price).toLocaleString("hu-HU")}<span className="pub-cur">Lei</span></div>
-            <a className="pub-ask-btn" style={{ padding: "13px 22px", fontSize: 14 }} href="tel:0773985278">{s.interestedCall}</a>
+            {cart.some((c) => c.id === phone.id) ? (
+              <a className="pub-ask-btn pub-ask-btn-added" style={{ padding: "13px 22px", fontSize: 14 }} href="/kosar"><CartIcon width={15} height={15} />Kosárban — tovább a kosárhoz</a>
+            ) : (
+              <button type="button" className="pub-ask-btn" style={{ padding: "13px 22px", fontSize: 14 }} onClick={() => addToCart({ id: phone.id, brand: phone.brand, model: phone.model, storage: phone.storage, color: phone.color, salePrice: phone.sale_price, photoPath: photos[0] || null })}>
+                <CartIcon width={15} height={15} />Kosárba
+              </button>
+            )}
+            <a className="pub-ask-btn" style={{ padding: "10px 18px", fontSize: 12.5, marginTop: 8, background: "none", color: "var(--pub-ink-soft)" }} href="tel:0773985278">{s.interestedCall}</a>
             <div className="pub-detail-note">{s.priceNote}</div>
           </div>
         </div>
