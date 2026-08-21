@@ -5,6 +5,8 @@ import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, pa
 import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, normalizeImei, money, ticketCode } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
+import PublicHeader from "./components/PublicHeader";
+import PublicFooter from "./components/PublicFooter";
 import StockModal from "./components/StockModal";
 import SellModal from "./components/SellModal";
 import PartModal from "./components/PartModal";
@@ -54,10 +56,32 @@ import InviteEmployeeModal from "./components/InviteEmployeeModal";
 import ChangePasswordModal from "./components/ChangePasswordModal";
 import { useInternalChat } from "./lib/useInternalChat";
 
+function NoStaffAccess() {
+  const { signOut } = useAuth();
+  return (
+    <div className="pub-shop">
+      <PublicHeader activeNav="login" />
+      <main className="pub-lookup-main">
+        <div className="login-card" style={{ maxWidth: 380 }}>
+          <div className="login-title">Ez a fiók nem admin-fiók</div>
+          <p style={{ fontSize: 13, color: "#6B7280", lineHeight: 1.5, margin: "0 0 16px" }}>
+            Ezzel az e-mail címmel nincs alkalmazotti/admin hozzáférésed a belső rendszerhez —
+            ha ügyfél-fiókod van, azt a <a href="/fiok">Fiókom</a> oldalon éred el. Ha alkalmazott
+            vagy, kérj meghívót egy adminisztrátortól.
+          </p>
+          <button className="btn sec" style={{ width: "100%", justifyContent: "center" }} onClick={signOut}>Kijelentkezés</button>
+        </div>
+      </main>
+      <PublicFooter />
+    </div>
+  );
+}
+
 export default function App() {
-  const { session, loading } = useAuth();
+  const { session, loading, noStaffProfile } = useAuth();
   if (loading) return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F4F6F3", color: "#6B7280", fontSize: 13 }}>Betöltés...</div>;
   if (!session) return <Login />;
+  if (noStaffProfile) return <NoStaffAccess />;
   return <AppShell />;
 }
 

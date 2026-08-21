@@ -1,7 +1,7 @@
 export const STRINGS = {
   hu: {
     navStock: "Készlet", navBuyback: "Eladás", navRepair: "Szerviz",
-    navStatus: "Nyomkövetés", navLogin: "Bejelentkezés", langSwitch: "RO",
+    navStatus: "Nyomonkövetés", navLogin: "Bejelentkezés", langSwitch: "RO",
 
     // Készlet-vitrin
     searchPlaceholder: "Keresés — pl. iPhone 13, Samsung A07...", filters: "Szűrők",

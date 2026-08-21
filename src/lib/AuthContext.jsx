@@ -50,6 +50,10 @@ export function AuthProvider({ children }) {
     user: session?.user ?? null,
     profile,
     loading: session === undefined || (session && profileLoading && !profile),
+    // Bejelentkezve van, a profil-lekérdezés lezárult, de nincs profiles sor — ilyen pl. egy
+    // ügyfél-fiók (customer_profiles), aminek szándékosan nincs admin/alkalmazotti profilja.
+    // Ezt külön kell kezelni a "van profil, csak nincs helyszín" állapottól (ld. App.jsx).
+    noStaffProfile: !!session && !profileLoading && !profile,
     signIn,
     signOut,
   };
