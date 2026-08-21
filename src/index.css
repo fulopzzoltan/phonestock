@@ -327,6 +327,21 @@ tr:hover td{background:#FAFAFA}
 .login-note{font-size:11.5px;color:#9CA3AF;text-align:center;margin-top:14px;line-height:1.5}
 .login-note a{color:var(--accent-dark);font-weight:600;text-decoration:underline}
 
+/* ÜGYFÉL-FIÓK ("Fiókom" portál) */
+.account-shell{display:flex;gap:24px;width:100%;max-width:880px;align-items:flex-start}
+.account-nav{display:flex;flex-direction:column;gap:2px;width:190px;flex-shrink:0;background:#fff;border:1px solid #EEF0F2;border-radius:16px;padding:10px;box-shadow:var(--shadow-card)}
+.account-nav-btn{text-align:left;border:none;background:none;font-family:inherit;font-size:13px;font-weight:600;color:#6B7280;padding:10px 12px;border-radius:10px;cursor:pointer}
+.account-nav-btn:hover{background:#F9FAFB;color:#111827}
+.account-nav-btn.active{background:var(--primary-soft);color:var(--primary-ink)}
+.account-nav-signout{margin-top:8px;border-top:1px solid #EEF0F2;padding-top:14px;color:#DC2626}
+.account-nav-signout:hover{background:#FEF2F2;color:#B91C1C}
+.account-main{flex:1;min-width:0;background:#fff;border:1px solid #EEF0F2;border-radius:16px;padding:24px;box-shadow:var(--shadow-card)}
+@media (max-width:760px){
+  .account-shell{flex-direction:column}
+  .account-nav{width:100%;flex-direction:row;flex-wrap:wrap;gap:4px}
+  .account-nav-signout{margin-top:0;border-top:none;padding-top:10px}
+}
+
 /* PRINT */
 #print-slip-root{display:none}
 @media print{

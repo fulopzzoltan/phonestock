@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi } from "./lib/mappers";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi } from "./lib/mappers";
 import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, normalizeImei, money, ticketCode } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
@@ -134,6 +134,7 @@ function AppShell() {
   const [warranties, setWarranties] = useState([]);
   const [notes, setNotes] = useState([]);
   const [waitingItems, setWaitingItems] = useState([]);
+  const [customerRequests, setCustomerRequests] = useState([]);
   const [warrantyModal, setWarrantyModal] = useState(null); // null | "add" | manual warranty object (edit)
   const [warrantyDetailKey, setWarrantyDetailKey] = useState(null);
   const [warrantyFilter, setWarrantyFilter] = useState("all"); // all | sale | service
@@ -189,7 +190,7 @@ function AppShell() {
   async function loadAll() {
     setLoadingData(true);
     try {
-      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings] = await Promise.all([
+      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         fetchAllRows(() => supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false })),
         fetchAllRows(() => supabase.from("transactions").select("*").is("deleted_at", null).order("date", { ascending: false })),
@@ -213,6 +214,7 @@ function AppShell() {
         supabase.from("board_notes").select("*").order("created_at", { ascending: false }),
         supabase.from("waiting_items").select("*").order("created_at", { ascending: false }),
         supabase.from("app_settings").select("*").eq("id", true).single(),
+        supabase.from("customer_requests").select("*, customer_profiles(full_name, phone)").neq("status", "lezarva").order("created_at", { ascending: false }),
       ]);
       setLocations(unwrap(locs) || []);
       const prodRows = unwrap(prods) || [];
@@ -239,6 +241,7 @@ function AppShell() {
       setCashSettlements((unwrap(cSettlements) || []).map(cashSettlementFromApi));
       setNotes((unwrap(bNotes) || []).map(noteFromApi));
       setWaitingItems((unwrap(wItems) || []).map(waitingFromApi));
+      setCustomerRequests((unwrap(custReqs) || []).map((r) => ({ ...customerRequestFromApi(r), customerName: r.customer_profiles?.full_name || "?", customerPhone: r.customer_profiles?.phone || "" })));
       const settingsRow = unwrap(appSettings);
       if (settingsRow) setSettings(settingsFromApi(settingsRow));
       const historyRows = unwrap(hist) || [];
@@ -849,6 +852,13 @@ function AppShell() {
   async function deleteWaitingItem(id) {
     await withBusy(async () => { unwrap(await supabase.from("waiting_items").delete().eq("id", id)); setWaitingItems((prev) => prev.filter((w) => w.id !== id)); });
   }
+  async function advanceCustomerRequest(id, nextStatus) {
+    await withBusy(async () => {
+      unwrap(await supabase.from("customer_requests").update({ status: nextStatus, updated_at: new Date().toISOString() }).eq("id", id));
+      if (nextStatus === "lezarva") setCustomerRequests((prev) => prev.filter((r) => r.id !== id));
+      else setCustomerRequests((prev) => prev.map((r) => (r.id === id ? { ...r, status: nextStatus } : r)));
+    });
+  }
 
   // PDF RENDELÉS IMPORT
   const [pdfImportModal, setPdfImportModal] = useState(false);
@@ -1453,6 +1463,7 @@ function AppShell() {
             waitingItems={waitingItems} addWaitingItem={addWaitingItem} advanceWaiting={advanceWaiting} deleteWaitingItem={deleteWaitingItem}
             users={users} currentUserId={profile?.id} tickets={tickets} stock={stock} parts={parts} customersTable={customersTable} warranties={warranties}
             upcomingLeave={upcomingLeave} leaveTypes={leaveTypes}
+            customerRequests={customerRequests} advanceCustomerRequest={advanceCustomerRequest}
             onOpenTicket={(id) => setDetailId(id)}
             onOpenProduct={(id) => setProductDetailId(id)}
             onOpenPart={(id) => setPartDetailId(id)}

@@ -347,3 +347,24 @@ export const settingsFromApi = (r) => ({
   smsOnTicketReady: r.sms_on_ticket_ready,
   updatedAt: r.updated_at,
 });
+
+export const customerProfileFromApi = (r) => ({
+  id: r.id, fullName: r.full_name, email: r.email, phone: r.phone, customerId: r.customer_id,
+});
+
+export const myPurchaseFromApi = (r) => ({
+  id: r.id, receiptNo: r.receipt_no, description: r.description, amount: r.amount, date: r.date,
+  warranty: r.warranty, publicToken: r.public_token, brand: r.brand, model: r.model, imei: r.imei,
+});
+
+export const myTicketFromApi = (r) => ({
+  id: r.id, ticketNo: r.ticket_no, brand: r.brand, model: r.model, issue: r.issue, price: r.price,
+  status: r.status, subStatus: r.sub_status, dateIn: r.date_in, dateOut: r.date_out,
+  warranty: r.warranty, publicToken: r.public_token,
+});
+
+export const customerRequestFromApi = (r) => ({
+  id: r.id, type: r.type, description: r.description, status: r.status,
+  linkedTransactionId: r.linked_transaction_id, linkedTicketId: r.linked_ticket_id,
+  staffNote: r.staff_note, createdAt: r.created_at,
+});

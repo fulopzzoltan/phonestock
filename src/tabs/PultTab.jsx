@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { today, phoneCode, displayName, money, LEAVE_STATUS_CLS } from "../lib/utils";
-import { ClockIcon, NoteIcon, PartsIcon, PhoneCaseIcon, LeaveIcon } from "../components/icons";
+import { ClockIcon, NoteIcon, PartsIcon, PhoneCaseIcon, LeaveIcon, CustomersIcon } from "../components/icons";
 import TicketCard from "../components/TicketCard";
 import NoteComposer from "../components/NoteComposer";
 import NoteCard from "../components/NoteCard";
@@ -9,13 +9,17 @@ import HistorySection from "../components/HistorySection";
 import { EmptyState } from "../components/EmptyState";
 
 const LEAVE_SOON_DAYS = 14;
+const REQUEST_TYPE_LABEL = { return: "Visszaküldés", warranty_claim: "Garancia-igény" };
+const REQUEST_STATUS_CLS = { uj: "st-alkatresz", attekintve: "st-garancialis" };
+const REQUEST_NEXT = { uj: "attekintve", attekintve: "lezarva" };
+const REQUEST_NEXT_LABEL = { uj: "Áttekintve", attekintve: "Lezárva" };
 
 export default function PultTab({
   effectiveLocFilter, locName, filteredTickets, setDetailId,
   notes, addNote, completeNote, reopenNote, deleteNote,
   waitingItems, addWaitingItem, advanceWaiting, deleteWaitingItem,
   users, currentUserId, tickets, stock, parts, customersTable, warranties,
-  upcomingLeave, leaveTypes,
+  upcomingLeave, leaveTypes, customerRequests, advanceCustomerRequest,
   onOpenTicket, onOpenProduct, onOpenPart, onOpenCustomer, onOpenWarranty,
 }) {
   const promisedToday = useMemo(() => {
@@ -130,6 +134,25 @@ export default function PultTab({
                     </div>
                   );
                 })}
+              </div>
+            )}
+          </div>
+
+          <div className="pult-section">
+            <div className="pult-section-head"><CustomersIcon width={16} height={16} />Ügyfél-kérések{customerRequests.length > 0 && <span className="cnt">{customerRequests.length}</span>}</div>
+            {customerRequests.length === 0 ? <EmptyState icon={CustomersIcon}>Nincs nyitott ügyfél-kérés.</EmptyState> : (
+              <div className="tw">
+                {customerRequests.map((r) => (
+                  <div key={r.id} className="dp-row" style={{ padding: "10px 14px" }}>
+                    <span className="dp-key">
+                      <span className={`st ${REQUEST_STATUS_CLS[r.status] || "st-alkatresz"}`} style={{ marginRight: 8 }}>{REQUEST_TYPE_LABEL[r.type] || r.type}</span>
+                      {r.customerName}{r.customerPhone ? ` · ${r.customerPhone}` : ""} — {r.description}
+                    </span>
+                    <span style={{ display: "flex", gap: 6 }}>
+                      {REQUEST_NEXT[r.status] && <button type="button" className="btn sec sm" onClick={() => advanceCustomerRequest(r.id, REQUEST_NEXT[r.status])}>{REQUEST_NEXT_LABEL[r.status]}</button>}
+                    </span>
+                  </div>
+                ))}
               </div>
             )}
           </div>

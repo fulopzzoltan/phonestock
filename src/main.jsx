@@ -14,6 +14,7 @@ const StockShowcase = lazy(() => import("./StockShowcase.jsx"));
 const PhoneDetail = lazy(() => import("./PhoneDetail.jsx"));
 const BuybackFlow = lazy(() => import("./BuybackFlow.jsx"));
 const RepairEstimator = lazy(() => import("./RepairEstimator.jsx"));
+const CustomerPortal = lazy(() => import("./CustomerPortal.jsx"));
 
 function RouteFallback() {
   return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F4F6F3", color: "#6B7280", fontSize: 13 }}>Betöltés...</div>;
@@ -27,6 +28,7 @@ const adminMatch = window.location.pathname.match(/^\/admin\/?$/i);
 const phoneDetailMatch = window.location.pathname.match(/^\/telefon\/([0-9a-f-]{36})\/?$/i);
 const buybackMatch = window.location.pathname.match(/^\/eladom\/?$/i);
 const repairMatch = window.location.pathname.match(/^\/becsles\/?$/i);
+const accountMatch = window.location.pathname.match(/^\/fiok(\/.*)?$/i);
 // "/" és "/keszlet" is a nyilvános készletoldalt mutatja — ez az, amit valaki
 // a Netlify domain-re érkezve először lát, nem a bejelentkezés.
 const stockMatch = window.location.pathname.match(/^\/(keszlet\/?)?$/i);
@@ -45,6 +47,7 @@ function Root() {
       <App />
     </AuthProvider>
   );
+  if (accountMatch) return <CustomerPortal />;
   if (roPhoneDetailMatch) return <PhoneDetail id={roPhoneDetailMatch[1]} lang="ro" />;
   if (phoneDetailMatch) return <PhoneDetail id={phoneDetailMatch[1]} lang="hu" />;
   if (buybackMatch) return <BuybackFlow />;
