@@ -4,7 +4,7 @@ import { supabase } from "./lib/supabaseClient";
 import { t, translateColor, translateWarranty } from "./lib/i18n";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
-import { SearchIcon } from "./components/icons";
+import { SearchIcon, FilterIcon } from "./components/icons";
 import { EmptyState, LoadingState } from "./components/EmptyState";
 
 const SITE = "https://phonestock-manager.netlify.app";
@@ -41,6 +41,7 @@ export default function StockShowcase({ lang = "hu" }) {
   const [brand, setBrand] = useState("all");
   const [cond, setCond] = useState("all");
   const [sort, setSort] = useState("recommended");
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -83,6 +84,8 @@ export default function StockShowcase({ lang = "hu" }) {
     return items;
   }, [phones, brand, cond, q, sort]);
 
+  const activeFilterCount = (brand !== "all" ? 1 : 0) + (cond !== "all" ? 1 : 0);
+
   const canonical = lang === "ro" ? `${SITE}/ro/telefoane` : `${SITE}/keszlet`;
   const title = lang === "ro" ? "Telefoane second-hand și noi — Telefonos" : "Használt és új telefonok — Telefonos";
   const description = lang === "ro"
@@ -119,22 +122,29 @@ export default function StockShowcase({ lang = "hu" }) {
             <svg viewBox="0 0 24 24" style={{ width: 15, height: 15, stroke: "var(--pub-ink-soft)", fill: "none", strokeWidth: 2 }}><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
             <input placeholder={s.searchPlaceholder} value={q} onChange={(e) => setQ(e.target.value)} />
           </div>
+          <button type="button" className="pub-filters-toggle" onClick={() => setFiltersOpen((v) => !v)}>
+            <FilterIcon width={15} height={15} />
+            {s.filters}
+            {activeFilterCount > 0 && <span className="pub-filters-count">{activeFilterCount}</span>}
+          </button>
         </div>
-        <div className="pub-chip-row">
-          {brands.map((b) => (
-            <button key={b} type="button" className={`pub-chip${brand === b ? " active" : ""}`} onClick={() => setBrand(b)}>{b === "all" ? s.allBrands : b}</button>
-          ))}
-        </div>
-        <div className="pub-chip-row">
-          <button type="button" className={`pub-chip${cond === "all" ? " active" : ""}`} onClick={() => setCond("all")}>{s.allConditions}</button>
-          <button type="button" className={`pub-chip${cond === "New" ? " active" : ""}`} onClick={() => setCond("New")}>{s.conditionNew}</button>
-          <button type="button" className={`pub-chip${cond === "Refurbished" ? " active" : ""}`} onClick={() => setCond("Refurbished")}>{s.conditionRefurb}</button>
-          <select className="pub-sort-select" value={sort} onChange={(e) => setSort(e.target.value)}>
-            <option value="recommended">{s.sortRecommended}</option>
-            <option value="price-asc">{s.sortPriceAsc}</option>
-            <option value="price-desc">{s.sortPriceDesc}</option>
-            <option value="brand">{s.sortBrand}</option>
-          </select>
+        <div className={`pub-filters-panel${filtersOpen ? " open" : ""}`}>
+          <div className="pub-chip-row">
+            {brands.map((b) => (
+              <button key={b} type="button" className={`pub-chip${brand === b ? " active" : ""}`} onClick={() => setBrand(b)}>{b === "all" ? s.allBrands : b}</button>
+            ))}
+          </div>
+          <div className="pub-chip-row">
+            <button type="button" className={`pub-chip${cond === "all" ? " active" : ""}`} onClick={() => setCond("all")}>{s.allConditions}</button>
+            <button type="button" className={`pub-chip${cond === "New" ? " active" : ""}`} onClick={() => setCond("New")}>{s.conditionNew}</button>
+            <button type="button" className={`pub-chip${cond === "Refurbished" ? " active" : ""}`} onClick={() => setCond("Refurbished")}>{s.conditionRefurb}</button>
+            <select className="pub-sort-select" value={sort} onChange={(e) => setSort(e.target.value)}>
+              <option value="recommended">{s.sortRecommended}</option>
+              <option value="price-asc">{s.sortPriceAsc}</option>
+              <option value="price-desc">{s.sortPriceDesc}</option>
+              <option value="brand">{s.sortBrand}</option>
+            </select>
+          </div>
         </div>
       </PublicHeader>
 

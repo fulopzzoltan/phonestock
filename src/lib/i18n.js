@@ -1,10 +1,10 @@
 export const STRINGS = {
   hu: {
-    navStock: "Készlet", navBuyback: "Add el a telefonod", navRepair: "Szerviz árbecslő",
-    navStatus: "Szerviz / vásárlás státusz", navLogin: "Bejelentkezés", langSwitch: "RO",
+    navStock: "Készlet", navBuyback: "Eladás", navRepair: "Szerviz",
+    navStatus: "Nyomkövetés", navLogin: "Bejelentkezés", langSwitch: "RO",
 
     // Készlet-vitrin
-    searchPlaceholder: "Keresés — pl. iPhone 13, Samsung A07...",
+    searchPlaceholder: "Keresés — pl. iPhone 13, Samsung A07...", filters: "Szűrők",
     allBrands: "Minden márka", allConditions: "Összes állapot",
     conditionNew: "Új", conditionRefurb: "Felújított",
     sortRecommended: "Ajánlott sorrend", sortPriceAsc: "Ár: olcsóbb elöl", sortPriceDesc: "Ár: drágább elöl", sortBrand: "Márka szerint",
@@ -47,10 +47,10 @@ export const STRINGS = {
     genericError: "Hiba történt.",
   },
   ro: {
-    navStock: "Telefoane", navBuyback: "Vinde telefonul", navRepair: "Estimare service",
-    navStatus: "Stare service / achiziție", navLogin: "Autentificare", langSwitch: "HU",
+    navStock: "Telefoane", navBuyback: "Vinde", navRepair: "Service",
+    navStatus: "Urmărire", navLogin: "Autentificare", langSwitch: "HU",
 
-    searchPlaceholder: "Căutare — ex. iPhone 13, Samsung A07...",
+    searchPlaceholder: "Căutare — ex. iPhone 13, Samsung A07...", filters: "Filtre",
     allBrands: "Toate mărcile", allConditions: "Toate stările",
     conditionNew: "Nou", conditionRefurb: "Recondiționat",
     sortRecommended: "Recomandat", sortPriceAsc: "Preț: crescător", sortPriceDesc: "Preț: descrescător", sortBrand: "După marcă",
