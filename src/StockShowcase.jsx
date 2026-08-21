@@ -20,6 +20,18 @@ function photoUrl(path) {
   return supabase.storage.from("product-photos").getPublicUrl(path).data.publicUrl;
 }
 
+// A publikus RPC nem ad vissza dátumot (nincs "legújabb" mező), és nem is akarjuk mindig
+// ugyanazt a pár telefont az élen tartani ár szerint — ezért alapból egyszer, betöltéskor
+// megkeverjük a listát, ez marad a "recommended" (alapértelmezett) sorrend a session alatt.
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 export default function StockShowcase({ lang = "hu" }) {
   const s = t(lang);
   const [phones, setPhones] = useState([]);
@@ -28,14 +40,14 @@ export default function StockShowcase({ lang = "hu" }) {
   const [q, setQ] = useState("");
   const [brand, setBrand] = useState("all");
   const [cond, setCond] = useState("all");
-  const [sort, setSort] = useState("price-asc");
+  const [sort, setSort] = useState("recommended");
 
   useEffect(() => {
     (async () => {
       try {
         const { data, error: err } = await supabase.rpc("get_public_stock");
         if (err) throw err;
-        setPhones(data || []);
+        setPhones(shuffle(data || []));
       } catch (err) {
         setError(err.message || "Hiba történt a készlet betöltése közben.");
       } finally {
@@ -62,6 +74,7 @@ export default function StockShowcase({ lang = "hu" }) {
       if (q.trim() && !`${p.brand} ${p.model} ${p.color || ""}`.toLowerCase().includes(q.trim().toLowerCase())) return false;
       return true;
     });
+    if (sort === "recommended") return items;
     items = [...items].sort((a, b) => {
       if (sort === "price-asc") return (Number(a.sale_price) || 0) - (Number(b.sale_price) || 0);
       if (sort === "price-desc") return (Number(b.sale_price) || 0) - (Number(a.sale_price) || 0);
@@ -117,6 +130,7 @@ export default function StockShowcase({ lang = "hu" }) {
           <button type="button" className={`pub-chip${cond === "New" ? " active" : ""}`} onClick={() => setCond("New")}>{s.conditionNew}</button>
           <button type="button" className={`pub-chip${cond === "Refurbished" ? " active" : ""}`} onClick={() => setCond("Refurbished")}>{s.conditionRefurb}</button>
           <select className="pub-sort-select" value={sort} onChange={(e) => setSort(e.target.value)}>
+            <option value="recommended">{s.sortRecommended}</option>
             <option value="price-asc">{s.sortPriceAsc}</option>
             <option value="price-desc">{s.sortPriceDesc}</option>
             <option value="brand">{s.sortBrand}</option>

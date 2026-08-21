@@ -57,6 +57,16 @@ A flip/bsgmag mindkettő "Adauga in cos" → valódi kosár → checkout → fiz
 
 Ez közelebb hozza a webshopot a flip/bsgmag "egy kattintással lefoglalom" élményéhez, de a te üzletmeneted maradna: fizikai átvétel, staff-jóváhagyás, nincs online fizetés/szállítás-komplexitás.
 
+## 7. Új (bontatlan) telefonok — a fő eltérés flip/bsgmag-tól, külön kell kezelni
+
+Sem a flip.ro, sem a bsgmag.ro nem árul bontatlan, gyári új telefont — kizárólag felújítottat. Nálunk viszont van `condition = 'New'` tétel is, ezt a fenti pontok egyikét sem szabad rá ráerőltetni:
+
+1. **3. pont (esztétikai fokozat) — Újnál nincs értelmezve.** A `pub-cond-pill`/cím ne mutasson "Kiváló"/"Nagyon jó"-t Újnál, csak simán "Új" / "Bontatlan" jelzőt, ahogy ma is. A `aesthetic_grade` mező (ha bevezetjük) `New`-nál mindig `null`, és az admin UI-ban is inaktív/rejtett Új státuszú terméknél.
+2. **4.2 pont (bizalmi checklist) — két külön verzió kell.** Felújítottnál a "mit ellenőrzünk" lista (kijelző, akku-egészség, gombok, vízkár, IMEI stb.) van értelmezve. Újnál ez félrevezető lenne ("ellenőriztük a vízkárt" egy bontatlan dobozon értelmetlen) — helyette egy másik, rövid checklist: **Bontatlan, gyári fólia**, **Eredeti tartozékok**, **Gyártói/forgalmazói garancia**, **Számla/blokk**. Két konstans tömb (`NEW_TRUST_POINTS`, `REFURB_TRUST_POINTS`) a `condition` alapján választva.
+3. **6. pont (Lefoglalom-gomb) — mindkettőnél érvényes**, nincs különbség: mindkét típusnál ugyanúgy foglalható/érdeklődhető.
+4. **Listaoldal tetején Új/Használt megkülönböztetés hangsúlyosabbá tétele**: a jelenlegi `pub-chip-row`-beli "Új"/"Felújított" chip marad a szűrő-mechanizmus, de érdemes vizuálisan kicsit kiemelni (pl. nagyobb, tab-szerű megjelenés a keresősáv alatt, nem egyenrangú a többi apró chippel) — mert ez nálunk alapvetőbb vásárlói elágazás (más árszint, más elvárás), mint a flip/bsgmag-nál, ahol ez a kérdés fel sem merül.
+5. **Terméklap címe**: Refurbished-nél a cím végén ott a fokozat (pl. "iPhone 14 128GB, Midnight — Nagyon jó", ld. 3. pont), Újnál nincs ilyen utótag, helyette egy jól látható "Bontatlan, gyári garancia" alcím jelenjen meg a cím alatt.
+
 ---
 
 ## Ellenőrzőlista implementálás után
@@ -67,4 +77,5 @@ Ez közelebb hozza a webshopot a flip/bsgmag "egy kattintással lefoglalom" élm
 - A saját színpaletta maradt, semmi flip-kék/bsgmag-piros nem került be
 - Ha a 6. pont szerinti foglalás-flow bekerült: staff látja a Pulton az új foglalásokat, tud rá reagálni
 - RO oldal (`/ro/telefoane`, `/ro/telefon/:id`) ugyanezeket a változtatásokat tükrözi
+- Új (bontatlan) tételeknél nincs esztétikai fokozat, saját (nem felújított-jellegű) bizalmi checklist jelenik meg
 - Nincs `git push`, csak lokális commit

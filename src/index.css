@@ -437,6 +437,7 @@ tr:hover td{background:#FAFAFA}
 .pub-price .pub-cur{font-size:11px;font-weight:600;color:var(--pub-ink-soft);margin-left:2px}
 .pub-ask-btn{border:1px solid var(--pub-accent);background:var(--pub-accent);color:#fff;font-size:12px;font-weight:700;padding:8px 13px;border-radius:9px;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-flex}
 .pub-ask-btn:hover{opacity:.88;text-decoration:none}
+
 .pub-footer{border-top:1px solid var(--pub-line);padding:22px 24px 40px}
 .pub-footer-inner{max-width:1180px;margin:0 auto;font-size:12px;color:var(--pub-ink-soft);line-height:1.6}
 @media (max-width:640px){
@@ -474,6 +475,24 @@ tr:hover td{background:#FAFAFA}
 .pub-anchor{display:flex;align-items:baseline;gap:8px;margin-bottom:2px}
 .pub-anchor-old{font-size:12px;color:var(--pub-ink-soft);text-decoration:line-through}
 .pub-anchor-save{font-size:11px;font-weight:700;color:var(--pub-accent-ink);background:var(--pub-accent-soft);padding:2px 7px;border-radius:6px}
+
+@media (max-width:560px){
+  .pub-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .pub-card{padding:10px;gap:7px;border-radius:12px}
+  .pub-device-art{height:96px;border-radius:8px}
+  .pub-device-art svg{height:52px}
+  .pub-card-name{font-size:12.5px;line-height:1.2}
+  .pub-card-specs{font-size:10px}
+  .pub-cond-pill{font-size:9.5px;padding:2px 7px}
+  .pub-scarcity-pill{font-size:9.5px;padding:2px 7px}
+  .pub-battery-label{font-size:9.5px}
+  .pub-warranty-tag{font-size:9.5px}
+  .pub-anchor-old{font-size:11px}
+  .pub-anchor-save{font-size:10px}
+  .pub-card-foot{flex-direction:column;align-items:stretch;gap:8px}
+  .pub-price{font-size:16px}
+  .pub-ask-btn{width:100%;justify-content:center;padding:9px 10px}
+}
 
 .pub-detail-main{max-width:1000px;margin:0 auto;padding:24px}
 .pub-back-link{display:inline-block;margin-bottom:16px;font-size:13px;color:var(--pub-ink-soft);text-decoration:none}
