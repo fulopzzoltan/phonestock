@@ -4,15 +4,20 @@ import { money, warrantyExpiry, isWarrantyActive } from "./lib/utils";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 
+// Kézzel beírt keresés (token nélkül) mostantól a /status egyesített oldalon zajlik
+// (szerviz + vásárlás egy helyen, telefonszám alapján) — ez a komponens csak a
+// már kinyomtatott/kiküldött /receipt/:token linkeket szolgálja ki, hogy azok
+// visszamenőleg is működjenek.
 export default function ReceiptLookup({ token }) {
-  const [receiptNo, setReceiptNo] = useState("");
-  const [phone, setPhone] = useState("");
-  const [busy, setBusy] = useState(!!token);
+  const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
   const [result, setResult] = useState(null);
 
   useEffect(() => {
-    if (!token) return;
+    if (!token) {
+      window.location.replace("/status");
+      return;
+    }
     (async () => {
       try {
         const { data, error: err } = await supabase.rpc("get_receipt_by_token", { p_token: token });
@@ -27,46 +32,18 @@ export default function ReceiptLookup({ token }) {
     })();
   }, [token]);
 
-  async function submit(e) {
-    e.preventDefault();
-    setBusy(true);
-    setError("");
-    setResult(null);
-    try {
-      const { data, error: err } = await supabase.rpc("get_receipt", {
-        p_receipt_no: Number(receiptNo),
-        p_phone: phone,
-      });
-      if (err) throw err;
-      if (!data || data.length === 0) setError("Nem található bizonylat ezzel a számmal és telefonszámmal.");
-      else setResult(data[0]);
-    } catch (err) {
-      setError(err.message || "Hiba történt a keresés közben.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
   const expiry = result ? warrantyExpiry(result.date, result.warranty) : null;
   const active = result ? isWarrantyActive(result.date, result.warranty) : false;
+
+  if (!token) return null;
 
   return (
     <div className="pub-shop">
       <PublicHeader activeNav="status" />
       <main className="pub-lookup-main">
       <div className="login-card" style={{ maxWidth: 440 }}>
-        {!result && <div className="login-title">Vásárlás / garancia</div>}
+        {busy && <div style={{ textAlign: "center", color: "#6B7280", fontSize: 13, padding: "10px 0" }}>Betöltés...</div>}
         {error && <div className="errbar">{error}</div>}
-        {busy && !result && <div style={{ textAlign: "center", color: "#6B7280", fontSize: 13, padding: "10px 0" }}>Betöltés...</div>}
-        {!token && !result && !busy && (
-          <form onSubmit={submit}>
-            <div className="field"><label>Bizonylatszám</label><input type="number" required value={receiptNo} onChange={(e) => setReceiptNo(e.target.value)} placeholder="pl. 500" /></div>
-            <div className="field"><label>Telefonszám</label><input required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="07xx xxx xxx" /></div>
-            <button className="btn" style={{ width: "100%", justifyContent: "center", marginTop: 6 }} disabled={busy} type="submit">
-              {busy ? "Keresés..." : "Adatok lekérése"}
-            </button>
-          </form>
-        )}
         {result && (
           <div>
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14 }}>
@@ -91,15 +68,6 @@ export default function ReceiptLookup({ token }) {
                 </span>
               </div>
             </div>
-            {!token && (
-              <button className="btn sec" style={{ width: "100%", justifyContent: "center", marginTop: 4 }} onClick={() => { setResult(null); setReceiptNo(""); setPhone(""); }}>Új keresés</button>
-            )}
-          </div>
-        )}
-        {!token && !result && <div className="login-note">Írd be a bizonylatszámot és a vásárláskor megadott telefonszámot.</div>}
-        {!token && (
-          <div className="login-note" style={{ marginTop: 6 }}>
-            Szerviz munkalapot keresel? <a href="/status">Kattints ide</a>. Vissza a <a href="/">készlethez</a>.
           </div>
         )}
       </div>

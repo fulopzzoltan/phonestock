@@ -40,7 +40,6 @@ export default function PublicFooter({ lang = "hu" }) {
           <div className="pub-footer-col">
             <div className="pub-footer-heading">{s.footerAccount}</div>
             <a href="/fiok">{s.footerMyAccount}</a>
-            <a href="/receipt">{lang === "ro" ? "Bon de cumpărare" : "Bizonylat keresése"}</a>
           </div>
 
           <div className="pub-footer-col">
