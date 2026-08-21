@@ -1,11 +1,11 @@
 import {
-  EditIcon, DashboardIcon, ServiceIcon, PhoneCaseIcon, BoardIcon,
+  SettingsIcon, DashboardIcon, ServiceIcon, PhoneCaseIcon, BoardIcon,
   PartsIcon, FinanceIcon, CustomersIcon, WarrantyIcon, UsersNavIcon, TrashNavIcon, LogoutIcon, BuybackIcon, LeaveIcon, RepairPriceIcon, CashSettlementIcon,
 } from "./icons";
 
 export default function Sidebar({
   tab, setTab, setTicketModal, isAdmin, locFilter, setLocFilter, allowedLocations,
-  myLocationId, locName, profile, user, signOut, setChangePasswordModal,
+  myLocationId, locName, profile, user, signOut,
 }) {
   return (
     <div className="sidebar">
@@ -63,8 +63,8 @@ export default function Sidebar({
             <div className="user-name">{profile?.fullName || user?.email}</div>
             <div className="user-role">{isAdmin ? "Admin" : "Alkalmazott"}</div>
           </div>
-          <button className="logout-btn" title="Jelszó módosítása" onClick={() => setChangePasswordModal(true)}>
-            <EditIcon />
+          <button className={`logout-btn ${tab === "settings" ? "active" : ""}`} title="Beállítások" onClick={() => setTab("settings")}>
+            <SettingsIcon />
           </button>
           <button className="logout-btn" title="Kijelentkezés" onClick={signOut}>
             <LogoutIcon />

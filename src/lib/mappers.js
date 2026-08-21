@@ -341,3 +341,9 @@ export const spFromApi = (r) => ({
   costPrice: r.cost_price,
   usedAt: r.created_at,
 });
+
+export const settingsFromApi = (r) => ({
+  smsOnTicketCreate: r.sms_on_ticket_create,
+  smsOnTicketReady: r.sms_on_ticket_ready,
+  updatedAt: r.updated_at,
+});

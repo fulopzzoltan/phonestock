@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi } from "./lib/mappers";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi } from "./lib/mappers";
 import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, normalizeImei, money, ticketCode } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
@@ -29,6 +29,7 @@ import BuybackTab from "./tabs/BuybackTab";
 import RepairPricesTab from "./tabs/RepairPricesTab";
 import UsersTab from "./tabs/UsersTab";
 import TrashTab from "./tabs/TrashTab";
+import SettingsTab from "./tabs/SettingsTab";
 import QuickSaleButtons from "./components/QuickSaleButtons";
 import TransactionQuickAdd from "./components/TransactionQuickAdd";
 import TransactionsPeriodList from "./components/TransactionsPeriodList";
@@ -52,9 +53,6 @@ import TeamChatPanel from "./components/TeamChatPanel";
 import InviteEmployeeModal from "./components/InviteEmployeeModal";
 import ChangePasswordModal from "./components/ChangePasswordModal";
 import { useInternalChat } from "./lib/useInternalChat";
-
-// TODO: ideiglenesen kikapcsolva munkalap-felvételnél a saját-szerviz feature tesztelése alatt — a felhasználó kérésére.
-const SMS_ON_TICKET_CREATE = false;
 
 export default function App() {
   const { session, loading } = useAuth();
@@ -86,6 +84,7 @@ function AppShell() {
   const [inviteModal, setInviteModal] = useState(false);
   const [inviteError, setInviteError] = useState("");
   const [changePasswordModal, setChangePasswordModal] = useState(false);
+  const [settings, setSettings] = useState({ smsOnTicketCreate: false, smsOnTicketReady: true });
   const { messages: chatMessages, unreadCount: chatUnread, send: sendChatMessage, markRead: markChatRead } = useInternalChat(profile);
   const [search, setSearch] = useState("");
   const [svcSearch, setSvcSearch] = useState("");
@@ -166,7 +165,7 @@ function AppShell() {
   async function loadAll() {
     setLoadingData(true);
     try {
-      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems] = await Promise.all([
+      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         fetchAllRows(() => supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false })),
         fetchAllRows(() => supabase.from("transactions").select("*").is("deleted_at", null).order("date", { ascending: false })),
@@ -189,6 +188,7 @@ function AppShell() {
         supabase.from("cash_settlements").select("*").order("period_end", { ascending: false }),
         supabase.from("board_notes").select("*").order("created_at", { ascending: false }),
         supabase.from("waiting_items").select("*").order("created_at", { ascending: false }),
+        supabase.from("app_settings").select("*").eq("id", true).single(),
       ]);
       setLocations(unwrap(locs) || []);
       const prodRows = unwrap(prods) || [];
@@ -215,6 +215,8 @@ function AppShell() {
       setCashSettlements((unwrap(cSettlements) || []).map(cashSettlementFromApi));
       setNotes((unwrap(bNotes) || []).map(noteFromApi));
       setWaitingItems((unwrap(wItems) || []).map(waitingFromApi));
+      const settingsRow = unwrap(appSettings);
+      if (settingsRow) setSettings(settingsFromApi(settingsRow));
       const historyRows = unwrap(hist) || [];
       setStockHistory(historyRows.map((r) => ({ date: r.date, value: Number(r.value) || 0 })));
       maybeSnapshotStockValue(prodRows, historyRows);
@@ -606,6 +608,19 @@ function AppShell() {
     setRepairLeads(repairLeads.map((l) => (l.id === id ? { ...l, status: "Feldolgozva", convertedTicketId: ticketId } : l)));
   }
 
+  // SETTINGS (admin write, mindenki olvassa — SMS-kapcsolók, jelszóváltás onnan nyílik)
+  async function updateSettings(patch) {
+    await withBusy(async () => {
+      const apiPatch = {};
+      if ("smsOnTicketCreate" in patch) apiPatch.sms_on_ticket_create = patch.smsOnTicketCreate;
+      if ("smsOnTicketReady" in patch) apiPatch.sms_on_ticket_ready = patch.smsOnTicketReady;
+      apiPatch.updated_at = new Date().toISOString();
+      apiPatch.updated_by = user.id;
+      const r = unwrap(await supabase.from("app_settings").update(apiPatch).eq("id", true).select());
+      setSettings(settingsFromApi(r[0]));
+    });
+  }
+
   // USERS (admin only)
   async function updateUserProfile(id, patch) {
     await withBusy(async () => {
@@ -888,7 +903,7 @@ function AppShell() {
         setRepairLeadConvert(null);
       }
 
-      if (SMS_ON_TICKET_CREATE && newTicket.customerPhone) {
+      if (settings.smsOnTicketCreate && newTicket.customerPhone) {
         const device = [newTicket.brand, newTicket.model].filter(Boolean).join(" ");
         const message = stripAccents(`Szia! Atvettuk a keszulekedet (${device}), munkalapszam: #${newTicket.ticketNo}. A javitas allapotat itt kovetheted nyomon: ${SITE_URL}/s/${newTicket.shortCode}`);
         supabase.functions.invoke("send-sms", { body: { phone: newTicket.customerPhone, message } }).catch((err) => {
@@ -925,7 +940,7 @@ function AppShell() {
       unwrap(await supabase.from("service_tickets").update(patch).eq("id", id));
       setTickets(tickets.map((t) => (t.id === id ? { ...t, status, subStatus, dateOut: subStatus === "Átadva" ? today() : t.dateOut, readyAt: becameReady ? patch.ready_at : t.readyAt } : t)));
 
-      if (becameReady && subStatus === null && ticket && ticket.customerPhone) {
+      if (settings.smsOnTicketReady && becameReady && subStatus === null && ticket && ticket.customerPhone) {
         const device = [ticket.brand, ticket.model].filter(Boolean).join(" ");
         const message = stripAccents(`Szia! A(z) ${device} javítása elkészült, átveheted nálunk (${locName(ticket.locationId)}). Részletek: ${SITE_URL}/s/${ticket.shortCode}`);
         supabase.functions.invoke("send-sms", { body: { phone: ticket.customerPhone, message } }).catch((err) => {
@@ -1397,7 +1412,7 @@ function AppShell() {
       <Sidebar
         tab={tab} setTab={setTab} setTicketModal={setTicketModal} isAdmin={isAdmin} locFilter={locFilter} setLocFilter={setLocFilter}
         allowedLocations={allowedLocations} myLocationId={myLocationId} locName={locName} profile={profile} user={user}
-        signOut={signOut} setChangePasswordModal={setChangePasswordModal}
+        signOut={signOut}
       />
 
       <div className="main">
@@ -1534,6 +1549,13 @@ function AppShell() {
             restorePart={restorePart} hardDeletePart={hardDeletePart} restoreTransaction={restoreTransaction}
             hardDeleteTransaction={hardDeleteTransaction} restoreTicket={restoreTicket} hardDeleteTicket={hardDeleteTicket}
             hardDeleteAllTrash={hardDeleteAllTrash}
+          />
+        )}
+
+        {tab === "settings" && (
+          <SettingsTab
+            isAdmin={isAdmin} profile={profile} user={user} settings={settings} updateSettings={updateSettings}
+            busy={busy} setChangePasswordModal={setChangePasswordModal}
           />
         )}
       </div>
