@@ -34,6 +34,7 @@ export default function StockTab({
   soldStock, isAdmin = true, myLocationId = null,
 }) {
   const [condFilter, setCondFilter] = useState("all"); // all | New | Refurbished
+  const [acqFilter, setAcqFilter] = useState("all"); // all | purchase | consignment
   const [sortBy, setSortBy] = useState("recent");
   const [view, setView] = useState("list"); // list | grid
   const [collapsedOverride, setCollapsedOverride] = useState({}); // loc.id -> bool
@@ -44,8 +45,10 @@ export default function StockTab({
   const canAct = (item) => isAdmin || item.locationId === myLocationId || item.locationId === reserveLocId;
 
   const condFiltered = useMemo(() => {
-    return condFilter === "all" ? filteredStock : filteredStock.filter((i) => i.condition === condFilter);
-  }, [filteredStock, condFilter]);
+    let items = condFilter === "all" ? filteredStock : filteredStock.filter((i) => i.condition === condFilter);
+    if (acqFilter !== "all") items = items.filter((i) => (i.acquisition?.acquisitionType || "purchase") === acqFilter);
+    return items;
+  }, [filteredStock, condFilter, acqFilter]);
 
   const visibleLocations = effectiveLocFilter === "all" ? locations : locations.filter((l) => l.id === effectiveLocFilter || l.id === reserveLocId);
 
@@ -62,6 +65,11 @@ export default function StockTab({
           <button className={condFilter === "all" ? "active" : ""} onClick={() => setCondFilter("all")}>Mind</button>
           <button className={condFilter === "New" ? "active" : ""} onClick={() => setCondFilter("New")}>Új</button>
           <button className={condFilter === "Refurbished" ? "active" : ""} onClick={() => setCondFilter("Refurbished")}>Felújított</button>
+        </div>
+        <div className="seg">
+          <button className={acqFilter === "all" ? "active" : ""} onClick={() => setAcqFilter("all")}>Mind</button>
+          <button className={acqFilter === "purchase" ? "active" : ""} onClick={() => setAcqFilter("purchase")}>Saját</button>
+          <button className={acqFilter === "consignment" ? "active" : ""} onClick={() => setAcqFilter("consignment")}>Bizomány</button>
         </div>
         <select className="filter-sel" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
           {SORTS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
@@ -107,6 +115,7 @@ export default function StockTab({
                               <div>
                                 <div className="stk-name">
                                   {displayName(i.brand, i.model)}
+                                  {i.acquisition?.acquisitionType === "consignment" && <span className="badge-loc">Bizomány</span>}
                                   {i.stockStatus === "javitando" && <span className="tag" style={{ background: "var(--danger-soft)", color: "var(--danger-ink)", fontWeight: 700 }} title="Nem látszik a webshopban">Javítandó</span>}
                                   {i.stockStatus === "lefoglalt" && <span style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }} title="Nem látszik a webshopban">{stockStatusLabel(i.stockStatus)}</span>}
                                   {isSlowMoving(i, reserveLocId) && <span className="tag" style={{ background: "var(--warning-soft)", color: "var(--warning-ink)", fontWeight: 700 }}>{daysOnShelf(i.dateAdded)} napja a polcon</span>}
@@ -147,6 +156,7 @@ export default function StockTab({
                         </div>
                         <div className="stk-card-name">
                           {displayName(i.brand, i.model)}
+                          {i.acquisition?.acquisitionType === "consignment" && <span className="badge-loc" style={{ marginLeft: 6 }}>Bizomány</span>}
                           {i.stockStatus === "javitando" && <span className="tag" style={{ marginLeft: 6, background: "var(--danger-soft)", color: "var(--danger-ink)", fontWeight: 700 }}>Javítandó</span>}
                           {i.stockStatus === "lefoglalt" && <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }}>{stockStatusLabel(i.stockStatus)}</span>}
                         </div>

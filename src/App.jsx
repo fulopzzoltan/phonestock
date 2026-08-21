@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi } from "./lib/mappers";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi } from "./lib/mappers";
 import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, normalizeImei, money, ticketCode } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
@@ -136,6 +136,7 @@ function AppShell() {
   const [waitingItems, setWaitingItems] = useState([]);
   const [customerRequests, setCustomerRequests] = useState([]);
   const [webOrders, setWebOrders] = useState([]);
+  const [productAcquisitions, setProductAcquisitions] = useState([]);
   const [warrantyModal, setWarrantyModal] = useState(null); // null | "add" | manual warranty object (edit)
   const [warrantyDetailKey, setWarrantyDetailKey] = useState(null);
   const [warrantyFilter, setWarrantyFilter] = useState("all"); // all | sale | service
@@ -191,7 +192,7 @@ function AppShell() {
   async function loadAll() {
     setLoadingData(true);
     try {
-      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds] = await Promise.all([
+      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds, prodAcqs] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         fetchAllRows(() => supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false })),
         fetchAllRows(() => supabase.from("transactions").select("*").is("deleted_at", null).order("date", { ascending: false })),
@@ -217,10 +218,15 @@ function AppShell() {
         supabase.from("app_settings").select("*").eq("id", true).single(),
         supabase.from("customer_requests").select("*, customer_profiles(full_name, phone)").neq("status", "lezarva").order("created_at", { ascending: false }),
         supabase.from("web_orders").select("*, locations(name), web_order_items(id, product_id, price, products(brand, model, storage, color))").in("status", ["fizetve", "visszaigazolva"]).order("created_at", { ascending: false }),
+        supabase.from("product_acquisitions").select("*"),
       ]);
       setLocations(unwrap(locs) || []);
       const prodRows = unwrap(prods) || [];
-      setStock(prodRows.map(pFromApi));
+      const acqRows = (unwrap(prodAcqs) || []).map(acqFromApi);
+      setProductAcquisitions(acqRows);
+      const acqByProduct = {};
+      acqRows.forEach((a) => { acqByProduct[a.productId] = a; });
+      setStock(prodRows.map((r) => ({ ...pFromApi(r), acquisition: acqByProduct[r.id] || null })));
       setTransactions((unwrap(txs) || []).map(txFromApi));
       const spByTicket = {};
       (unwrap(sps) || []).map(spFromApi).forEach((sp) => {
@@ -419,17 +425,65 @@ function AppShell() {
   const defaultStockLocId = isAdmin ? (locFilter !== "all" ? locFilter : (reserveLocId || allowedLocations[0]?.id)) : myLocationId;
 
   // STOCK
-  async function addProduct(data, locId) {
+  async function addProduct(data, locId, acquisition) {
     await withBusy(async () => {
       const r = unwrap(await supabase.from("products").insert(pToApi(data, locId)).select());
-      setStock([pFromApi(r[0]), ...stock]);
+      const product = pFromApi(r[0]);
+      setStock([product, ...stock]);
+
+      if (acquisition) {
+        let customerId = null;
+        if (acquisition.sellerPhone) {
+          const { data: cid } = await supabase.rpc("upsert_customer", { p_name: acquisition.sellerName, p_phone: acquisition.sellerPhone });
+          customerId = cid;
+        }
+        const docNoRpc = acquisition.acquisitionType === "consignment" ? "next_consignment_doc_no" : "next_purchase_doc_no";
+        const { data: docNo } = await supabase.rpc(docNoRpc);
+        const acqRow = {
+          productId: product.id,
+          acquisitionType: acquisition.acquisitionType,
+          sellerName: acquisition.sellerName,
+          sellerIdDoc: acquisition.sellerIdDoc,
+          sellerCnp: acquisition.sellerCnp,
+          sellerPhone: acquisition.sellerPhone,
+          sellerAddress: acquisition.sellerAddress,
+          customerId,
+          purchaseDocNo: acquisition.acquisitionType === "purchase" ? docNo : null,
+          consignmentDocNo: acquisition.acquisitionType === "consignment" ? docNo : null,
+          consignorPayoutAmount: acquisition.consignorPayoutAmount,
+        };
+        const ar = unwrap(await supabase.from("product_acquisitions").insert(acqToApi(acqRow)).select());
+        let savedAcq = acqFromApi(ar[0]);
+        setProductAcquisitions((prev) => [savedAcq, ...prev]);
+
+        const shouldPayoutNow = acquisition.acquisitionType === "purchase" || acquisition.payoutNow;
+        if (shouldPayoutNow) {
+          const amount = acquisition.acquisitionType === "purchase" ? Number(product.costPrice) || 0 : Number(acquisition.consignorPayoutAmount) || 0;
+          if (amount > 0) {
+            const tr = unwrap(await supabase.from("transactions").insert(
+              txToApi({
+                type: "expense", category: acquisition.acquisitionType === "purchase" ? "Készlet" : "Bizomány",
+                description: `${acquisition.acquisitionType === "purchase" ? "Felvásárlás" : "Bizományos kifizetés"}: ${acquisition.sellerName} — ${[product.brand, product.model].filter(Boolean).join(" ")}`,
+                amount, productId: product.id, customerName: acquisition.sellerName, customerPhone: acquisition.sellerPhone,
+              }, locId)
+            ).select());
+            setTransactions((prev) => [txFromApi(tr[0]), ...prev]);
+          }
+          if (acquisition.acquisitionType === "consignment") {
+            const ur = unwrap(await supabase.from("product_acquisitions").update({ payout_status: "kifizetve", payout_date: today() }).eq("id", savedAcq.id).select());
+            savedAcq = acqFromApi(ur[0]);
+            setProductAcquisitions((prev) => prev.map((a) => (a.id === savedAcq.id ? savedAcq : a)));
+          }
+        }
+        setStock((prev) => prev.map((i) => (i.id === product.id ? { ...i, acquisition: savedAcq } : i)));
+      }
       setStockModal(null);
     });
   }
   async function editProduct(id, data, locId) {
     await withBusy(async () => {
       const r = unwrap(await supabase.from("products").update(pToApi(data, locId)).eq("id", id).select());
-      setStock(stock.map((i) => (i.id === id ? pFromApi(r[0]) : i)));
+      setStock(stock.map((i) => (i.id === id ? { ...pFromApi(r[0]), acquisition: i.acquisition } : i)));
       setStockModal(null);
     });
   }
@@ -456,8 +510,27 @@ function AppShell() {
       if (product?.condition === "Refurbished") accessories.push({ description: "Kábel", amount: 5 });
       const basketId = crypto.randomUUID();
 
-      const r = unwrap(await supabase.from("transactions").insert({ ...txToApi({ ...txData, basketId }, locId), customer_id: customerId }).select());
-      const newTxs = [txFromApi(r[0])];
+      const isConsignment = product?.acquisition?.acquisitionType === "consignment";
+      const newTxs = [];
+      if (isConsignment) {
+        const payout = Number(product.acquisition.consignorPayoutAmount) || 0;
+        const commission = (Number(txData.amount) || 0) - payout;
+        const r1 = unwrap(await supabase.from("transactions").insert({
+          ...txToApi({ ...txData, basketId, category: "Bizomány", amount: commission, description: `${txData.description} (jutalék)` }, locId),
+          customer_id: customerId,
+        }).select());
+        newTxs.push(txFromApi(r1[0]));
+        if (payout > 0) {
+          const r2 = unwrap(await supabase.from("transactions").insert({
+            ...txToApi({ ...txData, basketId, category: "Bizomány", amount: payout, description: `${txData.description} (letéteményesé)`, isPassthrough: true }, locId),
+            customer_id: customerId,
+          }).select());
+          newTxs.push(txFromApi(r2[0]));
+        }
+      } else {
+        const r = unwrap(await supabase.from("transactions").insert({ ...txToApi({ ...txData, basketId }, locId), customer_id: customerId }).select());
+        newTxs.push(txFromApi(r[0]));
+      }
       for (const acc of accessories) {
         const ar = unwrap(await supabase.from("transactions").insert(
           txToApi({ type: "expense", category: "Készlet", description: acc.description, amount: acc.amount, basketId }, locId)
@@ -468,6 +541,28 @@ function AppShell() {
       setStock(stock.map((i) => (i.id === txData.productId ? { ...i, status: "sold" } : i)));
       setTransactions([...newTxs, ...transactions]);
       setSellModal(null);
+    });
+  }
+  async function payoutConsignor(productId) {
+    await withBusy(async () => {
+      const product = stock.find((p) => p.id === productId);
+      const acq = product?.acquisition;
+      if (!acq || acq.acquisitionType !== "consignment" || acq.payoutStatus === "kifizetve") return;
+      const amount = Number(acq.consignorPayoutAmount) || 0;
+      if (amount > 0) {
+        const tr = unwrap(await supabase.from("transactions").insert(
+          txToApi({
+            type: "expense", category: "Bizomány",
+            description: `Bizományos kifizetés: ${acq.sellerName} — ${[product.brand, product.model].filter(Boolean).join(" ")}`,
+            amount, productId, customerName: acq.sellerName, customerPhone: acq.sellerPhone,
+          }, product.locationId)
+        ).select());
+        setTransactions((prev) => [txFromApi(tr[0]), ...prev]);
+      }
+      const ur = unwrap(await supabase.from("product_acquisitions").update({ payout_status: "kifizetve", payout_date: today() }).eq("id", acq.id).select());
+      const updatedAcq = acqFromApi(ur[0]);
+      setProductAcquisitions((prev) => prev.map((a) => (a.id === acq.id ? updatedAcq : a)));
+      setStock((prev) => prev.map((i) => (i.id === productId ? { ...i, acquisition: updatedAcq } : i)));
     });
   }
   async function returnProductToStock(productId, txId) {
@@ -1158,7 +1253,7 @@ function AppShell() {
       const d = new Date(); d.setDate(d.getDate() - i);
       days.push(d.toISOString().slice(0, 10));
     }
-    return days.map((d) => filteredTransactions.filter((t) => t.date === d && t.type === "income").reduce((s, t) => s + (Number(t.amount) || 0), 0));
+    return days.map((d) => filteredTransactions.filter((t) => t.date === d && t.type === "income" && !t.isPassthrough).reduce((s, t) => s + (Number(t.amount) || 0), 0));
   }, [filteredTransactions]);
 
   const filteredTickets = useMemo(() => {
@@ -1179,7 +1274,7 @@ function AppShell() {
   }), [filteredStock, reserveLocId]);
 
   const txStats = useMemo(() => {
-    const income = filteredTransactions.filter((t) => t.type === "income").reduce((a, t) => a + (Number(t.amount) || 0), 0);
+    const income = filteredTransactions.filter((t) => t.type === "income" && !t.isPassthrough).reduce((a, t) => a + (Number(t.amount) || 0), 0);
     const expense = filteredTransactions.filter((t) => t.type === "expense").reduce((a, t) => a + (Number(t.amount) || 0), 0);
     return { count: filteredTransactions.length, income, expense, net: income - expense };
   }, [filteredTransactions]);
@@ -1193,9 +1288,9 @@ function AppShell() {
       return d.getFullYear() === y && d.getMonth() + 1 === m;
     };
     const rows = filteredTransactions.filter(inMonth);
-    const revenue = rows.filter((t) => t.type === "income").reduce((s, t) => s + (Number(t.amount) || 0), 0);
+    const revenue = rows.filter((t) => t.type === "income" && !t.isPassthrough).reduce((s, t) => s + (Number(t.amount) || 0), 0);
     const expenses = rows.filter((t) => t.type === "expense").reduce((s, t) => s + (Number(t.amount) || 0), 0);
-    const margin = rows.filter((t) => t.type === "income").reduce((s, t) => s + (Number(t.amount) || 0) - (Number(t.costPrice) || 0), 0);
+    const margin = rows.filter((t) => t.type === "income" && !t.isPassthrough).reduce((s, t) => s + (Number(t.amount) || 0) - (Number(t.costPrice) || 0), 0);
     return { year: y, month: m, revenue, expenses, margin, profit: revenue - expenses, isLive: true };
   }, [filteredTransactions]);
 
@@ -1649,7 +1744,7 @@ function AppShell() {
           onClose={() => setStockModal(null)}
           busy={busy}
           defaultLocId={defaultStockLocId}
-          onSave={(data, locId) => (typeof stockModal === "object" && stockModal?.id ? editProduct(stockModal.id, data, locId) : addProduct(data, locId))}
+          onSave={(data, locId, acquisition) => (typeof stockModal === "object" && stockModal?.id ? editProduct(stockModal.id, data, locId) : addProduct(data, locId, acquisition))}
         />
       )}
       {sellModal && <SellModal item={sellModal} locName={locName} customers={customersTable} onClose={() => setSellModal(null)} onSave={sellProduct} busy={busy} />}
@@ -1742,6 +1837,7 @@ function AppShell() {
           onDelete={(id) => { deleteProduct(id); setProductDetailId(null); }}
           onReturnToStock={returnProductToStock}
           onShowHistory={(imei) => setDeviceHistoryImei(imei)}
+          onPayoutConsignor={payoutConsignor}
         />
       )}
       {deviceHistoryImei && (

@@ -64,6 +64,7 @@ export const txFromApi = (r) => ({
   locationId: r.location_id,
   date: r.date,
   basketId: r.basket_id,
+  isPassthrough: r.is_passthrough,
 });
 
 export const txToApi = (t, locId) => ({
@@ -80,6 +81,40 @@ export const txToApi = (t, locId) => ({
   location_id: locId,
   date: t.date || undefined,
   basket_id: t.basketId || null,
+  is_passthrough: !!t.isPassthrough,
+});
+
+export const acqFromApi = (r) => ({
+  id: r.id,
+  productId: r.product_id,
+  acquisitionType: r.acquisition_type,
+  sellerName: r.seller_name,
+  sellerIdDoc: r.seller_id_doc,
+  sellerCnp: r.seller_cnp,
+  sellerAddress: r.seller_address,
+  sellerPhone: r.seller_phone,
+  customerId: r.customer_id,
+  purchaseDocNo: r.purchase_doc_no,
+  consignmentDocNo: r.consignment_doc_no,
+  consignorPayoutAmount: r.consignor_payout_amount,
+  consignmentExpiresAt: r.consignment_expires_at,
+  payoutStatus: r.payout_status,
+  payoutDate: r.payout_date,
+  createdAt: r.created_at,
+});
+
+export const acqToApi = (a) => ({
+  product_id: a.productId,
+  acquisition_type: a.acquisitionType,
+  seller_name: a.sellerName,
+  seller_id_doc: a.sellerIdDoc || null,
+  seller_cnp: a.sellerCnp || null,
+  seller_address: a.sellerAddress || null,
+  seller_phone: a.sellerPhone || null,
+  customer_id: a.customerId || null,
+  purchase_doc_no: a.purchaseDocNo || null,
+  consignment_doc_no: a.consignmentDocNo || null,
+  consignor_payout_amount: a.consignorPayoutAmount == null || a.consignorPayoutAmount === "" ? null : Number(a.consignorPayoutAmount),
 });
 
 export const tFromApi = (r) => ({
@@ -346,6 +381,11 @@ export const settingsFromApi = (r) => ({
   smsOnTicketCreate: r.sms_on_ticket_create,
   smsOnTicketReady: r.sms_on_ticket_ready,
   updatedAt: r.updated_at,
+  companyName: r.company_name,
+  companyCui: r.company_cui,
+  companyAddress: r.company_address,
+  companyPhone: r.company_phone,
+  companyEmail: r.company_email,
 });
 
 export const customerProfileFromApi = (r) => ({

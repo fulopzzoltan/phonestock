@@ -7,21 +7,41 @@ import PhonePartsPicker from "./PhonePartsPicker";
 
 export default function ProductDetailPanel({
   product, saleTx, locName, onClose, onSell, onEdit, onDelete, busy,
-  users = [], activeServiceTicket, parts = [], onAddPart, onRemovePart, onStartService, onOpenTicket, onReturnToStock, onShowHistory,
+  users = [], activeServiceTicket, parts = [], onAddPart, onRemovePart, onStartService, onOpenTicket, onReturnToStock, onShowHistory, onPayoutConsignor,
 }) {
   const profit = (Number(product.salePrice) || 0) - (Number(product.costPrice) || 0);
   const isSold = product.status === "sold";
+  const acq = product.acquisition;
+  const isConsignment = acq?.acquisitionType === "consignment";
   return (
     <div className="detail-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="detail-panel">
         <div className="dp-head">
           <div>
-            <div className="dp-sn">{conditionGradeLabel(product.condition, product.grade)}</div>
+            <div className="dp-sn">{conditionGradeLabel(product.condition, product.grade)}{isConsignment && <span className="badge-loc" style={{ marginLeft: 8 }}>Bizomány</span>}</div>
             <div className="dp-name">{product.brand} {product.model}</div>
           </div>
           <button className="iconbtn" onClick={onClose}><CloseIcon /></button>
         </div>
         <div className="dp-body">
+          {acq && (
+            <div className="dp-section">
+              <div className="dp-section-title">Beszerzés</div>
+              <Row k="Típus" v={isConsignment ? "Bizomány" : "Saját vásárlás"} />
+              <Row k="Eladó" v={acq.sellerName} />
+              <Row k="Telefonszám" v={acq.sellerPhone || "—"} />
+              <Row k="Dokumentum" v={isConsignment ? acq.consignmentDocNo : acq.purchaseDocNo} />
+              {isConsignment && (
+                <>
+                  <Row k="Kifizetendő" v={money(acq.consignorPayoutAmount)} />
+                  <Row k="Kifizetés" v={acq.payoutStatus === "kifizetve" ? <span style={{ color: "#22C55E", fontWeight: 700 }}>✓ Kifizetve ({acq.payoutDate})</span> : <span className="st st-alkatresz">Fizetésre vár</span>} />
+                  {acq.payoutStatus !== "kifizetve" && (
+                    <button type="button" className="btn sec sm" style={{ marginTop: 8 }} disabled={busy} onClick={() => onPayoutConsignor(product.id)}>Bizományos kifizetése</button>
+                  )}
+                </>
+              )}
+            </div>
+          )}
           <ProductPhotos productId={product.id} />
           <div className="dp-section">
             <div className="dp-section-title">Termék adatok</div>
