@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { today } from "../lib/utils";
-import { ClockIcon, NoteIcon, PartsIcon } from "../components/icons";
+import { today, phoneCode, displayName, money } from "../lib/utils";
+import { ClockIcon, NoteIcon, PartsIcon, PhoneCaseIcon } from "../components/icons";
 import TicketCard from "../components/TicketCard";
 import NoteComposer from "../components/NoteComposer";
 import NoteCard from "../components/NoteCard";
@@ -20,6 +20,10 @@ export default function PultTab({
     return filteredTickets.filter((t) => t.status !== "Átadásra" && (t.dueDate === t0 || t.handoverDate === t0));
   }, [filteredTickets]);
 
+  const reservedPhones = useMemo(() => {
+    return stock.filter((i) => i.status === "in_stock" && i.stockStatus === "lefoglalt" && (effectiveLocFilter === "all" || i.locationId === effectiveLocFilter));
+  }, [stock, effectiveLocFilter]);
+
   const openNotes = notes.filter((n) => n.status === "open");
   const doneNotes = notes.filter((n) => n.status === "done");
   const activeWaiting = waitingItems.filter((w) => w.status !== "lezarva");
@@ -27,16 +31,29 @@ export default function PultTab({
 
   return (
     <>
-      <div className="topbar">
-        <div><div className="page-title">Pult</div><div className="page-sub">{effectiveLocFilter === "all" ? "Mindkét helyszín" : locName(effectiveLocFilter)}</div></div>
-      </div>
-
       <div className="pult-grid">
-        <div className="pult-section pult-full">
+        <div className="pult-section">
           <div className="pult-section-head"><ClockIcon width={16} height={16} />Ma ígért munkák{promisedToday.length > 0 && <span className="cnt">{promisedToday.length}</span>}</div>
           {promisedToday.length === 0 ? <EmptyState icon={ClockIcon}>Ma nincs konkrétan ígért munka.</EmptyState> : (
             <div className="stk-grid">
               {promisedToday.map((t) => <TicketCard key={t.id} ticket={t} locName={locName} onOpen={setDetailId} />)}
+            </div>
+          )}
+        </div>
+
+        <div className="pult-section">
+          <div className="pult-section-head"><PhoneCaseIcon width={16} height={16} />Lefoglalt telefonok{reservedPhones.length > 0 && <span className="cnt">{reservedPhones.length}</span>}</div>
+          {reservedPhones.length === 0 ? <EmptyState icon={PhoneCaseIcon}>Nincs lefoglalt telefon.</EmptyState> : (
+            <div className="tw">
+              {reservedPhones.map((i) => (
+                <div key={i.id} className="dp-row" style={{ padding: "10px 14px", cursor: "pointer" }} onClick={() => onOpenProduct(i.id)}>
+                  <span className="dp-key">
+                    {displayName(i.brand, i.model)} <span style={{ color: "#9CA3AF" }}>· {phoneCode(i.productNo)}</span>
+                    {effectiveLocFilter === "all" && <span className="badge-loc" style={{ marginLeft: 8 }}>{locName(i.locationId)}</span>}
+                  </span>
+                  <span className="mono" style={{ fontWeight: 700 }}>{money(i.salePrice)}</span>
+                </div>
+              ))}
             </div>
           )}
         </div>
