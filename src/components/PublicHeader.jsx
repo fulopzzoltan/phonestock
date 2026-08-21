@@ -32,8 +32,8 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
             <a className={`pub-nav-link pub-nav-icon${activeNav === "login" ? " active" : ""}`} href="/fiok" aria-label={s.navLogin} title={s.navLogin}>
               <UserIcon width={16} height={16} />
             </a>
-            <a className={`pub-nav-link pub-nav-icon${activeNav === "repair" ? " active" : ""}`} href={repairHref} aria-label={s.navRepair} title={s.navRepair}>
-              <ServiceIcon width={16} height={16} />
+            <a className={`pub-nav-link pub-nav-icon pub-mobile-repair-btn${activeNav === "repair" ? " active" : ""}`} href={repairHref}>
+              <ServiceIcon width={16} height={16} />{s.navRepair}
             </a>
           </div>
           <button
