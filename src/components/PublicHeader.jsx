@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { t } from "../lib/i18n";
-import { UserIcon } from "./icons";
+import { UserIcon, PhoneCaseIcon, ServiceIcon, ClockIcon, BuybackIcon } from "./icons";
 
 // Alapértelmezett nyelv-váltó célok oldalanként (aktív nav szerint) — a PhoneDetail.jsx ezt felülírja
 // a saját langSwitchHref propjával, mert ott a konkrét telefon id-jét is meg kell tartani.
@@ -35,15 +35,15 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
             <span /><span /><span />
           </button>
           <nav className={`pub-nav${menuOpen ? " open" : ""}`}>
-            <a className={`pub-nav-link${activeNav === "stock" ? " active" : ""}`} href={stockHref}>{s.navStock}</a>
-            <a className={`pub-nav-link${activeNav === "repair" ? " active" : ""}`} href={repairHref}>{s.navRepair}</a>
-            <a className={`pub-nav-link${activeNav === "status" ? " active" : ""}`} href="/status">{s.navStatus}</a>
+            <a className={`pub-nav-link${activeNav === "stock" ? " active" : ""}`} href={stockHref}><PhoneCaseIcon className="pub-nav-link-icon" width={16} height={16} />{s.navStock}</a>
+            <a className={`pub-nav-link${activeNav === "repair" ? " active" : ""}`} href={repairHref}><ServiceIcon className="pub-nav-link-icon" width={16} height={16} />{s.navRepair}</a>
+            <a className={`pub-nav-link${activeNav === "status" ? " active" : ""}`} href="/status"><ClockIcon className="pub-nav-link-icon" width={16} height={16} />{s.navStatus}</a>
             {resolvedLangHref && (
               <a className="pub-nav-link pub-lang-switch" href={resolvedLangHref}>{lang === "ro" ? "HU" : "RO"}</a>
             )}
-            <a className="pub-nav-link pub-nav-cta" href="/eladom">{s.navBuyback}</a>
+            <a className="pub-nav-link pub-nav-cta" href="/eladom"><BuybackIcon className="pub-nav-link-icon" width={16} height={16} />{s.navBuyback}</a>
             <a className={`pub-nav-link pub-nav-icon${activeNav === "login" ? " active" : ""}`} href="/fiok" aria-label={s.navLogin} title={s.navLogin}>
-              <UserIcon width={17} height={17} /><span className="pub-nav-icon-label">{s.navLogin}</span>
+              <UserIcon width={16} height={16} /><span className="pub-nav-icon-label">{s.navLogin}</span>
             </a>
           </nav>
         </div>
