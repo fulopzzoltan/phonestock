@@ -32,16 +32,16 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
             <a className={`pub-nav-link pub-nav-icon pub-mobile-repair-btn${activeNav === "repair" ? " active" : ""}`} href={repairHref}>
               <ServiceIcon width={16} height={16} />{s.navRepair}
             </a>
+            <button
+              type="button"
+              className={`pub-menu-toggle${menuOpen ? " open" : ""}`}
+              aria-label={menuOpen ? "Menü bezárása" : "Menü megnyitása"}
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((v) => !v)}
+            >
+              <span /><span /><span />
+            </button>
           </div>
-          <button
-            type="button"
-            className={`pub-menu-toggle${menuOpen ? " open" : ""}`}
-            aria-label={menuOpen ? "Menü bezárása" : "Menü megnyitása"}
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen((v) => !v)}
-          >
-            <span /><span /><span />
-          </button>
           <nav className={`pub-nav${menuOpen ? " open" : ""}`}>
             <a className={`pub-nav-link${activeNav === "stock" ? " active" : ""}`} href={stockHref}><PhoneCaseIcon className="pub-nav-link-icon" width={16} height={16} />{s.navStock}</a>
             <a className={`pub-nav-link${activeNav === "repair" ? " active" : ""}`} href={repairHref}><ServiceIcon className="pub-nav-link-icon" width={16} height={16} />{s.navRepair}</a>
