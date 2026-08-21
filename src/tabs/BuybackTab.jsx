@@ -9,7 +9,7 @@ export default function BuybackTab({
   return (
     <>
       <div className="topbar">
-        <div><div className="page-title">Felvásárlás</div><div className="page-sub">A publikus /eladom oldal árazása — modellek és levonási szabályok</div></div>
+        <div><div className="page-title">Felvásárlás</div></div>
       </div>
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 0 8px 2px" }}>

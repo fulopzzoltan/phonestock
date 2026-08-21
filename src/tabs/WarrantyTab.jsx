@@ -29,7 +29,7 @@ export default function WarrantyTab({
   return (
     <>
       <div className="topbar">
-        <div><div className="page-title">Garancia</div><div className="page-sub">Aktív garanciák — telefon és szerviz, kézzel is felvehető</div></div>
+        <div><div className="page-title">Garancia</div></div>
         <button className="btn" disabled={busy} onClick={() => setWarrantyModal("add")}>+ Garancia felvétele</button>
       </div>
 

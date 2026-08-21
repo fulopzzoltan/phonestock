@@ -52,7 +52,7 @@ export default function StockTab({
   return (
     <>
       <div className="topbar">
-        <div><div className="page-title">Telefonok</div><div className="page-sub">{effectiveLocFilter === "all" ? "Mindkét helyszín" : locName(effectiveLocFilter)}</div></div>
+        <div><div className="page-title">Telefonok</div></div>
         <button className="btn" disabled={busy} onClick={() => setStockModal("add")}>+ Új termék</button>
       </div>
 

@@ -10,7 +10,7 @@ export default function FinanceTab({
   return (
     <>
       <div className="topbar">
-        <div><div className="page-title">Bevételek &amp; Kiadások</div><div className="page-sub">{effectiveLocFilter === "all" ? "Mindkét helyszín összesítve" : locName(effectiveLocFilter)}</div></div>
+        <div><div className="page-title">Bevételek &amp; Kiadások</div></div>
       </div>
       <BasketBar locations={allowedLocations} defaultLocId={defaultLocId} busy={busy} smartQuickItems={smartQuickItems} onCheckout={checkoutBasket} />
       {loadingData ? <div className="tw"><LoadingState /></div> : (

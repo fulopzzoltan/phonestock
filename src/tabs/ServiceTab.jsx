@@ -14,7 +14,7 @@ export default function ServiceTab({
   return (
     <>
       <div className="topbar">
-        <div><div className="page-title">Szerviz</div><div className="page-sub">{effectiveLocFilter === "all" ? "Mindkét helyszín" : locName(effectiveLocFilter)}</div></div>
+        <div><div className="page-title">Szerviz</div></div>
         <button className="btn" disabled={busy} onClick={() => setTicketModal("add")}>+ Új munkalap</button>
       </div>
 

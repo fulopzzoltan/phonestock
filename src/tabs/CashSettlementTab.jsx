@@ -68,7 +68,7 @@ export default function CashSettlementTab({ busy, transactions, cashHolders, cas
   return (
     <>
       <div className="topbar">
-        <div><div className="page-title">Elszámolás</div><div className="page-sub">Készpénz-egyeztetés és megosztás Endrével — helyszíntől függetlenül, egyben</div></div>
+        <div><div className="page-title">Elszámolás</div></div>
       </div>
 
       {!lastSettlement && (

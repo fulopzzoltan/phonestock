@@ -21,7 +21,7 @@ export default function DashboardTab({
   return (
     <>
       <div className="topbar">
-        <div><div className="page-title">Áttekintés</div><div className="page-sub">{effectiveLocFilter === "all" ? "Mindkét helyszín" : locName(effectiveLocFilter)}</div></div>
+        <div><div className="page-title">Áttekintés</div></div>
       </div>
 
       {todoCount > 0 && (

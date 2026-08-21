@@ -9,7 +9,7 @@ export default function UsersTab({
   return (
     <>
       <div className="topbar">
-        <div><div className="page-title">Felhasználók</div><div className="page-sub">Szerepkör és helyszín beállítása</div></div>
+        <div><div className="page-title">Felhasználók</div></div>
         <button className="btn" disabled={busy} onClick={() => { setInviteError(""); setInviteModal(true); }}>+ Új kolléga meghívása</button>
       </div>
       <div className="tw">

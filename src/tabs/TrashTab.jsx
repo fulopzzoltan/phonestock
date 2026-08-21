@@ -11,7 +11,7 @@ export default function TrashTab({
   return (
     <>
       <div className="topbar">
-        <div><div className="page-title">Kuka</div><div className="page-sub">Törölt tételek — bármikor visszaállíthatók</div></div>
+        <div><div className="page-title">Kuka</div></div>
         {totalCount > 0 && (
           <ConfirmDelete
             variant="full"

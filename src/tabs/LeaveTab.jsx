@@ -9,7 +9,7 @@ export default function LeaveTab({
   return (
     <>
       <div className="topbar">
-        <div><div className="page-title">Szabadság</div><div className="page-sub">{leaveYear}. évi keretek és a következő ~3 hónap</div></div>
+        <div><div className="page-title">Szabadság</div></div>
         <button className="btn" disabled={busy} onClick={() => setLeaveRequestModal(true)}>+ Szabadság kérése</button>
       </div>
 

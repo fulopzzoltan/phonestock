@@ -35,7 +35,7 @@ export default function CustomersTab({
   return (
     <>
       <div className="topbar">
-        <div><div className="page-title">Kliensek</div><div className="page-sub">{effectiveLocFilter === "all" ? "Mindkét helyszín" : locName(effectiveLocFilter)}</div></div>
+        <div><div className="page-title">Kliensek</div></div>
         <button className="btn" disabled={busy} onClick={() => setCustomerModal("add")}>+ Új ügyfél</button>
       </div>
 

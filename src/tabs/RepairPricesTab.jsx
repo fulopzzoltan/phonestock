@@ -11,7 +11,7 @@ export default function RepairPricesTab({
   return (
     <>
       <div className="topbar">
-        <div><div className="page-title">Szerviz árbecslő</div><div className="page-sub">A publikus /becsles oldal árazása és a beérkezett érdeklődők</div></div>
+        <div><div className="page-title">Szerviz árbecslő</div></div>
       </div>
 
       <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>Árazási mátrix</div>
