@@ -1,9 +1,9 @@
 import { money, subStatusCls, subStatusLabel, slaInfo, displayName, ticketCode, isStaleReady } from "../lib/utils";
-import { ClockIcon, ServiceIcon, WarrantyIcon } from "./icons";
+import { ClockIcon, ServiceIcon, WarrantyIcon, ChevronLeftIcon, ChevronRightIcon } from "./icons";
 import CallLink from "./CallLink";
 import Thumb from "./Thumb";
 
-export default function TicketCard({ ticket, locName, onOpen }) {
+export default function TicketCard({ ticket, locName, onOpen, onStep, stepPrev, stepNext, onClose }) {
   const probs = (ticket.issue || "").split(",").map((p) => p.trim()).filter(Boolean);
   const sla = slaInfo(ticket);
   const staleReady = isStaleReady(ticket);
@@ -14,6 +14,12 @@ export default function TicketCard({ ticket, locName, onOpen }) {
       <div className="t-card-top">
         <span className="t-sn">{ticketCode(ticket.ticketNo, locName(ticket.intakeLocationId || ticket.locationId))}</span>
         <span className="t-loc">{locName(ticket.locationId)}</span>
+        {onStep && (
+          <span style={{ display: "flex", gap: 2, marginLeft: "auto" }}>
+            {stepPrev && <button type="button" className="t-card-step prev" onClick={(e) => { e.stopPropagation(); onStep(ticket.id, "prev"); }} title="Előző státusz"><ChevronLeftIcon width={14} height={14} /></button>}
+            {stepNext && <button type="button" className="t-card-step next" onClick={(e) => { e.stopPropagation(); onStep(ticket.id, "next"); }} title="Következő státusz"><ChevronRightIcon width={14} height={14} /></button>}
+          </span>
+        )}
       </div>
       {ticket.ticketKind !== "Ügyfél" && (
         <span className="t-kind-pill">
@@ -50,6 +56,11 @@ export default function TicketCard({ ticket, locName, onOpen }) {
         <span className="t-price">{money(ticket.price)}</span>
         {ticket.folia ? <span className="t-folia">✓ Fólia</span> : <span className="t-date">{ticket.dateIn}</span>}
       </div>
+      {onClose && ticket.status === "Átadásra" && ticket.subStatus !== "Sikertelen" && (
+        <button type="button" className="t-card-close-btn" onClick={(e) => { e.stopPropagation(); onClose(ticket.id); }}>
+          {Number(ticket.price) > 0 ? money(ticket.price) : "Ingyenes átadás"}
+        </button>
+      )}
     </div>
   );
 }

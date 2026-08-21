@@ -1516,7 +1516,7 @@ function AppShell() {
             svcSearch={svcSearch} setSvcSearch={setSvcSearch} svcKindFilter={svcKindFilter} setSvcKindFilter={setSvcKindFilter}
             loadingData={loadingData} activeTickets={activeTickets} setDetailId={setDetailId}
             handedOverTickets={handedOverTickets}
-            svcStats={svcStats}
+            setTicketStatus={setTicketStatus}
           />
         )}
 

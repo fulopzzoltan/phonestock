@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { DndContext, useDraggable, useDroppable, useSensor, useSensors, PointerSensor } from "@dnd-kit/core";
 import { money, STATUSES, statusLabel, displayName, ticketCode } from "../lib/utils";
 import { SearchIcon, ChevronDownIcon, ServiceIcon } from "../components/icons";
 import TicketCard from "../components/TicketCard";
@@ -6,11 +7,46 @@ import Thumb from "../components/Thumb";
 import { LoadingState } from "../components/EmptyState";
 import HistorySection from "../components/HistorySection";
 
+function DroppableCol({ id, children }) {
+  const { setNodeRef, isOver } = useDroppable({ id });
+  return <div className={`k-col-body${isOver ? " k-col-body-over" : ""}`} ref={setNodeRef}>{children}</div>;
+}
+
+function DraggableCard({ id, children }) {
+  const { setNodeRef, listeners, attributes, transform, isDragging } = useDraggable({ id });
+  const style = transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` } : undefined;
+  return (
+    <div ref={setNodeRef} style={style} {...listeners} {...attributes} className={isDragging ? "t-card-dragging" : undefined}>
+      {children}
+    </div>
+  );
+}
+
 export default function ServiceTab({
   effectiveLocFilter, locName, busy, setTicketModal, svcSearch, setSvcSearch, svcKindFilter, setSvcKindFilter,
-  loadingData, activeTickets, setDetailId, handedOverTickets, svcStats,
+  loadingData, activeTickets, setDetailId, handedOverTickets, setTicketStatus,
 }) {
   const [showFailedInCol, setShowFailedInCol] = useState(false);
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+
+  function handleDragEnd(event) {
+    const { active, over } = event;
+    if (!over) return;
+    const ticket = activeTickets.find((t) => t.id === active.id);
+    if (ticket && over.id !== ticket.status) setTicketStatus(ticket.id, over.id, null);
+  }
+  function handleStep(id, dir) {
+    const ticket = activeTickets.find((t) => t.id === id);
+    if (!ticket) return;
+    const idx = STATUSES.findIndex((c) => c.key === ticket.status);
+    const newIdx = dir === "prev" ? idx - 1 : idx + 1;
+    if (newIdx < 0 || newIdx >= STATUSES.length) return;
+    setTicketStatus(id, STATUSES[newIdx].key, null);
+  }
+  function handleCloseReady(id) {
+    setTicketStatus(id, "Átadásra", "Átadva");
+  }
+
   return (
     <>
       <div className="topbar">
@@ -18,69 +54,57 @@ export default function ServiceTab({
         <button className="btn" disabled={busy} onClick={() => setTicketModal("add")}>+ Új munkalap</button>
       </div>
 
-      <div className={`statrow ${svcStats.ownStock > 0 ? "c5" : "c4"}`}>
-        <div className="statcard"><div className="lbl">Aktív munkák</div><div className="val">{svcStats.inHouse}</div></div>
-        <div className="statcard"><div className="lbl">Átvehető (ügyfél)</div><div className="val" style={{ color: "#15803D" }}>{svcStats.kesz}</div></div>
-        <div className="statcard"><div className="lbl">Nem javítható (ügyfél)</div><div className="val" style={{ color: "#9D174D" }}>{svcStats.sikertelen}</div></div>
-        <div className="statcard"><div className="lbl">Kiadva (utolsó 7 munkanap)</div><div className="val">{svcStats.kiadvaRecent}</div></div>
-        {svcStats.ownStock > 0 && (
-          <div className="statcard"><div className="lbl">Saját készlet szervizben</div><div className="val">{svcStats.ownStock}</div></div>
-        )}
-      </div>
-
-      {(svcStats.staleReady > 0 || svcStats.staleFailed > 0) && (
-        <div className="statcard warn" style={{ marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
-          <div>
-            <div className="lbl">Figyelmet igényel — 90+ napja nem átvett</div>
-            <div className="val">{svcStats.staleReady + svcStats.staleFailed} db</div>
-          </div>
-          <div style={{ fontSize: 12.5, fontWeight: 600 }}>
-            {svcStats.staleReady > 0 && <span>{svcStats.staleReady} átvehető</span>}
-            {svcStats.staleReady > 0 && svcStats.staleFailed > 0 && "  ·  "}
-            {svcStats.staleFailed > 0 && <span>{svcStats.staleFailed} nem javítható</span>}
-          </div>
-        </div>
-      )}
-
       <div className="filter-row">
-        <div className="searchbar"><SearchIcon /><input placeholder="Keresés vevő, márka, modell..." value={svcSearch} onChange={(e) => setSvcSearch(e.target.value)} /></div>
+        <div className="searchbar"><SearchIcon /><input value={svcSearch} onChange={(e) => setSvcSearch(e.target.value)} /></div>
         <div className="seg">
           <button type="button" className={svcKindFilter === "all" ? "active" : ""} onClick={() => setSvcKindFilter("all")}>Mind</button>
-          <button type="button" className={svcKindFilter === "customer" ? "active" : ""} onClick={() => setSvcKindFilter("customer")}>Csak ügyfél</button>
-          <button type="button" className={svcKindFilter === "own" ? "active" : ""} onClick={() => setSvcKindFilter("own")}>Csak saját készlet</button>
+          <button type="button" className={svcKindFilter === "customer" ? "active" : ""} onClick={() => setSvcKindFilter("customer")}>Ügyfél</button>
+          <button type="button" className={svcKindFilter === "own" ? "active" : ""} onClick={() => setSvcKindFilter("own")}>Saját</button>
         </div>
       </div>
       {loadingData ? <LoadingState /> : (
         <div className="kanban-wrap">
-          <div className="kanban">
-            {STATUSES.map((col) => {
-              const items = activeTickets.filter((t) => t.status === col.key);
-              const isReadyCol = col.key === "Átadásra";
-              const shownItems = isReadyCol ? items.filter((t) => t.subStatus !== "Sikertelen") : items;
-              const failedItems = isReadyCol ? items.filter((t) => t.subStatus === "Sikertelen") : [];
-              return (
-                <div className="k-col" key={col.key} style={{ "--col-color": col.color }}>
-                  <div className="k-col-head">
-                    <div className="k-col-title"><span className="k-dot"></span>{statusLabel(col.key)}</div>
-                    <span className="k-count">{items.length}</span>
+          <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+            <div className="kanban">
+              {STATUSES.map((col, colIdx) => {
+                const items = activeTickets.filter((t) => t.status === col.key);
+                const isReadyCol = col.key === "Átadásra";
+                const shownItems = isReadyCol ? items.filter((t) => t.subStatus !== "Sikertelen") : items;
+                const failedItems = isReadyCol ? items.filter((t) => t.subStatus === "Sikertelen") : [];
+                const stepPrev = colIdx > 0;
+                const stepNext = colIdx < STATUSES.length - 1;
+                return (
+                  <div className="k-col" key={col.key} style={{ "--col-color": col.color }}>
+                    <div className="k-col-head">
+                      <div className="k-col-title"><span className="k-dot"></span>{statusLabel(col.key)}</div>
+                      <span className="k-count">{items.length}</span>
+                    </div>
+                    <DroppableCol id={col.key}>
+                      {items.length === 0 && <div className="k-empty"><ServiceIcon />Üres</div>}
+                      {shownItems.map((t) => (
+                        <DraggableCard key={t.id} id={t.id}>
+                          <TicketCard ticket={t} locName={locName} onOpen={setDetailId} onStep={handleStep} stepPrev={stepPrev} stepNext={stepNext} onClose={handleCloseReady} />
+                        </DraggableCard>
+                      ))}
+                      {failedItems.length > 0 && (
+                        <>
+                          <button type="button" className="k-collapse-toggle" onClick={() => setShowFailedInCol((v) => !v)}>
+                            <ChevronDownIcon style={{ transform: showFailedInCol ? "rotate(180deg)" : undefined }} />
+                            {showFailedInCol ? "Sikertelenek elrejtése" : `Sikertelenek (${failedItems.length})`}
+                          </button>
+                          {showFailedInCol && failedItems.map((t) => (
+                            <DraggableCard key={t.id} id={t.id}>
+                              <TicketCard ticket={t} locName={locName} onOpen={setDetailId} onStep={handleStep} stepPrev={stepPrev} stepNext={stepNext} />
+                            </DraggableCard>
+                          ))}
+                        </>
+                      )}
+                    </DroppableCol>
                   </div>
-                  <div className="k-col-body">
-                    {items.length === 0 && <div className="k-empty"><ServiceIcon />Üres</div>}
-                    {shownItems.map((t) => <TicketCard key={t.id} ticket={t} locName={locName} onOpen={setDetailId} />)}
-                    {failedItems.length > 0 && (
-                      <>
-                        <button type="button" className="k-collapse-toggle" onClick={() => setShowFailedInCol((v) => !v)}>
-                          <ChevronDownIcon style={{ transform: showFailedInCol ? "rotate(180deg)" : undefined }} />
-                          {showFailedInCol ? "Sikertelenek elrejtése" : `Sikertelenek (${failedItems.length})`}
-                        </button>
-                        {showFailedInCol && failedItems.map((t) => <TicketCard key={t.id} ticket={t} locName={locName} onOpen={setDetailId} />)}
-                      </>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          </DndContext>
         </div>
       )}
       <HistorySection
