@@ -4,10 +4,13 @@ import { UserIcon, PhoneCaseIcon, ServiceIcon, ClockIcon, BuybackIcon } from "./
 
 // Alapértelmezett nyelv-váltó célok oldalanként (aktív nav szerint) — a PhoneDetail.jsx ezt felülírja
 // a saját langSwitchHref propjával, mert ott a konkrét telefon id-jét is meg kell tartani.
+// Azoknál az oldalaknál, amiknek nincs saját RO/HU párja (státusz, bizonylat, eladom),
+// a nyelvváltó a főoldalra visz az adott nyelven — így sosem tűnik el a fejlécből.
 const DEFAULT_LANG_TARGETS = {
   stock: { hu: "/", ro: "/ro/telefoane" },
   repair: { hu: "/becsles", ro: "/ro/estimare" },
 };
+const FALLBACK_LANG_TARGET = { hu: "/", ro: "/ro/telefoane" };
 
 export default function PublicHeader({ children, activeNav = "stock", lang = "hu", langSwitchHref }) {
   const s = t(lang);
@@ -15,8 +18,8 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
   const stockHref = lang === "ro" ? "/ro/telefoane" : "/";
   const repairHref = lang === "ro" ? "/ro/estimare" : "/becsles";
   const otherLang = lang === "ro" ? "hu" : "ro";
-  const defaultTarget = DEFAULT_LANG_TARGETS[activeNav];
-  const resolvedLangHref = langSwitchHref || (defaultTarget ? defaultTarget[otherLang] : null);
+  const defaultTarget = DEFAULT_LANG_TARGETS[activeNav] || FALLBACK_LANG_TARGET;
+  const resolvedLangHref = langSwitchHref || defaultTarget[otherLang];
 
   return (
     <header className="pub-header">
@@ -25,6 +28,14 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
           <a className="pub-wordmark" href={stockHref} aria-label="Telefonos">
             <img src="/logo.png" alt="Telefonos" className="pub-logo-img" />
           </a>
+          <div className="pub-mobile-icons">
+            <a className={`pub-nav-link pub-nav-icon${activeNav === "login" ? " active" : ""}`} href="/fiok" aria-label={s.navLogin} title={s.navLogin}>
+              <UserIcon width={16} height={16} />
+            </a>
+            <a className={`pub-nav-link pub-nav-icon${activeNav === "repair" ? " active" : ""}`} href={repairHref} aria-label={s.navRepair} title={s.navRepair}>
+              <ServiceIcon width={16} height={16} />
+            </a>
+          </div>
           <button
             type="button"
             className={`pub-menu-toggle${menuOpen ? " open" : ""}`}
@@ -39,7 +50,18 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
             <a className={`pub-nav-link${activeNav === "repair" ? " active" : ""}`} href={repairHref}><ServiceIcon className="pub-nav-link-icon" width={16} height={16} />{s.navRepair}</a>
             <a className={`pub-nav-link${activeNav === "status" ? " active" : ""}`} href="/status"><ClockIcon className="pub-nav-link-icon" width={16} height={16} />{s.navStatus}</a>
             {resolvedLangHref && (
-              <a className="pub-nav-link pub-lang-switch" href={resolvedLangHref}>{lang === "ro" ? "HU" : "RO"}</a>
+              <div className="pub-lang-switch" role="group" aria-label="Nyelv">
+                {lang === "ro" ? (
+                  <a className="pub-lang-opt" href={resolvedLangHref}>HU</a>
+                ) : (
+                  <span className="pub-lang-opt pub-lang-active">HU</span>
+                )}
+                {lang === "ro" ? (
+                  <span className="pub-lang-opt pub-lang-active">RO</span>
+                ) : (
+                  <a className="pub-lang-opt" href={resolvedLangHref}>RO</a>
+                )}
+              </div>
             )}
             <a className="pub-nav-link pub-nav-cta" href="/eladom"><BuybackIcon className="pub-nav-link-icon" width={16} height={16} />{s.navBuyback}</a>
             <a className={`pub-nav-link pub-nav-icon${activeNav === "login" ? " active" : ""}`} href="/fiok" aria-label={s.navLogin} title={s.navLogin}>

@@ -5,11 +5,12 @@ import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 
 export default function StatusLookup({ token, shortCode }) {
-  const [ticketNo, setTicketNo] = useState("");
+  const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [busy, setBusy] = useState(!!token || !!shortCode);
   const [error, setError] = useState("");
   const [result, setResult] = useState(null);
+  const [matches, setMatches] = useState(null);
 
   useEffect(() => {
     if (!token && !shortCode) return;
@@ -34,16 +35,19 @@ export default function StatusLookup({ token, shortCode }) {
     setBusy(true);
     setError("");
     setResult(null);
+    setMatches(null);
     try {
-      const { data, error: err } = await supabase.rpc("get_ticket_status", {
-        p_ticket_no: Number(ticketNo),
+      const { data, error: err } = await supabase.rpc("get_ticket_status_by_name_phone", {
+        p_name: name,
         p_phone: phone,
       });
       if (err) throw err;
       if (!data || data.length === 0) {
-        setError("Nem található munkalap ezzel a számmal és telefonszámmal.");
-      } else {
+        setError("Nem található munkalap ezzel a névvel és telefonszámmal.");
+      } else if (data.length === 1) {
         setResult(data[0]);
+      } else {
+        setMatches(data);
       }
     } catch (err) {
       setError(err.message || "Hiba történt a keresés közben.");
@@ -66,14 +70,28 @@ export default function StatusLookup({ token, shortCode }) {
         {!result && <div className="login-title">Javítás állapota</div>}
         {error && <div className="errbar">{error}</div>}
         {busy && !result && <div style={{ textAlign: "center", color: "#6B7280", fontSize: 13, padding: "10px 0" }}>Betöltés...</div>}
-        {!token && !shortCode && !result && !busy && (
+        {!token && !shortCode && !result && !matches && !busy && (
           <form onSubmit={submit}>
-            <div className="field"><label>Munkalapszám</label><input type="number" required value={ticketNo} onChange={(e) => setTicketNo(e.target.value)} placeholder="pl. 1102" /></div>
+            <div className="field"><label>Név</label><input required value={name} onChange={(e) => setName(e.target.value)} placeholder="pl. Kovács János" /></div>
             <div className="field"><label>Telefonszám</label><input required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="07xx xxx xxx" /></div>
             <button className="btn" style={{ width: "100%", justifyContent: "center", marginTop: 6 }} disabled={busy} type="submit">
               {busy ? "Keresés..." : "Állapot lekérése"}
             </button>
           </form>
+        )}
+        {matches && (
+          <div>
+            <div className="login-note" style={{ marginBottom: 10 }}>Több munkalapot is találtunk — válaszd ki, melyiket keresed:</div>
+            <div className="dp-section">
+              {matches.map((m) => (
+                <div key={m.ticket_no} className="dp-row" style={{ cursor: "pointer" }} onClick={() => { setResult(m); setMatches(null); }}>
+                  <span className="dp-key">#{m.ticket_no} · {[m.brand, m.model].filter(Boolean).join(" ")}</span>
+                  <span className={`st ${statusCls(m.status)}`}>{m.sub_status ? subStatusLabel(m.status, m.sub_status) : m.status}</span>
+                </div>
+              ))}
+            </div>
+            <button className="btn sec" style={{ width: "100%", justifyContent: "center", marginTop: 10 }} onClick={() => setMatches(null)}>Vissza</button>
+          </div>
         )}
         {result && (
           <div>
@@ -110,12 +128,12 @@ export default function StatusLookup({ token, shortCode }) {
               {SERVICE_WARRANTY_TERMS}
             </div>
             {!token && !shortCode && (
-              <button className="btn sec" style={{ width: "100%", justifyContent: "center" }} onClick={() => { setResult(null); setTicketNo(""); setPhone(""); }}>Új keresés</button>
+              <button className="btn sec" style={{ width: "100%", justifyContent: "center" }} onClick={() => { setResult(null); setName(""); setPhone(""); }}>Új keresés</button>
             )}
           </div>
         )}
-        {!token && !shortCode && !result && <div className="login-note">Írd be a munkalapszámot (pl. #1102 esetén 1102) és a leadáskor megadott telefonszámot.</div>}
-        {!token && !shortCode && (
+        {!token && !shortCode && !result && !matches && <div className="login-note">Írd be a neved és a leadáskor megadott telefonszámot.</div>}
+        {!token && !shortCode && !result && !matches && (
           <div className="login-note" style={{ marginTop: 6 }}>
             Telefonvásárlás bizonylatát keresed? <a href="/receipt">Kattints ide</a>. Vissza a <a href="/">készlethez</a>.
           </div>
