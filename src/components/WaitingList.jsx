@@ -20,7 +20,7 @@ export default function WaitingList({ items, onAdd, onAdvance, onDelete }) {
   }
 
   return (
-    <div style={{ marginBottom: 24 }}>
+    <div style={{ marginBottom: 0 }}>
       {items.length === 0 && !open ? <EmptyState icon={PartsIcon}>Nincs, amire várnánk.</EmptyState> : (
         <div className="tw" style={{ marginBottom: 10 }}>
           {items.map((w) => (
