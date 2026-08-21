@@ -59,14 +59,9 @@ Mind a flip.ro, mind a bsgmag.ro **4 fokozatú esztétikai skálát** használ m
 ### b) Checkout
 Külön oldal (`/penztar` vagy a kosár-oldal maga): név, telefonszám, email (opcionális, de kell számlához/visszaigazoláshoz), **átvételi helyszín** (Gyimes vagy Szentgyörgy — nincs házhozszállítás, hacsak nem szeretnéd bevezetni), majd rendelés leadása.
 
-### c) Fizetés — ez az egyetlen igazi döntési pont, kérlek válaszolj rá
+### c) Fizetés — eldöntve: valódi online bankkártyás fizetés
 
-Két alapvetően más irány, más build-mérettel:
-
-1. **Fizetés átvételkor** (készpénz/kártya a boltban) — a webshop csak "lefoglalja és leveszi a listáról" a darabot, a pénz mozgás a boltban történik, ahogy eddig is. Ez **napok alatt megépíthető**, nincs online fizetési szolgáltató, nincs PCI/kártyaadat-kezelési felelősség, nincs internetes távértékesítési (OUG 34/2014) visszaküldési-jog bonyodalom, mert a fizetés/átadás személyesen történik.
-2. **Valódi online bankkártyás fizetés** (pl. Netopia/EuPlătesc/Stripe integráció) — ez már **hetes nagyságrendű munka**: fizetési szolgáltató szerződés+integráció, webhook-fogadó (Supabase Edge Function kell hozzá, mert most nincs backend szerverünk), számlázás automatizálása, és a román táv-értékesítési jog miatt kötelező 14 napos elállási jog kezelése egy fizikai, egyedi darabos terméknél (ami bonyolultabb, mint egy raktárkészletes shopnál).
-
-**Amíg nem válaszolsz, az 1-es (fizetés átvételkor) az alapértelmezett irány ebben a specben** — ez adja a leggyorsabb utat egy valódi "rendelést leadok" élményhez, online fizetés nélkül. Ha a 2-est akarod, szólj és külön specbe kerül (nagyobb, saját döntési kör: melyik fizetési szolgáltató, kinek a nevén megy a szerződés stb.).
+A user megerősítette: nem foglalás/átvételkori fizetés, hanem tényleges online kártyás vásárlás kell, ahogy flip.ro/bsgmag.ro-n. Szolgáltató: **Netopia Payments** (indoklás, adatbázis-terv, Edge Function-architektúra, jogi/tesztelési részletek: külön fájlban, `TASKS_WEBSHOP_ONLINE_FIZETES.md` — ott van kifejtve, miért Netopia és nem Stripe/PayU/euPlătesc, mert kizárólag román piacra megyünk, és a bsgmag.ro maga is Netopiát használ).
 
 ### d) Készlet-zárolás — kritikus, egyedi darabok miatt
 
