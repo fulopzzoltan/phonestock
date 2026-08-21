@@ -412,7 +412,7 @@ tr:hover td{background:#FAFAFA}
 .pub-header-inner{max-width:1180px;margin:0 auto;padding:18px 24px 14px;display:flex;flex-direction:column;gap:14px}
 .pub-brand-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .pub-wordmark{display:flex;align-items:center;flex-shrink:0}
-.pub-logo-img{height:32px;width:auto;display:block}
+.pub-logo-img{height:23px;width:auto;display:block}
 .pub-nav{display:flex;align-items:center;gap:4px}
 .pub-nav-link{font-size:13px;font-weight:600;color:var(--pub-ink-soft);text-decoration:none;padding:8px 12px;border-radius:9px;transition:background .12s,color .12s;white-space:nowrap}
 .pub-nav-link:hover{background:var(--pub-paper-raised);color:var(--pub-ink)}
@@ -437,7 +437,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-menu-toggle.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
 
 @media (max-width:640px){
-  .pub-logo-img{height:20px}
+  .pub-logo-img{height:17px}
   .pub-menu-toggle{display:flex}
   .pub-mobile-icons{display:flex}
   .pub-nav{display:none}
