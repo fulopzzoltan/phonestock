@@ -41,6 +41,7 @@ import CustomerModal from "./components/CustomerModal";
 import PrintSlip from "./components/PrintSlip";
 import SaleReceiptPanel from "./components/SaleReceiptPanel";
 import PrintReceiptSlip from "./components/PrintReceiptSlip";
+import PrintConsignmentDocs from "./components/PrintConsignmentDocs";
 import WarrantyDetailPanel from "./components/WarrantyDetailPanel";
 import WarrantyModal from "./components/WarrantyModal";
 import PrintWarrantySlip from "./components/PrintWarrantySlip";
@@ -131,6 +132,8 @@ function AppShell() {
   const [printTicket, setPrintTicket] = useState(null);
   const [receiptTxId, setReceiptTxId] = useState(null);
   const [printReceipt, setPrintReceipt] = useState(null);
+  const [printConsignment, setPrintConsignment] = useState(null);
+  const [consignmentPrintPrompt, setConsignmentPrintPrompt] = useState(null);
   const [warranties, setWarranties] = useState([]);
   const [notes, setNotes] = useState([]);
   const [waitingItems, setWaitingItems] = useState([]);
@@ -173,6 +176,16 @@ function AppShell() {
     setPrintTicket(null);
     setPrintWarranty(null);
     setPrintReceipt(tx);
+    requestAnimationFrame(() => {
+      window.print();
+    });
+  }
+  function printConsignmentDocs(product, acquisition) {
+    setPrintTicket(null);
+    setPrintReceipt(null);
+    setPrintWarranty(null);
+    setPrintConsignment({ product, acquisition });
+    setConsignmentPrintPrompt(null);
     requestAnimationFrame(() => {
       window.print();
     });
@@ -476,6 +489,9 @@ function AppShell() {
           }
         }
         setStock((prev) => prev.map((i) => (i.id === product.id ? { ...i, acquisition: savedAcq } : i)));
+        if (acquisition.acquisitionType === "consignment") {
+          setConsignmentPrintPrompt({ product, acquisition: savedAcq });
+        }
       }
       setStockModal(null);
     });
@@ -765,6 +781,12 @@ function AppShell() {
       const apiPatch = {};
       if ("smsOnTicketCreate" in patch) apiPatch.sms_on_ticket_create = patch.smsOnTicketCreate;
       if ("smsOnTicketReady" in patch) apiPatch.sms_on_ticket_ready = patch.smsOnTicketReady;
+      if ("companyName" in patch) apiPatch.company_name = patch.companyName;
+      if ("companyCui" in patch) apiPatch.company_cui = patch.companyCui;
+      if ("companyAddress" in patch) apiPatch.company_address = patch.companyAddress;
+      if ("companyPhone" in patch) apiPatch.company_phone = patch.companyPhone;
+      if ("companyEmail" in patch) apiPatch.company_email = patch.companyEmail;
+      if ("consignmentNoticeDays" in patch) apiPatch.consignment_notice_days = patch.consignmentNoticeDays;
       apiPatch.updated_at = new Date().toISOString();
       apiPatch.updated_by = user.id;
       const r = unwrap(await supabase.from("app_settings").update(apiPatch).eq("id", true).select());
@@ -1864,6 +1886,7 @@ function AppShell() {
           onReturnToStock={returnProductToStock}
           onShowHistory={(imei) => setDeviceHistoryImei(imei)}
           onPayoutConsignor={payoutConsignor}
+          onPrintConsignment={() => printConsignmentDocs(detailProduct, detailProduct.acquisition)}
         />
       )}
       {deviceHistoryImei && (
@@ -1983,7 +2006,22 @@ function AppShell() {
         {printTicket && <PrintSlip ticket={printTicket} location={locations.find((l) => l.id === printTicket.locationId)} intakeLocation={locations.find((l) => l.id === (printTicket.intakeLocationId || printTicket.locationId))} />}
         {printReceipt && <PrintReceiptSlip tx={printReceipt} location={locations.find((l) => l.id === printReceipt.locationId)} />}
         {printWarranty && <PrintWarrantySlip w={printWarranty} location={locations.find((l) => l.id === printWarranty.locationId)} />}
+        {printConsignment && <PrintConsignmentDocs product={printConsignment.product} acquisition={printConsignment.acquisition} settings={settings} />}
       </div>
+      {consignmentPrintPrompt && (
+        <div className="overlay" onClick={() => setConsignmentPrintPrompt(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 380 }}>
+            <h2>Bizományos termék felvéve</h2>
+            <p style={{ fontSize: 13, color: "#374151", lineHeight: 1.5 }}>
+              Nyomtassuk ki most az öt bizományos dokumentumot (nyilatkozat, borderou, bon, szerződés, GDPR-nyilatkozat) aláírásra?
+            </p>
+            <div className="modal-actions">
+              <button className="btn sec" onClick={() => setConsignmentPrintPrompt(null)}>Most nem</button>
+              <button className="btn" onClick={() => printConsignmentDocs(consignmentPrintPrompt.product, consignmentPrintPrompt.acquisition)}>Dokumentumok nyomtatása</button>
+            </div>
+          </div>
+        </div>
+      )}
       {changePasswordModal && (
         <ChangePasswordModal busy={busy} onClose={() => setChangePasswordModal(false)} onChange={changeOwnPassword} />
       )}

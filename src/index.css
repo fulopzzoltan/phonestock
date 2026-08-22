@@ -355,7 +355,9 @@ tr:hover td{background:#FAFAFA}
   @page{ size: A4; margin: 8mm; }
   body *{visibility:hidden}
   #print-slip-root,#print-slip-root *{visibility:visible}
-  #print-slip-root{display:block;position:fixed;inset:0;background:#fff}
+  #print-slip-root{display:block;position:fixed;inset:0;background:#fff;overflow:visible}
+  .doc-page{page-break-after:always}
+  .doc-page:last-child{page-break-after:auto}
 }
 
 @media (max-width:900px){

@@ -7,7 +7,7 @@ import PhonePartsPicker from "./PhonePartsPicker";
 
 export default function ProductDetailPanel({
   product, saleTx, locName, onClose, onSell, onEdit, onDelete, busy,
-  users = [], activeServiceTicket, parts = [], onAddPart, onRemovePart, onStartService, onOpenTicket, onReturnToStock, onShowHistory, onPayoutConsignor,
+  users = [], activeServiceTicket, parts = [], onAddPart, onRemovePart, onStartService, onOpenTicket, onReturnToStock, onShowHistory, onPayoutConsignor, onPrintConsignment,
 }) {
   const profit = (Number(product.salePrice) || 0) - (Number(product.costPrice) || 0);
   const isSold = product.status === "sold";
@@ -35,9 +35,12 @@ export default function ProductDetailPanel({
                 <>
                   <Row k="Kifizetendő" v={money(acq.consignorPayoutAmount)} />
                   <Row k="Kifizetés" v={acq.payoutStatus === "kifizetve" ? <span style={{ color: "#22C55E", fontWeight: 700 }}>✓ Kifizetve ({acq.payoutDate})</span> : <span className="st st-alkatresz">Fizetésre vár</span>} />
-                  {acq.payoutStatus !== "kifizetve" && (
-                    <button type="button" className="btn sec sm" style={{ marginTop: 8 }} disabled={busy} onClick={() => onPayoutConsignor(product.id)}>Bizományos kifizetése</button>
-                  )}
+                  <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                    {acq.payoutStatus !== "kifizetve" && (
+                      <button type="button" className="btn sec sm" disabled={busy} onClick={() => onPayoutConsignor(product.id)}>Bizományos kifizetése</button>
+                    )}
+                    <button type="button" className="btn sec sm" onClick={onPrintConsignment}>Dokumentumok nyomtatása</button>
+                  </div>
                 </>
               )}
             </div>

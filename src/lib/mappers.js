@@ -386,6 +386,7 @@ export const settingsFromApi = (r) => ({
   companyAddress: r.company_address,
   companyPhone: r.company_phone,
   companyEmail: r.company_email,
+  consignmentNoticeDays: r.consignment_notice_days,
 });
 
 export const customerProfileFromApi = (r) => ({
