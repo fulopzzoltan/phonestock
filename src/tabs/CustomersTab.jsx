@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { money } from "../lib/utils";
 import { SearchIcon, CustomersIcon } from "../components/icons";
-import Thumb from "../components/Thumb";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 
 const SORTS = [
@@ -60,10 +59,7 @@ export default function CustomersTab({
                 {sorted.map((c) => (
                   <tr key={c.key} style={{ cursor: "pointer" }} onClick={() => setCustomerKey(c.key)}>
                     <td>
-                      <div className="stk-row">
-                        <Thumb brand={c.name || "?"} />
-                        <div className="stk-name">{c.name || "Névtelen"}</div>
-                      </div>
+                      <div className="stk-name">{c.name || "Névtelen"}</div>
                     </td>
                     <td className="mono">{c.phone || "—"}</td>
                     <td>{c.isNew ? <span className="badge-loc">Új</span> : <span className="badge-income">Visszatérő</span>}</td>
@@ -78,7 +74,7 @@ export default function CustomersTab({
               {sorted.map((c) => (
                 <div key={c.key} className="mob-row" onClick={() => setCustomerKey(c.key)}>
                   <div className="mob-row-top">
-                    <div className="mob-row-main"><Thumb brand={c.name || "?"} size="sm" /><span>{c.name || "Névtelen"}</span></div>
+                    <div className="mob-row-main"><span>{c.name || "Névtelen"}</span></div>
                     {c.isNew ? <span className="badge-loc">Új</span> : <span className="badge-income">Visszatérő</span>}
                   </div>
                   <div className="mob-row-sub">
