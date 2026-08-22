@@ -24,7 +24,7 @@ export default function FinanceTab({
       <div className="topbar">
         <div><div className="page-title">Bevételek &amp; Kiadások</div></div>
       </div>
-      <BasketBar locations={allowedLocations} defaultLocId={defaultLocId} busy={busy} smartQuickItems={smartQuickItems} onCheckout={checkoutBasket} />
+      <BasketBar defaultLocId={defaultLocId} busy={busy} smartQuickItems={smartQuickItems} onCheckout={checkoutBasket} />
 
       <div className="tw" style={{ padding: 16, marginTop: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>

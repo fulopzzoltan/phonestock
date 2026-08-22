@@ -1438,29 +1438,6 @@ function AppShell() {
   const activeTickets = useMemo(() => filteredTickets.filter((t) => t.subStatus !== "Átadva"), [filteredTickets]);
   const handedOverTickets = useMemo(() => filteredTickets.filter((t) => t.subStatus === "Átadva"), [filteredTickets]);
 
-  // a fix QUICK_SALES lista helyett a tényleges, elmúlt 60 napi tartozék-eladásokból számolt
-  // gyors-gombok (a telefon-eladások — amiknek van product_id-ja — nem tartozékok, kihagyjuk őket)
-  const smartQuickItems = useMemo(() => {
-    const cutoff = new Date(Date.now() - 60 * 86400000).toISOString().slice(0, 10);
-    const recentSales = transactions.filter((t) => t.type === "income" && t.category === "Készlet" && !t.productId && t.date >= cutoff);
-    const grouped = {};
-    recentSales.forEach((t) => {
-      const key = t.description;
-      if (!grouped[key]) grouped[key] = { label: key, amounts: [], costs: [], count: 0 };
-      grouped[key].amounts.push(Number(t.amount) || 0);
-      grouped[key].costs.push(Number(t.costPrice) || 0);
-      grouped[key].count += 1;
-    });
-    const computed = Object.values(grouped)
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 6)
-      .map((g) => ({
-        label: g.label,
-        amount: Math.round(g.amounts.reduce((s, a) => s + a, 0) / g.amounts.length),
-        cost: Math.round(g.costs.reduce((s, a) => s + a, 0) / g.costs.length),
-      }));
-    return computed.length ? computed : QUICK_SALES;
-  }, [transactions]);
 
   const svcStats = useMemo(() => {
     const customerTickets = filteredTickets.filter((t) => t.ticketKind === "Ügyfél");
@@ -1756,7 +1733,7 @@ function AppShell() {
             allowedLocations={allowedLocations} defaultLocId={defaultLocId} busy={busy}
             loadingData={loadingData} filteredTransactions={filteredTransactions} setTxModal={setTxModal}
             deleteTransaction={deleteTransaction} setReceiptTxId={setReceiptTxId}
-            smartQuickItems={smartQuickItems} checkoutBasket={checkoutBasket}
+            smartQuickItems={QUICK_SALES} checkoutBasket={checkoutBasket}
             todayClose={dayCloses.find((d) => d.date === today() && d.locationId === defaultLocId && !d.reopenedAt)}
             closeDay={closeDay} reopenDay={reopenDay}
           />
