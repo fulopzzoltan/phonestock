@@ -70,6 +70,13 @@ export const FinanceIcon = (props) => (
   </svg>
 );
 
+export const InvoiceIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M6 3h9l4 4v14a1 1 0 01-1 1H6a1 1 0 01-1-1V4a1 1 0 011-1z" />
+    <path d="M14 3v4a1 1 0 001 1h4M8.5 12h7M8.5 15.5h7M8.5 8.5h3" />
+  </svg>
+);
+
 export const CustomersIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...props}>
     <circle cx="12" cy="8" r="3.6" /><path d="M5 20c0-3.3 3.1-5.5 7-5.5s7 2.2 7 5.5" />

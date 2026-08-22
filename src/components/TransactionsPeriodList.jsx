@@ -4,6 +4,33 @@ import { EditIcon, FinanceIcon } from "./icons";
 import ConfirmDelete from "./ConfirmDelete";
 import { EmptyState } from "./EmptyState";
 
+function SmartBillBadge({ doc }) {
+  if (!doc) return null;
+  if (doc.status === "issued") {
+    return (
+      <a
+        href={doc.smartbillDocumentViewUrl}
+        target="_blank"
+        rel="noreferrer"
+        onClick={(e) => e.stopPropagation()}
+        className="badge-loc"
+        style={{ color: "#15803D", textDecoration: "none" }}
+        title={`Számla: ${doc.smartbillSeries || ""}${doc.smartbillNumber ? "-" + doc.smartbillNumber : ""}`}
+      >
+        Számla {doc.smartbillSeries}-{doc.smartbillNumber}
+      </a>
+    );
+  }
+  if (doc.status === "failed") {
+    return (
+      <span className="badge-loc" style={{ color: "#B91C1C" }} title={doc.errorText || "Ismeretlen hiba"}>
+        Számla hiba
+      </span>
+    );
+  }
+  return <span className="badge-loc" style={{ color: "#6B7280" }}>Számla folyamatban...</span>;
+}
+
 // A napi csoporton belül a rows-t "belépési sorrendben" bontja szét: minden egyedi basket_id
 // elé egy összevont fejléc-bejegyzés kerül, a hozzá tartozó tételek pedig meg vannak jelölve
 // (inBasket), hogy a kártyás/táblás nézet vizuálisan összefoghassa őket. basket_id nélküli
@@ -124,7 +151,9 @@ export default function TransactionsPeriodList({ transactions, locName, onEdit, 
                       const isSale = t.type === "income" && t.category === "Készlet";
                       return (
                         <tr key={t.id} className={entry.inBasket ? "basket-item-tr" : undefined} style={isSale ? { cursor: "pointer" } : undefined} onClick={isSale ? () => onOpenReceipt(t.id) : undefined}>
-                          <td style={{ fontWeight: 500, color: "#111827" }}>{t.description}</td>
+                          <td style={{ fontWeight: 500, color: "#111827" }}>
+                            {t.description}{t.smartbillDoc && <> <SmartBillBadge doc={t.smartbillDoc} /></>}
+                          </td>
                           <td>{t.type === "income" ? <span className="badge-income">Bevétel</span> : <span className="badge-expense">Kiadás</span>}</td>
                           <td style={{ color: "#6B7280" }}>{t.category}</td>
                           <td><span className="badge-loc">{locName(t.locationId)}</span></td>
@@ -159,7 +188,7 @@ export default function TransactionsPeriodList({ transactions, locName, onEdit, 
                     return (
                       <div key={t.id} className={`mob-row${entry.inBasket ? " basket-item-mob" : ""}`} onClick={isSale ? () => onOpenReceipt(t.id) : undefined} style={isSale ? undefined : { cursor: "default" }}>
                         <div className="mob-row-top">
-                          <div className="mob-row-main"><span>{t.description}</span></div>
+                          <div className="mob-row-main"><span>{t.description}</span>{t.smartbillDoc && <SmartBillBadge doc={t.smartbillDoc} />}</div>
                           <span className="mob-row-amount" style={{ color: t.type === "income" ? "#15803D" : "#B91C1C" }}>
                             {t.type === "income" ? "+" : "-"}{money(t.amount)}
                           </span>

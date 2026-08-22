@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi } from "./lib/mappers";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi } from "./lib/mappers";
 import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, normalizeImei, money, ticketCode } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
@@ -9,6 +9,7 @@ import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 import StockModal from "./components/StockModal";
 import SellModal from "./components/SellModal";
+import IssueInvoiceModal from "./components/IssueInvoiceModal";
 import PartModal from "./components/PartModal";
 import PdfOrderImportModal from "./components/PdfOrderImportModal";
 import DetailPanel from "./components/DetailPanel";
@@ -21,6 +22,7 @@ import DashboardTab from "./tabs/DashboardTab";
 import StockTab from "./tabs/StockTab";
 import PultTab from "./tabs/PultTab";
 import FinanceTab from "./tabs/FinanceTab";
+import InvoicesTab from "./tabs/InvoicesTab";
 import CashSettlementTab from "./tabs/CashSettlementTab";
 import ServiceTab from "./tabs/ServiceTab";
 import PartsTab from "./tabs/PartsTab";
@@ -119,6 +121,7 @@ function AppShell() {
 
   const [stockModal, setStockModal] = useState(null); // null | "add" | product obj (edit)
   const [sellModal, setSellModal] = useState(null);
+  const [issueInvoiceModal, setIssueInvoiceModal] = useState(null); // null | true (nyitva, tranzakció-választás alatt)
   const [partModal, setPartModal] = useState(null); // null | "add" | part obj (edit)
   const [txModal, setTxModal] = useState(null); // null | tx obj (edit)
   const [ticketModal, setTicketModal] = useState(null); // null | "add" | ticket obj (edit)
@@ -208,7 +211,7 @@ function AppShell() {
       const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds, prodAcqs] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         fetchAllRows(() => supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false })),
-        fetchAllRows(() => supabase.from("transactions").select("*").is("deleted_at", null).order("date", { ascending: false })),
+        fetchAllRows(() => supabase.from("transactions").select("*, smartbill_documents(*)").is("deleted_at", null).order("date", { ascending: false })),
         fetchAllRows(() => supabase.from("service_tickets").select("*").is("deleted_at", null).order("created_at", { ascending: false })),
         supabase.from("parts").select("*").is("deleted_at", null).order("name", { ascending: true }),
         supabase.from("service_parts").select("*"),
@@ -603,6 +606,26 @@ function AppShell() {
         setInfo(`SmartBill számla kiállítva: ${doc?.smartbill_series || ""}${doc?.smartbill_number ? "-" + doc.smartbill_number : ""}`.trim());
       }
     }
+  }
+  async function issueSmartbillInvoice(transactionId, locId, client) {
+    let ok = false;
+    await withBusy(async () => {
+      const { data, error: fnError } = await supabase.functions.invoke("smartbill-issue-document", {
+        body: { action: "issue", doc_type: "invoice", transaction_id: transactionId, location_id: locId, client },
+      });
+      if (fnError || data?.ok === false) {
+        let msg = data?.error || fnError?.message || "Ismeretlen hiba";
+        if (fnError?.context) {
+          const body = await fnError.context.json().catch(() => null);
+          if (body?.error) msg = body.error;
+        }
+        throw new Error(msg);
+      }
+      const doc = sbDocFromApi(data.document);
+      setTransactions((prev) => prev.map((t) => (t.id === transactionId ? { ...t, smartbillDoc: doc } : t)));
+      ok = true;
+    });
+    return ok;
   }
   async function payoutConsignor(productId) {
     await withBusy(async () => {
@@ -1713,6 +1736,10 @@ function AppShell() {
           />
         )}
 
+        {isAdmin && tab === "invoices" && (
+          <InvoicesTab transactions={transactions} locName={locName} setIssueInvoiceModal={setIssueInvoiceModal} />
+        )}
+
         {isAdmin && tab === "cash-settlement" && (
           <CashSettlementTab
             busy={busy} transactions={transactions} cashHolders={cashHolders} cashSettlements={cashSettlements}
@@ -1817,6 +1844,9 @@ function AppShell() {
         />
       )}
       {sellModal && <SellModal item={sellModal} locName={locName} customers={customersTable} onClose={() => setSellModal(null)} onSave={sellProduct} busy={busy} />}
+      {issueInvoiceModal && (
+        <IssueInvoiceModal transactions={transactions} locName={locName} onClose={() => setIssueInvoiceModal(null)} onIssue={issueSmartbillInvoice} busy={busy} />
+      )}
       {partModal && (
         <PartModal
           part={typeof partModal === "object" && partModal?.id ? partModal : null}

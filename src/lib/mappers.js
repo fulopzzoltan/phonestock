@@ -46,26 +46,41 @@ export const pToApi = (p, locId) => ({
   stock_status: p.stockStatus || "polcon",
 });
 
-export const txFromApi = (r) => ({
+export const sbDocFromApi = (r) => ({
   id: r.id,
-  receiptNo: r.receipt_no,
-  publicToken: r.public_token,
-  type: r.type,
-  description: r.description,
-  amount: r.amount,
-  category: r.category,
-  payment: r.payment,
-  productId: r.product_id,
-  costPrice: r.cost_price,
-  warranty: r.warranty,
-  customerName: r.customer_name,
-  customerPhone: r.customer_phone,
-  customerId: r.customer_id,
-  locationId: r.location_id,
-  date: r.date,
-  basketId: r.basket_id,
-  isPassthrough: r.is_passthrough,
+  docType: r.doc_type,
+  status: r.status,
+  smartbillSeries: r.smartbill_series,
+  smartbillNumber: r.smartbill_number,
+  smartbillDocumentViewUrl: r.smartbill_document_view_url,
+  errorText: r.error_text,
+  createdAt: r.created_at,
 });
+
+export const txFromApi = (r) => {
+  const docs = (r.smartbill_documents || []).map(sbDocFromApi).sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+  return {
+    id: r.id,
+    receiptNo: r.receipt_no,
+    publicToken: r.public_token,
+    type: r.type,
+    description: r.description,
+    amount: r.amount,
+    category: r.category,
+    payment: r.payment,
+    productId: r.product_id,
+    costPrice: r.cost_price,
+    warranty: r.warranty,
+    customerName: r.customer_name,
+    customerPhone: r.customer_phone,
+    customerId: r.customer_id,
+    locationId: r.location_id,
+    date: r.date,
+    basketId: r.basket_id,
+    isPassthrough: r.is_passthrough,
+    smartbillDoc: docs[0] || null,
+  };
+};
 
 export const txToApi = (t, locId) => ({
   type: t.type,
