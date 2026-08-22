@@ -2,6 +2,18 @@ import { useMemo, useState } from "react";
 import { money, today } from "../lib/utils";
 import { EmptyState } from "../components/EmptyState";
 import { FinanceIcon } from "../components/icons";
+import TransactionsPeriodList from "../components/TransactionsPeriodList";
+
+function eachDateInPeriod(start, end) {
+  const dates = [];
+  let d = new Date(start + "T00:00:00Z");
+  const endD = new Date(end + "T00:00:00Z");
+  while (d <= endD) {
+    dates.push(d.toISOString().slice(0, 10));
+    d.setUTCDate(d.getUTCDate() + 1);
+  }
+  return dates;
+}
 
 const CARD_FEE_RATE = 0.012;
 
@@ -14,7 +26,10 @@ function daysBetweenInclusive(a, b) {
   return Math.round((new Date(b + "T00:00:00Z") - new Date(a + "T00:00:00Z")) / 86400000) + 1;
 }
 
-export default function CashSettlementTab({ busy, transactions, cashHolders, cashSettlements, saveCashSettlement, users }) {
+export default function CashSettlementTab({
+  busy, transactions, cashHolders, cashSettlements, saveCashSettlement, users,
+  setTxModal, deleteTransaction, setReceiptTxId, dayCloses, allowedLocations, locName,
+}) {
   const [customStart, setCustomStart] = useState("");
   const [holderAmounts, setHolderAmounts] = useState({});
   const [note, setNote] = useState("");
@@ -93,6 +108,34 @@ export default function CashSettlementTab({ busy, transactions, cashHolders, cas
         <div className="statcard"><div className="lbl">Átutalás</div><div className="val">{money(transferIncome)}</div></div>
         <div className="statcard"><div className="lbl">Egyéb kiadás</div><div className="val" style={{ color: "#B91C1C" }}>{money(otherExpense)}</div></div>
         <div className="statcard"><div className="lbl">Profit (megosztandó)</div><div className="val" style={{ color: "#22C55E" }}>{money(totalProfit)}</div></div>
+      </div>
+
+      {periodValid && daysBetweenInclusive(periodStart, periodEnd) <= 62 && allowedLocations?.length > 0 && (
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
+          {eachDateInPeriod(periodStart, periodEnd).map((d) => {
+            const closesForDay = (dayCloses || []).filter((c) => c.date === d && !c.reopenedAt);
+            const allClosed = closesForDay.length >= allowedLocations.length;
+            return (
+              <span key={d} className="badge-loc" style={{ color: allClosed ? "#15803D" : "#B91C1C" }}>
+                {d}: {closesForDay.length}/{allowedLocations.length} zárva
+              </span>
+            );
+          })}
+        </div>
+      )}
+
+      <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>
+        Ebben az időszakban történt ({periodTx.length} tétel)
+      </div>
+      <div style={{ marginBottom: 22 }}>
+        <TransactionsPeriodList
+          transactions={periodTx}
+          locName={locName}
+          onEdit={setTxModal}
+          onDelete={deleteTransaction}
+          onOpenReceipt={setReceiptTxId}
+          busy={busy}
+        />
       </div>
 
       <form className="tw" style={{ padding: 20 }} onSubmit={handleSubmit}>

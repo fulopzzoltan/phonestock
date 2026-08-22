@@ -280,6 +280,12 @@ export const leaveRequestFromApi = (r) => ({
 
 export const cashHolderFromApi = (r) => ({ id: r.id, name: r.name, active: r.active !== false });
 
+export const dayCloseFromApi = (r) => ({
+  id: r.id, date: r.date, locationId: r.location_id,
+  closedBy: r.closed_by, closedAt: r.closed_at,
+  reopenedAt: r.reopened_at, reopenedBy: r.reopened_by,
+});
+
 export const cashSettlementFromApi = (r) => ({
   id: r.id,
   periodStart: r.period_start,

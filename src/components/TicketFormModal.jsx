@@ -38,7 +38,7 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
     extra: parsed.extra || prefill?.extra || "",
   });
   const [tags, setTags] = useState(parsed.tags.length ? parsed.tags : (prefill?.tags || []));
-  const [locId, setLocId] = useState(ticket?.locationId || defaultLocId || locations[0]?.id || "");
+  const [locId, setLocId] = useState(ticket?.locationId || defaultLocId || (locations.length === 1 ? locations[0]?.id : ""));
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const toggleTag = (tag) => setTags((t) => (t.includes(tag) ? t.filter((x) => x !== tag) : [...t, tag]));
   const isOwnStock = f.ticketKind !== "Ügyfél";

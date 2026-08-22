@@ -6,7 +6,7 @@ import {
 
 export default function Sidebar({
   tab, setTab, setTicketModal, isAdmin, locFilter, setLocFilter, allowedLocations,
-  myLocationId, locName, profile, user, signOut,
+  myLocationId, locName, profile, user, signOut, lastActiveLocationId,
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   // Mobilon a fül-váltás (vagy az "Új munkalap" gyorsgomb) automatikusan zárja a lenyíló menüt,
@@ -62,6 +62,11 @@ export default function Sidebar({
       </div>
       <div className="sidebar-bottom">
         <a className="shop-preview-link" href="/" target="_blank" rel="noopener noreferrer">Webshop megtekintése ↗</a>
+        {isAdmin && !lastActiveLocationId && (
+          <div style={{ fontSize: 11.5, color: "#B91C1C", marginBottom: 4, fontWeight: 600 }}>
+            Válaszd ki, melyik üzletben vagy most ↓
+          </div>
+        )}
         {isAdmin ? (
           <div className="loc-sw">
             <button className={`loc-btn ${locFilter === "all" ? "active" : ""}`} onClick={() => setLocFilter("all")}>Mind</button>

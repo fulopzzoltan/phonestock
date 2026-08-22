@@ -10,7 +10,7 @@ export default function BasketBar({ locations, defaultLocId, busy, smartQuickIte
   const [mode, setMode] = useState("income"); // income | expense
   const [basketItems, setBasketItems] = useState([]);
   const [basketPayment, setBasketPayment] = useState("Készpénz");
-  const [locId, setLocId] = useState(defaultLocId || locations[0]?.id || "");
+  const [locId, setLocId] = useState(defaultLocId || (locations.length === 1 ? locations[0]?.id : ""));
 
   const [freeOpen, setFreeOpen] = useState(false);
   const [description, setDescription] = useState("");
@@ -25,6 +25,13 @@ export default function BasketBar({ locations, defaultLocId, busy, smartQuickIte
   useEffect(() => {
     setCategory(mode === "income" ? "Készlet" : "Egyéb");
   }, [mode]);
+
+  // A BasketBar egyszer mountol a FinanceTab-bal együtt — ha az admin a sidebar-gombbal
+  // csak utólag választ konkrét boltot (defaultLocId később változik), ezt itt is kövessük,
+  // amíg a felhasználó saját maga nem választott mást a lenti legördülőben.
+  useEffect(() => {
+    if (!locId && defaultLocId) setLocId(defaultLocId);
+  }, [defaultLocId]);
 
   useEffect(() => {
     if (!keypadOpen) return;
@@ -58,13 +65,13 @@ export default function BasketBar({ locations, defaultLocId, busy, smartQuickIte
   }
 
   function handleCheckout() {
-    if (basketItems.length === 0) return;
+    if (basketItems.length === 0 || !locId) return;
     onCheckout(basketItems, basketPayment, locId);
     setBasketItems([]);
   }
 
   function handleDirectExpense() {
-    if (!description.trim() || !amount) { setErr("Leírás és összeg kötelező!"); return; }
+    if (!description.trim() || !amount || !locId) { setErr(!locId ? "Válassz helyszínt!" : "Leírás és összeg kötelező!"); return; }
     setErr("");
     onCheckout([{
       label: description.trim(), amount: Number(amount) || 0, cost: 0, category, kind: "expense",
@@ -86,6 +93,21 @@ export default function BasketBar({ locations, defaultLocId, busy, smartQuickIte
       </div>
 
       {err && <div className="errbar">{err}</div>}
+
+      {locations.length > 1 && (
+        <div className="field" style={{ margin: "0 0 10px", maxWidth: 220 }}>
+          <label>Helyszín</label>
+          <select
+            className="filter-sel"
+            value={locId || ""}
+            onChange={(e) => setLocId(e.target.value)}
+            style={!locId ? { borderColor: "#EF4444", color: "#EF4444" } : undefined}
+          >
+            <option value="" disabled>— Válaszd ki, melyik üzlet —</option>
+            {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+          </select>
+        </div>
+      )}
 
       {mode === "income" && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: freeOpen ? 10 : 0 }}>
@@ -146,7 +168,7 @@ export default function BasketBar({ locations, defaultLocId, busy, smartQuickIte
             <button type="button" className="btn sec sm" onClick={resetFree}>Mégse</button>
             <button type="button" className="btn sec sm" onClick={addFreeToBasket}>Hozzáadás a kosárhoz</button>
             {mode === "expense" && basketItems.length === 0 && (
-              <button type="button" className="btn sm" disabled={busy} onClick={handleDirectExpense}>Rögzítés</button>
+              <button type="button" className="btn sm" disabled={busy || !locId} onClick={handleDirectExpense}>Rögzítés</button>
             )}
           </div>
         </>
@@ -174,18 +196,10 @@ export default function BasketBar({ locations, defaultLocId, busy, smartQuickIte
                 ))}
               </div>
             </div>
-            {locations.length > 1 && (
-              <div className="field" style={{ margin: 0 }}>
-                <label>Helyszín</label>
-                <select className="filter-sel" value={locId} onChange={(e) => setLocId(e.target.value)}>
-                  {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
-                </select>
-              </div>
-            )}
             <div style={{ flex: 1, textAlign: "right", fontWeight: 700, fontSize: 13, color: total >= 0 ? "#15803D" : "#B91C1C" }}>
               Összesen: {total >= 0 ? "+" : ""}{total} Lei
             </div>
-            <button type="button" className="btn" disabled={busy} onClick={handleCheckout}>Blokk lezárása</button>
+            <button type="button" className="btn" disabled={busy || !locId} onClick={handleCheckout}>Blokk lezárása</button>
           </div>
         </>
       )}

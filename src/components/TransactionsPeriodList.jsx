@@ -4,7 +4,7 @@ import { EditIcon, FinanceIcon } from "./icons";
 import ConfirmDelete from "./ConfirmDelete";
 import { EmptyState } from "./EmptyState";
 
-function SmartBillBadge({ doc }) {
+export function SmartBillBadge({ doc }) {
   if (!doc) return null;
   if (doc.status === "issued") {
     return (
@@ -35,7 +35,7 @@ function SmartBillBadge({ doc }) {
 // elé egy összevont fejléc-bejegyzés kerül, a hozzá tartozó tételek pedig meg vannak jelölve
 // (inBasket), hogy a kártyás/táblás nézet vizuálisan összefoghassa őket. basket_id nélküli
 // (régi vagy egytételes) sorok változatlanul, önállóan jelennek meg.
-function buildBasketEntries(rows) {
+export function buildBasketEntries(rows) {
   const entries = [];
   const seen = new Set();
   rows.forEach((t) => {
@@ -52,6 +52,87 @@ function buildBasketEntries(rows) {
     }
   });
   return entries;
+}
+
+export function TransactionRowsTable({ rows, locName, onEdit, onDelete, onOpenReceipt, busy }) {
+  return (
+    <>
+      <table>
+        <thead><tr><th>Leírás</th><th>Típus</th><th>Kategória</th><th>Helyszín</th><th>Fizetés</th><th>Haszon</th><th>Összeg</th><th></th></tr></thead>
+        <tbody>
+          {buildBasketEntries(rows).map((entry) => {
+            if (entry.kind === "basket-head") {
+              return (
+                <tr key={`bh-${entry.basketId}`} className="basket-head-row">
+                  <td colSpan={8}>
+                    Blokk · {entry.count} tétel · {entry.payment || "—"} ·{" "}
+                    <b>{entry.total >= 0 ? "+" : ""}{money(entry.total)}</b>
+                  </td>
+                </tr>
+              );
+            }
+            const t = entry.tx;
+            const isSale = t.type === "income" && t.category === "Készlet";
+            return (
+              <tr key={t.id} className={entry.inBasket ? "basket-item-tr" : undefined} style={isSale ? { cursor: "pointer" } : undefined} onClick={isSale ? () => onOpenReceipt(t.id) : undefined}>
+                <td style={{ fontWeight: 500, color: "#111827" }}>
+                  {t.description}{t.smartbillDoc && <> <SmartBillBadge doc={t.smartbillDoc} /></>}
+                </td>
+                <td>{t.type === "income" ? <span className="badge-income">Bevétel</span> : <span className="badge-expense">Kiadás</span>}</td>
+                <td style={{ color: "#6B7280" }}>{t.category}</td>
+                <td><span className="badge-loc">{locName(t.locationId)}</span></td>
+                <td style={{ color: "#6B7280" }}>{t.payment || "—"}</td>
+                <td className="mono" style={{ color: "#6B7280" }}>
+                  {t.type === "income" ? money((Number(t.amount) || 0) - (Number(t.costPrice) || 0)) : "—"}
+                </td>
+                <td className="mono" style={{ fontWeight: 700, color: t.type === "income" ? "#15803D" : "#B91C1C" }}>
+                  {t.type === "income" ? "+" : "-"}{money(t.amount)}
+                </td>
+                <td style={{ display: "flex", gap: 5 }} onClick={(e) => isSale && e.stopPropagation()}>
+                  <button className="iconbtn" disabled={busy} onClick={() => onEdit(t)}><EditIcon /></button>
+                  <ConfirmDelete disabled={busy} onConfirm={() => onDelete(t.id)} />
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      <div className="mob-cards">
+        {buildBasketEntries(rows).map((entry) => {
+          if (entry.kind === "basket-head") {
+            return (
+              <div key={`bh-${entry.basketId}`} className="basket-head-mob">
+                Blokk · {entry.count} tétel · {entry.payment || "—"} ·{" "}
+                <b>{entry.total >= 0 ? "+" : ""}{money(entry.total)}</b>
+              </div>
+            );
+          }
+          const t = entry.tx;
+          const isSale = t.type === "income" && t.category === "Készlet";
+          return (
+            <div key={t.id} className={`mob-row${entry.inBasket ? " basket-item-mob" : ""}`} onClick={isSale ? () => onOpenReceipt(t.id) : undefined} style={isSale ? undefined : { cursor: "default" }}>
+              <div className="mob-row-top">
+                <div className="mob-row-main"><span>{t.description}</span>{t.smartbillDoc && <SmartBillBadge doc={t.smartbillDoc} />}</div>
+                <span className="mob-row-amount" style={{ color: t.type === "income" ? "#15803D" : "#B91C1C" }}>
+                  {t.type === "income" ? "+" : "-"}{money(t.amount)}
+                </span>
+              </div>
+              <div className="mob-row-sub">
+                {t.type === "income" ? <span className="badge-income">Bevétel</span> : <span className="badge-expense">Kiadás</span>}
+                <span>{t.category}</span>
+                <span className="badge-loc">{locName(t.locationId)}</span>
+                <span>{t.payment || "—"}</span>
+                <span onClick={(e) => e.stopPropagation()} style={{ display: "inline-flex", gap: 5, marginLeft: "auto" }}>
+                  <button className="iconbtn" disabled={busy} onClick={() => onEdit(t)}><EditIcon /></button>
+                  <ConfirmDelete disabled={busy} onConfirm={() => onDelete(t.id)} />
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
 }
 
 export default function TransactionsPeriodList({ transactions, locName, onEdit, onDelete, onOpenReceipt, busy }) {
@@ -133,80 +214,7 @@ export default function TransactionsPeriodList({ transactions, locName, onEdit, 
             </div>
             {isOpen && (
               <div className="tw" style={{ borderRadius: "0 0 10px 10px", borderTop: "2px solid #22C55E" }}>
-                <table>
-                  <thead><tr><th>Leírás</th><th>Típus</th><th>Kategória</th><th>Helyszín</th><th>Fizetés</th><th>Haszon</th><th>Összeg</th><th></th></tr></thead>
-                  <tbody>
-                    {buildBasketEntries(rows).map((entry) => {
-                      if (entry.kind === "basket-head") {
-                        return (
-                          <tr key={`bh-${entry.basketId}`} className="basket-head-row">
-                            <td colSpan={8}>
-                              Blokk · {entry.count} tétel · {entry.payment || "—"} ·{" "}
-                              <b>{entry.total >= 0 ? "+" : ""}{money(entry.total)}</b>
-                            </td>
-                          </tr>
-                        );
-                      }
-                      const t = entry.tx;
-                      const isSale = t.type === "income" && t.category === "Készlet";
-                      return (
-                        <tr key={t.id} className={entry.inBasket ? "basket-item-tr" : undefined} style={isSale ? { cursor: "pointer" } : undefined} onClick={isSale ? () => onOpenReceipt(t.id) : undefined}>
-                          <td style={{ fontWeight: 500, color: "#111827" }}>
-                            {t.description}{t.smartbillDoc && <> <SmartBillBadge doc={t.smartbillDoc} /></>}
-                          </td>
-                          <td>{t.type === "income" ? <span className="badge-income">Bevétel</span> : <span className="badge-expense">Kiadás</span>}</td>
-                          <td style={{ color: "#6B7280" }}>{t.category}</td>
-                          <td><span className="badge-loc">{locName(t.locationId)}</span></td>
-                          <td style={{ color: "#6B7280" }}>{t.payment || "—"}</td>
-                          <td className="mono" style={{ color: "#6B7280" }}>
-                            {t.type === "income" ? money((Number(t.amount) || 0) - (Number(t.costPrice) || 0)) : "—"}
-                          </td>
-                          <td className="mono" style={{ fontWeight: 700, color: t.type === "income" ? "#15803D" : "#B91C1C" }}>
-                            {t.type === "income" ? "+" : "-"}{money(t.amount)}
-                          </td>
-                          <td style={{ display: "flex", gap: 5 }} onClick={(e) => isSale && e.stopPropagation()}>
-                            <button className="iconbtn" disabled={busy} onClick={() => onEdit(t)}><EditIcon /></button>
-                            <ConfirmDelete disabled={busy} onConfirm={() => onDelete(t.id)} />
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-                <div className="mob-cards">
-                  {buildBasketEntries(rows).map((entry) => {
-                    if (entry.kind === "basket-head") {
-                      return (
-                        <div key={`bh-${entry.basketId}`} className="basket-head-mob">
-                          Blokk · {entry.count} tétel · {entry.payment || "—"} ·{" "}
-                          <b>{entry.total >= 0 ? "+" : ""}{money(entry.total)}</b>
-                        </div>
-                      );
-                    }
-                    const t = entry.tx;
-                    const isSale = t.type === "income" && t.category === "Készlet";
-                    return (
-                      <div key={t.id} className={`mob-row${entry.inBasket ? " basket-item-mob" : ""}`} onClick={isSale ? () => onOpenReceipt(t.id) : undefined} style={isSale ? undefined : { cursor: "default" }}>
-                        <div className="mob-row-top">
-                          <div className="mob-row-main"><span>{t.description}</span>{t.smartbillDoc && <SmartBillBadge doc={t.smartbillDoc} />}</div>
-                          <span className="mob-row-amount" style={{ color: t.type === "income" ? "#15803D" : "#B91C1C" }}>
-                            {t.type === "income" ? "+" : "-"}{money(t.amount)}
-                          </span>
-                        </div>
-                        <div className="mob-row-sub">
-                          {t.type === "income" ? <span className="badge-income">Bevétel</span> : <span className="badge-expense">Kiadás</span>}
-                          <span>{t.category}</span>
-                          <span className="badge-loc">{locName(t.locationId)}</span>
-                          <span>{t.payment || "—"}</span>
-                          <span onClick={(e) => e.stopPropagation()} style={{ display: "inline-flex", gap: 5, marginLeft: "auto" }}>
-                            <button className="iconbtn" disabled={busy} onClick={() => onEdit(t)}><EditIcon /></button>
-                            <ConfirmDelete disabled={busy} onConfirm={() => onDelete(t.id)} />
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                <TransactionRowsTable rows={rows} locName={locName} onEdit={onEdit} onDelete={onDelete} onOpenReceipt={onOpenReceipt} busy={busy} />
               </div>
             )}
           </div>

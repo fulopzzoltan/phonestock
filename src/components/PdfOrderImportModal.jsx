@@ -9,7 +9,7 @@ export default function PdfOrderImportModal({ locations, defaultLocId, busy, onC
   const [supplier, setSupplier] = useState("");
   const [parseError, setParseError] = useState("");
   const [payment, setPayment] = useState("Készpénz");
-  const [locId, setLocId] = useState(defaultLocId || locations[0]?.id || "");
+  const [locId, setLocId] = useState(defaultLocId || (locations.length === 1 ? locations[0]?.id : ""));
 
   async function handleFile(e) {
     const file = e.target.files[0];
@@ -41,7 +41,7 @@ export default function PdfOrderImportModal({ locations, defaultLocId, busy, onC
   }
 
   const total = (rows || []).reduce((s, r) => s + (Number(r.lineTotal) || 0), 0);
-  const valid = rows && rows.length > 0 && rows.every((r) => r.name.trim() && r.qty > 0 && r.unitPrice >= 0);
+  const valid = rows && rows.length > 0 && rows.every((r) => r.name.trim() && r.qty > 0 && r.unitPrice >= 0) && !!locId;
 
   return (
     <div className="overlay" onClick={onClose}>

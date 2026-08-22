@@ -15,7 +15,7 @@ export default function TransactionModal({ tx, locations, defaultLocId, onClose,
     costPrice: tx.costPrice ?? "",
     date: tx.date || today(),
   });
-  const [locId, setLocId] = useState(tx.locationId || defaultLocId || locations[0]?.id || "");
+  const [locId, setLocId] = useState(tx.locationId || defaultLocId || (locations.length === 1 ? locations[0]?.id : ""));
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const valid = f.description.trim() && f.amount !== "" && locId;
   return (

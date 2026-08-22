@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi } from "./lib/mappers";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi } from "./lib/mappers";
 import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, normalizeImei, money, ticketCode } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
@@ -94,7 +94,16 @@ function AppShell() {
   const myLocationId = profile?.locationId || null;
 
   const [tab, setTab] = useState("pult");
-  const [locFilter, setLocFilter] = useState("all");
+  const [locFilter, setLocFilterRaw] = useState(() => localStorage.getItem("phonestock_loc_filter") || "all");
+  const [lastActiveLocationId, setLastActiveLocationId] = useState(() => localStorage.getItem("phonestock_last_location") || null);
+  function setLocFilter(val) {
+    setLocFilterRaw(val);
+    localStorage.setItem("phonestock_loc_filter", val);
+    if (val !== "all") {
+      setLastActiveLocationId(val);
+      localStorage.setItem("phonestock_last_location", val);
+    }
+  }
   const [locations, setLocations] = useState([]);
   const [stock, setStock] = useState([]);
   const [transactions, setTransactions] = useState([]);
@@ -163,6 +172,7 @@ function AppShell() {
   const [repairLeads, setRepairLeads] = useState([]);
   const [cashHolders, setCashHolders] = useState([]);
   const [cashSettlements, setCashSettlements] = useState([]);
+  const [dayCloses, setDayCloses] = useState([]);
   const [repairPriceModal, setRepairPriceModal] = useState(null); // null | { familyKey, problemTag }
   const [repairLeadFilter, setRepairLeadFilter] = useState("Új");
   const [repairLeadConvert, setRepairLeadConvert] = useState(null); // lead obj being converted to a ticket
@@ -208,7 +218,7 @@ function AppShell() {
   async function loadAll() {
     setLoadingData(true);
     try {
-      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds, prodAcqs] = await Promise.all([
+      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds, prodAcqs, dClosesR] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         fetchAllRows(() => supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false })),
         fetchAllRows(() => supabase.from("transactions").select("*, smartbill_documents(*)").is("deleted_at", null).order("date", { ascending: false })),
@@ -235,6 +245,7 @@ function AppShell() {
         supabase.from("customer_requests").select("*, customer_profiles(full_name, phone)").neq("status", "lezarva").order("created_at", { ascending: false }),
         supabase.from("web_orders").select("*, locations(name), web_order_items(id, product_id, price, products(brand, model, storage, color))").in("status", ["fizetve", "visszaigazolva"]).order("created_at", { ascending: false }),
         supabase.from("product_acquisitions").select("*"),
+        supabase.from("day_closes").select("*").order("date", { ascending: false }),
       ]);
       setLocations(unwrap(locs) || []);
       const prodRows = unwrap(prods) || [];
@@ -244,6 +255,7 @@ function AppShell() {
       acqRows.forEach((a) => { acqByProduct[a.productId] = a; });
       setStock(prodRows.map((r) => ({ ...pFromApi(r), acquisition: acqByProduct[r.id] || null })));
       setTransactions((unwrap(txs) || []).map(txFromApi));
+      setDayCloses((unwrap(dClosesR) || []).map(dayCloseFromApi));
       const spByTicket = {};
       (unwrap(sps) || []).map(spFromApi).forEach((sp) => {
         (spByTicket[sp.ticketId] ||= []).push(sp);
@@ -436,7 +448,7 @@ function AppShell() {
   const stockLocations = isAdmin ? locations : locations.filter((l) => l.id === myLocationId);
   const allowedLocations = stockLocations.filter((l) => l.name !== "Tartalék");
   const effectiveLocFilter = isAdmin ? locFilter : (myLocationId || "none");
-  const defaultLocId = isAdmin ? (locFilter !== "all" ? locFilter : allowedLocations[0]?.id) : myLocationId;
+  const defaultLocId = isAdmin ? (locFilter !== "all" ? locFilter : lastActiveLocationId) : myLocationId;
   const reserveLocId = locations.find((l) => l.name === "Tartalék")?.id;
   const defaultStockLocId = isAdmin ? (locFilter !== "all" ? locFilter : (reserveLocId || allowedLocations[0]?.id)) : myLocationId;
 
@@ -788,6 +800,18 @@ function AppShell() {
         settled_by: user.id,
       }).select());
       setCashSettlements([cashSettlementFromApi(r[0]), ...cashSettlements]);
+    });
+  }
+  async function closeDay(date, locId) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("day_closes").insert({ date, location_id: locId, closed_by: user.id }).select());
+      setDayCloses([dayCloseFromApi(r[0]), ...dayCloses]);
+    });
+  }
+  async function reopenDay(id) {
+    await withBusy(async () => {
+      unwrap(await supabase.from("day_closes").update({ reopened_at: new Date().toISOString(), reopened_by: user.id }).eq("id", id));
+      setDayCloses(dayCloses.filter((d) => d.id !== id));
     });
   }
 
@@ -1678,7 +1702,7 @@ function AppShell() {
       <Sidebar
         tab={tab} setTab={setTab} setTicketModal={setTicketModal} isAdmin={isAdmin} locFilter={locFilter} setLocFilter={setLocFilter}
         allowedLocations={allowedLocations} myLocationId={myLocationId} locName={locName} profile={profile} user={user}
-        signOut={signOut}
+        signOut={signOut} lastActiveLocationId={lastActiveLocationId}
       />
 
       <div className="main">
@@ -1733,6 +1757,8 @@ function AppShell() {
             loadingData={loadingData} filteredTransactions={filteredTransactions} setTxModal={setTxModal}
             deleteTransaction={deleteTransaction} setReceiptTxId={setReceiptTxId}
             smartQuickItems={smartQuickItems} checkoutBasket={checkoutBasket}
+            todayClose={dayCloses.find((d) => d.date === today() && d.locationId === defaultLocId && !d.reopenedAt)}
+            closeDay={closeDay} reopenDay={reopenDay}
           />
         )}
 
@@ -1744,6 +1770,8 @@ function AppShell() {
           <CashSettlementTab
             busy={busy} transactions={transactions} cashHolders={cashHolders} cashSettlements={cashSettlements}
             saveCashSettlement={saveCashSettlement} users={users}
+            setTxModal={setTxModal} deleteTransaction={deleteTransaction} setReceiptTxId={setReceiptTxId}
+            dayCloses={dayCloses} allowedLocations={allowedLocations} locName={locName}
           />
         )}
 
