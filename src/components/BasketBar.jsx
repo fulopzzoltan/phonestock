@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CloseIcon } from "./icons";
 import { CATEGORIES, PAYMENTS } from "../lib/utils";
+import AmountKeypad from "./AmountKeypad";
 
 // Kosár/blokk-alapú gyors rögzítő — a QuickSaleButtons + TransactionQuickAdd párost váltja.
 // Bevételnél tételenként gyűjt a kosárba (egy fizetési móddal zárva), kiadásnál egytételes
@@ -18,13 +19,24 @@ export default function BasketBar({ locations, defaultLocId, busy, smartQuickIte
   const [category, setCategory] = useState("Készlet");
   const [stockKind, setStockKind] = useState("Egyéb"); // Telefon | Alkatrész | Egyéb
   const [err, setErr] = useState("");
+  const [keypadOpen, setKeypadOpen] = useState(false);
+  const amountFieldRef = useRef(null);
 
   useEffect(() => {
     setCategory(mode === "income" ? "Készlet" : "Egyéb");
   }, [mode]);
 
+  useEffect(() => {
+    if (!keypadOpen) return;
+    function onDocMouseDown(e) {
+      if (amountFieldRef.current && !amountFieldRef.current.contains(e.target)) setKeypadOpen(false);
+    }
+    document.addEventListener("mousedown", onDocMouseDown);
+    return () => document.removeEventListener("mousedown", onDocMouseDown);
+  }, [keypadOpen]);
+
   function resetFree() {
-    setDescription(""); setAmount(""); setCostPrice(""); setStockKind("Egyéb"); setFreeOpen(false);
+    setDescription(""); setAmount(""); setCostPrice(""); setStockKind("Egyéb"); setFreeOpen(false); setKeypadOpen(false);
   }
 
   function addQuickToBasket(item) {
@@ -96,9 +108,14 @@ export default function BasketBar({ locations, defaultLocId, busy, smartQuickIte
               <label>Leírás</label>
               <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="pl. tok eladás, hirdetés..." autoFocus />
             </div>
-            <div className="field" style={{ margin: 0 }}>
+            <div className="field" style={{ margin: 0, position: "relative" }} ref={amountFieldRef}>
               <label>Összeg (Lei)</label>
-              <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0" />
+              <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} onFocus={() => setKeypadOpen(true)} placeholder="0" />
+              {keypadOpen && (
+                <div style={{ position: "absolute", top: "100%", left: 0, zIndex: 20, width: 220 }}>
+                  <AmountKeypad value={amount} onChange={setAmount} onDone={() => setKeypadOpen(false)} />
+                </div>
+              )}
             </div>
             {mode === "income" && (
               <div className="field" style={{ margin: 0 }}>
