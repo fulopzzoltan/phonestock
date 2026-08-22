@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { SettingsIcon, ChatIcon } from "../components/icons";
+import { supabase } from "../lib/supabaseClient";
 
 function Toggle({ checked, disabled, onChange }) {
   return (
@@ -60,7 +61,76 @@ function CompanySettings({ settings, updateSettings, busy }) {
   );
 }
 
-export default function SettingsTab({ isAdmin, profile, user, settings, updateSettings, busy, setChangePasswordModal }) {
+function SmartBillSettings({ settings, updateSettings, busy, locations }) {
+  const [f, setF] = useState({
+    smartbillDefaultSeries: settings.smartbillDefaultSeries || "",
+    smartbillDefaultTaxName: settings.smartbillDefaultTaxName || "",
+  });
+  useEffect(() => {
+    setF({
+      smartbillDefaultSeries: settings.smartbillDefaultSeries || "",
+      smartbillDefaultTaxName: settings.smartbillDefaultTaxName || "",
+    });
+  }, [settings]);
+  const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+  const testable = (locations || []).filter((l) => l.name !== "Tartalék");
+  const [testLocId, setTestLocId] = useState(testable[0]?.id || "");
+  const [testState, setTestState] = useState(null); // null | "busy" | { ok, error }
+
+  async function runTest() {
+    if (!testLocId) return;
+    setTestState("busy");
+    const { data, error } = await supabase.functions.invoke("smartbill-issue-document", {
+      body: { action: "test", location_id: testLocId },
+    });
+    if (error) {
+      setTestState({ ok: false, error: error.message || "Ismeretlen hiba" });
+    } else {
+      setTestState(data);
+    }
+  }
+
+  return (
+    <div className="pult-section">
+      <div className="pult-section-head"><SettingsIcon width={16} height={16} />SmartBill</div>
+      <div className="settings-row-desc" style={{ marginBottom: 10 }}>
+        Számla/bon kiállítás SmartBillen keresztül. A hitelesítő adatok Supabase secretként vannak beállítva, itt nem szerepelnek.
+      </div>
+      <div className="row2">
+        <div className="field">
+          <label>Alapértelmezett számlasorozat <span style={{ color: "#9CA3AF", fontWeight: 400 }}>— ha üres, automatikusan próbál választani</span></label>
+          <input value={f.smartbillDefaultSeries} onChange={set("smartbillDefaultSeries")} placeholder="pl. TLF" />
+        </div>
+        <div className="field">
+          <label>Alapértelmezett ÁFA-kód <span style={{ color: "#9CA3AF", fontWeight: 400 }}>— neplătitor esetén a könyvelővel egyeztetett érték</span></label>
+          <input value={f.smartbillDefaultTaxName} onChange={set("smartbillDefaultTaxName")} placeholder="pl. Scutit fara drept de deducere" />
+        </div>
+      </div>
+      <button type="button" className="btn sec sm" disabled={busy} onClick={() => updateSettings({ smartbillDefaultSeries: f.smartbillDefaultSeries, smartbillDefaultTaxName: f.smartbillDefaultTaxName })}>
+        {busy ? "Mentés..." : "Mentés"}
+      </button>
+
+      <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid #E5E7EB" }}>
+        <div className="settings-row-lbl" style={{ marginBottom: 8 }}>Kapcsolat tesztelése</div>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          <select value={testLocId} onChange={(e) => setTestLocId(e.target.value)} style={{ maxWidth: 200 }}>
+            {testable.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+          </select>
+          <button type="button" className="btn sec sm" disabled={testState === "busy" || !testLocId} onClick={runTest}>
+            {testState === "busy" ? "Tesztelés..." : "SmartBill kapcsolat tesztelése"}
+          </button>
+          {testState && testState !== "busy" && (
+            testState.ok
+              ? <span style={{ color: "#22C55E", fontWeight: 700 }}>✓ Sikeres kapcsolat</span>
+              : <span style={{ color: "#EF4444", fontWeight: 700 }}>✗ {testState.error}</span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function SettingsTab({ isAdmin, profile, user, settings, updateSettings, busy, setChangePasswordModal, locations }) {
   return (
     <>
       <div className="topbar">
@@ -100,6 +170,7 @@ export default function SettingsTab({ isAdmin, profile, user, settings, updateSe
         )}
 
         {isAdmin && <CompanySettings settings={settings} updateSettings={updateSettings} busy={busy} />}
+        {isAdmin && <SmartBillSettings settings={settings} updateSettings={updateSettings} busy={busy} locations={locations} />}
       </div>
     </>
   );

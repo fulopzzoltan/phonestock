@@ -787,6 +787,8 @@ function AppShell() {
       if ("companyPhone" in patch) apiPatch.company_phone = patch.companyPhone;
       if ("companyEmail" in patch) apiPatch.company_email = patch.companyEmail;
       if ("consignmentNoticeDays" in patch) apiPatch.consignment_notice_days = patch.consignmentNoticeDays;
+      if ("smartbillDefaultSeries" in patch) apiPatch.smartbill_default_series = patch.smartbillDefaultSeries;
+      if ("smartbillDefaultTaxName" in patch) apiPatch.smartbill_default_tax_name = patch.smartbillDefaultTaxName;
       apiPatch.updated_at = new Date().toISOString();
       apiPatch.updated_by = user.id;
       const r = unwrap(await supabase.from("app_settings").update(apiPatch).eq("id", true).select());
@@ -1779,7 +1781,7 @@ function AppShell() {
         {tab === "settings" && (
           <SettingsTab
             isAdmin={isAdmin} profile={profile} user={user} settings={settings} updateSettings={updateSettings}
-            busy={busy} setChangePasswordModal={setChangePasswordModal}
+            busy={busy} setChangePasswordModal={setChangePasswordModal} locations={locations}
           />
         )}
       </div>

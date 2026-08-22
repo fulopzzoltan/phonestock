@@ -387,6 +387,8 @@ export const settingsFromApi = (r) => ({
   companyPhone: r.company_phone,
   companyEmail: r.company_email,
   consignmentNoticeDays: r.consignment_notice_days,
+  smartbillDefaultSeries: r.smartbill_default_series,
+  smartbillDefaultTaxName: r.smartbill_default_tax_name,
 });
 
 export const customerProfileFromApi = (r) => ({
