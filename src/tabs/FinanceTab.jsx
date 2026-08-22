@@ -12,6 +12,7 @@ export default function FinanceTab({
   todayClose, closeDay, reopenDay,
 }) {
   const [showHistory, setShowHistory] = useState(false);
+  const [confirmingClose, setConfirmingClose] = useState(false);
   const todayStr = today();
   const todayTx = filteredTransactions.filter((t) => t.date === todayStr);
   const historyTx = filteredTransactions.filter((t) => t.date !== todayStr);
@@ -46,30 +47,43 @@ export default function FinanceTab({
 
         {!todayClose && todayTx.length > 0 && (
           defaultLocId ? (
-            <button
-              type="button"
-              className="btn"
-              style={{ marginTop: 14 }}
-              onClick={() => {
-                if (window.confirm(`Mai nap lezárása: +${money(todayIncome)} bevétel, -${money(todayExpense)} kiadás. Ezután is szerkeszthető marad, csak jelezve lesz, hogy átnézted. Mehet?`)) closeDay(todayStr, defaultLocId);
-              }}
-            >
-              Nap zárása
-            </button>
+            confirmingClose ? (
+              <div style={{ marginTop: 14, background: "#F9FAFB", border: "1px solid #EEF0F2", borderRadius: 12, padding: 12 }}>
+                <div style={{ fontSize: 13, color: "#374151", marginBottom: 10 }}>
+                  Mai nap lezárása: <b style={{ color: "#15803D" }}>+{money(todayIncome)}</b> bevétel, <b style={{ color: "#B91C1C" }}>-{money(todayExpense)}</b> kiadás.
+                  Ezután is szerkeszthető marad, csak jelezve lesz, hogy átnézted.
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button type="button" className="btn sec sm" onClick={() => setConfirmingClose(false)}>Mégse</button>
+                  <button
+                    type="button"
+                    className="btn sm"
+                    disabled={busy}
+                    onClick={() => { closeDay(todayStr, defaultLocId); setConfirmingClose(false); }}
+                  >
+                    {busy ? "Zárás..." : "Igen, lezárom"}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button type="button" className="btn" style={{ marginTop: 14 }} onClick={() => setConfirmingClose(true)}>
+                Nap zárása
+              </button>
+            )
           ) : (
             <div style={{ marginTop: 14, fontSize: 12.5, color: "#B91C1C" }}>Válassz helyszínt a záráshoz.</div>
           )
         )}
         {todayClose && (
-          <span className="toggle-link" style={{ marginTop: 10, display: "inline-block" }} onClick={() => reopenDay(todayClose.id)}>
+          <button type="button" className="btn sec sm" style={{ marginTop: 10 }} disabled={busy} onClick={() => reopenDay(todayClose.id)}>
             Visszavonás
-          </span>
+          </button>
         )}
       </div>
 
-      <span className="toggle-link" style={{ marginTop: 18, display: "inline-block" }} onClick={() => setShowHistory((v) => !v)}>
+      <button type="button" className="btn sec sm" style={{ marginTop: 18 }} onClick={() => setShowHistory((v) => !v)}>
         {showHistory ? "Korábbi napok elrejtése" : "Korábbi napok megtekintése"}
-      </span>
+      </button>
       {showHistory && (
         loadingData ? <div className="tw"><LoadingState /></div> : (
           <div style={{ marginTop: 12 }}>
