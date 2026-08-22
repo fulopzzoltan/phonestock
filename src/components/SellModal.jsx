@@ -4,7 +4,7 @@ import { PAYMENTS } from "../lib/utils";
 import CustomerAutocomplete from "./CustomerAutocomplete";
 
 export default function SellModal({ item, locName, customers = [], onClose, onSave, busy }) {
-  const [f, setF] = useState({ price: item.salePrice || "", customerName: "", customerPhone: "", customerId: null, payment: "Készpénz", marketingConsent: false });
+  const [f, setF] = useState({ price: item.salePrice || "", customerName: "", customerPhone: "", customerId: null, payment: "Készpénz", marketingConsent: false, smartbillInvoice: false });
   const [phoneTouched, setPhoneTouched] = useState(false);
   const [hasTradeIn, setHasTradeIn] = useState(false);
   const [tradeIn, setTradeIn] = useState({ brand: "", model: "", condition: "Refurbished", value: "" });
@@ -59,6 +59,12 @@ export default function SellModal({ item, locName, customers = [], onClose, onSa
             Beszámított régi telefon (a vevő egy másik telefonnal fizet be egy részt)
           </label>
         </div>
+        <div className="field">
+          <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#374151", fontWeight: 500, textTransform: "none", letterSpacing: 0, cursor: "pointer" }}>
+            <input type="checkbox" className="chk" checked={f.smartbillInvoice} onChange={(e) => setF({ ...f, smartbillInvoice: e.target.checked })} />
+            Számla kiállítása SmartBillben (ha a vevő kér számlát)
+          </label>
+        </div>
         {hasTradeIn && (
           <div style={{ background: "#F9FAFB", border: "1px solid #EEF0F2", borderRadius: 12, padding: 12, marginBottom: 12 }}>
             <div className="row2">
@@ -97,7 +103,7 @@ export default function SellModal({ item, locName, customers = [], onClose, onSa
               customerId: f.customerId,
               payment: f.payment,
               marketingConsent: f.marketingConsent,
-            }, item.locationId, hasTradeIn ? { ...tradeIn, value: Number(tradeIn.value) || 0 } : null)}
+            }, item.locationId, hasTradeIn ? { ...tradeIn, value: Number(tradeIn.value) || 0 } : null, f.smartbillInvoice)}
           >
             {busy ? "Mentés..." : "Rögzítés"}
           </button>

@@ -509,7 +509,8 @@ function AppShell() {
       setStock(stock.filter((i) => i.id !== id));
     });
   }
-  async function sellProduct(txData, locId, tradeIn) {
+  async function sellProduct(txData, locId, tradeIn, smartbillInvoice) {
+    let mainTxId = null;
     await withBusy(async () => {
       let customerId = txData.customerId || null;
       if (!customerId && txData.customerPhone) {
@@ -547,6 +548,7 @@ function AppShell() {
         const r = unwrap(await supabase.from("transactions").insert({ ...txToApi({ ...txData, basketId }, locId), customer_id: customerId }).select());
         newTxs.push(txFromApi(r[0]));
       }
+      mainTxId = newTxs[0].id;
       for (const acc of accessories) {
         const ar = unwrap(await supabase.from("transactions").insert(
           txToApi({ type: "expense", category: "Készlet", description: acc.description, amount: acc.amount, basketId }, locId)
@@ -584,6 +586,23 @@ function AppShell() {
       setTransactions([...newTxs, ...transactions]);
       setSellModal(null);
     });
+    if (smartbillInvoice && mainTxId) {
+      const { data, error: fnError } = await supabase.functions.invoke("smartbill-issue-document", {
+        body: { action: "issue", doc_type: "invoice", transaction_id: mainTxId, location_id: locId },
+      });
+      let msg = null;
+      if (fnError || data?.ok === false) {
+        msg = data?.error || fnError?.message || "Ismeretlen hiba";
+        if (fnError?.context) {
+          const body = await fnError.context.json().catch(() => null);
+          if (body?.error) msg = body.error;
+        }
+        setError(`A SmartBill számla kiállítása sikertelen (az eladás egyébként sikeresen mentve) — ${msg}`);
+      } else if (data?.ok) {
+        const doc = data.document;
+        setInfo(`SmartBill számla kiállítva: ${doc?.smartbill_series || ""}${doc?.smartbill_number ? "-" + doc.smartbill_number : ""}`.trim());
+      }
+    }
   }
   async function payoutConsignor(productId) {
     await withBusy(async () => {
