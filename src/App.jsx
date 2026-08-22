@@ -493,7 +493,7 @@ function AppShell() {
       setStock(stock.filter((i) => i.id !== id));
     });
   }
-  async function sellProduct(txData, locId) {
+  async function sellProduct(txData, locId, tradeIn) {
     await withBusy(async () => {
       let customerId = txData.customerId || null;
       if (!customerId && txData.customerPhone) {
@@ -538,7 +538,33 @@ function AppShell() {
         newTxs.push(txFromApi(ar[0]));
       }
 
-      setStock(stock.map((i) => (i.id === txData.productId ? { ...i, status: "sold" } : i)));
+      let updatedStock = stock.map((i) => (i.id === txData.productId ? { ...i, status: "sold" } : i));
+
+      if (tradeIn && tradeIn.value > 0) {
+        const tiProduct = pFromApi(unwrap(await supabase.from("products").insert(pToApi({
+          brand: tradeIn.brand, model: tradeIn.model, condition: tradeIn.condition, grade: tradeIn.condition === "Refurbished" ? "B" : "",
+          costPrice: tradeIn.value, salePrice: 0, stockStatus: "lefoglalt",
+        }, locId)).select())[0]);
+        const { data: tiDocNo } = await supabase.rpc("next_purchase_doc_no");
+        const tiAcqRow = {
+          productId: tiProduct.id, acquisitionType: "purchase",
+          sellerName: txData.customerName || "Beszámítás", sellerPhone: txData.customerPhone, customerId,
+          purchaseDocNo: tiDocNo,
+        };
+        const tiAr = unwrap(await supabase.from("product_acquisitions").insert(acqToApi(tiAcqRow)).select());
+        const tiTr = unwrap(await supabase.from("transactions").insert(
+          txToApi({
+            type: "expense", category: "Készlet",
+            description: `Beszámítás: ${txData.customerName || "Vevő"} — ${tradeIn.brand} ${tradeIn.model}`,
+            amount: tradeIn.value, productId: tiProduct.id, customerName: txData.customerName, customerPhone: txData.customerPhone, basketId,
+          }, locId)
+        ).select());
+        newTxs.push(txFromApi(tiTr[0]));
+        setProductAcquisitions((prev) => [acqFromApi(tiAr[0]), ...prev]);
+        updatedStock = [{ ...tiProduct, acquisition: acqFromApi(tiAr[0]) }, ...updatedStock];
+      }
+
+      setStock(updatedStock);
       setTransactions([...newTxs, ...transactions]);
       setSellModal(null);
     });

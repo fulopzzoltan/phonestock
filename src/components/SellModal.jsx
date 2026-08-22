@@ -6,8 +6,12 @@ import CustomerAutocomplete from "./CustomerAutocomplete";
 export default function SellModal({ item, locName, customers = [], onClose, onSave, busy }) {
   const [f, setF] = useState({ price: item.salePrice || "", customerName: "", customerPhone: "", customerId: null, payment: "Készpénz", marketingConsent: false });
   const [phoneTouched, setPhoneTouched] = useState(false);
+  const [hasTradeIn, setHasTradeIn] = useState(false);
+  const [tradeIn, setTradeIn] = useState({ brand: "", model: "", condition: "Refurbished", value: "" });
+  const setTI = (k) => (e) => setTradeIn({ ...tradeIn, [k]: e.target.value });
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value, ...(k === "customerName" ? { customerId: null } : {}) });
-  const valid = f.customerPhone.trim().length > 0;
+  const tradeInValid = !hasTradeIn || (tradeIn.brand.trim() && tradeIn.model.trim() && tradeIn.value !== "");
+  const valid = f.customerPhone.trim().length > 0 && tradeInValid;
   return (
     <div className="overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -49,6 +53,32 @@ export default function SellModal({ item, locName, customers = [], onClose, onSa
             Hozzájárul, hogy akciókról/emlékeztetőkről SMS-ben értesítsük
           </label>
         </div>
+        <div className="field">
+          <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#374151", fontWeight: 500, textTransform: "none", letterSpacing: 0, cursor: "pointer" }}>
+            <input type="checkbox" className="chk" checked={hasTradeIn} onChange={(e) => setHasTradeIn(e.target.checked)} />
+            Beszámított régi telefon (a vevő egy másik telefonnal fizet be egy részt)
+          </label>
+        </div>
+        {hasTradeIn && (
+          <div style={{ background: "#F9FAFB", border: "1px solid #EEF0F2", borderRadius: 12, padding: 12, marginBottom: 12 }}>
+            <div className="row2">
+              <div className="field"><label>Beszámított márka</label><input value={tradeIn.brand} onChange={setTI("brand")} placeholder="Samsung" /></div>
+              <div className="field"><label>Beszámított modell</label><input value={tradeIn.model} onChange={setTI("model")} placeholder="Galaxy A54" /></div>
+            </div>
+            <div className="row2">
+              <div className="field"><label>Állapot</label>
+                <select value={tradeIn.condition} onChange={setTI("condition")}>
+                  <option value="Refurbished">Felújított</option>
+                  <option value="New">Új</option>
+                </select>
+              </div>
+              <div className="field"><label>Beszámított érték (Lei)</label><input type="number" value={tradeIn.value} onChange={setTI("value")} placeholder="0" /></div>
+            </div>
+            <div className="login-note" style={{ margin: 0, textAlign: "left" }}>
+              A beszámított összeggel csökken a ténylegesen fizetendő készpénz, a régi telefon pedig felkerül a raktárba (Lefoglalt állapotban, hogy előbb átnézhesd/árazd, mielőtt a webshopban megjelenne).
+            </div>
+          </div>
+        )}
         <div className="modal-actions">
           <button className="btn sec" onClick={onClose}>Mégse</button>
           <button
@@ -67,7 +97,7 @@ export default function SellModal({ item, locName, customers = [], onClose, onSa
               customerId: f.customerId,
               payment: f.payment,
               marketingConsent: f.marketingConsent,
-            }, item.locationId)}
+            }, item.locationId, hasTradeIn ? { ...tradeIn, value: Number(tradeIn.value) || 0 } : null)}
           >
             {busy ? "Mentés..." : "Rögzítés"}
           </button>
