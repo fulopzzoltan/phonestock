@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "../lib/supabaseClient";
+import { resizeImage, thumbPathOf, photoUrl, THUMB_MAX, FULL_MAX } from "../lib/imageResize";
 import { TrashIcon } from "./icons";
 
 export default function ProductPhotos({ productId }) {
@@ -22,10 +23,6 @@ export default function ProductPhotos({ productId }) {
 
   useEffect(() => { load(); }, [productId]);
 
-  function publicUrl(path) {
-    return supabase.storage.from("product-photos").getPublicUrl(path).data.publicUrl;
-  }
-
   async function handleFiles(e) {
     const files = [...(e.target.files || [])];
     e.target.value = "";
@@ -34,11 +31,18 @@ export default function ProductPhotos({ productId }) {
     setError("");
     try {
       for (const file of files) {
-        const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-        const path = `${productId}/${crypto.randomUUID()}.${ext}`;
-        const { error: upErr } = await supabase.storage.from("product-photos").upload(path, file, { contentType: file.type || "image/jpeg" });
+        const base = crypto.randomUUID();
+        const fullPath = `${productId}/${base}.webp`;
+        const thumbPath = `${productId}/${base}_thumb.webp`;
+        const [fullBlob, thumbBlob] = await Promise.all([
+          resizeImage(file, FULL_MAX, 0.85),
+          resizeImage(file, THUMB_MAX, 0.75),
+        ]);
+        const { error: upErr } = await supabase.storage.from("product-photos").upload(fullPath, fullBlob, { contentType: "image/webp" });
         if (upErr) throw upErr;
-        const { error: insErr } = await supabase.from("product_photos").insert({ product_id: productId, storage_path: path });
+        const { error: upThumbErr } = await supabase.storage.from("product-photos").upload(thumbPath, thumbBlob, { contentType: "image/webp" });
+        if (upThumbErr) throw upThumbErr;
+        const { error: insErr } = await supabase.from("product_photos").insert({ product_id: productId, storage_path: fullPath });
         if (insErr) throw insErr;
       }
       await load();
@@ -52,7 +56,7 @@ export default function ProductPhotos({ productId }) {
   async function handleDelete(photo) {
     setError("");
     try {
-      await supabase.storage.from("product-photos").remove([photo.storage_path]);
+      await supabase.storage.from("product-photos").remove([photo.storage_path, thumbPathOf(photo.storage_path)]);
       await supabase.from("product_photos").delete().eq("id", photo.id);
       setPhotos((prev) => prev.filter((p) => p.id !== photo.id));
     } catch (err) {
@@ -70,7 +74,7 @@ export default function ProductPhotos({ productId }) {
         <div className="photo-grid">
           {photos.map((p) => (
             <div key={p.id} className="photo-thumb">
-              <img src={publicUrl(p.storage_path)} alt="" />
+              <img src={photoUrl(p.storage_path, "thumb")} alt="" loading="lazy" decoding="async" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = photoUrl(p.storage_path, "full"); }} />
               <button type="button" className="photo-thumb-del" onClick={() => handleDelete(p)} title="Törlés">
                 <TrashIcon width={13} height={13} />
               </button>

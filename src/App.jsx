@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
+import { thumbPathOf } from "./lib/imageResize";
 import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi } from "./lib/mappers";
 import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, normalizeImei, money, ticketCode } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
@@ -367,7 +368,7 @@ function AppShell() {
     await withBusy(async () => {
       const { data: photos } = await supabase.from("product_photos").select("storage_path").eq("product_id", id);
       if (photos && photos.length > 0) {
-        await supabase.storage.from("product-photos").remove(photos.map((p) => p.storage_path)).catch(() => {});
+        await supabase.storage.from("product-photos").remove(photos.flatMap((p) => [p.storage_path, thumbPathOf(p.storage_path)])).catch(() => {});
       }
       unwrap(await supabase.from("products").delete().eq("id", id));
       setTrash((t) => ({ ...t, products: t.products.filter((p) => p.id !== id) }));
@@ -408,7 +409,7 @@ function AppShell() {
           for (const ids of chunks(productIds)) {
             const { data: photos } = await supabase.from("product_photos").select("storage_path").in("product_id", ids);
             if (photos && photos.length > 0) {
-              await supabase.storage.from("product-photos").remove(photos.map((p) => p.storage_path)).catch(() => {});
+              await supabase.storage.from("product-photos").remove(photos.flatMap((p) => [p.storage_path, thumbPathOf(p.storage_path)])).catch(() => {});
             }
             unwrap(await supabase.from("products").delete().in("id", ids));
           }

@@ -1,15 +1,12 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "./lib/supabaseClient";
 import { useCart, cartTotal } from "./lib/cart";
+import { photoUrl } from "./lib/imageResize";
 import { money } from "./lib/utils";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 import { EmptyState } from "./components/EmptyState";
 import { CartIcon, ChevronDownIcon } from "./components/icons";
-
-function photoUrl(path) {
-  return supabase.storage.from("product-photos").getPublicUrl(path).data.publicUrl;
-}
 
 export default function Checkout() {
   const items = useCart();
@@ -83,7 +80,16 @@ export default function Checkout() {
       <div className="checkout-summary-items">
         {items.map((it) => (
           <div key={it.id} className="checkout-item-row">
-            {it.photoPath ? <img src={photoUrl(it.photoPath)} alt="" className="checkout-item-thumb" /> : <div className="checkout-item-thumb checkout-item-thumb-empty" />}
+            {it.photoPath ? (
+              <img
+                src={photoUrl(it.photoPath, "thumb")}
+                alt=""
+                className="checkout-item-thumb"
+                loading="lazy"
+                decoding="async"
+                onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = photoUrl(it.photoPath, "full"); }}
+              />
+            ) : <div className="checkout-item-thumb checkout-item-thumb-empty" />}
             <div className="checkout-item-info">
               <div className="checkout-item-name">{it.brand} {it.model}</div>
               <div className="checkout-item-sub">{[it.storage, it.color].filter(Boolean).join(" · ")}</div>

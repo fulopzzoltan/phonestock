@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "./lib/supabaseClient";
+import { photoUrl } from "./lib/imageResize";
 import { t, translateColor, translateWarranty } from "./lib/i18n";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
@@ -16,10 +17,6 @@ const deviceSvg = (
     <line x1="15" y1="56" x2="25" y2="56" strokeWidth="2.2" strokeLinecap="round" />
   </svg>
 );
-
-function photoUrl(path) {
-  return supabase.storage.from("product-photos").getPublicUrl(path).data.publicUrl;
-}
 
 // A publikus RPC nem ad vissza dátumot (nincs "legújabb" mező), és nem is akarjuk mindig
 // ugyanazt a pár telefont az élen tartani ár szerint — ezért alapból egyszer, betöltéskor
@@ -177,7 +174,14 @@ export default function StockShowcase({ lang = "hu" }) {
                   </div>
                   <div className="pub-device-art">
                     {p.photo_paths && p.photo_paths.length > 0 ? (
-                      <img src={photoUrl(p.photo_paths[0])} alt={`${p.brand} ${p.model}`} className="pub-device-photo" />
+                      <img
+                        src={photoUrl(p.photo_paths[0], "thumb")}
+                        alt={`${p.brand} ${p.model}`}
+                        className="pub-device-photo"
+                        loading="lazy"
+                        decoding="async"
+                        onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = photoUrl(p.photo_paths[0], "full"); }}
+                      />
                     ) : deviceSvg}
                   </div>
                   <div className="pub-card-name">{p.brand} {p.model}</div>

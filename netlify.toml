@@ -15,3 +15,10 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+# Vite hash-eli az /assets alatti fájlneveket (pl. index-a1b2c3.js) — tartalomváltozáskor
+# a fájlnév is változik, ezért ezek örökre, biztonságosan cache-elhetők a böngészőben.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

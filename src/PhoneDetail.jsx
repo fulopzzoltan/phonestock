@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "./lib/supabaseClient";
+import { photoUrl } from "./lib/imageResize";
 import { t, translateColor, translateWarranty } from "./lib/i18n";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
@@ -16,10 +17,6 @@ const deviceSvg = (
     <line x1="15" y1="56" x2="25" y2="56" strokeWidth="2.2" strokeLinecap="round" />
   </svg>
 );
-
-function photoUrl(path) {
-  return supabase.storage.from("product-photos").getPublicUrl(path).data.publicUrl;
-}
 
 export default function PhoneDetail({ id, lang = "hu" }) {
   const s = t(lang);
@@ -93,13 +90,27 @@ export default function PhoneDetail({ id, lang = "hu" }) {
         <div className="pub-detail-grid">
           <div className="pub-detail-gallery">
             <div className="pub-detail-photo-main">
-              {photos.length > 0 ? <img src={photoUrl(photos[activePhoto])} alt={`${phone.brand} ${phone.model}`} /> : <div className="pub-device-art" style={{ height: 320, width: "100%" }}>{deviceSvg}</div>}
+              {photos.length > 0 ? (
+                <img
+                  src={photoUrl(photos[activePhoto], "full")}
+                  alt={`${phone.brand} ${phone.model}`}
+                  loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
+                />
+              ) : <div className="pub-device-art" style={{ height: 320, width: "100%" }}>{deviceSvg}</div>}
             </div>
             {photos.length > 1 && (
               <div className="pub-detail-thumbs">
                 {photos.map((ph, i) => (
                   <button key={i} type="button" className={`pub-detail-thumb${i === activePhoto ? " active" : ""}`} onClick={() => setActivePhoto(i)}>
-                    <img src={photoUrl(ph)} alt="" />
+                    <img
+                      src={photoUrl(ph, "thumb")}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = photoUrl(ph, "full"); }}
+                    />
                   </button>
                 ))}
               </div>

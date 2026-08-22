@@ -1,13 +1,9 @@
-import { supabase } from "./lib/supabaseClient";
 import { useCart, removeFromCart, cartTotal } from "./lib/cart";
+import { photoUrl } from "./lib/imageResize";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 import { CartIcon, TrashIcon } from "./components/icons";
 import { EmptyState } from "./components/EmptyState";
-
-function photoUrl(path) {
-  return supabase.storage.from("product-photos").getPublicUrl(path).data.publicUrl;
-}
 
 export default function Cart() {
   const items = useCart();
@@ -31,7 +27,14 @@ export default function Cart() {
                   <div key={it.id} className="dp-row">
                     <span className="dp-key" style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       {it.photoPath ? (
-                        <img src={photoUrl(it.photoPath)} alt="" style={{ width: 34, height: 34, borderRadius: 8, objectFit: "cover" }} />
+                        <img
+                          src={photoUrl(it.photoPath, "thumb")}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                          style={{ width: 34, height: 34, borderRadius: 8, objectFit: "cover" }}
+                          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = photoUrl(it.photoPath, "full"); }}
+                        />
                       ) : null}
                       <span>
                         {it.brand} {it.model}
