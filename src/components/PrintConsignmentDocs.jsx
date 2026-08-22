@@ -8,7 +8,7 @@ const pageStyle = { fontFamily: "Inter, sans-serif", color: "#111827", padding: 
 const h1 = { fontSize: 17, fontWeight: 800, marginBottom: 14, textAlign: "center" };
 const label = { fontWeight: 700 };
 
-export default function PrintConsignmentDocs({ product, acquisition, settings }) {
+export default function PrintConsignmentDocs({ product, acquisition, settings, location }) {
   if (!product || !acquisition) return null;
   const data = fmtDate(new Date().toISOString().slice(0, 10));
   const bonNo = acquisition.consignmentDocNo;
@@ -20,11 +20,13 @@ export default function PrintConsignmentDocs({ product, acquisition, settings })
   const payoutAmount = Number(acquisition.consignorPayoutAmount) || 0;
   const salePrice = Number(product.salePrice) || 0;
   const commission = salePrice - payoutAmount;
-  const companyName = settings?.companyName || "";
-  const companyCui = settings?.companyCui || "";
-  const companyAddress = settings?.companyAddress || "";
-  const companyPhone = settings?.companyPhone || "";
-  const companyEmail = settings?.companyEmail || "";
+  // Helyszín-szintű cégadat felülbírálja a közöset — ma minden helyszínen üres, tehát a közös app_settings marad érvényben,
+  // de amint két külön cég/SmartBill fiók éles lesz helyszínenként, elég a locations sorát kitölteni, kód nem kell hozzá.
+  const companyName = location?.company_name || settings?.companyName || "";
+  const companyCui = location?.company_cui || settings?.companyCui || "";
+  const companyAddress = location?.company_address || settings?.companyAddress || "";
+  const companyPhone = location?.company_phone || settings?.companyPhone || "";
+  const companyEmail = location?.company_email || settings?.companyEmail || "";
   const noticeDays = settings?.consignmentNoticeDays;
 
   return (

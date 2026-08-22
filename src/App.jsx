@@ -2006,7 +2006,7 @@ function AppShell() {
         {printTicket && <PrintSlip ticket={printTicket} location={locations.find((l) => l.id === printTicket.locationId)} intakeLocation={locations.find((l) => l.id === (printTicket.intakeLocationId || printTicket.locationId))} />}
         {printReceipt && <PrintReceiptSlip tx={printReceipt} location={locations.find((l) => l.id === printReceipt.locationId)} />}
         {printWarranty && <PrintWarrantySlip w={printWarranty} location={locations.find((l) => l.id === printWarranty.locationId)} />}
-        {printConsignment && <PrintConsignmentDocs product={printConsignment.product} acquisition={printConsignment.acquisition} settings={settings} />}
+        {printConsignment && <PrintConsignmentDocs product={printConsignment.product} acquisition={printConsignment.acquisition} settings={settings} location={locations.find((l) => l.id === printConsignment.product.locationId)} />}
       </div>
       {consignmentPrintPrompt && (
         <div className="overlay" onClick={() => setConsignmentPrintPrompt(null)}>
