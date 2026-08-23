@@ -1,4 +1,4 @@
-import { money, statusCls, subStatusLabel } from "../lib/utils";
+import { money, statusCls, subStatusLabel, formatPhone } from "../lib/utils";
 import { CloseIcon, EditIcon } from "./icons";
 import Row from "./DetailRow";
 import CallLink from "./CallLink";
@@ -30,7 +30,6 @@ export default function CustomerDetailPanel({ customer, locName, ledger, rewards
           <div>
             <div className="dp-sn" style={{ display: "flex", alignItems: "center", gap: 6 }}>
               Ügyfél
-              {customer.isNew ? <span className="badge-loc">Új</span> : <span className="badge-income">Visszatérő</span>}
               {customer.marketingConsent && <span className="gar-pill">Feliratkozott</span>}
               {customer.webshopAccount && <span className="gar-pill">Webshop-fiók</span>}
             </div>
@@ -43,10 +42,10 @@ export default function CustomerDetailPanel({ customer, locName, ledger, rewards
         </div>
         <div className="dp-body">
           <div className="dp-section">
-            <Row k="Telefonszám" v={customer.phone ? (
+            <Row k="Telefonszám" v={formatPhone(customer.phone) ? (
               <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                {customer.phone}
-                <CallLink phone={customer.phone} />
+                {formatPhone(customer.phone)}
+                <CallLink phone={formatPhone(customer.phone)} />
               </span>
             ) : null} />
             <Row k="Email" v={customer.email} />

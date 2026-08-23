@@ -421,7 +421,7 @@ tr:hover td{background:#FAFAFA}
   --pub-new:#A5722A; --pub-new-soft:#F3E6D4;
   background:var(--pub-paper); color:var(--pub-ink); min-height:100vh; font-family:'Inter',sans-serif;
 }
-.pub-header{position:sticky;top:0;z-index:5;background:var(--pub-paper);border-bottom:1px solid var(--pub-line)}
+.pub-header{position:sticky;top:0;z-index:5;background:var(--pub-paper-raised);border-bottom:1px solid var(--pub-line)}
 .pub-header-inner{max-width:1180px;margin:0 auto;padding:18px 24px 14px;display:flex;flex-direction:column;gap:14px}
 .pub-brand-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .pub-wordmark{display:flex;align-items:center;flex-shrink:0}

@@ -63,10 +63,10 @@ export function CustomerAuthProvider({ children }) {
     return () => sub.subscription.unsubscribe();
   }, [loadProfile]);
 
-  async function signUp(email, password, fullName, phone) {
+  async function signUp(email, password, fullName, phone, refCode) {
     const { error } = await withTimeout(supabase.auth.signUp({
       email, password,
-      options: { data: { is_customer: true, full_name: fullName, phone } },
+      options: { data: { is_customer: true, full_name: fullName, phone, ref_code: refCode || null } },
     }), 8000);
     if (error) throw new Error(error.message);
   }

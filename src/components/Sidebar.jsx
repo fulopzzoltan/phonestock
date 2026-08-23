@@ -3,6 +3,7 @@ import {
   SettingsIcon, DashboardIcon, ServiceIcon, PhoneCaseIcon, BoardIcon,
   PartsIcon, FinanceIcon, CustomersIcon, WarrantyIcon, UsersNavIcon, TrashNavIcon, LogoutIcon, BuybackIcon, LeaveIcon, RepairPriceIcon, CashSettlementIcon, InvoiceIcon,
 } from "./icons";
+import { SITE_URL } from "../lib/utils";
 
 export default function Sidebar({
   tab, setTab, setTicketModal, isAdmin, locFilter, setLocFilter, allowedLocations,
@@ -59,7 +60,7 @@ export default function Sidebar({
         )}
       </div>
       <div className="sidebar-bottom">
-        <a className="shop-preview-link" href="/" target="_blank" rel="noopener noreferrer">Webshop megtekintése ↗</a>
+        <a className="shop-preview-link" href={SITE_URL} target="_blank" rel="noopener noreferrer">Webshop megtekintése ↗</a>
         {isAdmin && !lastActiveLocationId && (
           <div style={{ fontSize: 11.5, color: "#B91C1C", marginBottom: 4, fontWeight: 600 }}>
             Válaszd ki, melyik üzletben vagy most ↓

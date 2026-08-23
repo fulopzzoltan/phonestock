@@ -1686,13 +1686,11 @@ function AppShell() {
     return customersTable.map((c) => {
       const purchases = filteredTransactions.filter((t) => t.type === "income" && t.customerId === c.id);
       const tickets = filteredTickets.filter((t) => t.customerId === c.id);
-      const visits = purchases.length + tickets.length;
       return {
         ...c,
         key: c.id,
         purchases,
         tickets,
-        isNew: visits <= 1,
         purchaseTotal: purchases.reduce((s, p) => s + (Number(p.amount) || 0), 0),
         ticketTotal: tickets.reduce((s, t) => s + (Number(t.price) || 0), 0),
         lastActivity: [...purchases.map((p) => p.date), ...tickets.map((t) => t.dateIn)].filter(Boolean).sort().reverse()[0] || "",

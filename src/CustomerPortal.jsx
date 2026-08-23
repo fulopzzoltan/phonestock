@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "./lib/supabaseClient";
 import { CustomerAuthProvider, useCustomerAuth } from "./lib/CustomerAuthContext";
 import { myPurchaseFromApi, myTicketFromApi, customerRequestFromApi } from "./lib/mappers";
-import { money, warrantyExpiry, isWarrantyActive, statusCls, subStatusLabel } from "./lib/utils";
+import { money, warrantyExpiry, isWarrantyActive, statusCls, subStatusLabel, SITE_URL } from "./lib/utils";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 
@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { key: "tickets", label: "Szervizeim" },
   { key: "warranties", label: "Garanciáim" },
   { key: "requests", label: "Kéréseim" },
+  { key: "settings", label: "Beállítások" },
 ];
 
 function AuthForm() {
@@ -20,10 +21,12 @@ function AuthForm() {
   const prefillEmail = prefill.get("email") || "";
   const prefillPhone = prefill.get("phone") || "";
   const prefillName = prefill.get("name") || "";
-  const [mode, setMode] = useState(prefillPhone ? "register" : "login"); // login | register | forgot
+  const prefillRef = prefill.get("ref") || "";
+  const [mode, setMode] = useState(prefillPhone || prefillRef ? "register" : "login"); // login | register | forgot
   const [fullName, setFullName] = useState(prefillName);
   const [phone, setPhone] = useState(prefillPhone);
   const [email, setEmail] = useState(prefillEmail);
+  const [refCode, setRefCode] = useState(prefillRef);
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -51,7 +54,7 @@ function AuthForm() {
     setBusy(true);
     try {
       if (mode === "register") {
-        await signUp(email, password, fullName.trim(), phone.trim());
+        await signUp(email, password, fullName.trim(), phone.trim(), refCode.trim());
         setRegistered(true);
       } else {
         await signIn(email, password);
@@ -105,6 +108,7 @@ function AuthForm() {
           <>
             <div className="field"><label>Név</label><input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Kovács János" /></div>
             <div className="field"><label>Telefonszám</label><input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="07xx xxx xxx" /></div>
+            <div className="field"><label>Ajánlói kód (opcionális)</label><input value={refCode} onChange={(e) => setRefCode(e.target.value)} placeholder="pl. C2F85C" /></div>
           </>
         )}
         <div className="field"><label>Email</label><input type="email" name="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="te@pelda.hu" /></div>
@@ -127,6 +131,72 @@ function AuthForm() {
           <>Van már fiókod? <a href="#" onClick={(e) => { e.preventDefault(); setError(""); setMode("login"); }}>Jelentkezz be</a></>
         )}
       </div>
+    </div>
+  );
+}
+
+function ReferralLinkBox({ code }) {
+  const [copied, setCopied] = useState(false);
+  const link = `${SITE_URL}/fiok?ref=${code}`;
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+    }
+  }
+
+  return (
+    <div style={{ fontSize: 12, color: "#6B7280", marginTop: 10 }}>
+      Add tovább egy barátnak — ha a linkeddel regisztrál, mindketten +200 pontot kaptok rögtön!
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
+        <span className="mono" style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", background: "#fff", border: "1px solid var(--pub-line)", borderRadius: 8, padding: "6px 10px", fontSize: 11.5 }}>{link}</span>
+        <button type="button" className="btn sec sm" style={{ flexShrink: 0 }} onClick={copy}>{copied ? "Másolva!" : "Másolás"}</button>
+      </div>
+    </div>
+  );
+}
+
+function ChangePasswordForm() {
+  const { updatePassword } = useCustomerAuth();
+  const [password, setPassword] = useState("");
+  const [password2, setPassword2] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [done, setDone] = useState(false);
+
+  async function submit(e) {
+    e.preventDefault();
+    setError("");
+    setDone(false);
+    if (password.length < 6) { setError("A jelszó legalább 6 karakter legyen."); return; }
+    if (password !== password2) { setError("A két jelszó nem egyezik."); return; }
+    setBusy(true);
+    try {
+      await updatePassword(password);
+      setPassword("");
+      setPassword2("");
+      setDone(true);
+    } catch (err) {
+      setError(err.message || "Hiba történt.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="dp-section">
+      <div className="dp-section-title">Jelszó módosítása</div>
+      {error && <div className="errbar">{error}</div>}
+      {done && <div style={{ fontSize: 12.5, color: "#15803D", fontWeight: 700, marginBottom: 8 }}>✓ A jelszavad megváltozott.</div>}
+      <form onSubmit={submit} style={{ maxWidth: 320 }}>
+        <div className="field"><label>Új jelszó</label><input type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" /></div>
+        <div className="field"><label>Új jelszó mégegyszer</label><input type="password" autoComplete="new-password" value={password2} onChange={(e) => setPassword2(e.target.value)} placeholder="••••••••" /></div>
+        <button className="btn" disabled={busy} type="submit">{busy ? "Kérlek várj..." : "Jelszó mentése"}</button>
+      </form>
     </div>
   );
 }
@@ -406,11 +476,7 @@ function Dashboard({ profile }) {
                     })}
                   </div>
                 )}
-                {loyalty.referralCode && (
-                  <div style={{ fontSize: 12, color: "#6B7280", marginTop: 10 }}>
-                    Ajánlói kódod: <span className="mono" style={{ fontWeight: 700, color: "var(--primary-ink)" }}>{loyalty.referralCode}</span> — add tovább egy barátnak, és ha nálunk vásárol vagy szervizeltet, mindketten +200 pontot kaptok!
-                  </div>
-                )}
+                {loyalty.referralCode && <ReferralLinkBox code={loyalty.referralCode} />}
               </div>
             )}
           </>
@@ -450,7 +516,7 @@ function Dashboard({ profile }) {
               ))}
             </div>
           )
-        ) : (
+        ) : active === "requests" ? (
           <div>
             {!requestFormOpen && <button type="button" className="btn sm" style={{ marginBottom: 14 }} onClick={() => setRequestFormOpen(true)}>+ Új kérés</button>}
             {requestFormOpen && (
@@ -467,6 +533,8 @@ function Dashboard({ profile }) {
               </div>
             )}
           </div>
+        ) : (
+          <ChangePasswordForm />
         )}
       </div>
     </div>

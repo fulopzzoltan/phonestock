@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { money } from "../lib/utils";
+import { money, formatPhone } from "../lib/utils";
 import { SearchIcon, CustomersIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 
@@ -20,16 +20,9 @@ function sortCustomers(items, sortBy) {
 export default function CustomersTab({
   effectiveLocFilter, locName, busy, setCustomerModal, custSearch, setCustSearch, loadingData, customers, setCustomerKey,
 }) {
-  const [typeFilter, setTypeFilter] = useState("all"); // all | new | returning
   const [sortBy, setSortBy] = useState("recent");
 
-  const typeFiltered = useMemo(() => {
-    if (typeFilter === "all") return customers;
-    if (typeFilter === "new") return customers.filter((c) => c.isNew);
-    return customers.filter((c) => !c.isNew);
-  }, [customers, typeFilter]);
-
-  const sorted = useMemo(() => sortCustomers(typeFiltered, sortBy), [typeFiltered, sortBy]);
+  const sorted = useMemo(() => sortCustomers(customers, sortBy), [customers, sortBy]);
 
   return (
     <>
@@ -40,11 +33,6 @@ export default function CustomersTab({
 
       <div className="filter-row">
         <div className="searchbar"><SearchIcon /><input placeholder="Keresés név vagy telefonszám..." value={custSearch} onChange={(e) => setCustSearch(e.target.value)} /></div>
-        <div className="seg">
-          <button className={typeFilter === "all" ? "active" : ""} onClick={() => setTypeFilter("all")}>Mind</button>
-          <button className={typeFilter === "new" ? "active" : ""} onClick={() => setTypeFilter("new")}>Új</button>
-          <button className={typeFilter === "returning" ? "active" : ""} onClick={() => setTypeFilter("returning")}>Visszatérő</button>
-        </div>
         <select className="filter-sel" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
           {SORTS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
         </select>
@@ -54,7 +42,7 @@ export default function CustomersTab({
         {loadingData ? <LoadingState /> : sorted.length === 0 ? <EmptyState icon={CustomersIcon}>Nincs ügyfél.</EmptyState> : (
           <>
             <table>
-              <thead><tr><th>Név</th><th>Telefonszám</th><th>Típus</th><th>Vásárlások</th><th>Szerviz</th><th>Utolsó aktivitás</th></tr></thead>
+              <thead><tr><th>Név</th><th>Telefonszám</th><th>Vásárlások</th><th>Szerviz</th><th>Utolsó aktivitás</th></tr></thead>
               <tbody>
                 {sorted.map((c) => (
                   <tr key={c.key} style={{ cursor: "pointer" }} onClick={() => setCustomerKey(c.key)}>
@@ -64,8 +52,7 @@ export default function CustomersTab({
                         {c.webshopAccount && <span className="gar-pill" title={`Webshop-fiók: ${c.webshopAccount.email || "—"}`}>Webshop</span>}
                       </div>
                     </td>
-                    <td className="mono">{c.phone || "—"}</td>
-                    <td>{c.isNew ? <span className="badge-loc">Új</span> : <span className="badge-income">Visszatérő</span>}</td>
+                    <td className="mono">{formatPhone(c.phone) || "—"}</td>
                     <td>{c.purchases.length} db · <span className="mono">{money(c.purchaseTotal)}</span></td>
                     <td>{c.tickets.length} db · <span className="mono">{money(c.ticketTotal)}</span></td>
                     <td className="mono" style={{ color: "#6B7280" }}>{c.lastActivity || "—"}</td>
@@ -81,10 +68,9 @@ export default function CustomersTab({
                       <span>{c.name || "Névtelen"}</span>
                       {c.webshopAccount && <span className="gar-pill">Webshop</span>}
                     </div>
-                    {c.isNew ? <span className="badge-loc">Új</span> : <span className="badge-income">Visszatérő</span>}
                   </div>
                   <div className="mob-row-sub">
-                    <span className="mono">{c.phone || "—"}</span>
+                    <span className="mono">{formatPhone(c.phone) || "—"}</span>
                     <span>{c.purchases.length} vásárlás · {money(c.purchaseTotal)}</span>
                     <span>{c.tickets.length} szerviz · {money(c.ticketTotal)}</span>
                     <span>{c.lastActivity || "—"}</span>
