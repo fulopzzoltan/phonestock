@@ -327,18 +327,6 @@ function AppShell() {
 
   useEffect(() => { loadAll(); }, []);
 
-  // Élő frissítés: ha az ügyfél a publikus /status oldalon megrendeli (vagy visszavonja) a
-  // fólia-akciót, a staff Szerviz kanban-kártyája újratöltés nélkül mutassa a friss állapotot.
-  useEffect(() => {
-    const channel = supabase
-      .channel("service_tickets_realtime")
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "service_tickets" }, (payload) => {
-        setTickets((prev) => prev.map((t) => (t.id === payload.new.id ? { ...t, ...tFromApi(payload.new), usedParts: t.usedParts, signatures: t.signatures } : t)));
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, []);
-
   async function loadTrash() {
     setTrashLoading(true);
     try {
