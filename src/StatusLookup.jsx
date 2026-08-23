@@ -18,6 +18,8 @@ export default function StatusLookup({ token, shortCode, signStage }) {
   const [signerName, setSignerName] = useState("");
   const [signBusy, setSignBusy] = useState(false);
   const [signError, setSignError] = useState("");
+  const [foliaCancelBusy, setFoliaCancelBusy] = useState(false);
+  const [foliaCancelError, setFoliaCancelError] = useState("");
 
   const signMode = signStage === "service_intake" || signStage === "service_handover";
 
@@ -62,6 +64,25 @@ export default function StatusLookup({ token, shortCode, signStage }) {
       setSignError(err.message || "Hiba történt az aláírás mentése közben.");
     } finally {
       setSignBusy(false);
+    }
+  }
+
+  async function cancelFoliaUpsell() {
+    setFoliaCancelBusy(true);
+    setFoliaCancelError("");
+    try {
+      const { data, error } = await supabase.rpc("cancel_folia_upsell_by_token", { p_token: token });
+      if (error) throw error;
+      const r = data?.[0];
+      if (r?.success) {
+        setResult((prev) => ({ ...prev, folia: false, folia_upsell_requested: false, price: Math.max(0, (Number(prev.price) || 0) - (Number(prev.folia_upsell_price) || 0)) }));
+      } else {
+        setFoliaCancelError(r?.message || "Hiba történt.");
+      }
+    } catch (err) {
+      setFoliaCancelError(err.message || "Hiba történt.");
+    } finally {
+      setFoliaCancelBusy(false);
     }
   }
 
@@ -180,8 +201,23 @@ export default function StatusLookup({ token, shortCode, signStage }) {
               <FoliaUpsellBanner token={token} onDone={() => setResult({ ...result, folia: true, folia_upsell_requested: true, folia_upsell_price: 30, price: (Number(result.price) || 0) + 30 })} />
             )}
             {result.folia_upsell_requested && (
-              <div style={{ fontSize: 12, color: "#15803D", background: "#F0FDF4", borderRadius: 10, padding: "8px 12px", marginBottom: 14 }}>
-                ✓ Védőfólia megrendelve (+{money(result.folia_upsell_price)}) — átadáskor felhelyezzük.
+              <div style={{ background: "#F0FDF4", borderRadius: 10, padding: "8px 12px", marginBottom: 14 }}>
+                <div style={{ fontSize: 12, color: "#15803D" }}>
+                  ✓ Védőfólia megrendelve (+{money(result.folia_upsell_price)}) — átadáskor felhelyezzük.
+                </div>
+                {!handedOver && (
+                  <>
+                    {foliaCancelError && <div style={{ fontSize: 11.5, color: "#B91C1C", marginTop: 6 }}>{foliaCancelError}</div>}
+                    <button
+                      type="button"
+                      onClick={cancelFoliaUpsell}
+                      disabled={foliaCancelBusy}
+                      style={{ background: "none", border: "none", padding: 0, marginTop: 6, fontSize: 11.5, color: "#6B7280", textDecoration: "underline", cursor: "pointer" }}
+                    >
+                      {foliaCancelBusy ? "Visszavonás..." : "Véletlenül nyomtam rá, mégsem kérem"}
+                    </button>
+                  </>
+                )}
               </div>
             )}
             <div style={{ background: "#F9FAFB", border: "1px solid #EEF0F2", borderRadius: 12, padding: 14, fontSize: 11, color: "#6B7280", lineHeight: 1.6, whiteSpace: "pre-line", marginBottom: 14 }}>
