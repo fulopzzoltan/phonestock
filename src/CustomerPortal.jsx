@@ -280,15 +280,25 @@ function Dashboard({ profile }) {
     })();
   }, [profile.id]);
 
+  const tierGroups = useMemo(() => {
+    const byPoints = new Map();
+    for (const r of rewards) {
+      if (!byPoints.has(r.pointCost)) byPoints.set(r.pointCost, []);
+      byPoints.get(r.pointCost).push(r);
+    }
+    return Array.from(byPoints.entries())
+      .sort((a, b) => a[0] - b[0])
+      .map(([pointCost, items]) => ({
+        pointCost,
+        rewardKey: items.map((r) => r.rewardKey).join("+"),
+        label: items.map((r) => r.label).join(" vagy "),
+      }));
+  }, [rewards]);
   const nextReward = useMemo(() => {
     if (!loyalty) return null;
-    const locked = rewards.filter((r) => r.pointCost > loyalty.pointsBalance).sort((a, b) => a.pointCost - b.pointCost);
+    const locked = tierGroups.filter((t) => t.pointCost > loyalty.pointsBalance);
     return locked[0] || null;
-  }, [rewards, loyalty]);
-  const redeemableRewards = useMemo(() => {
-    if (!loyalty) return [];
-    return rewards.filter((r) => r.pointCost <= loyalty.pointsBalance).sort((a, b) => b.pointCost - a.pointCost);
-  }, [rewards, loyalty]);
+  }, [tierGroups, loyalty]);
 
   const activeWarranties = useMemo(() => {
     const items = [];
@@ -366,12 +376,12 @@ function Dashboard({ profile }) {
                       }} />
                     </div>
                   </>
-                ) : rewards.length > 0 ? (
+                ) : tierGroups.length > 0 ? (
                   <div style={{ fontSize: 12.5, color: "#15803D", fontWeight: 700, marginTop: 6 }}>Minden elérhető jutalmat kiváltasz a pontjaiddal! 🎉</div>
                 ) : null}
-                {rewards.length > 0 && (
+                {tierGroups.length > 0 && (
                   <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 5 }}>
-                    {rewards.slice().sort((a, b) => a.pointCost - b.pointCost).map((r) => {
+                    {tierGroups.map((r) => {
                       const reached = loyalty.pointsBalance >= r.pointCost;
                       return (
                         <div key={r.rewardKey} style={{
