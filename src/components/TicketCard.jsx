@@ -12,7 +12,6 @@ export default function TicketCard({ ticket, locName, onOpen, onStep, stepPrev, 
     <div className={`t-card${kindCls}${sla && sla.level !== "ok" ? ` t-card-sla-${sla.level}` : ""}`} onClick={() => onOpen(ticket.id)}>
       <div className="t-card-top">
         <span className="t-sn">{ticketCode(ticket.ticketNo, locName(ticket.intakeLocationId || ticket.locationId))}</span>
-        <span className="t-loc">{locName(ticket.locationId)}</span>
         {onStep && (
           <span style={{ display: "flex", gap: 2, marginLeft: "auto" }}>
             {stepPrev && <button type="button" className="t-card-step prev" onClick={(e) => { e.stopPropagation(); onStep(ticket.id, "prev"); }} title="Előző státusz"><ChevronLeftIcon width={14} height={14} /></button>}
