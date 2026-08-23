@@ -5,8 +5,44 @@ import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 import SignaturePad from "./components/SignaturePad";
 import FoliaUpsellBanner from "./components/FoliaUpsellBanner";
+import { UserIcon, PhoneCaseIcon, ServiceIcon, FinanceIcon, CalendarIcon, CheckIcon, LockIcon, UserPlusIcon } from "./components/icons";
 
 const INTAKE_CONSENT_TEXT = "Átadom a készüléket javításra, elfogadom a leírt hibát/állapotot";
+
+const rowIcon = (Icon) => <Icon width={14} height={14} style={{ marginRight: 6, verticalAlign: -2, color: "#9CA3AF" }} />;
+
+const STEP_MAP = { "Átvett": 0, "Javítás alatt": 1, "Minőségellenőrzés": 1, "Átadásra": 2 };
+const STEPS = [
+  { label: "Bejelentve", icon: UserPlusIcon },
+  { label: "Szerviz alatt", icon: ServiceIcon },
+  { label: "Kész", icon: CheckIcon },
+  { label: "Átvéve", icon: LockIcon },
+];
+
+function StatusStepper({ status, handedOver }) {
+  const activeStep = handedOver ? 3 : (STEP_MAP[status] ?? 0);
+  return (
+    <div style={{ display: "flex", alignItems: "center", margin: "16px 0 4px" }}>
+      {STEPS.map((s, i) => (
+        <div key={s.label} style={{ display: "flex", alignItems: "center", flex: i < STEPS.length - 1 ? 1 : "none" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+            <div style={{
+              width: 30, height: 30, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
+              background: i <= activeStep ? "var(--primary)" : "#F3F4F6",
+              color: i <= activeStep ? "#fff" : "#9CA3AF",
+            }}>
+              <s.icon width={15} height={15} />
+            </div>
+            <span style={{ fontSize: 9.5, color: i <= activeStep ? "var(--primary-ink)" : "#9CA3AF", fontWeight: i === activeStep ? 700 : 500, whiteSpace: "nowrap" }}>{s.label}</span>
+          </div>
+          {i < STEPS.length - 1 && (
+            <div style={{ flex: 1, height: 2, background: i < activeStep ? "var(--primary)" : "#F3F4F6", margin: "0 4px 16px" }} />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function StatusLookup({ token, shortCode, signStage }) {
   const [phone, setPhone] = useState("");
@@ -38,7 +74,9 @@ export default function StatusLookup({ token, shortCode, signStage }) {
         setResult({ kind: "ticket", ...data[0] });
         setSignerName(data[0].customer_name || "");
         if (token && data[0].ticket_kind === "Ügyfél" && data[0].sub_status !== "Átadva" && !data[0].folia_upsell_requested) {
-          supabase.rpc("mark_folia_upsell_shown_by_token", { p_token: token }).catch(() => {});
+          try {
+            await supabase.rpc("mark_folia_upsell_shown_by_token", { p_token: token });
+          } catch {}
         }
         if (signMode && token) {
           const { data: sigs } = await supabase.rpc("get_public_signatures", { p_kind: "ticket", p_token: token });
@@ -176,14 +214,14 @@ export default function StatusLookup({ token, shortCode, signStage }) {
               <div style={{ fontSize: 13, color: "#9CA3AF", fontWeight: 700 }}>#{result.ticket_no}</div>
             </div>
             <div className="dp-section">
-              <div className="dp-row"><span className="dp-key">Ügyfél</span><span className="dp-val">{result.customer_name}</span></div>
+              <div className="dp-row"><span className="dp-key">{rowIcon(UserIcon)}Ügyfél</span><span className="dp-val">{result.customer_name}</span></div>
               <div className="dp-row"><span className="dp-key">Elérhetőség</span><span className="dp-val">{result.customer_phone || "—"}</span></div>
-              <div className="dp-row"><span className="dp-key">Eszköz</span><span className="dp-val">{[result.brand, result.model].filter(Boolean).join(" ")}</span></div>
+              <div className="dp-row"><span className="dp-key">{rowIcon(PhoneCaseIcon)}Eszköz</span><span className="dp-val">{[result.brand, result.model].filter(Boolean).join(" ")}</span></div>
               <div className="dp-row"><span className="dp-key">Helyszín</span><span className="dp-val">{result.location_name || "—"}{result.location_phone ? ` · ${result.location_phone}` : ""}</span></div>
-              <div className="dp-row"><span className="dp-key">Bejelentett hibák</span><span className="dp-val">{probs.length ? probs.map((p, i) => <span key={i} className="prob-pill">{p}</span>) : "—"}</span></div>
-              <div className="dp-row"><span className="dp-key">Javítási költség</span><span className="dp-val">{money(result.price)}</span></div>
-              <div className="dp-row"><span className="dp-key">Átvéve</span><span className="dp-val">{result.date_in || "—"}</span></div>
-              <div className="dp-row"><span className="dp-key">Átadva</span><span className="dp-val">{result.date_out || "—"}</span></div>
+              <div className="dp-row"><span className="dp-key">{rowIcon(ServiceIcon)}Bejelentett hibák</span><span className="dp-val">{probs.length ? probs.map((p, i) => <span key={i} className="prob-pill">{p}</span>) : "—"}</span></div>
+              <div className="dp-row"><span className="dp-key">{rowIcon(FinanceIcon)}Javítási költség</span><span className="dp-val">{money(result.price)}</span></div>
+              <div className="dp-row"><span className="dp-key">{rowIcon(CalendarIcon)}Átvéve</span><span className="dp-val">{result.date_in || "—"}</span></div>
+              <div className="dp-row"><span className="dp-key">{rowIcon(CalendarIcon)}Átadva</span><span className="dp-val">{result.date_out || "—"}</span></div>
               <div className="dp-row">
                 <span className="dp-key">Garancia</span>
                 <span className="dp-val">
@@ -195,13 +233,14 @@ export default function StatusLookup({ token, shortCode, signStage }) {
                 </span>
               </div>
             </div>
+            <StatusStepper status={result.status} handedOver={handedOver} />
             <div style={{ textAlign: "center", margin: "16px 0" }}>
               <span className={`st ${statusCls(result.status)}`} style={{ fontSize: 14, padding: "8px 18px" }}>
                 {result.sub_status ? subStatusLabel(result.status, result.sub_status) : result.status}
               </span>
             </div>
             {token && result.ticket_kind === "Ügyfél" && !handedOver && !result.folia_upsell_requested && (
-              <FoliaUpsellBanner token={token} onDone={() => setResult({ ...result, folia: true, folia_upsell_requested: true, folia_upsell_price: 30, price: (Number(result.price) || 0) + 30 })} />
+              <FoliaUpsellBanner token={token} deviceLabel={[result.brand, result.model].filter(Boolean).join(" ")} onDone={() => setResult({ ...result, folia: true, folia_upsell_requested: true, folia_upsell_price: 30, price: (Number(result.price) || 0) + 30 })} />
             )}
             {result.folia_upsell_requested && (
               <div style={{ background: "#F0FDF4", borderRadius: 10, padding: "8px 12px", marginBottom: 14 }}>

@@ -251,6 +251,24 @@ export const UserIcon = (props) => (
   </svg>
 );
 
+export const CheckIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M20 6L9 17l-5-5" />
+  </svg>
+);
+
+export const LockIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 018 0v4" />
+  </svg>
+);
+
+export const UserPlusIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <circle cx="9" cy="8" r="4" /><path d="M1 21c0-4 3.6-7 8-7s8 3 8 7" /><path d="M19 8v6M22 11h-6" />
+  </svg>
+);
+
 export const SettingsIcon = (props) => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
     <circle cx="12" cy="12" r="3" />
