@@ -76,13 +76,55 @@ grant execute on function request_folia_upsell_by_token(uuid) to anon;
 
 Ez pontosan azt csinálja, amit kértél: `folia = true` (megjelenik a szervizen), `price` automatikusan +30 (rááadódik a szerviz árához) — **egy lépésben, atomikusan**, dupla megrendelést a `folia_upsell_requested` már-igaz ellenőrzés zár ki.
 
-## 3. UI — a nyomonkövető oldal (`src/StatusLookup.jsx`)
+## 3. UI — a nyomonkövető oldal átdolgozása (`src/StatusLookup.jsx`) — mockup alapján
 
-A ticket-nézetben (111-152. sor), a `SERVICE_WARRANTY_TERMS` doboz **elé** kerül egy feltűnő, de nem tolakodó akciós sáv — csak akkor, ha `result.ticket_kind === "Ügyfél" && result.status !== "Átadva" && !result.folia_upsell_requested`:
+Kaptam egy kidolgozott mockupot/brief-et erről (angol nyelvű task-leírás + kép) — ez jó irány, de **két ponton nem illik a mi kódunkra**, ezt korrigáltam, mielőtt átvettem:
+- A brief Tailwind CSS-t és egy `/szerviz/[id]` útvonalat feltételez — nálunk **nincs Tailwind** (`CLAUDE.md`: kézzel írt CSS, nincs UI-lib), és az útvonal ténylegesen `/status/:token` (`StatusLookup.jsx`). A lenti terv a meglévő `--primary`/`--primary-soft` stb. CSS-tokenekkel és a meglévő `.dp-section`/`.dp-row`/`.login-card` osztályokkal dolgozik, nem Tailwind-osztályokkal.
+- A brief checkbox nélküli, egy-kattintásos CTA-t kér — ez **felülírja** a korábbi tervem tudatos "checkbox + külön gomb" súrlódását. Elfogadom ezt a változtatást: egy fix, jól látható, előre kiírt áras ajánlatnál (30 Lei, nincs mennyiség-választás, nincs rejtett feltétel) az extra megerősítő lépés inkább csak konverziót visz el, nem éri meg — **egy gombra rövidítjük**, lásd 3.3.
+
+### 3.1. Adat-sorok ikonokkal
+
+A ticket-nézet (111-136. sor) `dp-row`-jai elé kis ikon kerül — mind **már létező** ikon a `src/components/icons.jsx`-ben, nem kell újat rajzolni:
+
+| Sor | Ikon |
+|---|---|
+| Ügyfél | `UserIcon` |
+| Eszköz (márka+modell) | `PhoneCaseIcon` |
+| Bejelentett hiba | `ServiceIcon` |
+| Javítási költség | `FinanceIcon` |
+| Átvéve / Átadva dátum | `CalendarIcon` |
 
 ```jsx
-{isTicket && result.ticket_kind === "Ügyfél" && result.status !== "Átadva" && !result.folia_upsell_requested && (
-  <FoliaUpsellBanner token={token} onDone={(msg) => setResult({ ...result, folia: true, folia_upsell_requested: true, folia_upsell_price: 30 })} />
+<div className="dp-row"><span className="dp-key"><UserIcon width={14} height={14} style={{ marginRight: 6, verticalAlign: -2, color: "#9CA3AF" }} />Ügyfél</span><span className="dp-val">{result.customer_name}</span></div>
+```
+(Ugyanez a minta mindegyik sornál — csak az ikon és a `dp-key` szövege cserélődik.)
+
+### 3.2. Lépcsős folyamatsáv (státusz-tracker)
+
+A jelenlegi egyetlen `st` jelvény (137-141. sor) **kiegészül** (nem cserélődik le — a jelvény marad, mert a `sub_status` (pl. "Garanciális", "Sikertelen") ott pontosabb infót ad, mint egy 4-lépéses sáv) egy vizuális lépés-sávval fölötte. A valós `STATUSES` (`utils.js`) 4 értéke: `Átvett`, `Javítás alatt`, `Minőségellenőrzés`, `Átadásra` (+ az `Átadásra` egyik `sub_status`-a a tényleges `Átadva`) — a vevőnek ezt egyszerűsítve, 4 barátságos lépésben mutatjuk:
+
+```
+Bejelentve  →  Szerviz alatt  →  Kész  →  Átvéve
+```
+Leképezés: `Átvett` → *Bejelentve*; `Javítás alatt` **és** `Minőségellenőrzés` → *Szerviz alatt* (a vevőnek nem kell tudnia, hogy belső tesztelési fázisban van, ugyanaz neki: "dolgoznak rajta"); `Átadásra` (sub_status ≠ `Átadva`) → *Kész*; `Átadásra` + sub_status `Átadva` → *Átvéve*.
+
+```jsx
+const STEP_MAP = { "Átvett": 0, "Javítás alatt": 1, "Minőségellenőrzés": 1, "Átadásra": handedOver ? 3 : 2 };
+const activeStep = STEP_MAP[result.status] ?? 0;
+const STEPS = [
+  { label: "Bejelentve", icon: UserPlusIcon },
+  { label: "Szerviz alatt", icon: ServiceIcon },
+  { label: "Kész", icon: CheckIcon },
+  { label: "Átvéve", icon: LockIcon },
+];
+```
+`CheckIcon`/`LockIcon`/`UserPlusIcon` **nincs még** a `icons.jsx`-ben — ezeket 3 kis új ikonként kell felvenni, a meglévők stílusát követve (`viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.7"`). A vizuális sáv: 4 kör + köztük vonal, az aktív és korábbi lépések `--primary` színnel kitöltve, a jövőbeliek szürkével — hasonlóan a mockupon látott mintához, de a projekt saját CSS-tokenjeivel (`--primary`, nem a mockup `#10B981`-je — a kettő valószínűleg közel esik, de a sajátunkat használjuk, ne új színt vezessünk be).
+
+### 3.3. Az upsell-doboz — a fő elem
+
+```jsx
+{isTicket && result.ticket_kind === "Ügyfél" && result.status !== "Átadásra" /* és nem Átadva sub_status */ && !result.folia_upsell_requested && (
+  <FoliaUpsellBanner token={token} deviceLabel={[result.brand, result.model].filter(Boolean).join(" ")} onDone={() => setResult({ ...result, folia: true, folia_upsell_requested: true, folia_upsell_price: 30 })} />
 )}
 {isTicket && result.folia_upsell_requested && (
   <div style={{ fontSize: 12, color: "#15803D", background: "#F0FDF4", borderRadius: 10, padding: "8px 12px", marginBottom: 14 }}>
@@ -91,11 +133,16 @@ A ticket-nézetben (111-152. sor), a `SERVICE_WARRANTY_TERMS` doboz **elé** ker
 )}
 ```
 
-Új kis komponens, `src/components/FoliaUpsellBanner.jsx`:
-- Szöveg: *"Amíg nálunk van a géped: védőfólia felhelyezése most csak **30 Lei** a szokásos 49 Lei helyett!"*
-- Checkbox ("Kérem") + külön "Megrendelem" gomb (szándékosan nem elég csak bepipálni, kelljen egy második, tudatos kattintás is, mert ez tényleg hozzáadódik a fizetendő árhoz — ne legyen véletlen tap).
-- Gombnyomásra `supabase.rpc("request_folia_upsell_by_token", { p_token: token })`; siker esetén hívja az `onDone`-t (a fenti optimista state-frissítéshez), hiba esetén a `message`-t mutatja.
-- Vizuálisan barátságos, "ajánlat" jellegű (pl. `--primary-soft` háttér, nem `--danger`), nem tolakodó mérettel — a `login-card` szélességéhez illesztve.
+**Megjegyzés az időzítéshez a mockup alapján**: a képen a doboz "Szerviz alatt" állapotban jelenik meg — ez összhangban van az eredeti kéréseddel ("amíg nálunk van a géped"), tehát a feltétel finomítva: `status !== "Átadásra"` VAGY `(status === "Átadásra" && sub_status !== "Átadva")` — lényegében bármikor, amíg a gép fizikailag nálunk van, nem csak rögtön a bejelentéskor.
+
+Új komponens, `src/components/FoliaUpsellBanner.jsx`:
+- **Cím**: "Szuper hír a gépedről! ⚡"
+- **Szöveg, személyre szabva a készülékkel**: *"Mivel a {deviceLabel}-ed most nálunk van szervizelés alatt, egyetlen kattintással kérhetsz rá egy védőfóliát is, felhelyezéssel."* (a mockup "Prémium öngyógyuló hidrogél fólia" konkrét termékmegnevezését csak akkor írjuk bele szó szerint, ha tényleg ilyen fóliát használtok — ha egyszerű sima védőfólia, ne ígérjünk hidrogélt/öngyógyulót, amit nem szállítotok; jelezd, melyik igaz.)
+- **Ár, kiemelve**: "Kedvezményes ár: **30 Lei** (a helyszíni 49 Lei helyett)" — a 30 Lei nagyobb, félkövér, a 49 Lei áthúzva vagy halványabb mellette.
+- **Kép/illusztráció bal oldalt**: a mockup egy telefon+fólia terméket mutat — **ehhez valódi termékfotó/illusztráció kell tőled**, nincs ilyen a rendszerben; amíg nincs kép, egy egyszerű ikon (pl. `PhoneCaseIcon` nagyban, a meglévő stílusban) helyettesítheti, hogy ne találjunk ki/generáljunk terméket ábrázoló képet, ami nem a valós fóliátokat mutatja.
+- **Egy gomb, teljes szélességben, elsődleges (zöld) stílus**: "IGEN, KÉREM A FÓLIÁZÁST 30 LEI-ÉRT" — **nincs külön checkbox**, a gomb maga a megerősítés (lásd a 3. pont eleji indoklást).
+- Kattintásra: gomb azonnal `disabled` + "Feldolgozás..." felirat/kis spinner → `supabase.rpc("request_folia_upsell_by_token", { p_token: token })` → siker esetén a doboz helyén megjelenik a zöld "✓ Megrendelve" visszaigazolás (lásd fent, a `folia_upsell_requested` ág) → hiba esetén a gomb visszaáll, alatta piros hibaszöveg (`message`).
+- Stílus: `--primary-soft` háttér, `--primary` szegély/ékezet (nem `--danger`), lekerekített sarkok, lágy árnyék — a meglévő `.tw`/`.login-card` vizuális nyelvhez illesztve, nem új dizájn-rendszer.
 
 **Csak a közvetlen token-linken (`/status/:token`) jelenik meg** — a telefonszám-kereséses nézetben (több találat / anonim keresés) egyelőre nem, mert ahhoz a `get_ticket_status_by_phone` nem ad vissza `public_token`-t (szándékosan, hogy ne lehessen tömegesen tokeneket "kibányászni" telefonszám-találgatással). Ha szeretnéd, hogy ott is működjön, egy külön, telefonszám+ticket_no-alapú változat kell a 2. pont RPC-jéből — jelezd, ha ez fontos, most nem terveztem bele.
 
@@ -125,8 +172,10 @@ A ticket-nézetben (111-152. sor), a `SERVICE_WARRANTY_TERMS` doboz **elé** ker
 
 - `npm run build` hibamentes
 - `service_tickets` új oszlopai migrálva, `get_ticket_status_by_token` bővítve, `request_folia_upsell_by_token` létrehozva és `anon`-nak grantelve
-- A `/status/:token` oldalon, nyitott ("Ügyfél" típusú, nem "Átadva") munkalapnál megjelenik az akciós sáv, "Megrendelem" gombra a `price` automatikusan +30-cal nő, `folia = true` lesz
-- Duplán nem lehet megrendelni (a gomb eltűnik / "Már megrendelted" üzenet)
+- A `/status/:token` oldalon, nyitott ("Ügyfél" típusú, nem "Átadva") munkalapnál megjelenik az akciós doboz, egy gombnyomásra (nincs külön checkbox) a `price` automatikusan +30-cal nő, `folia = true` lesz
+- Duplán nem lehet megrendelni (a doboz eltűnik / "Már megrendelted" üzenet)
+- A ticket-adatok ikonokkal jelennek meg, a 4-lépéses folyamatsáv a valós `STATUSES`-ből helyesen számolódik (a "Minőségellenőrzés" a "Szerviz alatt" lépésbe olvad)
+- Nincs Tailwind-osztály és nincs kitalált termékfotó a kódban — a projekt saját CSS-tokenjei és egy egyszerű ikon-helyettesítő van, amíg valódi termékkép nem érkezik
 - A `DetailPanel.jsx`-en látszik, hogy ez ügyfél-kérésű, akciós tétel volt
 - Ha a fólia-checkboxot staff utólag kiveszi egy ügyfél-kérésű tételről, az ár automatikusan korrigálódik
 - Nincs `git push`, csak lokális commit
