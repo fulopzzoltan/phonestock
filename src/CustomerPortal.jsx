@@ -15,6 +15,10 @@ const NAV_ITEMS = [
   { key: "settings", label: "Beállítások" },
 ];
 
+// Adaptív, email-first belépés — a Flip.ro és a Back Market bejelentkezését mintázza:
+// előbb csak az email címet kérjük, és a rendszer maga dönti el, hogy meglévő fiókról
+// van-e szó (jelszót kérünk) vagy újról (fiók-létrehozó mezőket mutatunk) — nem kell a
+// felhasználónak előre eldöntenie/megkeresnie a "Regisztráció" vagy "Bejelentkezés" fület.
 function AuthForm() {
   const { signIn, signUp, resetPassword } = useCustomerAuth();
   const prefill = new URLSearchParams(window.location.search);
@@ -22,7 +26,7 @@ function AuthForm() {
   const prefillPhone = prefill.get("phone") || "";
   const prefillName = prefill.get("name") || "";
   const prefillRef = prefill.get("ref") || "";
-  const [mode, setMode] = useState(prefillPhone || prefillRef ? "register" : "login"); // login | register | forgot
+  const [step, setStep] = useState("email"); // email | login | register | forgot
   const [fullName, setFullName] = useState(prefillName);
   const [phone, setPhone] = useState(prefillPhone);
   const [email, setEmail] = useState(prefillEmail);
@@ -32,12 +36,36 @@ function AuthForm() {
   const [error, setError] = useState("");
   const [registered, setRegistered] = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  const [checkedOnce, setCheckedOnce] = useState(false);
+
+  async function checkEmail(e) {
+    e.preventDefault();
+    setError("");
+    if (!email.trim()) { setError("Add meg az email címed."); return; }
+    setBusy(true);
+    try {
+      const { data, error: rpcErr } = await supabase.rpc("customer_account_exists", { p_email: email.trim() });
+      if (rpcErr) throw rpcErr;
+      setStep(data ? "login" : "register");
+    } catch (err) {
+      setError(err.message || "Hiba történt.");
+    } finally {
+      setBusy(false);
+      setCheckedOnce(true);
+    }
+  }
+
+  // Ha a linkben már email is érkezett (pl. korábbi rendelésből), ne kelljen külön
+  // rákattintani a Folytatásra — automatikusan eldöntjük, be- vagy regisztrálni kell-e.
+  useEffect(() => {
+    if (prefillEmail && !checkedOnce) checkEmail({ preventDefault() {} });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function submit(e) {
     e.preventDefault();
     setError("");
-    if (!email.trim()) { setError("Add meg az email címed."); return; }
-    if (mode === "forgot") {
+    if (step === "forgot") {
       setBusy(true);
       try {
         await resetPassword(email.trim());
@@ -50,10 +78,10 @@ function AuthForm() {
       return;
     }
     if (!password) { setError("Add meg a jelszavad."); return; }
-    if (mode === "register" && (!fullName.trim() || !phone.trim())) { setError("Add meg a neved és a telefonszámod."); return; }
+    if (step === "register" && (!fullName.trim() || !phone.trim())) { setError("Add meg a neved és a telefonszámod."); return; }
     setBusy(true);
     try {
-      if (mode === "register") {
+      if (step === "register") {
         await signUp(email, password, fullName.trim(), phone.trim(), refCode.trim());
         setRegistered(true);
       } else {
@@ -73,64 +101,87 @@ function AuthForm() {
         <p style={{ fontSize: 13, color: "#6B7280", textAlign: "center", lineHeight: 1.5 }}>
           A fiókod létrejött — most már be tudsz jelentkezni email címeddel és jelszavaddal.
         </p>
-        <button className="btn" style={{ width: "100%", justifyContent: "center", marginTop: 14 }} onClick={() => { setRegistered(false); setMode("login"); setPassword(""); }}>
+        <button className="btn" style={{ width: "100%", justifyContent: "center", marginTop: 14 }} onClick={() => { setRegistered(false); setStep("login"); setPassword(""); }}>
           Bejelentkezés
         </button>
       </div>
     );
   }
 
-  if (mode === "forgot" && resetSent) {
+  if (step === "forgot" && resetSent) {
     return (
       <div className="login-card" style={{ maxWidth: 380 }}>
         <div className="login-title">Elküldve</div>
         <p style={{ fontSize: 13, color: "#6B7280", textAlign: "center", lineHeight: 1.5 }}>
           Ha létezik fiók ezzel az email címmel ({email}), küldtünk rá egy linket, amivel új jelszót állíthatsz be.
         </p>
-        <button className="btn sec" style={{ width: "100%", justifyContent: "center", marginTop: 14 }} onClick={() => { setResetSent(false); setMode("login"); }}>
+        <button className="btn sec" style={{ width: "100%", justifyContent: "center", marginTop: 14 }} onClick={() => { setResetSent(false); setStep("login"); }}>
           Vissza a bejelentkezéshez
         </button>
       </div>
     );
   }
 
+  if (step === "email") {
+    return (
+      <div className="login-card" style={{ maxWidth: 380 }}>
+        <div className="login-title">Szia!</div>
+        <p style={{ fontSize: 12.5, color: "#6B7280", textAlign: "center", margin: "0 0 20px", lineHeight: 1.5 }}>
+          Kezdd az email címed megadásával. Ha még nincs fiókod, a következő lépésben létrehozzuk.
+        </p>
+        {error && <div className="errbar">{error}</div>}
+        <form onSubmit={checkEmail} autoComplete="on">
+          <div className="field"><label>Email</label><input type="email" name="email" autoComplete="username" autoFocus value={email} onChange={(e) => setEmail(e.target.value)} placeholder="te@pelda.hu" /></div>
+          <button className="btn" style={{ width: "100%", justifyContent: "center", marginTop: 10 }} disabled={busy} type="submit">
+            {busy ? "Kérlek várj..." : "Folytatás"}
+          </button>
+        </form>
+      </div>
+    );
+  }
+
   return (
     <div className="login-card" style={{ maxWidth: 380 }}>
-      <div className="login-title">{mode === "login" ? "Bejelentkezés" : mode === "forgot" ? "Jelszó visszaállítása" : "Fiók létrehozása"}</div>
+      <div className="login-title">{step === "login" ? "Bejelentkezés" : step === "forgot" ? "Jelszó visszaállítása" : "Fiók létrehozása"}</div>
+      <div className="login-note" style={{ marginBottom: 18 }}>
+        {email} — <a href="#" onClick={(e) => { e.preventDefault(); setError(""); setPassword(""); setStep("email"); }}>nem te vagy?</a>
+      </div>
       {error && <div className="errbar">{error}</div>}
-      {mode === "forgot" && (
-        <p style={{ fontSize: 12.5, color: "#6B7280", margin: "0 0 10px", lineHeight: 1.5 }}>
-          Add meg a fiókodhoz tartozó email címet, és küldünk egy linket, amivel új jelszót állíthatsz be.
+      {step === "register" && (
+        <p style={{ fontSize: 12.5, color: "#6B7280", margin: "0 0 16px", lineHeight: 1.5 }}>
+          Ehhez az email címhez még nincs fiókunk — hozzuk létre most.
+        </p>
+      )}
+      {step === "forgot" && (
+        <p style={{ fontSize: 12.5, color: "#6B7280", margin: "0 0 16px", lineHeight: 1.5 }}>
+          Küldünk egy linket erre a címre, amivel új jelszót állíthatsz be.
         </p>
       )}
       <form onSubmit={submit} autoComplete="on">
-        {mode === "register" && (
+        {step === "register" && (
           <>
-            <div className="field"><label>Név</label><input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Kovács János" /></div>
+            <div className="field"><label>Név</label><input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Kovács János" autoFocus /></div>
             <div className="field"><label>Telefonszám</label><input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="07xx xxx xxx" /></div>
             <div className="field"><label>Ajánlói kód (opcionális)</label><input value={refCode} onChange={(e) => setRefCode(e.target.value)} placeholder="pl. C2F85C" /></div>
           </>
         )}
-        <div className="field"><label>Email</label><input type="email" name="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="te@pelda.hu" /></div>
-        {mode !== "forgot" && (
-          <div className="field"><label>Jelszó</label><input type="password" name="password" autoComplete={mode === "login" ? "current-password" : "new-password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" /></div>
+        {step !== "forgot" && (
+          <div className="field"><label>Jelszó</label><input type="password" name="password" autoComplete={step === "login" ? "current-password" : "new-password"} autoFocus={step === "login"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" /></div>
         )}
-        <button className="btn" style={{ width: "100%", justifyContent: "center", marginTop: 6 }} disabled={busy} type="submit">
-          {busy ? "Kérlek várj..." : mode === "login" ? "Bejelentkezés" : mode === "forgot" ? "Link küldése" : "Regisztráció"}
+        <button className="btn" style={{ width: "100%", justifyContent: "center", marginTop: 10 }} disabled={busy} type="submit">
+          {busy ? "Kérlek várj..." : step === "login" ? "Bejelentkezés" : step === "forgot" ? "Link küldése" : "Fiók létrehozása"}
         </button>
       </form>
-      {mode === "login" && (
-        <div className="login-note" style={{ marginTop: 6 }}>
-          <a href="#" onClick={(e) => { e.preventDefault(); setError(""); setMode("forgot"); }}>Elfelejtetted a jelszavad?</a>
+      {step === "login" && (
+        <div className="login-note" style={{ marginTop: 10 }}>
+          <a href="#" onClick={(e) => { e.preventDefault(); setError(""); setStep("forgot"); }}>Elfelejtetted a jelszavad?</a>
         </div>
       )}
-      <div className="login-note">
-        {mode === "login" ? (
-          <>Nincs még fiókod? <a href="#" onClick={(e) => { e.preventDefault(); setError(""); setMode("register"); }}>Regisztrálj</a></>
-        ) : (
-          <>Van már fiókod? <a href="#" onClick={(e) => { e.preventDefault(); setError(""); setMode("login"); }}>Jelentkezz be</a></>
-        )}
-      </div>
+      {step === "forgot" && (
+        <div className="login-note" style={{ marginTop: 6 }}>
+          <a href="#" onClick={(e) => { e.preventDefault(); setError(""); setStep("login"); }}>Vissza a bejelentkezéshez</a>
+        </div>
+      )}
     </div>
   );
 }
@@ -150,10 +201,10 @@ function ReferralLinkBox({ code }) {
   }
 
   return (
-    <div style={{ fontSize: 12, color: "#6B7280", marginTop: 10 }}>
+    <div style={{ fontSize: 12, color: "#6B7280", marginTop: 16, lineHeight: 1.5 }}>
       Add tovább egy barátnak — ha a linkeddel regisztrál, mindketten +200 pontot kaptok rögtön!
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
-        <span className="mono" style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", background: "#fff", border: "1px solid var(--pub-line)", borderRadius: 8, padding: "6px 10px", fontSize: 11.5 }}>{link}</span>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
+        <span className="mono" style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", background: "#fff", border: "1px solid var(--pub-line)", borderRadius: 8, padding: "8px 12px", fontSize: 11.5 }}>{link}</span>
         <button type="button" className="btn sec sm" style={{ flexShrink: 0 }} onClick={copy}>{copied ? "Másolva!" : "Másolás"}</button>
       </div>
     </div>
@@ -429,14 +480,14 @@ function Dashboard({ profile }) {
               <div className="dp-row"><span className="dp-key">Nyitott kéréseim</span><span className="dp-val">{requests.filter((r) => r.status !== "lezarva").length}</span></div>
             </div>
             {loyalty && (
-              <div className="dp-section" style={{ background: "var(--primary-soft)", border: "1px solid var(--primary)", borderRadius: 12, padding: 16, marginTop: 14 }}>
-                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 4 }}>
+              <div className="dp-section" style={{ background: "var(--primary-soft)", border: "1px solid var(--primary)", borderRadius: 12, padding: 20, marginTop: 18 }}>
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
                   <div className="dp-section-title" style={{ margin: 0 }}>Hűségpontjaim</div>
                   <div style={{ fontSize: 22, fontWeight: 800, color: "var(--primary-ink)" }}>{loyalty.pointsBalance} pont</div>
                 </div>
                 {nextReward ? (
                   <>
-                    <div style={{ fontSize: 12.5, color: "#374151", margin: "6px 0 8px" }}>
+                    <div style={{ fontSize: 12.5, color: "#374151", margin: "0 0 10px", lineHeight: 1.5 }}>
                       Még <b>{nextReward.pointCost - loyalty.pointsBalance} pont</b> hiányzik a(z) <b>{nextReward.label}</b> ingyenes választásához ({nextReward.pointCost} pont).
                     </div>
                     <div style={{ height: 8, borderRadius: 999, background: "#fff", overflow: "hidden" }}>
@@ -450,17 +501,17 @@ function Dashboard({ profile }) {
                   <div style={{ fontSize: 12.5, color: "#15803D", fontWeight: 700, marginTop: 6 }}>Minden elérhető jutalmat kiváltasz a pontjaiddal! 🎉</div>
                 ) : null}
                 {tierGroups.length > 0 && (
-                  <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 5 }}>
+                  <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 8 }}>
                     {tierGroups.map((r) => {
                       const reached = loyalty.pointsBalance >= r.pointCost;
                       return (
                         <div key={r.rewardKey} style={{
                           display: "flex", justifyContent: "space-between", alignItems: "center",
-                          fontSize: 12.5, padding: "8px 10px", borderRadius: 9,
+                          fontSize: 12.5, padding: "10px 12px", borderRadius: 9,
                           background: reached ? "#fff" : "rgba(255,255,255,.5)",
                           border: reached ? "1px solid var(--primary)" : "1px solid transparent",
                         }}>
-                          <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                          <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                             <span style={{
                               display: "inline-flex", alignItems: "center", justifyContent: "center",
                               width: 16, height: 16, borderRadius: "50%", flexShrink: 0, fontSize: 10, fontWeight: 700,
