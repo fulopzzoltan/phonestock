@@ -246,6 +246,8 @@ function Dashboard({ profile }) {
   const [purchases, setPurchases] = useState([]);
   const [tickets, setTickets] = useState([]);
   const [requests, setRequests] = useState([]);
+  const [loyalty, setLoyalty] = useState(null); // { pointsBalance, referralCode }
+  const [rewards, setRewards] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
   const [requestFormOpen, setRequestFormOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -254,10 +256,12 @@ function Dashboard({ profile }) {
   useEffect(() => {
     (async () => {
       try {
-        const [pRes, tRes, rRes] = await Promise.all([
+        const [pRes, tRes, rRes, loyRes, rewardsRes] = await Promise.all([
           supabase.rpc("get_my_purchases"),
           supabase.rpc("get_my_tickets"),
           supabase.from("customer_requests").select("*").eq("customer_profile_id", profile.id).order("created_at", { ascending: false }),
+          supabase.rpc("get_my_loyalty_status"),
+          supabase.rpc("get_loyalty_rewards"),
         ]);
         if (pRes.error) throw pRes.error;
         if (tRes.error) throw tRes.error;
@@ -265,6 +269,9 @@ function Dashboard({ profile }) {
         setPurchases((pRes.data || []).map(myPurchaseFromApi));
         setTickets((tRes.data || []).map(myTicketFromApi));
         setRequests((rRes.data || []).map(customerRequestFromApi));
+        const loy = loyRes.data?.[0];
+        if (loy) setLoyalty({ pointsBalance: loy.points_balance || 0, referralCode: loy.referral_code || "" });
+        setRewards((rewardsRes.data || []).map((r) => ({ rewardKey: r.reward_key, label: r.label, pointCost: r.point_cost })));
       } catch (err) {
         setError(err.message || "Hiba történt az adatok betöltése közben.");
       } finally {
@@ -272,6 +279,16 @@ function Dashboard({ profile }) {
       }
     })();
   }, [profile.id]);
+
+  const nextReward = useMemo(() => {
+    if (!loyalty) return null;
+    const locked = rewards.filter((r) => r.pointCost > loyalty.pointsBalance).sort((a, b) => a.pointCost - b.pointCost);
+    return locked[0] || null;
+  }, [rewards, loyalty]);
+  const redeemableRewards = useMemo(() => {
+    if (!loyalty) return [];
+    return rewards.filter((r) => r.pointCost <= loyalty.pointsBalance).sort((a, b) => b.pointCost - a.pointCost);
+  }, [rewards, loyalty]);
 
   const activeWarranties = useMemo(() => {
     const items = [];
@@ -323,13 +340,48 @@ function Dashboard({ profile }) {
         {loadingData ? (
           <div style={{ textAlign: "center", color: "#6B7280", fontSize: 13, padding: "20px 0" }}>Betöltés...</div>
         ) : active === "overview" ? (
-          <div className="dp-section">
-            <div className="login-title" style={{ textAlign: "left" }}>Szia, {profile.fullName || "!"}!</div>
-            <div className="dp-row"><span className="dp-key">Vásárlások</span><span className="dp-val">{purchases.length}</span></div>
-            <div className="dp-row"><span className="dp-key">Szervizmunkák</span><span className="dp-val">{tickets.length}</span></div>
-            <div className="dp-row"><span className="dp-key">Aktív garanciák</span><span className="dp-val">{activeWarranties.length}</span></div>
-            <div className="dp-row"><span className="dp-key">Nyitott kéréseim</span><span className="dp-val">{requests.filter((r) => r.status !== "lezarva").length}</span></div>
-          </div>
+          <>
+            <div className="dp-section">
+              <div className="login-title" style={{ textAlign: "left" }}>Szia, {profile.fullName || "!"}!</div>
+              <div className="dp-row"><span className="dp-key">Vásárlások</span><span className="dp-val">{purchases.length}</span></div>
+              <div className="dp-row"><span className="dp-key">Szervizmunkák</span><span className="dp-val">{tickets.length}</span></div>
+              <div className="dp-row"><span className="dp-key">Aktív garanciák</span><span className="dp-val">{activeWarranties.length}</span></div>
+              <div className="dp-row"><span className="dp-key">Nyitott kéréseim</span><span className="dp-val">{requests.filter((r) => r.status !== "lezarva").length}</span></div>
+            </div>
+            {loyalty && (
+              <div className="dp-section" style={{ background: "var(--primary-soft)", border: "1px solid var(--primary)", borderRadius: 12, padding: 16, marginTop: 14 }}>
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 4 }}>
+                  <div className="dp-section-title" style={{ margin: 0 }}>Hűségpontjaim</div>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: "var(--primary-ink)" }}>{loyalty.pointsBalance} pont</div>
+                </div>
+                {nextReward ? (
+                  <>
+                    <div style={{ fontSize: 12.5, color: "#374151", margin: "6px 0 8px" }}>
+                      Még <b>{nextReward.pointCost - loyalty.pointsBalance} pont</b> hiányzik a(z) <b>{nextReward.label}</b> ingyenes választásához ({nextReward.pointCost} pont).
+                    </div>
+                    <div style={{ height: 8, borderRadius: 999, background: "#fff", overflow: "hidden" }}>
+                      <div style={{
+                        height: "100%", borderRadius: 999, background: "var(--primary)",
+                        width: `${Math.min(100, Math.round((loyalty.pointsBalance / nextReward.pointCost) * 100))}%`,
+                      }} />
+                    </div>
+                  </>
+                ) : rewards.length > 0 ? (
+                  <div style={{ fontSize: 12.5, color: "#15803D", fontWeight: 700, marginTop: 6 }}>Minden elérhető jutalmat kiváltasz a pontjaiddal! 🎉</div>
+                ) : null}
+                {redeemableRewards.length > 0 && (
+                  <div style={{ fontSize: 12, color: "#6B7280", marginTop: 10 }}>
+                    Már most kiválthatod: {redeemableRewards.map((r) => r.label).join(", ")} — kérd a pultnál.
+                  </div>
+                )}
+                {loyalty.referralCode && (
+                  <div style={{ fontSize: 12, color: "#6B7280", marginTop: 10 }}>
+                    Ajánlói kódod: <span className="mono" style={{ fontWeight: 700, color: "var(--primary-ink)" }}>{loyalty.referralCode}</span> — add tovább egy barátnak, és ha nálunk vásárol vagy szervizeltet, mindketten +200 pontot kaptok!
+                  </div>
+                )}
+              </div>
+            )}
+          </>
         ) : active === "purchases" ? (
           purchases.length === 0 ? <div className="dp-section" style={{ color: "#9CA3AF", fontSize: 13 }}>Nincs még rögzített vásárlásod.</div> : (
             <div className="dp-section">
