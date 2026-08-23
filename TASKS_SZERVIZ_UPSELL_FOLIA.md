@@ -114,10 +114,10 @@ A ticket-nézetben (111-152. sor), a `SERVICE_WARRANTY_TERMS` doboz **elé** ker
 - **`TicketCard.jsx`** 57. sor — az "✓ Fólia" jelvény maradhat, ahogy van; ha megkülönböztethetőnek szeretnéd (pl. más színnel jelezni, hogy ügyfél-kérés), az egy apró CSS-only kiegészítés, jelezd, ha kell.
 - **`TicketFormModal.jsx`** — a "Fólia felhelyezve" checkbox (175. sor) marad kézzel is állíthatónak (pl. ha a dolgozó a helyszínen ajánlja fel, nem online). **Ha egy ügyfél-kérésű fóliát utólag kipipálnátok** (meggondolta magát), a mentéskor ellenőrizni kell: ha `folia` `true`-ról `false`-ra vált **és** `ticket.foliaUpsellRequested` igaz, a `price` mezőből automatikusan vonjuk le a `folia_upsell_price` értékét (és állítsuk vissza `folia_upsell_requested = false`-ra), hogy az ár konzisztens maradjon — ezt a `saveTicketEdit`/`onSave` logikába kell beépíteni (App.jsx-ben, a `service_tickets` update mellé).
 
-## 5. Amit tisztázni kell
+## 5. Eldöntött kérdések
 
-1. **Az akciós ár (30 Lei) hardkódolva legyen-e, vagy tegyük be az `app_settings`-be szerkeszthetőnek?** A tervben most hardkódolt az RPC-ben — ha gyakran szeretnéd változtatni az akciót (pl. szezonálisan), érdemesebb egy `app_settings.folia_upsell_price` mezőbe tenni, amit a Beállítások fülön írhatsz át kód nélkül. Jelezd, ha ezt szeretnéd, egyszerű kiegészítés.
-2. **Csak "Ügyfél" munkalapokon jelenjen meg** (nem saját készleten lévő telefonok szervizén) — ez logikusnak tűnt, mert csak ott van tényleges, a linket nyomon követő végfelhasználó, akinek felajánlhatod. Szólj, ha mégis kell a saját-készletes eseteknél is (ott gyakorlatilag te magadnak ajánlanád fel, nem lenne sok értelme).
+- **Az akciós ár (30 Lei) kódba írva marad** — nem kerül `app_settings`-be, a 2. pontban lévő RPC `v_price numeric := 30` sora a forrás. Ha később mégis változtatnátok rajta, az egy migráció (`create or replace function`), nem admin-felületi beállítás.
+- **Csak "Ügyfél" típusú munkalapokon jelenik meg** — saját készleten lévő telefonok szervizén nem, ahogy a 3. pontban már szerepelt (`result.ticket_kind === "Ügyfél"` feltétel).
 
 ---
 
