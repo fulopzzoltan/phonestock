@@ -317,6 +317,18 @@ function AppShell() {
 
   useEffect(() => { loadAll(); }, []);
 
+  // Élő frissítés: ha az ügyfél a publikus /status oldalon megrendeli (vagy visszavonja) a
+  // fólia-akciót, a staff Szerviz kanban-kártyája újratöltés nélkül mutassa a friss állapotot.
+  useEffect(() => {
+    const channel = supabase
+      .channel("service_tickets_realtime")
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "service_tickets" }, (payload) => {
+        setTickets((prev) => prev.map((t) => (t.id === payload.new.id ? { ...t, ...tFromApi(payload.new), usedParts: t.usedParts, signatures: t.signatures } : t)));
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
   async function loadTrash() {
     setTrashLoading(true);
     try {
@@ -1583,6 +1595,10 @@ function AppShell() {
     const weekStart = rollingBusinessWeekStart();
     const kiadvaRecent = handedOverTickets.filter((t) => t.dateOut && t.dateOut >= weekStart).length;
 
+    const foliaShown = customerTickets.filter((t) => t.foliaUpsellShownAt).length;
+    const foliaRequestedCount = customerTickets.filter((t) => t.foliaUpsellShownAt && t.foliaUpsellRequested).length;
+    const foliaConversionPct = foliaShown ? Math.round((foliaRequestedCount / foliaShown) * 1000) / 10 : null;
+
     return {
       total: filteredTickets.length,
       active: customerTickets.filter((t) => t.status !== "Átadásra").length,
@@ -1601,6 +1617,9 @@ function AppShell() {
       topProblems,
       problemsSample,
       problemsTotal: customerTickets.length,
+      foliaShown,
+      foliaRequestedCount,
+      foliaConversionPct,
     };
   }, [filteredTickets, handedOverTickets]);
 

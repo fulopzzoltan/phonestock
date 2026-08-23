@@ -37,6 +37,9 @@ export default function StatusLookup({ token, shortCode, signStage }) {
         }
         setResult({ kind: "ticket", ...data[0] });
         setSignerName(data[0].customer_name || "");
+        if (token && data[0].ticket_kind === "Ügyfél" && data[0].sub_status !== "Átadva" && !data[0].folia_upsell_requested) {
+          supabase.rpc("mark_folia_upsell_shown_by_token", { p_token: token }).catch(() => {});
+        }
         if (signMode && token) {
           const { data: sigs } = await supabase.rpc("get_public_signatures", { p_kind: "ticket", p_token: token });
           const existing = (sigs || []).find((s) => s.stage === signStage);

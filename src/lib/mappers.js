@@ -162,6 +162,7 @@ export const tFromApi = (r) => ({
   foliaUpsellRequested: r.folia_upsell_requested,
   foliaUpsellPrice: r.folia_upsell_price,
   foliaUpsellRequestedAt: r.folia_upsell_requested_at,
+  foliaUpsellShownAt: r.folia_upsell_shown_at,
   handoverDate: r.handover_date,
   dueDate: r.due_date,
   status: r.status,

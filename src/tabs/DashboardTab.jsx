@@ -86,7 +86,7 @@ export default function DashboardTab({
         )}
       </div>
 
-      <div className="statrow c3" style={{ marginBottom: 10 }}>
+      <div className="statrow c4" style={{ marginBottom: 10 }}>
         <div className="statcard">
           <div className="lbl">Sikertelenek %</div>
           <div className="val" style={{ color: "#9D174D" }}>{svcStats.sikertelenPct != null ? `${svcStats.sikertelenPct}%` : "—"}</div>
@@ -98,6 +98,13 @@ export default function DashboardTab({
         <div className="statcard">
           <div className="lbl">Átlagos átfutási idő</div>
           <div className="val">{svcStats.avgTAT != null ? `${svcStats.avgTAT} nap` : "—"}</div>
+        </div>
+        <div className="statcard">
+          <div className="lbl">Fólia-ajánlat konverzió</div>
+          <div className="val" style={{ color: "#22C55E" }}>{svcStats.foliaConversionPct != null ? `${svcStats.foliaConversionPct}%` : "—"}</div>
+          {svcStats.foliaShown > 0 && (
+            <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 2 }}>{svcStats.foliaRequestedCount} / {svcStats.foliaShown} megrendelte</div>
+          )}
         </div>
       </div>
       <div style={{ fontSize: 11.5, color: "#9CA3AF", margin: "0 0 20px 2px", lineHeight: 1.5 }}>
