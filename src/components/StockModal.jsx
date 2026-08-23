@@ -6,13 +6,13 @@ import { WARRANTIES, SOURCES, STOCK_STATUSES, CONDITION_GRADES, conditionGradeKe
 export default function StockModal({ product, prefill, locations, onClose, onSave, busy, defaultLocId }) {
   const isEdit = !!product;
   const [f, setF] = useState({
-    brand: product?.brand || "",
+    brand: product?.brand || prefill?.brand || "",
     model: product?.model || prefill?.model || "",
     condition: product?.condition || "New",
     grade: product?.grade || "A",
-    storage: product?.storage || "",
-    color: product?.color || "",
-    imei: product?.imei || "",
+    storage: product?.storage || prefill?.storage || "",
+    color: product?.color || prefill?.color || "",
+    imei: product?.imei || prefill?.imei || "",
     costPrice: product?.costPrice ?? prefill?.costPrice ?? "",
     salePrice: product?.salePrice ?? "",
     warranty: product?.warranty || "",
@@ -23,7 +23,7 @@ export default function StockModal({ product, prefill, locations, onClose, onSav
   });
   const [locId, setLocId] = useState(product?.locationId || prefill?.locationId || defaultLocId || locations[0]?.id || "");
   const [acqType, setAcqType] = useState("purchase");
-  const [seller, setSeller] = useState({ name: "", idDoc: "", cnp: "", phone: "", address: "" });
+  const [seller, setSeller] = useState({ name: prefill?.sellerName || "", idDoc: "", cnp: "", phone: prefill?.sellerPhone || "", address: "" });
   const [payoutAmount, setPayoutAmount] = useState("");
   const [payoutNow, setPayoutNow] = useState(false);
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });

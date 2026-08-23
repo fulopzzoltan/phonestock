@@ -1,18 +1,83 @@
-import { money, BUYBACK_CONDITION_QUESTIONS } from "../lib/utils";
+import { money, BUYBACK_CONDITION_QUESTIONS, BUYBACK_STATUSES, buybackStatusCls, displayName } from "../lib/utils";
 import { EditIcon, BuybackIcon } from "../components/icons";
 import ConfirmDelete from "../components/ConfirmDelete";
-import { EmptyState } from "../components/EmptyState";
+import { EmptyState, LoadingState } from "../components/EmptyState";
+import BuybackOfferCard from "../components/BuybackOfferCard";
+import HistorySection from "../components/HistorySection";
 
 export default function BuybackTab({
   busy, buybackModels, setBuybackModelModal, deleteBuybackModel, buybackRules, setBuybackRuleModal, deleteBuybackRule,
+  buybackOffers, loadingData, setBuybackOfferDetailId, setBuybackOfferStatus,
 }) {
+  const activeOffers = (buybackOffers || []).filter((o) => o.status !== "Kifizetve" && o.status !== "Elutasítva");
+  const closedOffers = (buybackOffers || []).filter((o) => o.status === "Kifizetve" || o.status === "Elutasítva");
+
+  function handleStep(id, dir) {
+    const offer = buybackOffers.find((o) => o.id === id);
+    if (!offer) return;
+    const idx = BUYBACK_STATUSES.findIndex((c) => c.key === offer.status);
+    const newIdx = dir === "prev" ? idx - 1 : idx + 1;
+    if (newIdx < 0 || newIdx >= BUYBACK_STATUSES.length) return;
+    setBuybackOfferStatus(id, BUYBACK_STATUSES[newIdx].key);
+  }
+
   return (
     <>
       <div className="topbar">
         <div><div className="page-title">Felvásárlás</div></div>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 0 8px 2px" }}>
+      {loadingData ? <LoadingState /> : (
+        <div className="kanban-wrap" style={{ marginBottom: 24 }}>
+          <div className="kanban">
+            {BUYBACK_STATUSES.map((col, colIdx) => {
+              const items = activeOffers.filter((o) => o.status === col.key);
+              const stepPrev = colIdx > 0;
+              const stepNext = colIdx < BUYBACK_STATUSES.length - 1;
+              return (
+                <div className="k-col" key={col.key} style={{ "--col-color": col.color }}>
+                  <div className="k-col-head">
+                    <div className="k-col-title"><span className="k-dot"></span>{col.key}</div>
+                    <span className="k-count">{items.length}</span>
+                  </div>
+                  <div className="k-col-body">
+                    {items.length === 0 && <div className="k-empty"><BuybackIcon />Üres</div>}
+                    {items.map((o) => (
+                      <BuybackOfferCard key={o.id} offer={o} onOpen={setBuybackOfferDetailId} onStep={handleStep} stepPrev={stepPrev} stepNext={stepNext} />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <HistorySection
+        icon={BuybackIcon}
+        label="Lezárt ajánlatok"
+        items={closedOffers}
+        searchPlaceholder="Keresés ügyfél, márka, modell szerint..."
+        filterFn={(o, q) => [o.customerName, o.brand, o.model].filter(Boolean).join(" ").toLowerCase().includes(q)}
+      >
+        {(rows) => (
+          <table>
+            <thead><tr><th>Eszköz</th><th>Ügyfél</th><th>Státusz</th><th>Végleges ár</th></tr></thead>
+            <tbody>
+              {rows.map((o) => (
+                <tr key={o.id} style={{ cursor: "pointer" }} onClick={() => setBuybackOfferDetailId(o.id)}>
+                  <td>{displayName(o.brand, o.model) || "—"}</td>
+                  <td>{o.customerName}</td>
+                  <td><span className={`st ${buybackStatusCls(o.status)}`}>{o.status}</span></td>
+                  <td className="mono" style={{ fontWeight: 700 }}>{money(o.finalPrice)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </HistorySection>
+
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "24px 0 8px 2px" }}>
         <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151" }}>Modellek <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({buybackModels.length} db)</span></div>
         <button className="btn sec sm" disabled={busy} onClick={() => setBuybackModelModal("add")}>+ Új modell</button>
       </div>

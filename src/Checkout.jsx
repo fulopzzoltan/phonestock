@@ -159,6 +159,9 @@ export default function Checkout() {
               <div className="login-note" style={{ marginBottom: 10 }}>
                 Fizetés után azonnal foglaljuk a kiválasztott telefont — előkészítjük, és SMS-ben/telefonon szólunk, ha átvehető a boltban.
               </div>
+              <div className="login-note" style={{ marginBottom: 10 }}>
+                A megrendeléstől számított 14 napon belül indoklás nélkül elállhatsz a vásárlástól. Részletek az <a href="/aszf">Általános Szerződési Feltételekben</a>.
+              </div>
 
               <button className="btn checkout-submit" disabled={busy || !canSubmit} type="submit">
                 {busy ? "Feldolgozás..." : `Fizetés — ${money(total)}`}

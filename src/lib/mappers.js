@@ -283,6 +283,28 @@ export const buybackRuleToApi = (r) => ({
   active: r.active !== false,
 });
 
+export const buybackOfferFromApi = (r) => ({
+  id: r.id,
+  offerNo: r.offer_no,
+  publicToken: r.public_token,
+  shortCode: r.short_code,
+  customerId: r.customer_id,
+  customerName: r.customer_name,
+  customerPhone: r.customer_phone,
+  brand: r.brand,
+  model: r.model,
+  storage: r.storage,
+  color: r.color,
+  imei: r.imei,
+  answers: r.answers || {},
+  estimatedPrice: Number(r.estimated_price) || 0,
+  finalPrice: r.final_price == null ? null : Number(r.final_price),
+  status: r.status,
+  deliveryMethod: r.delivery_method,
+  locationId: r.location_id,
+  createdAt: r.created_at,
+});
+
 export const leaveTypeFromApi = (r) => ({ id: r.id, name: r.name, color: r.color });
 export const leaveBalanceFromApi = (r) => ({ id: r.id, userId: r.user_id, year: r.year, entitledDays: Number(r.entitled_days) });
 export const leaveRequestFromApi = (r) => ({

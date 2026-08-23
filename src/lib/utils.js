@@ -89,6 +89,19 @@ export const STATUSES = [
 export const statusCls = (s) => STATUSES.find((c) => c.key === s)?.cls || "st-beveve";
 export const statusLabel = (s) => STATUSES.find((c) => c.key === s)?.label || s;
 
+// Felvásárlási ajánlatok (buyback_offers.status) — a "Kifizetve"/"Elutasítva" lezárt
+// állapotok nem kanban-oszlopok, hanem külön "Lezárt ajánlatok" listában jelennek meg
+// (ugyanaz a minta, mint a szerviznél az átadott munkalapok).
+export const BUYBACK_STATUSES = [
+  { key: "Ajánlat elkészült", color: "#F59E0B", cls: "st-beveve" },
+  { key: "Elfogadva - várjuk a készüléket", color: "#F97316", cls: "st-javitas" },
+  { key: "Beérkezett", color: "#0EA5E9", cls: "st-qc" },
+  { key: "Bevizsgálás alatt", color: "#8B5CF6", cls: "st-alkatresz" },
+  { key: "Végleges ajánlat", color: "#22C55E", cls: "st-kesz" },
+];
+export const buybackStatusCls = (s) => BUYBACK_STATUSES.find((c) => c.key === s)?.cls
+  || (s === "Kifizetve" ? "st-kesz" : s === "Elutasítva" ? "st-sikertelen" : "st-beveve");
+
 // sub_status options available within each main status ("null" entry = plain/no tag)
 export const SUB_STATUSES = {
   "Átvett": [

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
 import { thumbPathOf } from "./lib/imageResize";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi } from "./lib/mappers";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi, buybackOfferFromApi } from "./lib/mappers";
 import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, normalizeImei, money, ticketCode } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
@@ -31,6 +31,7 @@ import CustomersTab from "./tabs/CustomersTab";
 import WarrantyTab from "./tabs/WarrantyTab";
 import LeaveTab from "./tabs/LeaveTab";
 import BuybackTab from "./tabs/BuybackTab";
+import BuybackOfferDetailPanel from "./components/BuybackOfferDetailPanel";
 import RepairPricesTab from "./tabs/RepairPricesTab";
 import UsersTab from "./tabs/UsersTab";
 import TrashTab from "./tabs/TrashTab";
@@ -162,6 +163,8 @@ function AppShell() {
   const [trashLoading, setTrashLoading] = useState(false);
   const [buybackModels, setBuybackModels] = useState([]);
   const [buybackRules, setBuybackRules] = useState([]);
+  const [buybackOffers, setBuybackOffers] = useState([]);
+  const [buybackOfferDetailId, setBuybackOfferDetailId] = useState(null);
   const [buybackModelModal, setBuybackModelModal] = useState(null); // null | "add" | model obj (edit)
   const [buybackRuleModal, setBuybackRuleModal] = useState(null); // null | "add" | rule obj (edit)
   const [leaveTypes, setLeaveTypes] = useState([]);
@@ -219,7 +222,7 @@ function AppShell() {
   async function loadAll() {
     setLoadingData(true);
     try {
-      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds, prodAcqs, dClosesR] = await Promise.all([
+      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, bbOffers, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds, prodAcqs, dClosesR] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         fetchAllRows(() => supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false })),
         fetchAllRows(() => supabase.from("transactions").select("*, smartbill_documents(*), signatures(*)").is("deleted_at", null).order("date", { ascending: false })),
@@ -233,6 +236,7 @@ function AppShell() {
         supabase.from("warranties").select("*").is("deleted_at", null),
         supabase.from("buyback_models").select("*").is("deleted_at", null).order("brand", { ascending: true }),
         supabase.from("buyback_deduction_rules").select("*").order("question_key", { ascending: true }),
+        supabase.from("buyback_offers").select("*").is("deleted_at", null).order("created_at", { ascending: false }),
         supabase.from("leave_types").select("*"),
         supabase.from("leave_balances").select("*"),
         supabase.from("leave_requests").select("*").order("start_date", { ascending: true }),
@@ -269,6 +273,7 @@ function AppShell() {
       setWarranties((unwrap(warrs) || []).map(warrantyFromApi));
       setBuybackModels((unwrap(bbModels) || []).map(buybackModelFromApi));
       setBuybackRules((unwrap(bbRules) || []).map(buybackRuleFromApi));
+      setBuybackOffers((unwrap(bbOffers) || []).map(buybackOfferFromApi));
       setLeaveTypes((unwrap(lTypes) || []).map(leaveTypeFromApi));
       setLeaveBalances((unwrap(lBalances) || []).map(leaveBalanceFromApi));
       setLeaveRequests((unwrap(lRequests) || []).map(leaveRequestFromApi));
@@ -747,6 +752,53 @@ function AppShell() {
     await withBusy(async () => {
       unwrap(await supabase.from("buyback_deduction_rules").delete().eq("id", id));
       setBuybackRules(buybackRules.filter((r) => r.id !== id));
+    });
+  }
+
+  // BUYBACK — beérkezett ajánlatok kezelése
+  async function setBuybackOfferStatus(id, status) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("buyback_offers").update({ status }).eq("id", id).select());
+      setBuybackOffers(buybackOffers.map((o) => (o.id === id ? buybackOfferFromApi(r[0]) : o)));
+    });
+  }
+  async function payoutBuybackOffer(id, finalPrice) {
+    await withBusy(async () => {
+      const offer = buybackOffers.find((o) => o.id === id);
+      if (!offer || offer.status === "Kifizetve") return;
+      const amount = Number(finalPrice) || 0;
+      const r = unwrap(await supabase.from("buyback_offers").update({ status: "Kifizetve", final_price: amount }).eq("id", id).select());
+      const updated = buybackOfferFromApi(r[0]);
+      setBuybackOffers(buybackOffers.map((o) => (o.id === id ? updated : o)));
+      if (amount > 0) {
+        const tr = unwrap(await supabase.from("transactions").insert(
+          txToApi({
+            type: "expense", category: "Készlet",
+            description: `Felvásárlás: ${offer.customerName} — ${[offer.brand, offer.model].filter(Boolean).join(" ")}`,
+            amount, customerName: offer.customerName, customerPhone: offer.customerPhone,
+          }, offer.locationId || defaultLocId)
+        ).select());
+        setTransactions((prev) => [txFromApi(tr[0]), ...prev]);
+      }
+    });
+  }
+  async function rejectBuybackOffer(id) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("buyback_offers").update({ status: "Elutasítva" }).eq("id", id).select());
+      setBuybackOffers(buybackOffers.map((o) => (o.id === id ? buybackOfferFromApi(r[0]) : o)));
+    });
+  }
+  function convertBuybackOfferToProduct(offer) {
+    setStockModal({
+      brand: offer.brand,
+      model: offer.model,
+      storage: offer.storage,
+      color: offer.color,
+      imei: offer.imei,
+      costPrice: offer.finalPrice ?? offer.estimatedPrice,
+      locationId: offer.locationId || defaultLocId,
+      sellerName: offer.customerName,
+      sellerPhone: offer.customerPhone,
     });
   }
 
@@ -1802,6 +1854,19 @@ function AppShell() {
           <BuybackTab
             busy={busy} buybackModels={buybackModels} setBuybackModelModal={setBuybackModelModal} deleteBuybackModel={deleteBuybackModel}
             buybackRules={buybackRules} setBuybackRuleModal={setBuybackRuleModal} deleteBuybackRule={deleteBuybackRule}
+            buybackOffers={buybackOffers} loadingData={loadingData} setBuybackOfferDetailId={setBuybackOfferDetailId} setBuybackOfferStatus={setBuybackOfferStatus}
+          />
+        )}
+        {buybackOfferDetailId && buybackOffers.find((o) => o.id === buybackOfferDetailId) && (
+          <BuybackOfferDetailPanel
+            offer={buybackOffers.find((o) => o.id === buybackOfferDetailId)}
+            locName={locName}
+            busy={busy}
+            onClose={() => setBuybackOfferDetailId(null)}
+            onSetStatus={setBuybackOfferStatus}
+            onPayout={(id, price) => { payoutBuybackOffer(id, price); setBuybackOfferDetailId(null); }}
+            onReject={(id) => { rejectBuybackOffer(id); setBuybackOfferDetailId(null); }}
+            onConvert={(offer) => { convertBuybackOfferToProduct(offer); setBuybackOfferDetailId(null); }}
           />
         )}
 
