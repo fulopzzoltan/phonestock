@@ -222,8 +222,8 @@ function AppShell() {
       const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds, prodAcqs, dClosesR] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         fetchAllRows(() => supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false })),
-        fetchAllRows(() => supabase.from("transactions").select("*, smartbill_documents(*)").is("deleted_at", null).order("date", { ascending: false })),
-        fetchAllRows(() => supabase.from("service_tickets").select("*").is("deleted_at", null).order("created_at", { ascending: false })),
+        fetchAllRows(() => supabase.from("transactions").select("*, smartbill_documents(*), signatures(*)").is("deleted_at", null).order("date", { ascending: false })),
+        fetchAllRows(() => supabase.from("service_tickets").select("*, signatures(*)").is("deleted_at", null).order("created_at", { ascending: false })),
         supabase.from("parts").select("*").is("deleted_at", null).order("name", { ascending: true }),
         supabase.from("service_parts").select("*"),
         supabase.from("profiles").select("*").order("full_name", { ascending: true }),

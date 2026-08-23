@@ -3,15 +3,24 @@ import { supabase } from "./lib/supabaseClient";
 import { money, warrantyExpiry, isWarrantyActive, SALE_WARRANTY_TERMS } from "./lib/utils";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
+import SignaturePad from "./components/SignaturePad";
+
+const SALE_CONSENT_TEXT = "Megvásároltam, átvettem, elfogadom a garanciafeltételeket";
 
 // Kézzel beírt keresés (token nélkül) mostantól a /status egyesített oldalon zajlik
 // (szerviz + vásárlás egy helyen, telefonszám alapján) — ez a komponens csak a
 // már kinyomtatott/kiküldött /receipt/:token linkeket szolgálja ki, hogy azok
 // visszamenőleg is működjenek.
-export default function ReceiptLookup({ token }) {
+export default function ReceiptLookup({ token, signStage }) {
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
   const [result, setResult] = useState(null);
+  const [signature, setSignature] = useState(null);
+  const [signerName, setSignerName] = useState("");
+  const [signBusy, setSignBusy] = useState(false);
+  const [signError, setSignError] = useState("");
+
+  const signMode = signStage === "sale";
 
   useEffect(() => {
     if (!token) {
@@ -22,8 +31,17 @@ export default function ReceiptLookup({ token }) {
       try {
         const { data, error: err } = await supabase.rpc("get_receipt_by_token", { p_token: token });
         if (err) throw err;
-        if (!data || data.length === 0) setError("Érvénytelen vagy lejárt link.");
-        else setResult(data[0]);
+        if (!data || data.length === 0) {
+          setError("Érvénytelen vagy lejárt link.");
+          return;
+        }
+        setResult(data[0]);
+        setSignerName(data[0].customer_name || "");
+        if (signMode) {
+          const { data: sigs } = await supabase.rpc("get_public_signatures", { p_kind: "purchase", p_token: token });
+          const existing = (sigs || []).find((s) => s.stage === "sale");
+          if (existing) setSignature(existing);
+        }
       } catch (err) {
         setError(err.message || "Hiba történt a keresés közben.");
       } finally {
@@ -31,6 +49,23 @@ export default function ReceiptLookup({ token }) {
       }
     })();
   }, [token]);
+
+  async function submitSignature(dataUrl) {
+    setSignBusy(true);
+    setSignError("");
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("submit-signature", {
+        body: { token, kind: "purchase", stage: "sale", signerName, imageDataUrl: dataUrl },
+      });
+      if (fnError) throw fnError;
+      if (data?.error) throw new Error(data.error);
+      setSignature({ stage: "sale", signer_name: data.signature.signerName, signed_at: data.signature.signedAt, image_path: data.signature.imagePath });
+    } catch (err) {
+      setSignError(err.message || "Hiba történt az aláírás mentése közben.");
+    } finally {
+      setSignBusy(false);
+    }
+  }
 
   const expiry = result ? warrantyExpiry(result.date, result.warranty) : null;
   const active = result ? isWarrantyActive(result.date, result.warranty) : false;
@@ -47,7 +82,7 @@ export default function ReceiptLookup({ token }) {
         {result && (
           <div>
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14 }}>
-              <div style={{ fontSize: 16, fontWeight: 800 }}>Vásárlási bizonylat</div>
+              <div style={{ fontSize: 16, fontWeight: 800 }}>{signMode ? "Aláírás — vásárlási bizonylat" : "Vásárlási bizonylat"}</div>
               <div style={{ fontSize: 13, color: "#9CA3AF", fontWeight: 700 }}>#{result.receipt_no}</div>
             </div>
             <div className="dp-section">
@@ -72,6 +107,25 @@ export default function ReceiptLookup({ token }) {
               <div style={{ background: "#F9FAFB", border: "1px solid #EEF0F2", borderRadius: 12, padding: 14, fontSize: 11, color: "#6B7280", lineHeight: 1.6, whiteSpace: "pre-line", marginTop: 14 }}>
                 {SALE_WARRANTY_TERMS}
               </div>
+            )}
+            {signMode && (
+              signature ? (
+                <div className="dp-section" style={{ marginTop: 14, textAlign: "center" }}>
+                  <div style={{ color: "#22C55E", fontWeight: 700, fontSize: 14 }}>✓ Aláírva — {signature.signer_name}</div>
+                  <div style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}>{new Date(signature.signed_at).toLocaleString("hu-HU")}</div>
+                </div>
+              ) : (
+                <div className="dp-section" style={{ marginTop: 14 }}>
+                  <div className="dp-section-title">Aláírás</div>
+                  <div style={{ fontSize: 12.5, color: "#374151", marginBottom: 10, lineHeight: 1.5 }}>{SALE_CONSENT_TEXT}</div>
+                  {signError && <div className="errbar" style={{ marginBottom: 10 }}>{signError}</div>}
+                  <div className="field" style={{ marginBottom: 10 }}>
+                    <label>Aláíró neve</label>
+                    <input value={signerName} onChange={(e) => setSignerName(e.target.value)} placeholder="Név" />
+                  </div>
+                  <SignaturePad onSave={submitSignature} busy={signBusy} />
+                </div>
+              )
             )}
           </div>
         )}

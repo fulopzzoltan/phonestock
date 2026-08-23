@@ -1,11 +1,16 @@
 import { useState } from "react";
 import { money, STATUSES, SUB_STATUSES, slaInfo, SITE_URL, statusLabel, ticketCode, partCode } from "../lib/utils";
+import { supabase } from "../lib/supabaseClient";
 import { CloseIcon } from "./icons";
 import Row from "./DetailRow";
 import CallLink from "./CallLink";
 import ConfirmDelete from "./ConfirmDelete";
 import TicketPhotos from "./TicketPhotos";
 import PhonePartsPicker from "./PhonePartsPicker";
+
+function signatureUrl(path) {
+  return supabase.storage.from("signatures").getPublicUrl(path).data.publicUrl;
+}
 
 export default function DetailPanel({ ticket, locName, parts, stock, users = [], onClose, onStatusChange, onCompleteQc, onEdit, onDelete, busy, onAddPart, onRemovePart, onPrint, onShowHistory }) {
   const [copied, setCopied] = useState(false);
@@ -26,6 +31,9 @@ export default function DetailPanel({ ticket, locName, parts, stock, users = [],
   const profit = (Number(ticket.price) || 0) - (Number(ticket.matCost) || 0);
   const statusLink = `${SITE_URL}/status/${ticket.publicToken}`;
   const sla = slaInfo(ticket);
+  const intakeSignature = (ticket.signatures || []).find((s) => s.stage === "service_intake");
+  const handoverSignature = (ticket.signatures || []).find((s) => s.stage === "service_handover");
+  const handoverSignAllowed = ticket.status === "Átadásra" && ticket.subStatus !== "Sikertelen";
 
   function copyStatusLink() {
     navigator.clipboard.writeText(statusLink);
@@ -77,6 +85,22 @@ export default function DetailPanel({ ticket, locName, parts, stock, users = [],
               Ezzel az egyedi linkkel a vevő bejelentkezés és adatmegadás nélkül, azonnal látja a javítás állapotát.
             </div>
             <button type="button" className="btn sec sm" onClick={copyStatusLink}>{copied ? "Másolva!" : "Nyomon követő link másolása"}</button>
+            <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+              {intakeSignature ? (
+                <a className="btn sec sm" href={signatureUrl(intakeSignature.imagePath)} target="_blank" rel="noreferrer" style={{ color: "#22C55E" }}>
+                  ✓ Átvétel aláírva {intakeSignature.signedAt?.slice(0, 10)}
+                </a>
+              ) : (
+                <button type="button" className="btn sec sm" onClick={() => window.open(`${statusLink}?sign=service_intake`, "_blank")}>Átvételi aláíratás</button>
+              )}
+              {handoverSignature ? (
+                <a className="btn sec sm" href={signatureUrl(handoverSignature.imagePath)} target="_blank" rel="noreferrer" style={{ color: "#22C55E" }}>
+                  ✓ Átadás aláírva {handoverSignature.signedAt?.slice(0, 10)}
+                </a>
+              ) : (
+                <button type="button" className="btn sec sm" disabled={!handoverSignAllowed} onClick={() => window.open(`${statusLink}?sign=service_handover`, "_blank")}>Átadási aláíratás</button>
+              )}
+            </div>
           </div>
           <div className="dp-section">
             <div className="dp-section-title">Eszköz & Javítás</div>

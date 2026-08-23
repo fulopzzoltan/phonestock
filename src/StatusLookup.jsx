@@ -3,13 +3,22 @@ import { supabase } from "./lib/supabaseClient";
 import { money, statusCls, subStatusLabel, warrantyExpiry, isWarrantyActive, SERVICE_WARRANTY_TERMS } from "./lib/utils";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
+import SignaturePad from "./components/SignaturePad";
 
-export default function StatusLookup({ token, shortCode }) {
+const INTAKE_CONSENT_TEXT = "Átadom a készüléket javításra, elfogadom a leírt hibát/állapotot";
+
+export default function StatusLookup({ token, shortCode, signStage }) {
   const [phone, setPhone] = useState("");
   const [busy, setBusy] = useState(!!token || !!shortCode);
   const [error, setError] = useState("");
   const [result, setResult] = useState(null);
   const [matches, setMatches] = useState(null);
+  const [signature, setSignature] = useState(null);
+  const [signerName, setSignerName] = useState("");
+  const [signBusy, setSignBusy] = useState(false);
+  const [signError, setSignError] = useState("");
+
+  const signMode = signStage === "service_intake" || signStage === "service_handover";
 
   useEffect(() => {
     if (!token && !shortCode) return;
@@ -19,8 +28,17 @@ export default function StatusLookup({ token, shortCode }) {
           ? await supabase.rpc("get_ticket_status_by_short_code", { p_code: shortCode })
           : await supabase.rpc("get_ticket_status_by_token", { p_token: token });
         if (err) throw err;
-        if (!data || data.length === 0) setError("Érvénytelen vagy lejárt link.");
-        else setResult({ kind: "ticket", ...data[0] });
+        if (!data || data.length === 0) {
+          setError("Érvénytelen vagy lejárt link.");
+          return;
+        }
+        setResult({ kind: "ticket", ...data[0] });
+        setSignerName(data[0].customer_name || "");
+        if (signMode && token) {
+          const { data: sigs } = await supabase.rpc("get_public_signatures", { p_kind: "ticket", p_token: token });
+          const existing = (sigs || []).find((s) => s.stage === signStage);
+          if (existing) setSignature(existing);
+        }
       } catch (err) {
         setError(err.message || "Hiba történt a keresés közben.");
       } finally {
@@ -28,6 +46,23 @@ export default function StatusLookup({ token, shortCode }) {
       }
     })();
   }, [token, shortCode]);
+
+  async function submitSignature(dataUrl) {
+    setSignBusy(true);
+    setSignError("");
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("submit-signature", {
+        body: { token, kind: "ticket", stage: signStage, signerName, imageDataUrl: dataUrl },
+      });
+      if (fnError) throw fnError;
+      if (data?.error) throw new Error(data.error);
+      setSignature({ stage: signStage, signer_name: data.signature.signerName, signed_at: data.signature.signedAt, image_path: data.signature.imagePath });
+    } catch (err) {
+      setSignError(err.message || "Hiba történt az aláírás mentése közben.");
+    } finally {
+      setSignBusy(false);
+    }
+  }
 
   async function submit(e) {
     e.preventDefault();
@@ -64,6 +99,7 @@ export default function StatusLookup({ token, shortCode }) {
   const isPurchase = result?.kind === "purchase";
   const probs = (result?.issue || "").split(",").map((p) => p.trim()).filter(Boolean);
   const handedOver = result?.sub_status === "Átadva";
+  const handoverAllowed = result?.status === "Átadásra" && result?.sub_status !== "Sikertelen";
   const warrantyFrom = result?.date_out || null;
   const ticketExpiry = handedOver ? warrantyExpiry(warrantyFrom, result?.warranty) : null;
   const ticketActive = handedOver ? isWarrantyActive(warrantyFrom, result?.warranty) : false;
@@ -142,6 +178,30 @@ export default function StatusLookup({ token, shortCode }) {
             <div style={{ background: "#F9FAFB", border: "1px solid #EEF0F2", borderRadius: 12, padding: 14, fontSize: 11, color: "#6B7280", lineHeight: 1.6, whiteSpace: "pre-line", marginBottom: 14 }}>
               {SERVICE_WARRANTY_TERMS}
             </div>
+            {signMode && signStage === "service_handover" && !handoverAllowed && (
+              <div className="errbar" style={{ marginBottom: 14 }}>Ez a munkalap még nincs átadásra kész.</div>
+            )}
+            {signMode && (signStage === "service_intake" || handoverAllowed) && (
+              signature ? (
+                <div className="dp-section" style={{ marginBottom: 14, textAlign: "center" }}>
+                  <div style={{ color: "#22C55E", fontWeight: 700, fontSize: 14 }}>✓ Aláírva — {signature.signer_name}</div>
+                  <div style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}>{new Date(signature.signed_at).toLocaleString("hu-HU")}</div>
+                </div>
+              ) : (
+                <div className="dp-section" style={{ marginBottom: 14 }}>
+                  <div className="dp-section-title">{signStage === "service_intake" ? "Átvételi aláírás" : "Átadási aláírás"}</div>
+                  {signStage === "service_intake" && (
+                    <div style={{ fontSize: 12.5, color: "#374151", marginBottom: 10, lineHeight: 1.5 }}>{INTAKE_CONSENT_TEXT}</div>
+                  )}
+                  {signError && <div className="errbar" style={{ marginBottom: 10 }}>{signError}</div>}
+                  <div className="field" style={{ marginBottom: 10 }}>
+                    <label>Aláíró neve</label>
+                    <input value={signerName} onChange={(e) => setSignerName(e.target.value)} placeholder="Név" />
+                  </div>
+                  <SignaturePad onSave={submitSignature} busy={signBusy} />
+                </div>
+              )
+            )}
             {!token && !shortCode && (
               <div style={{ display: "flex", gap: 8 }}>
                 {matches && <button className="btn sec" style={{ flex: 1, justifyContent: "center" }} onClick={() => setResult(null)}>← Vissza a találatokhoz</button>}

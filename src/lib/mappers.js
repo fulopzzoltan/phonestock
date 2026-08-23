@@ -57,8 +57,19 @@ export const sbDocFromApi = (r) => ({
   createdAt: r.created_at,
 });
 
+export const signatureFromApi = (r) => ({
+  id: r.id,
+  stage: r.stage,
+  transactionId: r.transaction_id,
+  ticketId: r.ticket_id,
+  signerName: r.signer_name,
+  imagePath: r.image_path,
+  signedAt: r.signed_at,
+});
+
 export const txFromApi = (r) => {
   const docs = (r.smartbill_documents || []).map(sbDocFromApi).sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+  const signatures = (r.signatures || []).map(signatureFromApi);
   return {
     id: r.id,
     receiptNo: r.receipt_no,
@@ -79,6 +90,7 @@ export const txFromApi = (r) => {
     basketId: r.basket_id,
     isPassthrough: r.is_passthrough,
     smartbillDoc: docs[0] || null,
+    signatures,
   };
 };
 
@@ -134,6 +146,7 @@ export const acqToApi = (a) => ({
 
 export const tFromApi = (r) => ({
   id: r.id,
+  signatures: (r.signatures || []).map(signatureFromApi),
   ticketNo: r.ticket_no,
   publicToken: r.public_token,
   shortCode: r.short_code,

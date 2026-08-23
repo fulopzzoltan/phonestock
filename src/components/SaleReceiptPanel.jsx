@@ -1,14 +1,20 @@
 import { useState } from "react";
 import { money, warrantyExpiry, isWarrantyActive, SITE_URL } from "../lib/utils";
+import { supabase } from "../lib/supabaseClient";
 import { CloseIcon } from "./icons";
 import Row from "./DetailRow";
 import CallLink from "./CallLink";
+
+function signatureUrl(path) {
+  return supabase.storage.from("signatures").getPublicUrl(path).data.publicUrl;
+}
 
 export default function SaleReceiptPanel({ tx, locName, onClose, onPrint }) {
   const [copied, setCopied] = useState(false);
   const expiry = warrantyExpiry(tx.date, tx.warranty);
   const active = isWarrantyActive(tx.date, tx.warranty);
   const receiptLink = `${SITE_URL}/receipt/${tx.publicToken}`;
+  const saleSignature = (tx.signatures || []).find((s) => s.stage === "sale");
 
   function copyLink() {
     navigator.clipboard.writeText(receiptLink);
@@ -52,6 +58,13 @@ export default function SaleReceiptPanel({ tx, locName, onClose, onPrint }) {
         </div>
         <div className="dp-actions">
           <button className="btn sec sm" onClick={() => onPrint(tx)}>Nyomtatás</button>
+          {saleSignature ? (
+            <a className="btn sec sm" href={signatureUrl(saleSignature.imagePath)} target="_blank" rel="noreferrer" style={{ color: "#22C55E" }}>
+              ✓ Aláírva {saleSignature.signedAt?.slice(0, 10)}
+            </a>
+          ) : (
+            <button className="btn sec sm" onClick={() => window.open(`${receiptLink}?sign=sale`, "_blank")}>Aláíratás</button>
+          )}
         </div>
       </div>
     </div>
