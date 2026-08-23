@@ -49,11 +49,23 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
             </a>
           </div>
           <nav className={`pub-nav${menuOpen ? " open" : ""}`}>
-            <a className={`pub-nav-link${activeNav === "stock" ? " active" : ""}`} href={stockHref}><PhoneCaseIcon className="pub-nav-link-icon" width={16} height={16} />{s.navStock}</a>
-            <a className={`pub-nav-link${activeNav === "repair" ? " active" : ""}`} href={repairHref}><ServiceIcon className="pub-nav-link-icon" width={16} height={16} />{s.navRepair}</a>
-            <a className={`pub-nav-link${activeNav === "status" ? " active" : ""}`} href="/status"><ClockIcon className="pub-nav-link-icon" width={16} height={16} />{s.navStatus}</a>
+            <div className="pub-nav-group">
+              <a className={`pub-nav-link${activeNav === "stock" ? " active" : ""}`} href={stockHref}><PhoneCaseIcon className="pub-nav-link-icon" width={16} height={16} />{s.navStock}</a>
+              <a className={`pub-nav-link${activeNav === "repair" ? " active" : ""}`} href={repairHref}><ServiceIcon className="pub-nav-link-icon" width={16} height={16} />{s.navRepair}</a>
+              <a className={`pub-nav-link${activeNav === "status" ? " active" : ""}`} href="/status"><ClockIcon className="pub-nav-link-icon" width={16} height={16} />{s.navStatus}</a>
+            </div>
+            <a className="pub-nav-link pub-nav-cta" href="/eladom"><BuybackIcon className="pub-nav-link-icon" width={16} height={16} />{s.navBuyback}</a>
+            <div className="pub-nav-group">
+              <a className={`pub-nav-link pub-nav-icon${activeNav === "cart" ? " active" : ""}`} href="/kosar" aria-label="Kosár" title="Kosár">
+                <CartIcon width={16} height={16} /><span className="pub-nav-icon-label">Kosár{cartCount > 0 ? ` (${cartCount})` : ""}</span>
+                {cartCount > 0 && <span className="pub-cart-badge">{cartCount}</span>}
+              </a>
+              <a className={`pub-nav-link pub-nav-icon${activeNav === "login" ? " active" : ""}`} href="/fiok" aria-label={s.navLogin} title={s.navLogin}>
+                <UserIcon width={16} height={16} /><span className="pub-nav-icon-label">{s.navLogin}</span>
+              </a>
+            </div>
             {resolvedLangHref && (
-              <div className="pub-lang-switch" role="group" aria-label="Nyelv">
+              <div className="pub-lang-switch pub-lang-switch-mobile" role="group" aria-label="Nyelv">
                 {lang === "ro" ? (
                   <a className="pub-lang-opt" href={resolvedLangHref}>HU</a>
                 ) : (
@@ -66,14 +78,6 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
                 )}
               </div>
             )}
-            <a className="pub-nav-link pub-nav-cta" href="/eladom"><BuybackIcon className="pub-nav-link-icon" width={16} height={16} />{s.navBuyback}</a>
-            <a className={`pub-nav-link pub-nav-icon${activeNav === "cart" ? " active" : ""}`} href="/kosar" aria-label="Kosár" title="Kosár">
-              <CartIcon width={16} height={16} /><span className="pub-nav-icon-label">Kosár{cartCount > 0 ? ` (${cartCount})` : ""}</span>
-              {cartCount > 0 && <span className="pub-cart-badge">{cartCount}</span>}
-            </a>
-            <a className={`pub-nav-link pub-nav-icon${activeNav === "login" ? " active" : ""}`} href="/fiok" aria-label={s.navLogin} title={s.navLogin}>
-              <UserIcon width={16} height={16} /><span className="pub-nav-icon-label">{s.navLogin}</span>
-            </a>
           </nav>
         </div>
         {children}
