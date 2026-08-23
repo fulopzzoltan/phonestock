@@ -1,7 +1,6 @@
 import { money, subStatusCls, subStatusLabel, slaInfo, displayName, ticketCode, isStaleReady } from "../lib/utils";
 import { ClockIcon, ServiceIcon, WarrantyIcon, ChevronLeftIcon, ChevronRightIcon } from "./icons";
 import CallLink from "./CallLink";
-import Thumb from "./Thumb";
 
 export default function TicketCard({ ticket, locName, onOpen, onStep, stepPrev, stepNext, onClose }) {
   const probs = (ticket.issue || "").split(",").map((p) => p.trim()).filter(Boolean);
@@ -46,7 +45,7 @@ export default function TicketCard({ ticket, locName, onOpen, onStep, stepPrev, 
       )}
       <div className="t-name">{ticket.customerName}</div>
       <div className="t-device">
-        <span className="t-device-main"><Thumb brand={ticket.brand} size="sm" />{displayName(ticket.brand, ticket.model) || "—"}</span>
+        <span className="t-device-main">{displayName(ticket.brand, ticket.model) || "—"}</span>
         <CallLink phone={ticket.customerPhone} />
       </div>
       {probs.length > 0 && (
