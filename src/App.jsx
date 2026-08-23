@@ -625,11 +625,11 @@ function AppShell() {
       }
     }
   }
-  async function issueSmartbillInvoice(transactionId, locId, client) {
+  async function issueSmartbillDocument(transactionId, locId, docType, client) {
     let ok = false;
     await withBusy(async () => {
       const { data, error: fnError } = await supabase.functions.invoke("smartbill-issue-document", {
-        body: { action: "issue", doc_type: "invoice", transaction_id: transactionId, location_id: locId, client },
+        body: { action: "issue", doc_type: docType, transaction_id: transactionId, location_id: locId, client },
       });
       if (fnError || data?.ok === false) {
         let msg = data?.error || fnError?.message || "Ismeretlen hiba";
@@ -641,6 +641,54 @@ function AppShell() {
       }
       const doc = sbDocFromApi(data.document);
       setTransactions((prev) => prev.map((t) => (t.id === transactionId ? { ...t, smartbillDoc: doc } : t)));
+      ok = true;
+    });
+    return ok;
+  }
+  async function retrySmartbillDocument(tx) {
+    return issueSmartbillDocument(tx.id, tx.locationId, tx.smartbillDoc?.docType || "invoice");
+  }
+  async function issueDailyBons() {
+    await withBusy(async () => {
+      const todayStr = today();
+      const candidates = transactions.filter((t) =>
+        t.date === todayStr && t.type === "income" && ["Készpénz", "Kártya"].includes(t.payment) && t.smartbillDoc?.status !== "issued"
+      );
+      for (const t of candidates) {
+        const { data } = await supabase.functions.invoke("smartbill-issue-document", {
+          body: { action: "issue", doc_type: "bon", transaction_id: t.id, location_id: t.locationId },
+        });
+        if (data?.document) {
+          const doc = sbDocFromApi(data.document);
+          setTransactions((prev) => prev.map((x) => (x.id === t.id ? { ...x, smartbillDoc: doc } : x)));
+        }
+        await new Promise((r) => setTimeout(r, 400));
+      }
+    });
+  }
+  async function quickIssueDocument(description, amount, customerName, docType, locId) {
+    let ok = false;
+    await withBusy(async () => {
+      const tr = unwrap(await supabase.from("transactions").insert(
+        txToApi({ type: "income", category: "Egyéb", description, amount: Number(amount) || 0, payment: "Készpénz", customerName: customerName || null }, locId)
+      ).select());
+      const newTx = txFromApi(tr[0]);
+      setTransactions((prev) => [newTx, ...prev]);
+      const { data, error: fnError } = await supabase.functions.invoke("smartbill-issue-document", {
+        body: { action: "issue", doc_type: docType, transaction_id: newTx.id, location_id: locId },
+      });
+      if (data?.document) {
+        const doc = sbDocFromApi(data.document);
+        setTransactions((prev) => prev.map((x) => (x.id === newTx.id ? { ...x, smartbillDoc: doc } : x)));
+      }
+      if (fnError || data?.ok === false) {
+        let msg = data?.error || fnError?.message || "Ismeretlen hiba";
+        if (fnError?.context) {
+          const body = await fnError.context.json().catch(() => null);
+          if (body?.error) msg = body.error;
+        }
+        throw new Error(`A tétel rögzítve, de a dokumentum kiállítása sikertelen — ${msg}`);
+      }
       ok = true;
     });
     return ok;
@@ -1792,8 +1840,13 @@ function AppShell() {
           />
         )}
 
-        {isAdmin && tab === "invoices" && (
-          <InvoicesTab transactions={transactions} locName={locName} setIssueInvoiceModal={setIssueInvoiceModal} />
+        {!noLocationAssigned && tab === "invoices" && (
+          <InvoicesTab
+            transactions={transactions} locName={locName} isAdmin={isAdmin}
+            setIssueInvoiceModal={setIssueInvoiceModal} retrySmartbillDocument={retrySmartbillDocument}
+            issueDailyBons={issueDailyBons} quickIssueDocument={quickIssueDocument}
+            defaultLocId={defaultLocId} busy={busy}
+          />
         )}
 
         {isAdmin && tab === "cash-settlement" && (
@@ -1916,7 +1969,7 @@ function AppShell() {
       )}
       {sellModal && <SellModal item={sellModal} locName={locName} customers={customersTable} onClose={() => setSellModal(null)} onSave={sellProduct} busy={busy} />}
       {issueInvoiceModal && (
-        <IssueInvoiceModal transactions={transactions} locName={locName} onClose={() => setIssueInvoiceModal(null)} onIssue={issueSmartbillInvoice} busy={busy} />
+        <IssueInvoiceModal transactions={transactions} locName={locName} onClose={() => setIssueInvoiceModal(null)} onIssue={issueSmartbillDocument} busy={busy} />
       )}
       {partModal && (
         <PartModal

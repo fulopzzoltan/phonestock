@@ -2,9 +2,16 @@ import { useState, useMemo } from "react";
 import { CloseIcon } from "./icons";
 import { money } from "../lib/utils";
 
+const DOC_TYPES = [
+  { key: "invoice", label: "Számla" },
+  { key: "bon", label: "Bon" },
+  { key: "chitanta", label: "Nyugta" },
+];
+
 export default function IssueInvoiceModal({ transactions, locName, onClose, onIssue, busy }) {
   const [search, setSearch] = useState("");
   const [selectedTx, setSelectedTx] = useState(null);
+  const [docType, setDocType] = useState("invoice");
   const [buyerType, setBuyerType] = useState("person");
   const [companyName, setCompanyName] = useState("");
   const [companyCui, setCompanyCui] = useState("");
@@ -19,20 +26,20 @@ export default function IssueInvoiceModal({ transactions, locName, onClose, onIs
       .slice(0, 30);
   }, [transactions, search]);
 
-  const valid = buyerType === "person" || (companyName.trim() && companyCui.trim());
+  const valid = docType !== "invoice" || buyerType === "person" || (companyName.trim() && companyCui.trim());
 
   async function submit() {
-    const client = buyerType === "company"
+    const client = docType === "invoice" && buyerType === "company"
       ? { name: companyName.trim(), cui: companyCui.trim(), address: companyAddress.trim() || undefined }
       : undefined;
-    const ok = await onIssue(selectedTx.id, selectedTx.locationId, client);
+    const ok = await onIssue(selectedTx.id, selectedTx.locationId, docType, client);
     if (ok) onClose();
   }
 
   return (
     <div className="overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h2>Számla kiállítása <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
+        <h2>Számla / bon kiállítása <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
 
         {!selectedTx ? (
           <>
@@ -68,17 +75,28 @@ export default function IssueInvoiceModal({ transactions, locName, onClose, onIs
             <button type="button" className="toggle-link" style={{ marginBottom: 12 }} onClick={() => setSelectedTx(null)}>← Másik tranzakció választása</button>
 
             <div className="field">
-              <label style={{ display: "flex", gap: 16 }}>
-                <span style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 500, textTransform: "none", letterSpacing: 0, cursor: "pointer" }}>
-                  <input type="radio" name="buyerType" checked={buyerType === "person"} onChange={() => setBuyerType("person")} /> Magánszemély
-                </span>
-                <span style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 500, textTransform: "none", letterSpacing: 0, cursor: "pointer" }}>
-                  <input type="radio" name="buyerType" checked={buyerType === "company"} onChange={() => setBuyerType("company")} /> Cég
-                </span>
-              </label>
+              <label>Dokumentum típusa</label>
+              <div className="seg">
+                {DOC_TYPES.map((d) => (
+                  <button type="button" key={d.key} className={docType === d.key ? "active" : ""} onClick={() => setDocType(d.key)}>{d.label}</button>
+                ))}
+              </div>
             </div>
 
-            {buyerType === "company" && (
+            {docType === "invoice" && (
+              <div className="field">
+                <label style={{ display: "flex", gap: 16 }}>
+                  <span style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 500, textTransform: "none", letterSpacing: 0, cursor: "pointer" }}>
+                    <input type="radio" name="buyerType" checked={buyerType === "person"} onChange={() => setBuyerType("person")} /> Magánszemély
+                  </span>
+                  <span style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 500, textTransform: "none", letterSpacing: 0, cursor: "pointer" }}>
+                    <input type="radio" name="buyerType" checked={buyerType === "company"} onChange={() => setBuyerType("company")} /> Cég
+                  </span>
+                </label>
+              </div>
+            )}
+
+            {docType === "invoice" && buyerType === "company" && (
               <>
                 <div className="row2">
                   <div className="field"><label>Cégnév *</label><input value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="Példa S.R.L." /></div>
@@ -90,7 +108,7 @@ export default function IssueInvoiceModal({ transactions, locName, onClose, onIs
 
             <div className="modal-actions">
               <button className="btn sec" onClick={onClose}>Mégse</button>
-              <button className="btn" disabled={busy || !valid} onClick={submit}>{busy ? "Kiállítás..." : "Számla kiállítása"}</button>
+              <button className="btn" disabled={busy || !valid} onClick={submit}>{busy ? "Kiállítás..." : `${DOC_TYPES.find((d) => d.key === docType)?.label} kiállítása`}</button>
             </div>
           </>
         )}
