@@ -250,6 +250,31 @@ Korábban is fennálló, egyéb hibák: Ha a készüléket egy adott hibával ad
 Akkumulátorok: Az akkumulátor-garancia kizárólag a gyártási hibákra (pl. felpúposodás, belső rövidzárlat) érvényes. Az akkumulátor üzemidejének rövidülése, a kapacitás természetes csökkenése vagy a "Health" százalék romlása normál elhasználódásnak minősül, és nem garanciális hiba.
 Beázott készülékek javítása: Folyadékkal érintkezett, oxidált készülékek esetén a javítás kizárólag a tulajdonos kérésére és saját kockázatára történik. Mivel a folyadékkár utóélete kiszámíthatatlan, beázott telefonok javítására és a beépített alkatrészekre semmilyen garanciát nem vállalunk, még akkor sem, ha a telefon a szervizből kilépve hibátlanul működik.`;
 
+export const SALE_WARRANTY_TERMS = `Garanciális Feltételek és a Javítás Menete
+
+1. A garanciális ügyintézés menete (A 3 lépcsős folyamat)
+Adatbiztonság: A telefon behozatala előtt a kliens köteles lementeni a személyes adatait. Az adatok esetleges elvesztéséért felelősséget nem vállalunk.
+
+1. lépcső (Javítás): Vállaljuk, hogy a jogos garanciális hibát a telefon beadásától számított 10 munkanapon belül megpróbáljuk szakszerűen megcsinálni, kiváló minőségű vagy felújított alkatrészekkel.
+2. lépcső (Csere): Ha a telefont 10 munkanap alatt nem lehet megjavítani, a kliensnek egy ugyanolyan paraméterekkel rendelkező cserekészüléket adunk.
+3. lépcső (Pénzvisszafizetés): Ha a csere nem megoldható (pl. nincs készleten), vagy a hiba a javítás után is visszatér, a vásárló visszakérheti a pénzét. Kisebb esztétikai vagy programhibák miatt a vételár nem kérhető vissza.
+
+2. A garancia NEM érvényes az alábbi esetekre:
+Nem rendeltetésszerű használat: Helytelen kezelés vagy nem engedélyezett programok (pl. rootolás, béta rendszerek, nem hivatalos applikációk) telepítése.
+Mechanikai sérülések: Leesésből, ütődésből, repedésből vagy egyéb fizikai behatásból eredő károk a házon vagy a képernyőn.
+Külső tényezők: Folyadék, pára, nedvesség, por vagy egyéb idegen anyag okozta meghibásodások (beázás, oxidáció).
+Illetéktelen beavatkozás: Bármely más szerviz vagy magánszemély által végzett javítás, szétszerelés vagy módosítás.
+Szoftveres hibák: A vásárlás utáni frissítések vagy szoftveres módosítások miatt fellépő hibák.
+Természetes elhasználódás: A telefon normál használatából eredő kopása (pl. karcolások, képernyő beégése, gombok vagy csatlakozók kopása).
+Rossz tartozékok: Nem gyári, vagy gyenge minőségű töltők, kábelek és kiegészítők használatából adódó hibák.
+
+3. Speciális szabályok az AKKUMULÁTORRA
+Normál elhasználódás (Nem garanciális): Az akku fogyóeszköz. Kapacitásának természetes csökkenése (pl. ha a napi használat során az életereje 80% alá esik) nem számít garanciális hibának.
+Garanciális csere (Kizárólag gyári hiba esetén): Az akkut csak igazolt gyári vagy technikai hiba esetén cseréljük (pl. ha megdagadt/felfúvódott, belső zárlatos, vagy a telefon váratlanul kikapcsol 30-40%-os töltöttségnél).
+
+4. Speciális szabályok a fiókokra (iCloud / Google blokkolás)
+Fiók- és jelszó problémák: A garancia csak a telefon gyári és hardveres működésére érvényes. Nem vállalunk garanciát arra, ha a kliens az első beállítás vagy az iCloud / Google-fiók regisztráció során elfelejti a jelszavait, rosszul állítja be a fiókját, és emiatt a telefon blokkolja magát (Activation Lock / FRP). Ezek a felhasználói szoftverhibák nem tartoznak a garanciába, így csere vagy pénzvisszafizetés sem kérhető értük.`;
+
 // warranty strings look like "1 hó" / "3 hó" / "6 hó" / "1 év"
 export function warrantyExpiry(fromDateStr, warranty) {
   if (!fromDateStr || !warranty) return null;

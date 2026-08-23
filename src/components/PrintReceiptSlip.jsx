@@ -1,4 +1,4 @@
-import { money, warrantyExpiry, isWarrantyActive, SERVICE_WARRANTY_TERMS } from "../lib/utils";
+import { money, warrantyExpiry, isWarrantyActive, SALE_WARRANTY_TERMS } from "../lib/utils";
 
 export default function PrintReceiptSlip({ tx, location }) {
   const expiry = warrantyExpiry(tx.date, tx.warranty);
@@ -36,7 +36,7 @@ export default function PrintReceiptSlip({ tx, location }) {
       </table>
       {tx.warranty && (
         <div style={{ fontSize: 9.5, color: "#374151", lineHeight: 1.45, whiteSpace: "pre-line", borderTop: "1px solid #E5E7EB", paddingTop: 16 }}>
-          {SERVICE_WARRANTY_TERMS}
+          {SALE_WARRANTY_TERMS}
         </div>
       )}
     </div>

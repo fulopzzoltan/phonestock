@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "./lib/supabaseClient";
-import { money, warrantyExpiry, isWarrantyActive } from "./lib/utils";
+import { money, warrantyExpiry, isWarrantyActive, SALE_WARRANTY_TERMS } from "./lib/utils";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 
@@ -68,6 +68,11 @@ export default function ReceiptLookup({ token }) {
                 </span>
               </div>
             </div>
+            {result.warranty && (
+              <div style={{ background: "#F9FAFB", border: "1px solid #EEF0F2", borderRadius: 12, padding: 14, fontSize: 11, color: "#6B7280", lineHeight: 1.6, whiteSpace: "pre-line", marginTop: 14 }}>
+                {SALE_WARRANTY_TERMS}
+              </div>
+            )}
           </div>
         )}
       </div>

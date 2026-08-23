@@ -1944,6 +1944,7 @@ function AppShell() {
           onShowHistory={(imei) => setDeviceHistoryImei(imei)}
           onPayoutConsignor={payoutConsignor}
           onPrintConsignment={() => printConsignmentDocs(detailProduct, detailProduct.acquisition)}
+          onPrint={printReceiptSlip}
         />
       )}
       {deviceHistoryImei && (

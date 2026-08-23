@@ -1,4 +1,4 @@
-import { money, phoneCode, conditionGradeLabel } from "../lib/utils";
+import { money, phoneCode, conditionGradeLabel, warrantyExpiry, isWarrantyActive } from "../lib/utils";
 import { CloseIcon } from "./icons";
 import Row from "./DetailRow";
 import ConfirmDelete from "./ConfirmDelete";
@@ -7,7 +7,7 @@ import PhonePartsPicker from "./PhonePartsPicker";
 
 export default function ProductDetailPanel({
   product, saleTx, locName, onClose, onSell, onEdit, onDelete, busy,
-  users = [], activeServiceTicket, parts = [], onAddPart, onRemovePart, onStartService, onOpenTicket, onReturnToStock, onShowHistory, onPayoutConsignor, onPrintConsignment,
+  users = [], activeServiceTicket, parts = [], onAddPart, onRemovePart, onStartService, onOpenTicket, onReturnToStock, onShowHistory, onPayoutConsignor, onPrintConsignment, onPrint,
 }) {
   const profit = (Number(product.salePrice) || 0) - (Number(product.costPrice) || 0);
   const isSold = product.status === "sold";
@@ -56,7 +56,13 @@ export default function ProductDetailPanel({
             <Row k="Szín" v={product.color} />
             <Row k="IMEI" v={product.imei ? <span className="mono">{product.imei}</span> : null} />
             <Row k="Helyszín" v={locName(product.locationId)} />
-            <Row k="Garancia" v={product.warranty ? <span className="gar-pill">{product.warranty}</span> : null} />
+            <Row k="Garancia" v={product.warranty ? (
+              isSold && saleTx ? (
+                <span className={`st ${isWarrantyActive(saleTx.date, product.warranty) ? "st-kesz" : "st-kiadva"}`}>
+                  {product.warranty} — {isWarrantyActive(saleTx.date, product.warranty) ? "érvényes" : "lejárt"} {warrantyExpiry(saleTx.date, product.warranty)}-ig
+                </span>
+              ) : <span className="gar-pill">{product.warranty}</span>
+            ) : null} />
             <Row k="Forrás" v={product.source} />
             {product.condition === "Refurbished" && <Row k="Akkuállapot" v={product.batteryHealth != null ? `${product.batteryHealth}%` : null} />}
             {product.imei && (
@@ -117,6 +123,9 @@ export default function ProductDetailPanel({
         </div>
         <div className="dp-actions">
           {!isSold && <button className="btn sm" disabled={busy} onClick={() => onSell(product)}>Eladva</button>}
+          {isSold && saleTx && product.warranty && (
+            <button className="btn sec sm" disabled={busy} onClick={() => onPrint(saleTx)}>Nyomtatás</button>
+          )}
           <button className="btn sec sm" disabled={busy} onClick={() => onEdit(product)}>Szerkesztés</button>
           <ConfirmDelete variant="full" disabled={busy} onConfirm={() => onDelete(product.id)} />
         </div>

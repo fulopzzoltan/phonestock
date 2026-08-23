@@ -1,4 +1,4 @@
-import { warrantyExpiry, isWarrantyActive, SERVICE_WARRANTY_TERMS } from "../lib/utils";
+import { warrantyExpiry, isWarrantyActive, SERVICE_WARRANTY_TERMS, SALE_WARRANTY_TERMS } from "../lib/utils";
 
 export default function PrintWarrantySlip({ w, location }) {
   const expiry = warrantyExpiry(w.from, w.warranty);
@@ -30,7 +30,7 @@ export default function PrintWarrantySlip({ w, location }) {
         </tbody>
       </table>
       <div style={{ fontSize: 9.5, color: "#374151", lineHeight: 1.45, whiteSpace: "pre-line", borderTop: "1px solid #E5E7EB", paddingTop: 16 }}>
-        {SERVICE_WARRANTY_TERMS}
+        {w.kind === "sale" ? SALE_WARRANTY_TERMS : SERVICE_WARRANTY_TERMS}
       </div>
     </div>
   );
