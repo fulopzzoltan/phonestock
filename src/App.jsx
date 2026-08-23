@@ -1316,7 +1316,15 @@ function AppShell() {
   }
   async function saveTicketEdit(id, data, locId) {
     await withBusy(async () => {
-      const r = unwrap(await supabase.from("service_tickets").update(tToApi(data, locId)).eq("id", id).select());
+      const original = tickets.find((t) => t.id === id);
+      const payload = tToApi(data, locId);
+      // Ha egy ügyfél-kérésű, akciós fóliát a staff utólag kipipál (meggondolta magát),
+      // az ár konzisztens maradjon: vonjuk le belőle a felárat, és jelöljük vissza nem-kértnek.
+      if (original?.foliaUpsellRequested && original.folia && !data.folia) {
+        payload.price = Math.max(0, (Number(payload.price) || 0) - (Number(original.foliaUpsellPrice) || 0));
+        payload.folia_upsell_requested = false;
+      }
+      const r = unwrap(await supabase.from("service_tickets").update(payload).eq("id", id).select());
       setTickets(tickets.map((t) => (t.id === id ? tFromApi(r[0]) : t)));
       setTicketModal(null);
     });

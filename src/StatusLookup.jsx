@@ -4,6 +4,7 @@ import { money, statusCls, subStatusLabel, warrantyExpiry, isWarrantyActive, SER
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 import SignaturePad from "./components/SignaturePad";
+import FoliaUpsellBanner from "./components/FoliaUpsellBanner";
 
 const INTAKE_CONSENT_TEXT = "Átadom a készüléket javításra, elfogadom a leírt hibát/állapotot";
 
@@ -175,6 +176,14 @@ export default function StatusLookup({ token, shortCode, signStage }) {
                 {result.sub_status ? subStatusLabel(result.status, result.sub_status) : result.status}
               </span>
             </div>
+            {token && result.ticket_kind === "Ügyfél" && !handedOver && !result.folia_upsell_requested && (
+              <FoliaUpsellBanner token={token} onDone={() => setResult({ ...result, folia: true, folia_upsell_requested: true, folia_upsell_price: 30, price: (Number(result.price) || 0) + 30 })} />
+            )}
+            {result.folia_upsell_requested && (
+              <div style={{ fontSize: 12, color: "#15803D", background: "#F0FDF4", borderRadius: 10, padding: "8px 12px", marginBottom: 14 }}>
+                ✓ Védőfólia megrendelve (+{money(result.folia_upsell_price)}) — átadáskor felhelyezzük.
+              </div>
+            )}
             <div style={{ background: "#F9FAFB", border: "1px solid #EEF0F2", borderRadius: 12, padding: 14, fontSize: 11, color: "#6B7280", lineHeight: 1.6, whiteSpace: "pre-line", marginBottom: 14 }}>
               {SERVICE_WARRANTY_TERMS}
             </div>

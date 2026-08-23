@@ -112,7 +112,11 @@ export default function DetailPanel({ ticket, locName, parts, stock, users = [],
             )}
             <Row k="Probléma" v={probs.length ? probs.map((p, i) => <span key={i} className="prob-pill">{p}</span>) : null} />
             <Row k="Garancia" v={ticket.warranty ? <span className="gar-pill">{ticket.warranty}</span> : null} />
-            <Row k="Fólia" v={ticket.folia ? <span style={{ color: "#22C55E", fontWeight: 700 }}>✓ Igen</span> : "Nem"} />
+            <Row k="Fólia" v={ticket.folia ? (
+              <span style={{ color: "#22C55E", fontWeight: 700 }}>
+                ✓ Igen{ticket.foliaUpsellRequested ? ` (ügyfél kérte online, +${money(ticket.foliaUpsellPrice)})` : ""}
+              </span>
+            ) : "Nem"} />
             <Row k="Beérkezés" v={ticket.dateIn} />
             <Row k="Átadás dátuma" v={ticket.handoverDate} />
             <Row k="Határidő (SLA)" v={ticket.dueDate ? (
