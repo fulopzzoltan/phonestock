@@ -5,11 +5,9 @@ import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 import SignaturePad from "./components/SignaturePad";
 import FoliaUpsellBanner from "./components/FoliaUpsellBanner";
-import { UserIcon, PhoneCaseIcon, ServiceIcon, FinanceIcon, CalendarIcon, CheckIcon, LockIcon, UserPlusIcon } from "./components/icons";
+import { ServiceIcon, CheckIcon, LockIcon, UserPlusIcon } from "./components/icons";
 
 const INTAKE_CONSENT_TEXT = "Átadom a készüléket javításra, elfogadom a leírt hibát/állapotot";
-
-const rowIcon = (Icon) => <Icon width={14} height={14} style={{ marginRight: 6, verticalAlign: -2, color: "#9CA3AF" }} />;
 
 const STEP_MAP = { "Átvett": 0, "Javítás alatt": 1, "Minőségellenőrzés": 1, "Átadásra": 2 };
 const STEPS = [
@@ -224,14 +222,14 @@ export default function StatusLookup({ token, shortCode, signStage }) {
               <div style={{ fontSize: 13, color: "#9CA3AF", fontWeight: 700 }}>#{result.ticket_no}</div>
             </div>
             <div className="dp-section">
-              <div className="dp-row"><span className="dp-key">{rowIcon(UserIcon)}Ügyfél</span><span className="dp-val">{result.customer_name}</span></div>
+              <div className="dp-row"><span className="dp-key">Ügyfél</span><span className="dp-val">{result.customer_name}</span></div>
               <div className="dp-row"><span className="dp-key">Elérhetőség</span><span className="dp-val">{result.customer_phone || "—"}</span></div>
-              <div className="dp-row"><span className="dp-key">{rowIcon(PhoneCaseIcon)}Eszköz</span><span className="dp-val">{[result.brand, result.model].filter(Boolean).join(" ")}</span></div>
+              <div className="dp-row"><span className="dp-key">Eszköz</span><span className="dp-val">{[result.brand, result.model].filter(Boolean).join(" ")}</span></div>
               <div className="dp-row"><span className="dp-key">Helyszín</span><span className="dp-val">{result.location_name || "—"}{result.location_phone ? ` · ${result.location_phone}` : ""}</span></div>
-              <div className="dp-row"><span className="dp-key">{rowIcon(ServiceIcon)}Bejelentett hibák</span><span className="dp-val">{probs.length ? probs.map((p, i) => <span key={i} className="prob-pill">{p}</span>) : "—"}</span></div>
-              <div className="dp-row"><span className="dp-key">{rowIcon(FinanceIcon)}Javítási költség</span><span className="dp-val">{money(result.price)}</span></div>
-              <div className="dp-row"><span className="dp-key">{rowIcon(CalendarIcon)}Átvéve</span><span className="dp-val">{result.date_in || "—"}</span></div>
-              <div className="dp-row"><span className="dp-key">{rowIcon(CalendarIcon)}Átadva</span><span className="dp-val">{result.date_out || "—"}</span></div>
+              <div className="dp-row"><span className="dp-key">Bejelentett hibák</span><span className="dp-val">{probs.length ? probs.map((p, i) => <span key={i} className="prob-pill">{p}</span>) : "—"}</span></div>
+              <div className="dp-row"><span className="dp-key">Javítási költség</span><span className="dp-val">{money(result.price)}</span></div>
+              <div className="dp-row"><span className="dp-key">Átvéve</span><span className="dp-val">{result.date_in || "—"}</span></div>
+              <div className="dp-row"><span className="dp-key">Átadva</span><span className="dp-val">{result.date_out || "—"}</span></div>
               <div className="dp-row">
                 <span className="dp-key">Garancia</span>
                 <span className="dp-val">

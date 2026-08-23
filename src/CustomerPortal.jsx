@@ -369,9 +369,31 @@ function Dashboard({ profile }) {
                 ) : rewards.length > 0 ? (
                   <div style={{ fontSize: 12.5, color: "#15803D", fontWeight: 700, marginTop: 6 }}>Minden elérhető jutalmat kiváltasz a pontjaiddal! 🎉</div>
                 ) : null}
-                {redeemableRewards.length > 0 && (
-                  <div style={{ fontSize: 12, color: "#6B7280", marginTop: 10 }}>
-                    Már most kiválthatod: {redeemableRewards.map((r) => r.label).join(", ")} — kérd a pultnál.
+                {rewards.length > 0 && (
+                  <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 5 }}>
+                    {rewards.slice().sort((a, b) => a.pointCost - b.pointCost).map((r) => {
+                      const reached = loyalty.pointsBalance >= r.pointCost;
+                      return (
+                        <div key={r.rewardKey} style={{
+                          display: "flex", justifyContent: "space-between", alignItems: "center",
+                          fontSize: 12.5, padding: "8px 10px", borderRadius: 9,
+                          background: reached ? "#fff" : "rgba(255,255,255,.5)",
+                          border: reached ? "1px solid var(--primary)" : "1px solid transparent",
+                        }}>
+                          <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                            <span style={{
+                              display: "inline-flex", alignItems: "center", justifyContent: "center",
+                              width: 16, height: 16, borderRadius: "50%", flexShrink: 0, fontSize: 10, fontWeight: 700,
+                              background: reached ? "var(--primary)" : "#E5E7EB", color: reached ? "#fff" : "#9CA3AF",
+                            }}>{reached ? "✓" : ""}</span>
+                            <span style={{ fontWeight: reached ? 700 : 500, color: reached ? "var(--primary-ink)" : "#374151" }}>{r.label}</span>
+                          </span>
+                          <span style={{ color: reached ? "#15803D" : "#9CA3AF", fontWeight: 600, whiteSpace: "nowrap" }}>
+                            {reached ? `${r.pointCost} pont — kérd a pultnál` : `${r.pointCost} pont (még ${r.pointCost - loyalty.pointsBalance})`}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
                 {loyalty.referralCode && (
