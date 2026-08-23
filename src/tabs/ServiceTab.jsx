@@ -74,7 +74,7 @@ export default function ServiceTab({
                 const stepPrev = colIdx > 0;
                 const stepNext = colIdx < STATUSES.length - 1;
                 return (
-                  <div className="k-col" key={col.key} style={{ "--col-color": col.color }}>
+                  <div className={`k-col${col.narrow ? " k-col-narrow" : ""}`} key={col.key} style={{ "--col-color": col.color }}>
                     <div className="k-col-head">
                       <div className="k-col-title"><span className="k-dot"></span>{statusLabel(col.key)}</div>
                       <span className="k-count">{items.length}</span>

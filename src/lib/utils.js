@@ -91,10 +91,13 @@ export function ticketCode(ticketNo, locationName) {
 
 // "key" = adatbázisban tárolt érték (ne változtasd, meglévő sorok erre hivatkoznak),
 // "label" = amit a kanban/UI mutat — ez bármikor finomítható a key érintése nélkül
+// "narrow" = ne váltson 2 oszlopos kártyarácsra kanbanban, még ha van is hely —
+// a "Szerelés alatt"/"Tesztelés" státuszban kevés ideig van egy telefon, ritkán
+// gyűlik fel bennük annyi kártya, hogy a 2 oszlop indokolt legyen
 export const STATUSES = [
   { key: "Átvett", label: "Átvéve", color: "#F59E0B", cls: "st-beveve" },
-  { key: "Javítás alatt", label: "Szerelés alatt", color: "#F97316", cls: "st-javitas" },
-  { key: "Minőségellenőrzés", label: "Tesztelés", color: "#0EA5E9", cls: "st-qc" },
+  { key: "Javítás alatt", label: "Szerelés alatt", color: "#F97316", cls: "st-javitas", narrow: true },
+  { key: "Minőségellenőrzés", label: "Tesztelés", color: "#0EA5E9", cls: "st-qc", narrow: true },
   { key: "Átadásra", label: "Átvehető", color: "#22C55E", cls: "st-kesz" },
 ];
 export const statusCls = (s) => STATUSES.find((c) => c.key === s)?.cls || "st-beveve";
