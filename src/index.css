@@ -27,7 +27,7 @@
   --shadow-card:0 1px 2px rgba(16,24,40,.04),0 2px 8px rgba(16,24,40,.06);
   --shadow-lg:0 20px 50px rgba(16,24,40,.12);
 }
-body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:100vh}
+body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:100vh;min-height:100dvh}
 .mono{font-family:'JetBrains Mono',monospace;font-size:11.5px}
 
 /* SHELL */
@@ -420,7 +420,7 @@ tr:hover td{background:#FAFAFA}
   --pub-ink:#12181A; --pub-ink-soft:#5B6472; --pub-paper:#F4F6F3; --pub-paper-raised:#fff;
   --pub-line:#DEE4DF; --pub-accent:var(--accent); --pub-accent-ink:var(--primary-ink); --pub-accent-soft:var(--primary-soft);
   --pub-new:#A5722A; --pub-new-soft:#F3E6D4;
-  background:var(--pub-paper); color:var(--pub-ink); min-height:100vh; font-family:'Inter',sans-serif;
+  background:var(--pub-paper); color:var(--pub-ink); min-height:100vh; min-height:100dvh; font-family:'Inter',sans-serif;
 }
 .pub-header{position:sticky;top:0;z-index:5;background:var(--pub-paper-raised);border-bottom:1px solid var(--pub-line)}
 .pub-header-inner{max-width:1180px;margin:0 auto;padding:18px 24px 14px;display:flex;flex-direction:column;gap:14px}
@@ -457,7 +457,10 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
   .pub-menu-toggle{display:flex}
   .pub-mobile-icons{display:flex}
   .pub-nav{display:none}
-  .pub-nav.open{display:flex;flex-direction:column;align-items:stretch;width:100%;gap:2px;padding-top:10px;margin-top:4px;border-top:1px solid var(--pub-line)}
+  .pub-brand-row{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px}
+  .pub-wordmark{justify-self:center}
+  .pub-mobile-icons{justify-self:end}
+  .pub-nav.open{display:flex;flex-direction:column;align-items:stretch;width:100%;grid-column:1/-1;gap:2px;padding-top:10px;margin-top:4px;border-top:1px solid var(--pub-line)}
   .pub-nav.open .pub-nav-link{padding:11px 4px;display:flex;align-items:center}
   .pub-nav.open .pub-lang-switch{margin:4px 0 8px}
   .pub-nav.open .pub-nav-link.pub-nav-cta{margin-left:0;justify-content:flex-start}
