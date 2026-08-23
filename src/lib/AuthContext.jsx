@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "./supabaseClient";
 import { profileFromApi } from "./mappers";
 
@@ -32,6 +32,7 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(undefined); // undefined = loading, null = signed out
   const [profile, setProfile] = useState(null);
   const [profileLoading, setProfileLoading] = useState(false);
+  const signOutInFlight = useRef(false);
 
   const loadProfile = useCallback(async (userId) => {
     if (!userId) { setProfile(null); return; }
@@ -75,13 +76,26 @@ export function AuthProvider({ children }) {
   }
 
   async function signOut() {
-    // A szerveres kijelentkezés hibázhat (pl. már érvénytelen/törölt session), vagy akár
-    // be is ragadhat (a kliens megpróbálja frissíteni a lejárt tokent kijelentkezés előtt) —
-    // ilyenkor legfeljebb 4 mp után a helyi munkamenetet akkor is töröljük, hogy a felhasználó
-    // soha ne ragadhasson be bejelentkezve.
-    const { error } = await withTimeout(supabase.auth.signOut(), 4000);
-    if (error) {
-      await supabase.auth.signOut({ scope: "local" });
+    // Ha a felhasználó türelmetlenül többször is a Kijelentkezésre kattint, mielőtt az első
+    // kattintás lezajlana, ne induljon el több párhuzamos kijelentkezés (ez okozta a "Session
+    // not found" hibát a második kattintásnál).
+    if (signOutInFlight.current) return;
+    signOutInFlight.current = true;
+    try {
+      // A szerveres kijelentkezés hibázhat (pl. már érvénytelen/törölt session), vagy akár
+      // be is ragadhat (a kliens megpróbálja frissíteni a lejárt tokent kijelentkezés előtt) —
+      // ilyenkor legfeljebb 4 mp után a helyi munkamenetet akkor is töröljük, hogy a felhasználó
+      // soha ne ragadhasson be bejelentkezve.
+      const { error } = await withTimeout(supabase.auth.signOut(), 4000);
+      if (error) {
+        await supabase.auth.signOut({ scope: "local" });
+      }
+      // Ne az onAuthStateChange eseményre várjunk (az is elmaradhat/késhet, ugyanúgy, mint
+      // bejelentkezéskor) — a UI-t itt azonnal, kézzel is kijelentkezett állapotba állítjuk.
+      setSession(null);
+      setProfile(null);
+    } finally {
+      signOutInFlight.current = false;
     }
   }
 
