@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
 import { thumbPathOf } from "./lib/imageResize";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi, buybackOfferFromApi, loyaltyLedgerFromApi, loyaltyRewardFromApi, loyaltyRewardToApi } from "./lib/mappers";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi, buybackOfferFromApi, loyaltyLedgerFromApi, loyaltyRewardFromApi, loyaltyRewardToApi, customerProfileFromApi } from "./lib/mappers";
 import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, normalizeImei, money, ticketCode } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
@@ -113,6 +113,7 @@ function AppShell() {
   const [parts, setParts] = useState([]);
   const [users, setUsers] = useState([]);
   const [customersTable, setCustomersTable] = useState([]);
+  const [customerProfiles, setCustomerProfiles] = useState([]);
   const [loyaltyRewards, setLoyaltyRewards] = useState([]);
   const [loyaltyLedger, setLoyaltyLedger] = useState([]);
   const [loyaltyRewardModal, setLoyaltyRewardModal] = useState(null); // null | "add" | reward obj (edit)
@@ -225,7 +226,7 @@ function AppShell() {
   async function loadAll() {
     setLoadingData(true);
     try {
-      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, bbOffers, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds, prodAcqs, dClosesR, loyRewards, loyLedger] = await Promise.all([
+      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, bbOffers, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds, prodAcqs, dClosesR, loyRewards, loyLedger, custProfiles] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         fetchAllRows(() => supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false })),
         fetchAllRows(() => supabase.from("transactions").select("*, smartbill_documents(*), signatures(*)").is("deleted_at", null).order("date", { ascending: false })),
@@ -256,6 +257,7 @@ function AppShell() {
         supabase.from("day_closes").select("*").order("date", { ascending: false }),
         supabase.from("loyalty_rewards").select("*").order("sort_order", { ascending: true }),
         fetchAllRows(() => supabase.from("loyalty_points_ledger").select("*").order("created_at", { ascending: false })),
+        supabase.from("customer_profiles").select("*"),
       ]);
       setLocations(unwrap(locs) || []);
       const prodRows = unwrap(prods) || [];
@@ -276,6 +278,7 @@ function AppShell() {
       setCustomersTable((unwrap(custs) || []).map(customerFromApi));
       setLoyaltyRewards((unwrap(loyRewards) || []).map(loyaltyRewardFromApi));
       setLoyaltyLedger((unwrap(loyLedger) || []).map(loyaltyLedgerFromApi));
+      setCustomerProfiles((unwrap(custProfiles) || []).map(customerProfileFromApi));
       setMonthlySummaries((unwrap(msums) || []).map(monthlySummaryFromApi));
       setWarranties((unwrap(warrs) || []).map(warrantyFromApi));
       setBuybackModels((unwrap(bbModels) || []).map(buybackModelFromApi));
@@ -1705,12 +1708,13 @@ function AppShell() {
         purchaseTotal: purchases.reduce((s, p) => s + (Number(p.amount) || 0), 0),
         ticketTotal: tickets.reduce((s, t) => s + (Number(t.price) || 0), 0),
         lastActivity: [...purchases.map((p) => p.date), ...tickets.map((t) => t.dateIn)].filter(Boolean).sort().reverse()[0] || "",
+        webshopAccount: customerProfiles.find((cp) => cp.customerId === c.id) || null,
       };
     }).filter((c) => {
       const q = custSearch.trim().toLowerCase();
       return !q || [c.name, c.phone].join(" ").toLowerCase().includes(q);
     }).sort((a, b) => b.lastActivity.localeCompare(a.lastActivity));
-  }, [customersTable, filteredTransactions, filteredTickets, custSearch]);
+  }, [customersTable, filteredTransactions, filteredTickets, custSearch, customerProfiles]);
 
   const customerStats = useMemo(() => ({
     count: customers.length,

@@ -32,6 +32,7 @@ export default function CustomerDetailPanel({ customer, locName, ledger, rewards
               Ügyfél
               {customer.isNew ? <span className="badge-loc">Új</span> : <span className="badge-income">Visszatérő</span>}
               {customer.marketingConsent && <span className="gar-pill">Feliratkozott</span>}
+              {customer.webshopAccount && <span className="gar-pill">Webshop-fiók</span>}
             </div>
             <div className="dp-name">{customer.name || "Névtelen"}</div>
           </div>
@@ -57,6 +58,9 @@ export default function CustomerDetailPanel({ customer, locName, ledger, rewards
             <Row k="Utolsó aktivitás" v={customer.lastActivity} />
             <Row k="Pontegyenleg" v={<span style={{ fontWeight: 700, color: "var(--primary-ink)" }}>{balance} pont</span>} />
             {customer.referralCode && <Row k="Ajánlói kód" v={<span className="mono">{customer.referralCode}</span>} />}
+            {customer.webshopAccount && (
+              <Row k="Webshop-fiók" v={`${customer.webshopAccount.fullName || "—"} (${customer.webshopAccount.email || "—"})`} />
+            )}
           </div>
           {redeemable.length > 0 && (
             <div className="dp-section">

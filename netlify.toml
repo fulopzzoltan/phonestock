@@ -11,6 +11,14 @@
   to = "https://aaiyyhskvxjqfhrgoulh.supabase.co/functions/v1/sitemap"
   status = 200
 
+# A személyzeti admin-felület külön Netlify site-on fut, külön originen (biztonsági
+# elkülönítés a publikus webshoptól) — ide irányítjuk, aki a régi /admin linket használná.
+[[redirects]]
+  from = "/admin*"
+  to = "https://phonestock-admin.netlify.app/"
+  status = 301
+  force = true
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

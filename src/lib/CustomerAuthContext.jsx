@@ -4,6 +4,16 @@ import { customerProfileFromApi } from "./mappers";
 
 const CustomerAuthContext = createContext(null);
 
+// A Supabase auth kliens ritkán (hálózati/böngésző-specifikus okból) sosem oldja fel a
+// promise-t egy sikertelen vagy beragadt kérésnél — ez időkorláttal biztosítja, hogy a
+// be-/kijelentkezés/regisztráció soha ne tudjon örökre "Kérlek várj..." állapotban maradni.
+function withTimeout(promise, ms) {
+  return Promise.race([
+    promise,
+    new Promise((resolve) => setTimeout(() => resolve({ error: new Error("Időtúllépés — nincs válasz a szervertől. Próbáld újra.") }), ms)),
+  ]);
+}
+
 export function CustomerAuthProvider({ children }) {
   const [session, setSession] = useState(undefined); // undefined = loading, null = signed out
   const [profile, setProfile] = useState(null);
@@ -37,23 +47,24 @@ export function CustomerAuthProvider({ children }) {
   }, [loadProfile]);
 
   async function signUp(email, password, fullName, phone) {
-    const { error } = await supabase.auth.signUp({
+    const { error } = await withTimeout(supabase.auth.signUp({
       email, password,
       options: { data: { is_customer: true, full_name: fullName, phone } },
-    });
+    }), 8000);
     if (error) throw new Error(error.message);
   }
 
   async function signIn(email, password) {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await withTimeout(supabase.auth.signInWithPassword({ email, password }), 8000);
     if (error) throw new Error(error.message);
   }
 
   async function signOut() {
-    const { error } = await supabase.auth.signOut();
+    // A szerveres kijelentkezés hibázhat, vagy akár be is ragadhat (a kliens megpróbálja
+    // frissíteni a lejárt tokent kijelentkezés előtt) — ilyenkor legfeljebb 4 mp után a
+    // helyi munkamenetet akkor is töröljük, hogy a felhasználó soha ne ragadhasson be.
+    const { error } = await withTimeout(supabase.auth.signOut(), 4000);
     if (error) {
-      // A szerveres kijelentkezés hibázhat (pl. már érvénytelen/törölt session) —
-      // ilyenkor a helyi munkamenetet akkor is töröljük, hogy ne ragadjon be a felhasználó.
       await supabase.auth.signOut({ scope: "local" });
     }
   }

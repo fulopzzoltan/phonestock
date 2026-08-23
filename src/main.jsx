@@ -25,13 +25,17 @@ function RouteFallback() {
   return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F4F6F3", color: "#6B7280", fontSize: 13 }}>Betöltés...</div>;
 }
 
+// Az admin-felület külön Netlify site-on fut (phonestock-admin.netlify.app), külön originen —
+// ez a build-időben beállított flag mindig az adminfelületet rendereli, útvonaltól függetlenül,
+// hogy a személyzeti bejelentkezés session-je sose kerülhessen a publikus webshop originjébe.
+const ADMIN_ONLY = import.meta.env.VITE_ADMIN_ONLY === "true";
+
 const statusMatch = window.location.pathname.match(/^\/status\/?([0-9a-f-]{36})?$/i);
 const receiptMatch = window.location.pathname.match(/^\/receipt\/?([0-9a-f-]{36})?$/i);
 // "?sign=service_intake|service_handover|sale" — aláírás mód a publikus /status és /receipt oldalakon (ld. TASKS_DIGITALIS_ALAIRAS.md)
 const signStage = new URLSearchParams(window.location.search).get("sign");
 // rövid SMS-link: /s/xxxxxxxx — ugyanaz mint a /status/:token, csak rövidebb kóddal
 const shortMatch = window.location.pathname.match(/^\/s\/([a-f0-9]{8})\/?$/i);
-const adminMatch = window.location.pathname.match(/^\/admin\/?$/i);
 const phoneDetailMatch = window.location.pathname.match(/^\/telefon\/([0-9a-f-]{36})\/?$/i);
 const buybackMatch = window.location.pathname.match(/^\/eladom\/?$/i);
 const repairMatch = window.location.pathname.match(/^\/becsles\/?$/i);
@@ -52,14 +56,14 @@ const roPhoneDetailMatch = window.location.pathname.match(/^\/ro\/telefon\/([0-9
 const roRepairMatch = window.location.pathname.match(/^\/ro\/estimare\/?$/i);
 
 function Root() {
-  if (statusMatch) return <StatusLookup token={statusMatch[1] || null} signStage={signStage} />;
-  if (shortMatch) return <StatusLookup shortCode={shortMatch[1]} signStage={signStage} />;
-  if (receiptMatch) return <ReceiptLookup token={receiptMatch[1] || null} signStage={signStage} />;
-  if (adminMatch) return (
+  if (ADMIN_ONLY) return (
     <AuthProvider>
       <App />
     </AuthProvider>
   );
+  if (statusMatch) return <StatusLookup token={statusMatch[1] || null} signStage={signStage} />;
+  if (shortMatch) return <StatusLookup shortCode={shortMatch[1]} signStage={signStage} />;
+  if (receiptMatch) return <ReceiptLookup token={receiptMatch[1] || null} signStage={signStage} />;
   if (accountMatch) return <CustomerPortal />;
   if (cartMatch) return <Cart />;
   if (checkoutMatch) return <Checkout />;
@@ -74,11 +78,9 @@ function Root() {
   if (repairMatch) return <RepairEstimator lang="hu" />;
   if (roStockMatch) return <StockShowcase lang="ro" />;
   if (stockMatch) return <StockShowcase lang="hu" />;
-  return (
-    <AuthProvider>
-      <App />
-    </AuthProvider>
-  );
+  // Ismeretlen útvonal a publikus oldalon — a személyzeti admin ide már nem tartozik
+  // (külön originen fut), így a készletoldalra esünk vissza.
+  return <StockShowcase lang="hu" />;
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(

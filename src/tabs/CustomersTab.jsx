@@ -59,7 +59,10 @@ export default function CustomersTab({
                 {sorted.map((c) => (
                   <tr key={c.key} style={{ cursor: "pointer" }} onClick={() => setCustomerKey(c.key)}>
                     <td>
-                      <div className="stk-name">{c.name || "Névtelen"}</div>
+                      <div className="stk-name" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        {c.name || "Névtelen"}
+                        {c.webshopAccount && <span className="gar-pill" title={`Webshop-fiók: ${c.webshopAccount.email || "—"}`}>Webshop</span>}
+                      </div>
                     </td>
                     <td className="mono">{c.phone || "—"}</td>
                     <td>{c.isNew ? <span className="badge-loc">Új</span> : <span className="badge-income">Visszatérő</span>}</td>
@@ -74,7 +77,10 @@ export default function CustomersTab({
               {sorted.map((c) => (
                 <div key={c.key} className="mob-row" onClick={() => setCustomerKey(c.key)}>
                   <div className="mob-row-top">
-                    <div className="mob-row-main"><span>{c.name || "Névtelen"}</span></div>
+                    <div className="mob-row-main" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span>{c.name || "Névtelen"}</span>
+                      {c.webshopAccount && <span className="gar-pill">Webshop</span>}
+                    </div>
                     {c.isNew ? <span className="badge-loc">Új</span> : <span className="badge-income">Visszatérő</span>}
                   </div>
                   <div className="mob-row-sub">
