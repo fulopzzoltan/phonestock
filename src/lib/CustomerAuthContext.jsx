@@ -50,7 +50,12 @@ export function CustomerAuthProvider({ children }) {
   }
 
   async function signOut() {
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      // A szerveres kijelentkezés hibázhat (pl. már érvénytelen/törölt session) —
+      // ilyenkor a helyi munkamenetet akkor is töröljük, hogy ne ragadjon be a felhasználó.
+      await supabase.auth.signOut({ scope: "local" });
+    }
   }
 
   const value = {
