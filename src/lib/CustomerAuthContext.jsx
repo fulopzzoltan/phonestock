@@ -14,10 +14,25 @@ function withTimeout(promise, ms) {
   ]);
 }
 
+// Ismert supabase-js v2 hiba (navigator.locks deadlock a session mentésekor —
+// https://github.com/supabase/supabase-js/issues/2013): a signInWithPassword promise néha
+// sosem oldódik fel, PEDIG a bejelentkezés a szerveren sikeres és a session a háttérben
+// ténylegesen létrejön. Emiatt a promise mellett a sessiönt is pollozzuk — amelyik előbb
+// megvan, azt fogadjuk el, ahelyett hogy a beragadt promise-ra várnánk másodpercekig.
+async function pollForSession(matchEmail) {
+  for (let i = 0; i < 16; i++) {
+    await new Promise((r) => setTimeout(r, 250));
+    const { data } = await supabase.auth.getSession();
+    if (data.session && data.session.user?.email === matchEmail) return data.session;
+  }
+  return null;
+}
+
 export function CustomerAuthProvider({ children }) {
   const [session, setSession] = useState(undefined); // undefined = loading, null = signed out
   const [profile, setProfile] = useState(null);
   const [profileLoading, setProfileLoading] = useState(false);
+  const [passwordRecovery, setPasswordRecovery] = useState(false);
 
   const loadProfile = useCallback(async (userId) => {
     if (!userId) { setProfile(null); return; }
@@ -38,7 +53,8 @@ export function CustomerAuthProvider({ children }) {
       setSession(data.session ?? null);
       if (data.session?.user?.id) loadProfile(data.session.user.id);
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, sess) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, sess) => {
+      if (event === "PASSWORD_RECOVERY") setPasswordRecovery(true);
       setSession(sess ?? null);
       if (sess?.user?.id) loadProfile(sess.user.id);
       else setProfile(null);
@@ -55,8 +71,15 @@ export function CustomerAuthProvider({ children }) {
   }
 
   async function signIn(email, password) {
-    const { error } = await withTimeout(supabase.auth.signInWithPassword({ email, password }), 8000);
-    if (error) throw new Error(error.message);
+    const result = await Promise.race([
+      supabase.auth.signInWithPassword({ email, password }).then(({ error }) => (error ? { error } : { ok: true })),
+      pollForSession(email).then((sess) => (sess ? { ok: true, session: sess } : { error: new Error("Időtúllépés — nincs válasz a szervertől. Próbáld újra.") })),
+    ]);
+    if (result.error) throw new Error(result.error.message);
+    if (result.session) {
+      setSession(result.session);
+      loadProfile(result.session.user.id);
+    }
   }
 
   async function signOut() {
@@ -69,6 +92,20 @@ export function CustomerAuthProvider({ children }) {
     }
   }
 
+  async function resetPassword(email) {
+    const { error } = await withTimeout(
+      supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/fiok` }),
+      8000
+    );
+    if (error) throw new Error(error.message);
+  }
+
+  async function updatePassword(newPassword) {
+    const { error } = await withTimeout(supabase.auth.updateUser({ password: newPassword }), 8000);
+    if (error) throw new Error(error.message);
+    setPasswordRecovery(false);
+  }
+
   const value = {
     session,
     user: session?.user ?? null,
@@ -77,9 +114,12 @@ export function CustomerAuthProvider({ children }) {
     // Bejelentkezve van, de nincs customer_profiles sora — pl. egy staff-fiók, ami
     // (tévedésből) a /fiok oldalon próbál bejelentkezni admin-e-maillel.
     noCustomerProfile: !!session && !profileLoading && !profile,
+    passwordRecovery,
     signUp,
     signIn,
     signOut,
+    resetPassword,
+    updatePassword,
   };
 
   return <CustomerAuthContext.Provider value={value}>{children}</CustomerAuthContext.Provider>;

@@ -14,6 +14,20 @@ function withTimeout(promise, ms) {
   ]);
 }
 
+// Ismert supabase-js v2 hiba (navigator.locks deadlock a session mentésekor —
+// https://github.com/supabase/supabase-js/issues/2013): a signInWithPassword promise néha
+// sosem oldódik fel, PEDIG a bejelentkezés a szerveren sikeres és a session a háttérben
+// ténylegesen létrejön. Emiatt a promise mellett a sessiönt is pollozzuk — amelyik előbb
+// megvan, azt fogadjuk el, ahelyett hogy a beragadt promise-ra várnánk másodpercekig.
+async function pollForSession(matchEmail) {
+  for (let i = 0; i < 16; i++) {
+    await new Promise((r) => setTimeout(r, 250));
+    const { data } = await supabase.auth.getSession();
+    if (data.session && data.session.user?.email === matchEmail) return data.session;
+  }
+  return null;
+}
+
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(undefined); // undefined = loading, null = signed out
   const [profile, setProfile] = useState(null);
@@ -47,8 +61,17 @@ export function AuthProvider({ children }) {
   }, [loadProfile]);
 
   async function signIn(email, password) {
-    const { error } = await withTimeout(supabase.auth.signInWithPassword({ email, password }), 8000);
-    if (error) throw new Error(error.message);
+    const result = await Promise.race([
+      supabase.auth.signInWithPassword({ email, password }).then(({ error }) => (error ? { error } : { ok: true })),
+      pollForSession(email).then((sess) => (sess ? { ok: true, session: sess } : { error: new Error("Időtúllépés — nincs válasz a szervertől. Próbáld újra.") })),
+    ]);
+    if (result.error) throw new Error(result.error.message);
+    if (result.session) {
+      // A beragadt promise miatt a normál onAuthStateChange esemény lekéshet vagy sosem
+      // fusson le — a session-t itt manuálisan is alkalmazzuk, hogy a UI ne várjon rá tovább.
+      setSession(result.session);
+      loadProfile(result.session.user.id);
+    }
   }
 
   async function signOut() {

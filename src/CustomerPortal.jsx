@@ -15,12 +15,12 @@ const NAV_ITEMS = [
 ];
 
 function AuthForm() {
-  const { signIn, signUp } = useCustomerAuth();
+  const { signIn, signUp, resetPassword } = useCustomerAuth();
   const prefill = new URLSearchParams(window.location.search);
   const prefillEmail = prefill.get("email") || "";
   const prefillPhone = prefill.get("phone") || "";
   const prefillName = prefill.get("name") || "";
-  const [mode, setMode] = useState(prefillPhone ? "register" : "login"); // login | register
+  const [mode, setMode] = useState(prefillPhone ? "register" : "login"); // login | register | forgot
   const [fullName, setFullName] = useState(prefillName);
   const [phone, setPhone] = useState(prefillPhone);
   const [email, setEmail] = useState(prefillEmail);
@@ -28,11 +28,24 @@ function AuthForm() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [registered, setRegistered] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   async function submit(e) {
     e.preventDefault();
     setError("");
     if (!email.trim()) { setError("Add meg az email címed."); return; }
+    if (mode === "forgot") {
+      setBusy(true);
+      try {
+        await resetPassword(email.trim());
+        setResetSent(true);
+      } catch (err) {
+        setError(err.message || "Hiba történt.");
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
     if (!password) { setError("Add meg a jelszavad."); return; }
     if (mode === "register" && (!fullName.trim() || !phone.trim())) { setError("Add meg a neved és a telefonszámod."); return; }
     setBusy(true);
@@ -64,10 +77,29 @@ function AuthForm() {
     );
   }
 
+  if (mode === "forgot" && resetSent) {
+    return (
+      <div className="login-card" style={{ maxWidth: 380 }}>
+        <div className="login-title">Elküldve</div>
+        <p style={{ fontSize: 13, color: "#6B7280", textAlign: "center", lineHeight: 1.5 }}>
+          Ha létezik fiók ezzel az email címmel ({email}), küldtünk rá egy linket, amivel új jelszót állíthatsz be.
+        </p>
+        <button className="btn sec" style={{ width: "100%", justifyContent: "center", marginTop: 14 }} onClick={() => { setResetSent(false); setMode("login"); }}>
+          Vissza a bejelentkezéshez
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="login-card" style={{ maxWidth: 380 }}>
-      <div className="login-title">{mode === "login" ? "Bejelentkezés" : "Fiók létrehozása"}</div>
+      <div className="login-title">{mode === "login" ? "Bejelentkezés" : mode === "forgot" ? "Jelszó visszaállítása" : "Fiók létrehozása"}</div>
       {error && <div className="errbar">{error}</div>}
+      {mode === "forgot" && (
+        <p style={{ fontSize: 12.5, color: "#6B7280", margin: "0 0 10px", lineHeight: 1.5 }}>
+          Add meg a fiókodhoz tartozó email címet, és küldünk egy linket, amivel új jelszót állíthatsz be.
+        </p>
+      )}
       <form onSubmit={submit} autoComplete="on">
         {mode === "register" && (
           <>
@@ -76,11 +108,18 @@ function AuthForm() {
           </>
         )}
         <div className="field"><label>Email</label><input type="email" name="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="te@pelda.hu" /></div>
-        <div className="field"><label>Jelszó</label><input type="password" name="password" autoComplete={mode === "login" ? "current-password" : "new-password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" /></div>
+        {mode !== "forgot" && (
+          <div className="field"><label>Jelszó</label><input type="password" name="password" autoComplete={mode === "login" ? "current-password" : "new-password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" /></div>
+        )}
         <button className="btn" style={{ width: "100%", justifyContent: "center", marginTop: 6 }} disabled={busy} type="submit">
-          {busy ? "Kérlek várj..." : mode === "login" ? "Bejelentkezés" : "Regisztráció"}
+          {busy ? "Kérlek várj..." : mode === "login" ? "Bejelentkezés" : mode === "forgot" ? "Link küldése" : "Regisztráció"}
         </button>
       </form>
+      {mode === "login" && (
+        <div className="login-note" style={{ marginTop: 6 }}>
+          <a href="#" onClick={(e) => { e.preventDefault(); setError(""); setMode("forgot"); }}>Elfelejtetted a jelszavad?</a>
+        </div>
+      )}
       <div className="login-note">
         {mode === "login" ? (
           <>Nincs még fiókod? <a href="#" onClick={(e) => { e.preventDefault(); setError(""); setMode("register"); }}>Regisztrálj</a></>
@@ -88,6 +127,56 @@ function AuthForm() {
           <>Van már fiókod? <a href="#" onClick={(e) => { e.preventDefault(); setError(""); setMode("login"); }}>Jelentkezz be</a></>
         )}
       </div>
+    </div>
+  );
+}
+
+function PasswordRecoveryForm() {
+  const { updatePassword } = useCustomerAuth();
+  const [password, setPassword] = useState("");
+  const [password2, setPassword2] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [done, setDone] = useState(false);
+
+  async function submit(e) {
+    e.preventDefault();
+    setError("");
+    if (password.length < 6) { setError("A jelszó legalább 6 karakter legyen."); return; }
+    if (password !== password2) { setError("A két jelszó nem egyezik."); return; }
+    setBusy(true);
+    try {
+      await updatePassword(password);
+      setDone(true);
+    } catch (err) {
+      setError(err.message || "Hiba történt.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (done) {
+    return (
+      <div className="login-card" style={{ maxWidth: 380 }}>
+        <div className="login-title">Jelszó megváltoztatva</div>
+        <p style={{ fontSize: 13, color: "#6B7280", textAlign: "center", lineHeight: 1.5 }}>
+          Az új jelszavaddal mostantól be tudsz jelentkezni.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="login-card" style={{ maxWidth: 380 }}>
+      <div className="login-title">Új jelszó megadása</div>
+      {error && <div className="errbar">{error}</div>}
+      <form onSubmit={submit}>
+        <div className="field"><label>Új jelszó</label><input type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" /></div>
+        <div className="field"><label>Új jelszó mégegyszer</label><input type="password" autoComplete="new-password" value={password2} onChange={(e) => setPassword2(e.target.value)} placeholder="••••••••" /></div>
+        <button className="btn" style={{ width: "100%", justifyContent: "center", marginTop: 6 }} disabled={busy} type="submit">
+          {busy ? "Kérlek várj..." : "Jelszó mentése"}
+        </button>
+      </form>
     </div>
   );
 }
@@ -301,13 +390,15 @@ function Dashboard({ profile }) {
 }
 
 function PortalInner() {
-  const { session, loading, profile, noCustomerProfile } = useCustomerAuth();
+  const { session, loading, profile, noCustomerProfile, passwordRecovery } = useCustomerAuth();
 
   return (
     <div className="pub-shop">
       <PublicHeader activeNav="login" langSwitchHref={null} />
       <main className="pub-lookup-main">
-        {loading ? (
+        {passwordRecovery ? (
+          <PasswordRecoveryForm />
+        ) : loading ? (
           <div style={{ color: "#6B7280", fontSize: 13 }}>Betöltés...</div>
         ) : !session ? (
           <AuthForm />
