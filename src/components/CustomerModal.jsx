@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { CloseIcon } from "./icons";
+import CustomerAutocomplete from "./CustomerAutocomplete";
 
-export default function CustomerModal({ customer, onClose, onSave, busy }) {
+export default function CustomerModal({ customer, customers, onClose, onSave, busy }) {
   const isEdit = !!customer;
   const [f, setF] = useState({
     name: customer?.name || "",
@@ -11,6 +12,7 @@ export default function CustomerModal({ customer, onClose, onSave, busy }) {
     address: customer?.address || "",
     notes: customer?.notes || "",
     marketingConsent: customer?.marketingConsent || false,
+    ...(isEdit ? {} : { referrerName: "", referredByCustomerId: null }),
   });
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const valid = f.name.trim() || f.phone.trim();
@@ -42,6 +44,21 @@ export default function CustomerModal({ customer, onClose, onSave, busy }) {
             Hozzájárul, hogy akciókról/emlékeztetőkről SMS-ben értesítsük
           </label>
         </div>
+        {!isEdit && (
+          <div className="field">
+            <label>Ajánlotta? (opcionális)</label>
+            <CustomerAutocomplete
+              customers={customers || []}
+              name={f.referrerName}
+              onChangeName={(name) => setF({ ...f, referrerName: name, referredByCustomerId: null })}
+              onSelect={(c) => setF({ ...f, referrerName: c.name, referredByCustomerId: c.id })}
+              placeholder="Meglévő ügyfél neve vagy telefonszáma"
+            />
+            {f.referrerName && !f.referredByCustomerId && (
+              <div style={{ fontSize: 11.5, color: "#B91C1C", marginTop: 4 }}>Válassz egy meglévő ügyfelet a listából, különben nem rögzül az ajánlás.</div>
+            )}
+          </div>
+        )}
         <div className="modal-actions">
           <button className="btn sec" onClick={onClose}>Mégse</button>
           <button className="btn" disabled={!valid || busy} onClick={() => valid && onSave(f)}>{busy ? "Mentés..." : isEdit ? "Mentés" : "Létrehozás"}</button>

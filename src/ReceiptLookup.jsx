@@ -103,6 +103,12 @@ export default function ReceiptLookup({ token, signStage }) {
                 </span>
               </div>
             </div>
+            {result.customer_points_balance != null && (
+              <div style={{ background: "var(--primary-soft)", border: "1px solid var(--primary)", borderRadius: 12, padding: "12px 14px", marginTop: 14, fontSize: 12.5, color: "#374151", lineHeight: 1.6 }}>
+                <b style={{ color: "var(--primary-ink)" }}>{result.customer_points_balance} pontod van.</b>
+                {result.customer_referral_code && <> Ajánlói kódod: <span className="mono" style={{ fontWeight: 700 }}>{result.customer_referral_code}</span> — add tovább egy barátnak, és ha nálunk vásárol vagy szervizeltet, mindketten +200 pontot kaptok!</>}
+              </div>
+            )}
             {result.warranty && (
               <div style={{ background: "#F9FAFB", border: "1px solid #EEF0F2", borderRadius: 12, padding: 14, fontSize: 11, color: "#6B7280", lineHeight: 1.6, whiteSpace: "pre-line", marginTop: 14 }}>
                 {SALE_WARRANTY_TERMS}

@@ -215,6 +215,9 @@ export const customerFromApi = (r) => ({
   marketingConsent: !!r.marketing_consent,
   marketingConsentAt: r.marketing_consent_at,
   createdAt: r.created_at,
+  loyaltyPointsBalance: r.loyalty_points_balance || 0,
+  referralCode: r.referral_code || "",
+  referredByCustomerId: r.referred_by_customer_id,
 });
 export const customerToApi = (c) => ({
   name: c.name || null,
@@ -223,6 +226,39 @@ export const customerToApi = (c) => ({
   cnp: c.cnp || null,
   address: c.address || null,
   notes: c.notes || null,
+  ...(c.referredByCustomerId !== undefined ? { referred_by_customer_id: c.referredByCustomerId || null } : {}),
+});
+
+export const loyaltyLedgerFromApi = (r) => ({
+  id: r.id,
+  customerId: r.customer_id,
+  points: r.points,
+  kind: r.kind,
+  transactionId: r.transaction_id,
+  ticketId: r.ticket_id,
+  rewardKey: r.reward_key,
+  note: r.note,
+  createdAt: r.created_at,
+});
+
+export const loyaltyRewardFromApi = (r) => ({
+  id: r.id,
+  rewardKey: r.reward_key,
+  label: r.label,
+  pointCost: r.point_cost,
+  ourCost: r.our_cost == null ? null : Number(r.our_cost),
+  customerValue: r.customer_value == null ? null : Number(r.customer_value),
+  active: r.active !== false,
+  sortOrder: r.sort_order || 0,
+});
+export const loyaltyRewardToApi = (r) => ({
+  reward_key: r.rewardKey,
+  label: r.label,
+  point_cost: Number(r.pointCost) || 0,
+  our_cost: r.ourCost === "" || r.ourCost == null ? null : Number(r.ourCost),
+  customer_value: r.customerValue === "" || r.customerValue == null ? null : Number(r.customerValue),
+  active: r.active !== false,
+  sort_order: Number(r.sortOrder) || 0,
 });
 
 export const partFromApi = (r) => ({

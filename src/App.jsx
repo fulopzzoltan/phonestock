@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
 import { thumbPathOf } from "./lib/imageResize";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi, buybackOfferFromApi } from "./lib/mappers";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi, buybackOfferFromApi, loyaltyLedgerFromApi, loyaltyRewardFromApi, loyaltyRewardToApi } from "./lib/mappers";
 import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, normalizeImei, money, ticketCode } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
@@ -113,6 +113,9 @@ function AppShell() {
   const [parts, setParts] = useState([]);
   const [users, setUsers] = useState([]);
   const [customersTable, setCustomersTable] = useState([]);
+  const [loyaltyRewards, setLoyaltyRewards] = useState([]);
+  const [loyaltyLedger, setLoyaltyLedger] = useState([]);
+  const [loyaltyRewardModal, setLoyaltyRewardModal] = useState(null); // null | "add" | reward obj (edit)
   const [monthlySummaries, setMonthlySummaries] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -222,7 +225,7 @@ function AppShell() {
   async function loadAll() {
     setLoadingData(true);
     try {
-      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, bbOffers, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds, prodAcqs, dClosesR] = await Promise.all([
+      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, bbOffers, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds, prodAcqs, dClosesR, loyRewards, loyLedger] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         fetchAllRows(() => supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false })),
         fetchAllRows(() => supabase.from("transactions").select("*, smartbill_documents(*), signatures(*)").is("deleted_at", null).order("date", { ascending: false })),
@@ -251,6 +254,8 @@ function AppShell() {
         supabase.from("web_orders").select("*, locations(name), web_order_items(id, product_id, price, products(brand, model, storage, color))").in("status", ["fizetve", "visszaigazolva"]).order("created_at", { ascending: false }),
         supabase.from("product_acquisitions").select("*"),
         supabase.from("day_closes").select("*").order("date", { ascending: false }),
+        supabase.from("loyalty_rewards").select("*").order("sort_order", { ascending: true }),
+        fetchAllRows(() => supabase.from("loyalty_points_ledger").select("*").order("created_at", { ascending: false })),
       ]);
       setLocations(unwrap(locs) || []);
       const prodRows = unwrap(prods) || [];
@@ -269,6 +274,8 @@ function AppShell() {
       setParts((unwrap(prs) || []).map(partFromApi));
       setUsers((unwrap(usrs) || []).map(profileFromApi));
       setCustomersTable((unwrap(custs) || []).map(customerFromApi));
+      setLoyaltyRewards((unwrap(loyRewards) || []).map(loyaltyRewardFromApi));
+      setLoyaltyLedger((unwrap(loyLedger) || []).map(loyaltyLedgerFromApi));
       setMonthlySummaries((unwrap(msums) || []).map(monthlySummaryFromApi));
       setWarranties((unwrap(warrs) || []).map(warrantyFromApi));
       setBuybackModels((unwrap(bbModels) || []).map(buybackModelFromApi));
@@ -618,6 +625,7 @@ function AppShell() {
       setStock(updatedStock);
       setTransactions([...newTxs, ...transactions]);
       setSellModal(null);
+      if (customerId) await refreshCustomerLoyalty(customerId);
     });
     if (smartbillInvoice && mainTxId) {
       const { data, error: fnError } = await supabase.functions.invoke("smartbill-issue-document", {
@@ -1101,6 +1109,58 @@ function AppShell() {
     });
   }
 
+  // LOYALTY (hűségpont + ajánlói program)
+  async function refreshCustomerLoyalty(customerId) {
+    if (!customerId) return;
+    const rows = unwrap(await supabase.from("customers").select("*").eq("id", customerId));
+    const row = rows?.[0];
+    if (!row) return;
+    const ids = [row.id, row.referred_by_customer_id].filter(Boolean);
+    const all = (unwrap(await supabase.from("customers").select("*").in("id", ids)) || []).map(customerFromApi);
+    setCustomersTable((prev) => {
+      const byId = new Map(prev.map((c) => [c.id, c]));
+      all.forEach((fresh) => byId.set(fresh.id, byId.has(fresh.id) ? { ...byId.get(fresh.id), loyaltyPointsBalance: fresh.loyaltyPointsBalance, referralCode: fresh.referralCode } : fresh));
+      return Array.from(byId.values());
+    });
+    const ledgerRows = (unwrap(await supabase.from("loyalty_points_ledger").select("*").in("customer_id", ids).order("created_at", { ascending: false })) || []).map(loyaltyLedgerFromApi);
+    setLoyaltyLedger((prev) => {
+      const byId = new Map(prev.map((l) => [l.id, l]));
+      ledgerRows.forEach((l) => byId.set(l.id, l));
+      return Array.from(byId.values()).sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+    });
+  }
+  async function redeemLoyaltyPoints(customer, reward, locId) {
+    await withBusy(async () => {
+      const ledgerRow = unwrap(await supabase.from("loyalty_points_ledger").insert({
+        customer_id: customer.id, points: -reward.pointCost, kind: "redeem", reward_key: reward.rewardKey,
+        note: `Beváltva: ${reward.label}`, created_by: user?.id || null,
+      }).select());
+      setLoyaltyLedger((prev) => [loyaltyLedgerFromApi(ledgerRow[0]), ...prev]);
+      setCustomersTable((prev) => prev.map((c) => (c.id === customer.id ? { ...c, loyaltyPointsBalance: c.loyaltyPointsBalance - reward.pointCost } : c)));
+      if (reward.ourCost) {
+        const tr = unwrap(await supabase.from("transactions").insert({
+          ...txToApi({ type: "expense", category: "Készlet", description: `Pontbeváltás: ${reward.label}`, amount: reward.ourCost, customerName: customer.name, customerPhone: customer.phone }, locId),
+          customer_id: customer.id,
+        }).select());
+        setTransactions((prev) => [txFromApi(tr[0]), ...prev]);
+      }
+    });
+  }
+  async function addLoyaltyReward(data) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("loyalty_rewards").insert(loyaltyRewardToApi(data)).select());
+      setLoyaltyRewards((prev) => [...prev, loyaltyRewardFromApi(r[0])].sort((a, b) => a.sortOrder - b.sortOrder));
+      setLoyaltyRewardModal(null);
+    });
+  }
+  async function editLoyaltyReward(id, data) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("loyalty_rewards").update(loyaltyRewardToApi(data)).eq("id", id).select());
+      setLoyaltyRewards((prev) => prev.map((rw) => (rw.id === id ? loyaltyRewardFromApi(r[0]) : rw)).sort((a, b) => a.sortOrder - b.sortOrder));
+      setLoyaltyRewardModal(null);
+    });
+  }
+
   // TRANSACTIONS
   async function addTransaction(data, locId) {
     await withBusy(async () => {
@@ -1114,6 +1174,7 @@ function AppShell() {
       }
       const r = unwrap(await supabase.from("transactions").insert({ ...txToApi(data, locId), customer_id: customerId }).select());
       setTransactions((prev) => [txFromApi(r[0]), ...prev]);
+      if (customerId && data.type === "income" && ["Készlet", "Szerviz"].includes(data.category)) await refreshCustomerLoyalty(customerId);
     });
   }
   async function editTransaction(id, data, locId) {
@@ -1125,8 +1186,10 @@ function AppShell() {
   }
   async function deleteTransaction(id) {
     await withBusy(async () => {
+      const tx = transactions.find((t) => t.id === id);
       unwrap(await supabase.from("transactions").update({ deleted_at: new Date().toISOString() }).eq("id", id));
       setTransactions(transactions.filter((t) => t.id !== id));
+      if (tx?.customerId && tx.type === "income" && ["Készlet", "Szerviz"].includes(tx.category)) await refreshCustomerLoyalty(tx.customerId);
     });
   }
 
@@ -1226,6 +1289,7 @@ function AppShell() {
       setStock((prev) => prev.map((p) => (productIds.includes(p.id) ? { ...p, status: "sold", stockStatus: "polcon" } : p)));
       setTransactions((prev) => [...newTxs, ...prev]);
       setWebOrders((prev) => prev.filter((o) => o.id !== id));
+      if (customerId) await refreshCustomerLoyalty(customerId);
     });
   }
 
@@ -1361,16 +1425,20 @@ function AppShell() {
       }
 
       if (subStatus === "Átadva" && ticket && ticket.subStatus !== "Átadva" && (Number(ticket.price) || 0) > 0) {
-        const r = unwrap(await supabase.from("transactions").insert(txToApi({
-          type: "income",
-          category: "Szerviz",
-          description: `Szerviz: ${ticket.customerName} — ${[ticket.brand, ticket.model].filter(Boolean).join(" ")}`,
-          amount: ticket.price,
-          costPrice: ticket.matCost,
-          customerName: ticket.customerName,
-          customerPhone: ticket.customerPhone,
-        }, ticket.locationId)).select());
+        const r = unwrap(await supabase.from("transactions").insert({
+          ...txToApi({
+            type: "income",
+            category: "Szerviz",
+            description: `Szerviz: ${ticket.customerName} — ${[ticket.brand, ticket.model].filter(Boolean).join(" ")}`,
+            amount: ticket.price,
+            costPrice: ticket.matCost,
+            customerName: ticket.customerName,
+            customerPhone: ticket.customerPhone,
+          }, ticket.locationId),
+          customer_id: ticket.customerId || null,
+        }).select());
         setTransactions((prev) => [txFromApi(r[0]), ...prev]);
+        if (ticket.customerId) await refreshCustomerLoyalty(ticket.customerId);
       }
 
       if (subStatus === "Átadva" && ticket && ticket.subStatus !== "Átadva" && ticket.ticketKind === "Saját készlet - garanciális" && (Number(ticket.matCost) || 0) > 0) {
@@ -1979,6 +2047,7 @@ function AppShell() {
           <SettingsTab
             isAdmin={isAdmin} profile={profile} user={user} settings={settings} updateSettings={updateSettings}
             busy={busy} setChangePasswordModal={setChangePasswordModal} locations={locations}
+            loyaltyRewards={loyaltyRewards} addLoyaltyReward={addLoyaltyReward} editLoyaltyReward={editLoyaltyReward}
           />
         )}
       </div>
@@ -1994,7 +2063,7 @@ function AppShell() {
           onSave={(data, locId, acquisition) => (typeof stockModal === "object" && stockModal?.id ? editProduct(stockModal.id, data, locId) : addProduct(data, locId, acquisition))}
         />
       )}
-      {sellModal && <SellModal item={sellModal} locName={locName} customers={customersTable} onClose={() => setSellModal(null)} onSave={sellProduct} busy={busy} />}
+      {sellModal && <SellModal item={sellModal} locName={locName} customers={customersTable} rewards={loyaltyRewards} onClose={() => setSellModal(null)} onSave={sellProduct} busy={busy} />}
       {issueInvoiceModal && (
         <IssueInvoiceModal transactions={transactions} locName={locName} onClose={() => setIssueInvoiceModal(null)} onIssue={issueSmartbillDocument} busy={busy} />
       )}
@@ -2057,6 +2126,8 @@ function AppShell() {
           parts={parts}
           stock={stock}
           users={users}
+          customers={customersTable}
+          rewards={loyaltyRewards}
           onClose={() => setDetailId(null)}
           onStatusChange={setTicketStatus}
           onCompleteQc={completeQc}
@@ -2123,6 +2194,10 @@ function AppShell() {
           customer={detailCustomer}
           locName={locName}
           busy={busy}
+          ledger={loyaltyLedger}
+          rewards={loyaltyRewards}
+          redeemBusy={busy}
+          onRedeem={(reward) => redeemLoyaltyPoints(detailCustomer, reward, defaultLocId)}
           onClose={() => setCustomerKey(null)}
           onEdit={(c) => { setCustomerKey(null); setCustomerModal(c); }}
         />
@@ -2130,6 +2205,7 @@ function AppShell() {
       {customerModal && (
         <CustomerModal
           customer={customerModal === "add" ? null : customerModal}
+          customers={customersTable}
           busy={busy}
           onClose={() => setCustomerModal(null)}
           onSave={(data) => (customerModal === "add" ? createCustomer(data) : updateCustomer(customerModal.id, data))}

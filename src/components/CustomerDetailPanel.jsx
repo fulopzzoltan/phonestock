@@ -2,12 +2,26 @@ import { money, statusCls, subStatusLabel } from "../lib/utils";
 import { CloseIcon, EditIcon } from "./icons";
 import Row from "./DetailRow";
 import CallLink from "./CallLink";
+import ConfirmDelete from "./ConfirmDelete";
 
-export default function CustomerDetailPanel({ customer, locName, onClose, onEdit }) {
+const LEDGER_LABELS = {
+  purchase_earn: "Pont — vásárlás",
+  service_earn: "Pont — szerviz",
+  referral_bonus: "Pont — ajánlás",
+  redeem: "Beváltás",
+  manual_adjust: "Kézi korrekció",
+  reversal: "Visszavonás",
+};
+
+export default function CustomerDetailPanel({ customer, locName, ledger, rewards, onRedeem, redeemBusy, onClose, onEdit }) {
   const events = [
     ...customer.purchases.map((p) => ({ kind: "purchase", date: p.date, record: p })),
     ...customer.tickets.map((t) => ({ kind: "ticket", date: t.dateIn, record: t })),
   ].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+
+  const balance = customer.loyaltyPointsBalance || 0;
+  const ledgerRows = (ledger || []).filter((l) => l.customerId === customer.id).slice(0, 10);
+  const redeemable = (rewards || []).filter((r) => r.active && r.pointCost <= balance).sort((a, b) => a.sortOrder - b.sortOrder);
 
   return (
     <div className="detail-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -41,7 +55,26 @@ export default function CustomerDetailPanel({ customer, locName, onClose, onEdit
             <Row k="Vásárlások" v={`${customer.purchases.length} db — ${money(customer.purchaseTotal)}`} />
             <Row k="Szerviz munkalapok" v={`${customer.tickets.length} db — ${money(customer.ticketTotal)}`} />
             <Row k="Utolsó aktivitás" v={customer.lastActivity} />
+            <Row k="Pontegyenleg" v={<span style={{ fontWeight: 700, color: "var(--primary-ink)" }}>{balance} pont</span>} />
+            {customer.referralCode && <Row k="Ajánlói kód" v={<span className="mono">{customer.referralCode}</span>} />}
           </div>
+          {redeemable.length > 0 && (
+            <div className="dp-section">
+              <div className="dp-section-title">Pontbeváltás</div>
+              {redeemable.map((r) => (
+                <div key={r.id} className="dp-row" style={{ alignItems: "center" }}>
+                  <span className="dp-key">{r.label} <span style={{ color: "#9CA3AF" }}>({r.pointCost} pont)</span></span>
+                  <ConfirmDelete
+                    variant="full"
+                    label="Beváltás"
+                    confirmLabel="Beváltod?"
+                    disabled={redeemBusy}
+                    onConfirm={() => onRedeem(r)}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
           <div className="dp-section">
             <div className="dp-section-title">Előzmények</div>
             {events.length === 0 && <div style={{ color: "#9CA3AF", fontSize: 12.5 }}>Nincs rögzített esemény.</div>}
@@ -61,6 +94,17 @@ export default function CustomerDetailPanel({ customer, locName, onClose, onEdit
               </div>
             ))}
           </div>
+          {ledgerRows.length > 0 && (
+            <div className="dp-section">
+              <div className="dp-section-title">Pontelőzmények</div>
+              {ledgerRows.map((l) => (
+                <div key={l.id} className="dp-row" style={{ alignItems: "center" }}>
+                  <span className="dp-key">{(l.createdAt || "").slice(0, 10)} · {LEDGER_LABELS[l.kind] || l.kind}</span>
+                  <span className="dp-val" style={{ color: l.points >= 0 ? "#15803D" : "#B91C1C", fontWeight: 700 }}>{l.points >= 0 ? "+" : ""}{l.points}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

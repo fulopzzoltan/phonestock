@@ -130,7 +130,58 @@ function SmartBillSettings({ settings, updateSettings, busy, locations }) {
   );
 }
 
-export default function SettingsTab({ isAdmin, profile, user, settings, updateSettings, busy, setChangePasswordModal, locations }) {
+function slugify(label) {
+  return label.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "") || "jutalom";
+}
+
+function LoyaltyRewardRow({ reward, onSave, busy }) {
+  const [f, setF] = useState({ label: reward.label, pointCost: reward.pointCost, ourCost: reward.ourCost ?? "", customerValue: reward.customerValue ?? "", active: reward.active });
+  const dirty = f.label !== reward.label || Number(f.pointCost) !== reward.pointCost
+    || Number(f.ourCost || 0) !== Number(reward.ourCost || 0) || Number(f.customerValue || 0) !== Number(reward.customerValue || 0)
+    || f.active !== reward.active;
+  return (
+    <div className="settings-row" style={{ alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+      <input value={f.label} onChange={(e) => setF({ ...f, label: e.target.value })} style={{ maxWidth: 220 }} />
+      <input type="number" title="Pontköltség" value={f.pointCost} onChange={(e) => setF({ ...f, pointCost: e.target.value })} placeholder="pont" style={{ maxWidth: 90 }} />
+      <input type="number" title="Nekünk mennyibe kerül (Lei)" value={f.ourCost} onChange={(e) => setF({ ...f, ourCost: e.target.value })} placeholder="költség (Lei)" style={{ maxWidth: 110 }} />
+      <input type="number" title="Vevőnek mennyit ér (Lei)" value={f.customerValue} onChange={(e) => setF({ ...f, customerValue: e.target.value })} placeholder="érték (Lei)" style={{ maxWidth: 110 }} />
+      <Toggle checked={f.active} disabled={busy} onChange={(v) => setF({ ...f, active: v })} />
+      <button type="button" className="btn sec sm" disabled={busy || !dirty} onClick={() => onSave(f)}>Mentés</button>
+    </div>
+  );
+}
+
+function LoyaltyRewardsSettings({ rewards, addLoyaltyReward, editLoyaltyReward, busy }) {
+  const [newLabel, setNewLabel] = useState("");
+  const [newPointCost, setNewPointCost] = useState("");
+  const sorted = [...(rewards || [])].sort((a, b) => a.sortOrder - b.sortOrder);
+  return (
+    <div className="pult-section">
+      <div className="pult-section-head"><SettingsIcon width={16} height={16} />Hűségpont-beváltási katalógus</div>
+      <div className="settings-row-desc" style={{ marginBottom: 10 }}>
+        Ezek a jutalmak jelennek meg beváltható tételként az ügyfél pontegyenlege alapján a Kliens-lapon. A pontszerzés (1 pont/Lei) és az ajánlói bónusz (200 pont) automatikus, nem itt állítható.
+      </div>
+      {sorted.map((r) => (
+        <LoyaltyRewardRow key={r.id} reward={r} busy={busy} onSave={(f) => editLoyaltyReward(r.id, { ...r, ...f })} />
+      ))}
+      <div className="settings-row" style={{ alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 10, paddingTop: 10, borderTop: "1px solid #E5E7EB" }}>
+        <input value={newLabel} onChange={(e) => setNewLabel(e.target.value)} placeholder="Új jutalom neve" style={{ maxWidth: 220 }} />
+        <input type="number" value={newPointCost} onChange={(e) => setNewPointCost(e.target.value)} placeholder="pont" style={{ maxWidth: 90 }} />
+        <button
+          type="button" className="btn sec sm" disabled={busy || !newLabel.trim() || !newPointCost}
+          onClick={() => {
+            addLoyaltyReward({ rewardKey: `${slugify(newLabel)}_${Date.now().toString(36)}`, label: newLabel.trim(), pointCost: newPointCost, ourCost: "", customerValue: "", active: true, sortOrder: sorted.length + 1 });
+            setNewLabel(""); setNewPointCost("");
+          }}
+        >
+          + Új jutalom
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function SettingsTab({ isAdmin, profile, user, settings, updateSettings, busy, setChangePasswordModal, locations, loyaltyRewards, addLoyaltyReward, editLoyaltyReward }) {
   return (
     <>
       <div className="topbar">
@@ -171,6 +222,7 @@ export default function SettingsTab({ isAdmin, profile, user, settings, updateSe
 
         {isAdmin && <CompanySettings settings={settings} updateSettings={updateSettings} busy={busy} />}
         {isAdmin && <SmartBillSettings settings={settings} updateSettings={updateSettings} busy={busy} locations={locations} />}
+        {isAdmin && <LoyaltyRewardsSettings rewards={loyaltyRewards} addLoyaltyReward={addLoyaltyReward} editLoyaltyReward={editLoyaltyReward} busy={busy} />}
       </div>
     </>
   );

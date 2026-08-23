@@ -19,6 +19,16 @@ const STEPS = [
   { label: "Átvéve", icon: LockIcon },
 ];
 
+function LoyaltyBox({ balance, code }) {
+  if (balance == null) return null;
+  return (
+    <div style={{ background: "var(--primary-soft)", border: "1px solid var(--primary)", borderRadius: 12, padding: "12px 14px", marginBottom: 14, fontSize: 12.5, color: "#374151", lineHeight: 1.6 }}>
+      <b style={{ color: "var(--primary-ink)" }}>{balance} pontod van.</b>
+      {code && <> Ajánlói kódod: <span className="mono" style={{ fontWeight: 700 }}>{code}</span> — add tovább egy barátnak, és ha nálunk vásárol vagy szervizeltet, mindketten +200 pontot kaptok!</>}
+    </div>
+  );
+}
+
 function StatusStepper({ status, handedOver }) {
   const activeStep = handedOver ? 3 : (STEP_MAP[status] ?? 0);
   return (
@@ -262,6 +272,7 @@ export default function StatusLookup({ token, shortCode, signStage }) {
                 )}
               </div>
             )}
+            <LoyaltyBox balance={result.customer_points_balance} code={result.customer_referral_code} />
             <div style={{ background: "#F9FAFB", border: "1px solid #EEF0F2", borderRadius: 12, padding: 14, fontSize: 11, color: "#6B7280", lineHeight: 1.6, whiteSpace: "pre-line", marginBottom: 14 }}>
               {SERVICE_WARRANTY_TERMS}
             </div>
@@ -321,6 +332,7 @@ export default function StatusLookup({ token, shortCode, signStage }) {
                 </span>
               </div>
             </div>
+            <LoyaltyBox balance={result.customer_points_balance} code={result.customer_referral_code} />
             {!token && !shortCode && (
               <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
                 {matches && <button className="btn sec" style={{ flex: 1, justifyContent: "center" }} onClick={() => setResult(null)}>← Vissza a találatokhoz</button>}

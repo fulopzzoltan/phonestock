@@ -12,7 +12,7 @@ function signatureUrl(path) {
   return supabase.storage.from("signatures").getPublicUrl(path).data.publicUrl;
 }
 
-export default function DetailPanel({ ticket, locName, parts, stock, users = [], onClose, onStatusChange, onCompleteQc, onEdit, onDelete, busy, onAddPart, onRemovePart, onPrint, onShowHistory }) {
+export default function DetailPanel({ ticket, locName, parts, stock, users = [], customers = [], rewards = [], onClose, onStatusChange, onCompleteQc, onEdit, onDelete, busy, onAddPart, onRemovePart, onPrint, onShowHistory }) {
   const [copied, setCopied] = useState(false);
   const [showAddPart, setShowAddPart] = useState(false);
   const [selPartId, setSelPartId] = useState("");
@@ -34,6 +34,10 @@ export default function DetailPanel({ ticket, locName, parts, stock, users = [],
   const intakeSignature = (ticket.signatures || []).find((s) => s.stage === "service_intake");
   const handoverSignature = (ticket.signatures || []).find((s) => s.stage === "service_handover");
   const handoverSignAllowed = ticket.status === "Átadásra" && ticket.subStatus !== "Sikertelen";
+  const ticketCustomer = ticket.customerId ? customers.find((c) => c.id === ticket.customerId) : null;
+  const redeemableForCustomer = ticketCustomer
+    ? rewards.filter((r) => r.active && r.pointCost <= (ticketCustomer.loyaltyPointsBalance || 0)).sort((a, b) => a.sortOrder - b.sortOrder)
+    : [];
 
   function copyStatusLink() {
     navigator.clipboard.writeText(statusLink);
@@ -78,6 +82,12 @@ export default function DetailPanel({ ticket, locName, parts, stock, users = [],
               </span>
             ) : null} />
             <Row k="Helyszín" v={locName(ticket.locationId)} />
+            {ticketCustomer && (ticketCustomer.loyaltyPointsBalance || 0) > 0 && (
+              <div style={{ fontSize: 12, color: "var(--primary-ink)", background: "var(--primary-soft)", borderRadius: 9, padding: "8px 12px", marginTop: 4 }}>
+                Ennek az ügyfélnek {ticketCustomer.loyaltyPointsBalance} pontja van
+                {redeemableForCustomer.length > 0 ? <> — beváltható: {redeemableForCustomer.map((r) => r.label).join(", ")} (a Kliens-lapon)</> : "."}
+              </div>
+            )}
           </div>
           <div className="dp-section">
             <div className="dp-section-title">Ügyfél nyomon követés</div>

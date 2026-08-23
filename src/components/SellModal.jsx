@@ -3,8 +3,12 @@ import { CloseIcon } from "./icons";
 import { PAYMENTS } from "../lib/utils";
 import CustomerAutocomplete from "./CustomerAutocomplete";
 
-export default function SellModal({ item, locName, customers = [], onClose, onSave, busy }) {
+export default function SellModal({ item, locName, customers = [], rewards = [], onClose, onSave, busy }) {
   const [f, setF] = useState({ price: item.salePrice || "", customerName: "", customerPhone: "", customerId: null, payment: "Készpénz", marketingConsent: false, smartbillInvoice: false });
+  const selectedCustomer = f.customerId ? customers.find((c) => c.id === f.customerId) : null;
+  const redeemableForCustomer = selectedCustomer
+    ? rewards.filter((r) => r.active && r.pointCost <= (selectedCustomer.loyaltyPointsBalance || 0)).sort((a, b) => a.sortOrder - b.sortOrder)
+    : [];
   const [phoneTouched, setPhoneTouched] = useState(false);
   const [hasTradeIn, setHasTradeIn] = useState(false);
   const [tradeIn, setTradeIn] = useState({ brand: "", model: "", condition: "Refurbished", value: "" });
@@ -65,6 +69,12 @@ export default function SellModal({ item, locName, customers = [], onClose, onSa
             Számla kiállítása SmartBillben (ha a vevő kér számlát)
           </label>
         </div>
+        {selectedCustomer && (selectedCustomer.loyaltyPointsBalance || 0) > 0 && (
+          <div style={{ fontSize: 12, color: "var(--primary-ink)", background: "var(--primary-soft)", borderRadius: 9, padding: "8px 12px", marginBottom: 12 }}>
+            Ennek az ügyfélnek {selectedCustomer.loyaltyPointsBalance} pontja van
+            {redeemableForCustomer.length > 0 ? <> — beváltható: {redeemableForCustomer.map((r) => r.label).join(", ")} (a Kliens-lapon)</> : "."}
+          </div>
+        )}
         {hasTradeIn && (
           <div style={{ background: "#F9FAFB", border: "1px solid #EEF0F2", borderRadius: 12, padding: 12, marginBottom: 12 }}>
             <div className="row2">
