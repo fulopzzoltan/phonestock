@@ -540,7 +540,7 @@ function AppShell() {
       setStock(stock.filter((i) => i.id !== id));
     });
   }
-  async function sellProduct(txData, locId, tradeIn, smartbillInvoice) {
+  async function sellProduct(txData, locId, tradeIns, smartbillInvoice) {
     let mainTxId = null;
     await withBusy(async () => {
       let customerId = txData.customerId || null;
@@ -589,7 +589,8 @@ function AppShell() {
 
       let updatedStock = stock.map((i) => (i.id === txData.productId ? { ...i, status: "sold" } : i));
 
-      if (tradeIn && tradeIn.value > 0) {
+      for (const tradeIn of tradeIns || []) {
+        if (!(tradeIn.value > 0)) continue;
         const tiProduct = pFromApi(unwrap(await supabase.from("products").insert(pToApi({
           brand: tradeIn.brand, model: tradeIn.model, condition: tradeIn.condition, grade: tradeIn.condition === "Refurbished" ? "B" : "",
           costPrice: tradeIn.value, salePrice: 0, stockStatus: "lefoglalt",

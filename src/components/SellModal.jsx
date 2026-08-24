@@ -11,10 +11,13 @@ export default function SellModal({ item, locName, customers = [], rewards = [],
     : [];
   const [phoneTouched, setPhoneTouched] = useState(false);
   const [hasTradeIn, setHasTradeIn] = useState(false);
-  const [tradeIn, setTradeIn] = useState({ brand: "", model: "", condition: "Refurbished", value: "" });
-  const setTI = (k) => (e) => setTradeIn({ ...tradeIn, [k]: e.target.value });
+  const emptyTradeIn = () => ({ brand: "", model: "", condition: "Refurbished", value: "" });
+  const [tradeIns, setTradeIns] = useState([emptyTradeIn()]);
+  const setTI = (idx, k) => (e) => setTradeIns(tradeIns.map((t, i) => (i === idx ? { ...t, [k]: e.target.value } : t)));
+  const addTradeIn = () => setTradeIns([...tradeIns, emptyTradeIn()]);
+  const removeTradeIn = (idx) => setTradeIns(tradeIns.filter((_, i) => i !== idx));
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value, ...(k === "customerName" ? { customerId: null } : {}) });
-  const tradeInValid = !hasTradeIn || (tradeIn.brand.trim() && tradeIn.model.trim() && tradeIn.value !== "");
+  const tradeInValid = !hasTradeIn || tradeIns.every((t) => t.brand.trim() && t.model.trim() && t.value !== "");
   const valid = f.customerPhone.trim().length > 0 && tradeInValid;
   return (
     <div className="overlay" onClick={onClose}>
@@ -77,21 +80,34 @@ export default function SellModal({ item, locName, customers = [], rewards = [],
         )}
         {hasTradeIn && (
           <div style={{ background: "#F9FAFB", border: "1px solid #EEF0F2", borderRadius: 12, padding: 12, marginBottom: 12 }}>
-            <div className="row2">
-              <div className="field"><label>Beszámított márka</label><input value={tradeIn.brand} onChange={setTI("brand")} placeholder="Samsung" /></div>
-              <div className="field"><label>Beszámított modell</label><input value={tradeIn.model} onChange={setTI("model")} placeholder="Galaxy A54" /></div>
-            </div>
-            <div className="row2">
-              <div className="field"><label>Állapot</label>
-                <select value={tradeIn.condition} onChange={setTI("condition")}>
-                  <option value="Refurbished">Felújított</option>
-                  <option value="New">Új</option>
-                </select>
+            {tradeIns.map((tradeIn, idx) => (
+              <div key={idx} style={idx > 0 ? { marginTop: 12, paddingTop: 12, borderTop: "1px solid #EEF0F2" } : undefined}>
+                {tradeIns.length > 1 && (
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: "#6B7280" }}>{idx + 1}. telefon</span>
+                    <button type="button" className="iconbtn" onClick={() => removeTradeIn(idx)} title="Eltávolítás">
+                      <CloseIcon />
+                    </button>
+                  </div>
+                )}
+                <div className="row2">
+                  <div className="field"><label>Beszámított márka</label><input value={tradeIn.brand} onChange={setTI(idx, "brand")} placeholder="Samsung" /></div>
+                  <div className="field"><label>Beszámított modell</label><input value={tradeIn.model} onChange={setTI(idx, "model")} placeholder="Galaxy A54" /></div>
+                </div>
+                <div className="row2">
+                  <div className="field"><label>Állapot</label>
+                    <select value={tradeIn.condition} onChange={setTI(idx, "condition")}>
+                      <option value="Refurbished">Felújított</option>
+                      <option value="New">Új</option>
+                    </select>
+                  </div>
+                  <div className="field"><label>Beszámított érték (Lei)</label><input type="number" value={tradeIn.value} onChange={setTI(idx, "value")} placeholder="0" /></div>
+                </div>
               </div>
-              <div className="field"><label>Beszámított érték (Lei)</label><input type="number" value={tradeIn.value} onChange={setTI("value")} placeholder="0" /></div>
-            </div>
-            <div className="login-note" style={{ margin: 0, textAlign: "left" }}>
-              A beszámított összeggel csökken a ténylegesen fizetendő készpénz, a régi telefon pedig felkerül a raktárba (Lefoglalt állapotban, hogy előbb átnézhesd/árazd, mielőtt a webshopban megjelenne).
+            ))}
+            <button type="button" className="btn sec" style={{ marginTop: 4 }} onClick={addTradeIn}>+ Újabb beszámított telefon</button>
+            <div className="login-note" style={{ margin: "10px 0 0", textAlign: "left" }}>
+              A beszámított összeggel csökken a ténylegesen fizetendő készpénz, a régi telefon(ok) pedig felkerül(nek) a raktárba (Lefoglalt állapotban, hogy előbb átnézhesd/árazd, mielőtt a webshopban megjelenne).
             </div>
           </div>
         )}
@@ -113,7 +129,7 @@ export default function SellModal({ item, locName, customers = [], rewards = [],
               customerId: f.customerId,
               payment: f.payment,
               marketingConsent: f.marketingConsent,
-            }, item.locationId, hasTradeIn ? { ...tradeIn, value: Number(tradeIn.value) || 0 } : null, f.smartbillInvoice)}
+            }, item.locationId, hasTradeIn ? tradeIns.map((t) => ({ ...t, value: Number(t.value) || 0 })) : null, f.smartbillInvoice)}
           >
             {busy ? "Mentés..." : "Rögzítés"}
           </button>
