@@ -2204,6 +2204,8 @@ function AppShell() {
           onRedeem={(reward) => redeemLoyaltyPoints(detailCustomer, reward, defaultLocId)}
           onClose={() => setCustomerKey(null)}
           onEdit={(c) => { setCustomerKey(null); setCustomerModal(c); }}
+          onOpenTicket={(id) => { setCustomerKey(null); setDetailId(id); }}
+          onOpenProduct={(id) => { setCustomerKey(null); setProductDetailId(id); }}
         />
       )}
       {customerModal && (

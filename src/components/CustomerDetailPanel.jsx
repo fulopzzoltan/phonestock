@@ -1,4 +1,4 @@
-import { money, statusCls, subStatusLabel, formatPhone } from "../lib/utils";
+import { money, statusCls, subStatusLabel, formatPhone, warrantyExpiry, isWarrantyActive } from "../lib/utils";
 import { CloseIcon, EditIcon } from "./icons";
 import Row from "./DetailRow";
 import CallLink from "./CallLink";
@@ -13,7 +13,7 @@ const LEDGER_LABELS = {
   reversal: "Visszavonás",
 };
 
-export default function CustomerDetailPanel({ customer, locName, ledger, rewards, onRedeem, redeemBusy, onClose, onEdit }) {
+export default function CustomerDetailPanel({ customer, locName, ledger, rewards, onRedeem, redeemBusy, onClose, onEdit, onOpenTicket, onOpenProduct }) {
   const events = [
     ...customer.purchases.map((p) => ({ kind: "purchase", date: p.date, record: p })),
     ...customer.tickets.map((t) => ({ kind: "ticket", date: t.dateIn, record: t })),
@@ -81,21 +81,40 @@ export default function CustomerDetailPanel({ customer, locName, ledger, rewards
           <div className="dp-section">
             <div className="dp-section-title">Előzmények</div>
             {events.length === 0 && <div style={{ color: "#9CA3AF", fontSize: 12.5 }}>Nincs rögzített esemény.</div>}
-            {events.map((e, i) => (
-              <div key={i} className="dp-row" style={{ alignItems: "center" }}>
-                {e.kind === "purchase" ? (
-                  <>
-                    <span className="dp-key">{e.date} · <span className="badge-income" style={{ marginLeft: 4 }}>Vásárlás</span></span>
-                    <span className="dp-val">{e.record.description} — {money(e.record.amount)}</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="dp-key">{e.date} · <span className={`st ${statusCls(e.record.status)}`} style={{ marginLeft: 4 }}>#{e.record.ticketNo}{e.record.subStatus ? ` · ${subStatusLabel(e.record.status, e.record.subStatus)}` : ""}</span></span>
-                    <span className="dp-val">{[e.record.brand, e.record.model].filter(Boolean).join(" ")} — {money(e.record.price)}</span>
-                  </>
-                )}
-              </div>
-            ))}
+            {events.map((e, i) => {
+              const clickable = e.kind === "ticket" ? !!onOpenTicket : !!(onOpenProduct && e.record.productId);
+              const onRowClick = () => {
+                if (e.kind === "ticket") onOpenTicket?.(e.record.id);
+                else if (e.record.productId) onOpenProduct?.(e.record.productId);
+              };
+              const expiry = e.kind === "purchase" && e.record.warranty ? warrantyExpiry(e.record.date, e.record.warranty) : null;
+              const active = e.kind === "purchase" && e.record.warranty ? isWarrantyActive(e.record.date, e.record.warranty) : null;
+              return (
+                <div
+                  key={i} className="dp-row"
+                  style={{ alignItems: "center", flexWrap: "wrap", rowGap: 2, cursor: clickable ? "pointer" : "default" }}
+                  onClick={clickable ? onRowClick : undefined}
+                  title={clickable ? (e.kind === "ticket" ? "Munkalap megnyitása" : "Telefon megnyitása") : undefined}
+                >
+                  {e.kind === "purchase" ? (
+                    <>
+                      <span className="dp-key">{e.date} · <span className="badge-income" style={{ marginLeft: 4 }}>Vásárlás</span></span>
+                      <span className="dp-val">{e.record.description} — {money(e.record.amount)}</span>
+                      {expiry && (
+                        <span style={{ width: "100%", fontSize: 11, color: active ? "#15803D" : "#B91C1C", textAlign: "right" }}>
+                          Garancia: {active ? `${expiry}-ig érvényes` : `lejárt (${expiry})`}
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <span className="dp-key">{e.date} · <span className={`st ${statusCls(e.record.status)}`} style={{ marginLeft: 4 }}>#{e.record.ticketNo}{e.record.subStatus ? ` · ${subStatusLabel(e.record.status, e.record.subStatus)}` : ""}</span></span>
+                      <span className="dp-val">{[e.record.brand, e.record.model].filter(Boolean).join(" ")} — {money(e.record.price)}</span>
+                    </>
+                  )}
+                </div>
+              );
+            })}
           </div>
           {ledgerRows.length > 0 && (
             <div className="dp-section">
