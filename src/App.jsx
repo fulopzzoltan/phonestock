@@ -582,7 +582,7 @@ function AppShell() {
       mainTxId = newTxs[0].id;
       for (const acc of accessories) {
         const ar = unwrap(await supabase.from("transactions").insert(
-          txToApi({ type: "expense", category: "Készlet", description: acc.description, amount: acc.amount, payment: "Készpénz", basketId }, locId)
+          txToApi({ type: "expense", category: "Készlet", description: acc.description, amount: acc.amount, basketId }, locId)
         ).select());
         newTxs.push(txFromApi(ar[0]));
       }
