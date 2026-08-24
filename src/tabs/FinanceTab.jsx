@@ -7,7 +7,7 @@ import { money, today } from "../lib/utils";
 
 export default function FinanceTab({
   effectiveLocFilter, locName, allowedLocations, defaultLocId, busy,
-  loadingData, filteredTransactions, setTxModal, deleteTransaction, setReceiptTxId,
+  loadingData, transactions, filteredTransactions, setTxModal, deleteTransaction, setReceiptTxId,
   smartQuickItems, checkoutBasket,
   todayClose, closeDay, reopenDay,
 }) {
@@ -20,12 +20,30 @@ export default function FinanceTab({
   const todayIncome = todayTx.filter((t) => t.type === "income").reduce((s, t) => s + (Number(t.amount) || 0), 0);
   const todayExpense = todayTx.filter((t) => t.type === "expense").reduce((s, t) => s + (Number(t.amount) || 0), 0);
 
+  const cashByLocation = allowedLocations.map((l) => {
+    const locTx = (transactions || []).filter((t) => t.locationId === l.id);
+    const income = locTx.filter((t) => t.type === "income" && t.payment === "Készpénz").reduce((s, t) => s + (Number(t.amount) || 0), 0);
+    const expense = locTx.filter((t) => t.type === "expense" && t.payment === "Készpénz").reduce((s, t) => s + (Number(t.amount) || 0), 0);
+    return { id: l.id, name: l.name, expected: income - expense };
+  });
+
   return (
     <>
       <div className="topbar">
         <div><div className="page-title">Bevételek &amp; Kiadások</div></div>
       </div>
       <BasketBar defaultLocId={defaultLocId} busy={busy} smartQuickItems={smartQuickItems} onCheckout={checkoutBasket} />
+
+      {cashByLocation.length > 0 && (
+        <div className={`statrow c${Math.min(Math.max(cashByLocation.length, 1), 6)}`} style={{ marginTop: 16 }}>
+          {cashByLocation.map((c) => (
+            <div key={c.id} className="statcard accent">
+              <div className="lbl">Készpénznek kellene lennie — {c.name}</div>
+              <div className="val">{money(c.expected)}</div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="tw" style={{ padding: 16, marginTop: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>

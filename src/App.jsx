@@ -1932,7 +1932,7 @@ function AppShell() {
           <FinanceTab
             effectiveLocFilter={effectiveLocFilter} locName={locName}
             allowedLocations={allowedLocations} defaultLocId={defaultLocId} busy={busy}
-            loadingData={loadingData} filteredTransactions={filteredTransactions} setTxModal={setTxModal}
+            loadingData={loadingData} transactions={transactions} filteredTransactions={filteredTransactions} setTxModal={setTxModal}
             deleteTransaction={deleteTransaction} setReceiptTxId={setReceiptTxId}
             smartQuickItems={QUICK_SALES} checkoutBasket={checkoutBasket}
             todayClose={dayCloses.find((d) => d.date === today() && d.locationId === defaultLocId && !d.reopenedAt)}
