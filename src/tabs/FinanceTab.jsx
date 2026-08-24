@@ -8,13 +8,14 @@ import { money, today } from "../lib/utils";
 export default function FinanceTab({
   effectiveLocFilter, locName, allowedLocations, defaultLocId, busy,
   loadingData, transactions, filteredTransactions, setTxModal, deleteTransaction, setReceiptTxId,
+  productConditionById,
   smartQuickItems, checkoutBasket,
   todayClose, closeDay, reopenDay,
 }) {
   const [showHistory, setShowHistory] = useState(false);
   const [confirmingClose, setConfirmingClose] = useState(false);
   const todayStr = today();
-  const todayTx = filteredTransactions.filter((t) => t.date === todayStr);
+  const todayTx = filteredTransactions.filter((t) => t.date === todayStr).sort((a, b) => (a.createdAt || "").localeCompare(b.createdAt || ""));
   const historyTx = filteredTransactions.filter((t) => t.date !== todayStr);
 
   const todayIncome = todayTx.filter((t) => t.type === "income").reduce((s, t) => s + (Number(t.amount) || 0), 0);
@@ -60,7 +61,7 @@ export default function FinanceTab({
         {todayTx.length === 0 ? (
           <EmptyState icon={FinanceIcon}>Ma még nincs rögzített tranzakció.</EmptyState>
         ) : (
-          <TransactionRowsTable rows={todayTx} locName={locName} onEdit={setTxModal} onDelete={deleteTransaction} onOpenReceipt={setReceiptTxId} busy={busy} />
+          <TransactionRowsTable rows={todayTx} locName={locName} onEdit={setTxModal} onDelete={deleteTransaction} onOpenReceipt={setReceiptTxId} busy={busy} productConditionById={productConditionById} />
         )}
 
         {!todayClose && todayTx.length > 0 && (
@@ -105,7 +106,7 @@ export default function FinanceTab({
       {showHistory && (
         loadingData ? <div className="tw"><LoadingState /></div> : (
           <div style={{ marginTop: 12 }}>
-            <TransactionsPeriodList transactions={historyTx} locName={locName} onEdit={setTxModal} onDelete={deleteTransaction} onOpenReceipt={setReceiptTxId} busy={busy} />
+            <TransactionsPeriodList transactions={historyTx} locName={locName} onEdit={setTxModal} onDelete={deleteTransaction} onOpenReceipt={setReceiptTxId} busy={busy} productConditionById={productConditionById} />
           </div>
         )
       )}

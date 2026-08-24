@@ -54,7 +54,18 @@ export function buildBasketEntries(rows) {
   return entries;
 }
 
-export function TransactionRowsTable({ rows, locName, onEdit, onDelete, onOpenReceipt, busy }) {
+function KindBadge({ t, productConditionById }) {
+  const isBuyIn = t.type === "expense" && t.category === "Készlet" && /^(Beszámítás|Felvásárlás):/.test(t.description || "");
+  if (isBuyIn) return <span className="badge-buyin">Bevásárlás</span>;
+  if (t.type === "income" && t.category === "Készlet") {
+    const condition = productConditionById?.get?.(t.productId);
+    if (condition === "Refurbished") return <span className="badge-refurb">Felújított</span>;
+    if (condition === "New") return <span className="badge-new">Új</span>;
+  }
+  return null;
+}
+
+export function TransactionRowsTable({ rows, locName, onEdit, onDelete, onOpenReceipt, busy, productConditionById }) {
   return (
     <>
       <table>
@@ -76,7 +87,7 @@ export function TransactionRowsTable({ rows, locName, onEdit, onDelete, onOpenRe
             return (
               <tr key={t.id} className={entry.inBasket ? "basket-item-tr" : undefined} style={isSale ? { cursor: "pointer" } : undefined} onClick={isSale ? () => onOpenReceipt(t.id) : undefined}>
                 <td style={{ fontWeight: 500, color: "#111827" }}>
-                  {t.description}{t.smartbillDoc && <> <SmartBillBadge doc={t.smartbillDoc} /></>}
+                  {t.description} <KindBadge t={t} productConditionById={productConditionById} />{t.smartbillDoc && <> <SmartBillBadge doc={t.smartbillDoc} /></>}
                 </td>
                 <td>{t.type === "income" ? <span className="badge-income">Bevétel</span> : <span className="badge-expense">Kiadás</span>}</td>
                 <td style={{ color: "#6B7280" }}>{t.category}</td>
@@ -112,7 +123,7 @@ export function TransactionRowsTable({ rows, locName, onEdit, onDelete, onOpenRe
           return (
             <div key={t.id} className={`mob-row${entry.inBasket ? " basket-item-mob" : ""}`} onClick={isSale ? () => onOpenReceipt(t.id) : undefined} style={isSale ? undefined : { cursor: "default" }}>
               <div className="mob-row-top">
-                <div className="mob-row-main"><span>{t.description}</span>{t.smartbillDoc && <SmartBillBadge doc={t.smartbillDoc} />}</div>
+                <div className="mob-row-main"><span>{t.description}</span><KindBadge t={t} productConditionById={productConditionById} />{t.smartbillDoc && <SmartBillBadge doc={t.smartbillDoc} />}</div>
                 <span className="mob-row-amount" style={{ color: t.type === "income" ? "#15803D" : "#B91C1C" }}>
                   {t.type === "income" ? "+" : "-"}{money(t.amount)}
                 </span>
@@ -135,7 +146,7 @@ export function TransactionRowsTable({ rows, locName, onEdit, onDelete, onOpenRe
   );
 }
 
-export default function TransactionsPeriodList({ transactions, locName, onEdit, onDelete, onOpenReceipt, busy }) {
+export default function TransactionsPeriodList({ transactions, locName, onEdit, onDelete, onOpenReceipt, busy, productConditionById }) {
   const currentKey = adaptivePeriodBucket(today()).key;
   const [expanded, setExpanded] = useState(() => new Set([currentKey]));
   const [onlyOtherExpenses, setOnlyOtherExpenses] = useState(false);
@@ -164,6 +175,7 @@ export default function TransactionsPeriodList({ transactions, locName, onEdit, 
     groups[key].rows.push(t);
   });
   const keys = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+  keys.forEach((key) => groups[key].rows.sort((a, b) => (a.createdAt || "").localeCompare(b.createdAt || "")));
 
   function toggle(key) {
     setExpanded((prev) => {
@@ -214,7 +226,7 @@ export default function TransactionsPeriodList({ transactions, locName, onEdit, 
             </div>
             {isOpen && (
               <div className="tw" style={{ borderRadius: "0 0 10px 10px", borderTop: "2px solid #22C55E" }}>
-                <TransactionRowsTable rows={rows} locName={locName} onEdit={onEdit} onDelete={onDelete} onOpenReceipt={onOpenReceipt} busy={busy} />
+                <TransactionRowsTable rows={rows} locName={locName} onEdit={onEdit} onDelete={onDelete} onOpenReceipt={onOpenReceipt} busy={busy} productConditionById={productConditionById} />
               </div>
             )}
           </div>

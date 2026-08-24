@@ -508,7 +508,7 @@ function AppShell() {
               txToApi({
                 type: "expense", category: acquisition.acquisitionType === "purchase" ? "Készlet" : "Bizomány",
                 description: `${acquisition.acquisitionType === "purchase" ? "Felvásárlás" : "Bizományos kifizetés"}: ${acquisition.sellerName} — ${[product.brand, product.model].filter(Boolean).join(" ")}`,
-                amount, productId: product.id, customerName: acquisition.sellerName, customerPhone: acquisition.sellerPhone,
+                amount, payment: "Készpénz", productId: product.id, customerName: acquisition.sellerName, customerPhone: acquisition.sellerPhone,
               }, locId)
             ).select());
             setTransactions((prev) => [txFromApi(tr[0]), ...prev]);
@@ -582,7 +582,7 @@ function AppShell() {
       mainTxId = newTxs[0].id;
       for (const acc of accessories) {
         const ar = unwrap(await supabase.from("transactions").insert(
-          txToApi({ type: "expense", category: "Készlet", description: acc.description, amount: acc.amount, basketId }, locId)
+          txToApi({ type: "expense", category: "Készlet", description: acc.description, amount: acc.amount, payment: "Készpénz", basketId }, locId)
         ).select());
         newTxs.push(txFromApi(ar[0]));
       }
@@ -606,7 +606,7 @@ function AppShell() {
           txToApi({
             type: "expense", category: "Készlet",
             description: `Beszámítás: ${txData.customerName || "Vevő"} — ${tradeIn.brand} ${tradeIn.model}`,
-            amount: tradeIn.value, productId: tiProduct.id, customerName: txData.customerName, customerPhone: txData.customerPhone, basketId,
+            amount: tradeIn.value, payment: "Készpénz", productId: tiProduct.id, customerName: txData.customerName, customerPhone: txData.customerPhone, basketId,
           }, locId)
         ).select());
         newTxs.push(txFromApi(tiTr[0]));
@@ -835,7 +835,7 @@ function AppShell() {
           txToApi({
             type: "expense", category: "Készlet",
             description: `Felvásárlás: ${offer.customerName} — ${[offer.brand, offer.model].filter(Boolean).join(" ")}`,
-            amount, customerName: offer.customerName, customerPhone: offer.customerPhone,
+            amount, payment: "Készpénz", customerName: offer.customerName, customerPhone: offer.customerPhone,
           }, offer.locationId || defaultLocId)
         ).select());
         setTransactions((prev) => [txFromApi(tr[0]), ...prev]);
@@ -1544,6 +1544,12 @@ function AppShell() {
     return m;
   }, [transactions]);
 
+  const productConditionById = useMemo(() => {
+    const m = new Map();
+    for (const p of stock) m.set(p.id, p.condition);
+    return m;
+  }, [stock]);
+
   const soldStock = useMemo(() => {
     let s = stock.filter((i) => i.status === "sold");
     if (stockLocFilter !== "all") s = s.filter((i) => i.locationId === stockLocFilter || i.locationId === reserveLocId);
@@ -1934,6 +1940,7 @@ function AppShell() {
             allowedLocations={allowedLocations} defaultLocId={defaultLocId} busy={busy}
             loadingData={loadingData} transactions={transactions} filteredTransactions={filteredTransactions} setTxModal={setTxModal}
             deleteTransaction={deleteTransaction} setReceiptTxId={setReceiptTxId}
+            productConditionById={productConditionById}
             smartQuickItems={QUICK_SALES} checkoutBasket={checkoutBasket}
             todayClose={dayCloses.find((d) => d.date === today() && d.locationId === defaultLocId && !d.reopenedAt)}
             closeDay={closeDay} reopenDay={reopenDay}

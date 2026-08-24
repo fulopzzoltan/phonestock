@@ -89,6 +89,7 @@ export const txFromApi = (r) => {
     date: r.date,
     basketId: r.basket_id,
     isPassthrough: r.is_passthrough,
+    createdAt: r.created_at,
     smartbillDoc: docs[0] || null,
     signatures,
   };
