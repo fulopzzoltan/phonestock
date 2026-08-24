@@ -1437,6 +1437,7 @@ function AppShell() {
             category: "Szerviz",
             description: `Szerviz: ${ticket.customerName} — ${[ticket.brand, ticket.model].filter(Boolean).join(" ")}`,
             amount: ticket.price,
+            payment: "Készpénz",
             costPrice: ticket.matCost,
             customerName: ticket.customerName,
             customerPhone: ticket.customerPhone,

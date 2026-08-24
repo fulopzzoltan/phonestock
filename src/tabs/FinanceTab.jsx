@@ -22,7 +22,7 @@ export default function FinanceTab({
   const todayExpense = todayTx.filter((t) => t.type === "expense").reduce((s, t) => s + (Number(t.amount) || 0), 0);
 
   const cashByLocation = allowedLocations.map((l) => {
-    const locTx = (transactions || []).filter((t) => t.locationId === l.id);
+    const locTx = (transactions || []).filter((t) => t.locationId === l.id && t.date === todayStr);
     const income = locTx.filter((t) => t.type === "income" && t.payment === "Készpénz").reduce((s, t) => s + (Number(t.amount) || 0), 0);
     const expense = locTx.filter((t) => t.type === "expense" && t.payment === "Készpénz").reduce((s, t) => s + (Number(t.amount) || 0), 0);
     return { id: l.id, name: l.name, expected: income - expense };
