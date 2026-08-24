@@ -916,14 +916,25 @@ function AppShell() {
   }
   async function closeDay(date, locId) {
     await withBusy(async () => {
-      const r = unwrap(await supabase.from("day_closes").insert({ date, location_id: locId, closed_by: user.id }).select());
-      setDayCloses([dayCloseFromApi(r[0]), ...dayCloses]);
+      // (date, location_id) egyedi kulcs — ha a napot már lezártuk majd újranyitottuk,
+      // az a sor még mindig ott van (csak reopened_at van rajta), így egy új insert
+      // ütközne vele. Ilyenkor azt a meglévő sort zárjuk újra, nem hozunk létre másikat.
+      const existing = dayCloses.find((d) => d.date === date && d.locationId === locId);
+      if (existing) {
+        const r = unwrap(await supabase.from("day_closes").update({
+          closed_by: user.id, closed_at: new Date().toISOString(), reopened_at: null, reopened_by: null,
+        }).eq("id", existing.id).select());
+        setDayCloses(dayCloses.map((d) => (d.id === existing.id ? dayCloseFromApi(r[0]) : d)));
+      } else {
+        const r = unwrap(await supabase.from("day_closes").insert({ date, location_id: locId, closed_by: user.id }).select());
+        setDayCloses([dayCloseFromApi(r[0]), ...dayCloses]);
+      }
     });
   }
   async function reopenDay(id) {
     await withBusy(async () => {
-      unwrap(await supabase.from("day_closes").update({ reopened_at: new Date().toISOString(), reopened_by: user.id }).eq("id", id));
-      setDayCloses(dayCloses.filter((d) => d.id !== id));
+      const r = unwrap(await supabase.from("day_closes").update({ reopened_at: new Date().toISOString(), reopened_by: user.id }).eq("id", id).select());
+      setDayCloses(dayCloses.map((d) => (d.id === id ? dayCloseFromApi(r[0]) : d)));
     });
   }
 
@@ -1128,6 +1139,9 @@ function AppShell() {
       }).select());
       setLoyaltyLedger((prev) => [loyaltyLedgerFromApi(ledgerRow[0]), ...prev]);
       setCustomersTable((prev) => prev.map((c) => (c.id === customer.id ? { ...c, loyaltyPointsBalance: c.loyaltyPointsBalance - reward.pointCost } : c)));
+      // Ez a "költség" tétel csak könyvelési/margin jelzés — payment nélkül marad, hogy
+      // az Elszámolásban (készpénz-egyenleg) ne vonódjon le ténylegesen, mert a beváltott
+      // termék anyagköltsége már elszámolásra került a nagytételes beszerzéskor.
       if (reward.ourCost) {
         const tr = unwrap(await supabase.from("transactions").insert({
           ...txToApi({ type: "expense", category: "Készlet", description: `Pontbeváltás: ${reward.label}`, amount: reward.ourCost, customerName: customer.name, customerPhone: customer.phone }, locId),

@@ -104,7 +104,7 @@ export default function BasketBar({ defaultLocId, busy, smartQuickItems, onCheck
               {item.label} · {item.amount} Lei
             </button>
           ))}
-          {!freeOpen && <button type="button" className="quick-sale-btn" onClick={() => setFreeOpen(true)}>+ Szabad tétel</button>}
+          {!freeOpen && <button type="button" className="quick-sale-btn-custom" onClick={() => setFreeOpen(true)}>+ Egyéb tétel</button>}
         </div>
       )}
       {mode === "expense" && !freeOpen && (

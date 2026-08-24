@@ -5,6 +5,9 @@ import { myPurchaseFromApi, myTicketFromApi, customerRequestFromApi } from "./li
 import { money, warrantyExpiry, isWarrantyActive, statusCls, subStatusLabel, SITE_URL } from "./lib/utils";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
+import { CartIcon, ServiceIcon, WarrantyIcon, NoteIcon, PhoneCaseIcon, ChargerIcon, HeadphoneIcon, GiftIcon, CheckIcon } from "./components/icons";
+
+const TIER_ICONS = [PhoneCaseIcon, ChargerIcon, HeadphoneIcon, GiftIcon];
 
 const NAV_ITEMS = [
   { key: "overview", label: "Áttekintés" },
@@ -186,7 +189,7 @@ function AuthForm() {
   );
 }
 
-function ReferralLinkBox({ code }) {
+function ReferralLinkBox({ code, count }) {
   const [copied, setCopied] = useState(false);
   const link = `${SITE_URL}/fiok?ref=${code}`;
 
@@ -201,13 +204,35 @@ function ReferralLinkBox({ code }) {
   }
 
   return (
-    <div style={{ fontSize: 12, color: "#6B7280", marginTop: 16, lineHeight: 1.5 }}>
-      Add tovább egy barátnak — ha a linkeddel regisztrál, mindketten +200 pontot kaptok rögtön!
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
-        <span className="mono" style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", background: "#fff", border: "1px solid var(--pub-line)", borderRadius: 8, padding: "8px 12px", fontSize: 11.5 }}>{link}</span>
+    <div className="cp-referral-card">
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: 6 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>
+          Hívd meg barátaidat! Te is és ők is +200 pontot kaptok, ha regisztrálnak.
+        </div>
+        <div style={{ fontSize: 12, color: "#6B7280", fontWeight: 600, whiteSpace: "nowrap" }}>{count} sikeres meghívás</div>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12 }}>
+        <span className="mono" style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", background: "#F9FAFB", border: "1px solid var(--pub-line)", borderRadius: 8, padding: "8px 12px", fontSize: 11.5 }}>{link}</span>
         <button type="button" className="btn sec sm" style={{ flexShrink: 0 }} onClick={copy}>{copied ? "Másolva!" : "Másolás"}</button>
       </div>
     </div>
+  );
+}
+
+function LoyaltyRing({ pct, balance }) {
+  const r = 66, c = 2 * Math.PI * r;
+  const offset = c - (Math.max(0, Math.min(100, pct)) / 100) * c;
+  return (
+    <svg width={160} height={160} viewBox="0 0 160 160">
+      <circle cx="80" cy="80" r={r} fill="none" stroke="#EEF0F2" strokeWidth="13" />
+      <circle
+        cx="80" cy="80" r={r} fill="none" stroke="var(--primary)" strokeWidth="13" strokeLinecap="round"
+        strokeDasharray={c} strokeDashoffset={offset} transform="rotate(-90 80 80)"
+        style={{ transition: "stroke-dashoffset .5s ease" }}
+      />
+      <text x="80" y="76" textAnchor="middle" fontSize="28" fontWeight="800" fill="#111827">{balance}</text>
+      <text x="80" y="98" textAnchor="middle" fontSize="12" fill="#6B7280">pont</text>
+    </svg>
   );
 }
 
@@ -391,7 +416,7 @@ function Dashboard({ profile }) {
         setTickets((tRes.data || []).map(myTicketFromApi));
         setRequests((rRes.data || []).map(customerRequestFromApi));
         const loy = loyRes.data?.[0];
-        if (loy) setLoyalty({ pointsBalance: loy.points_balance || 0, referralCode: loy.referral_code || "" });
+        if (loy) setLoyalty({ pointsBalance: loy.points_balance || 0, referralCode: loy.referral_code || "", successfulReferrals: loy.successful_referrals || 0 });
         setRewards((rewardsRes.data || []).map((r) => ({ rewardKey: r.reward_key, label: r.label, pointCost: r.point_cost })));
       } catch (err) {
         setError(err.message || "Hiba történt az adatok betöltése közben.");
@@ -472,64 +497,58 @@ function Dashboard({ profile }) {
           <div style={{ textAlign: "center", color: "#6B7280", fontSize: 13, padding: "20px 0" }}>Betöltés...</div>
         ) : active === "overview" ? (
           <>
-            <div className="dp-section">
-              <div className="login-title" style={{ textAlign: "left" }}>Szia, {profile.fullName || "!"}!</div>
-              <div className="dp-row"><span className="dp-key">Vásárlások</span><span className="dp-val">{purchases.length}</span></div>
-              <div className="dp-row"><span className="dp-key">Szervizmunkák</span><span className="dp-val">{tickets.length}</span></div>
-              <div className="dp-row"><span className="dp-key">Aktív garanciák</span><span className="dp-val">{activeWarranties.length}</span></div>
-              <div className="dp-row"><span className="dp-key">Nyitott kéréseim</span><span className="dp-val">{requests.filter((r) => r.status !== "lezarva").length}</span></div>
+            <div className="login-title" style={{ textAlign: "left", marginBottom: 18 }}>Szia, {profile.fullName || "!"}!</div>
+            <div className="cp-stats-grid">
+              {[
+                { icon: CartIcon, num: purchases.length, label: "Vásárlások" },
+                { icon: ServiceIcon, num: tickets.length, label: "Szervizmunkák" },
+                { icon: WarrantyIcon, num: activeWarranties.length, label: "Aktív garanciák" },
+                { icon: NoteIcon, num: requests.filter((r) => r.status !== "lezarva").length, label: "Nyitott kérések" },
+              ].map((s) => (
+                <div key={s.label} className="cp-stat-card">
+                  <div className="cp-stat-card-top">
+                    <div className="cp-stat-num">{s.num}</div>
+                    <div className="cp-stat-icon"><s.icon width={17} height={17} /></div>
+                  </div>
+                  <div className="cp-stat-label">{s.label}</div>
+                </div>
+              ))}
             </div>
             {loyalty && (
-              <div className="dp-section" style={{ background: "var(--primary-soft)", border: "1px solid var(--primary)", borderRadius: 12, padding: 20, marginTop: 18 }}>
-                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
-                  <div className="dp-section-title" style={{ margin: 0 }}>Hűségpontjaim</div>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: "var(--primary-ink)" }}>{loyalty.pointsBalance} pont</div>
+              <div className="cp-loyalty-card">
+                <div className="dp-section-title" style={{ marginBottom: 14 }}>Hűségpontjaim</div>
+                <div className="cp-loyalty-ring-wrap">
+                  <LoyaltyRing balance={loyalty.pointsBalance} pct={nextReward ? (loyalty.pointsBalance / nextReward.pointCost) * 100 : 100} />
+                  {nextReward ? (
+                    <div className="cp-loyalty-ring-label">
+                      Még <b>{nextReward.pointCost - loyalty.pointsBalance} pont</b> hiányzik a(z) <b>{nextReward.label}</b> ingyenes választásához!
+                    </div>
+                  ) : tierGroups.length > 0 ? (
+                    <div className="cp-loyalty-ring-label" style={{ color: "#15803D", fontWeight: 700 }}>Minden elérhető jutalmat kiváltasz a pontjaiddal! 🎉</div>
+                  ) : null}
                 </div>
-                {nextReward ? (
-                  <>
-                    <div style={{ fontSize: 12.5, color: "#374151", margin: "0 0 10px", lineHeight: 1.5 }}>
-                      Még <b>{nextReward.pointCost - loyalty.pointsBalance} pont</b> hiányzik a(z) <b>{nextReward.label}</b> ingyenes választásához ({nextReward.pointCost} pont).
-                    </div>
-                    <div style={{ height: 8, borderRadius: 999, background: "#fff", overflow: "hidden" }}>
-                      <div style={{
-                        height: "100%", borderRadius: 999, background: "var(--primary)",
-                        width: `${Math.min(100, Math.round((loyalty.pointsBalance / nextReward.pointCost) * 100))}%`,
-                      }} />
-                    </div>
-                  </>
-                ) : tierGroups.length > 0 ? (
-                  <div style={{ fontSize: 12.5, color: "#15803D", fontWeight: 700, marginTop: 6 }}>Minden elérhető jutalmat kiváltasz a pontjaiddal! 🎉</div>
-                ) : null}
                 {tierGroups.length > 0 && (
-                  <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 8 }}>
-                    {tierGroups.map((r) => {
+                  <div className="cp-tier-grid">
+                    {tierGroups.map((r, i) => {
                       const reached = loyalty.pointsBalance >= r.pointCost;
+                      const Icon = TIER_ICONS[i % TIER_ICONS.length];
                       return (
-                        <div key={r.rewardKey} style={{
-                          display: "flex", justifyContent: "space-between", alignItems: "center",
-                          fontSize: 12.5, padding: "10px 12px", borderRadius: 9,
-                          background: reached ? "#fff" : "rgba(255,255,255,.5)",
-                          border: reached ? "1px solid var(--primary)" : "1px solid transparent",
-                        }}>
-                          <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <span style={{
-                              display: "inline-flex", alignItems: "center", justifyContent: "center",
-                              width: 16, height: 16, borderRadius: "50%", flexShrink: 0, fontSize: 10, fontWeight: 700,
-                              background: reached ? "var(--primary)" : "#E5E7EB", color: reached ? "#fff" : "#9CA3AF",
-                            }}>{reached ? "✓" : ""}</span>
-                            <span style={{ fontWeight: reached ? 700 : 500, color: reached ? "var(--primary-ink)" : "#374151" }}>{r.label}</span>
-                          </span>
-                          <span style={{ color: reached ? "#15803D" : "#9CA3AF", fontWeight: 600, whiteSpace: "nowrap" }}>
-                            {reached ? `${r.pointCost} pont — kérd a pultnál` : `${r.pointCost} pont (még ${r.pointCost - loyalty.pointsBalance})`}
-                          </span>
+                        <div key={r.rewardKey} className={`cp-tier-card${reached ? " reached" : ""}`}>
+                          {reached && <span className="cp-tier-badge"><CheckIcon width={13} height={13} /></span>}
+                          <div className="cp-tier-icon"><Icon width={17} height={17} /></div>
+                          <div className="cp-tier-label">{r.label}</div>
+                          <div className="cp-tier-sub">
+                            {r.pointCost} pont<br />
+                            {reached ? "Már elérhető!" : `${r.pointCost - loyalty.pointsBalance} pont még`}
+                          </div>
                         </div>
                       );
                     })}
                   </div>
                 )}
-                {loyalty.referralCode && <ReferralLinkBox code={loyalty.referralCode} />}
               </div>
             )}
+            {loyalty?.referralCode && <ReferralLinkBox code={loyalty.referralCode} count={loyalty.successfulReferrals || 0} />}
           </>
         ) : active === "purchases" ? (
           purchases.length === 0 ? <div className="dp-section" style={{ color: "#9CA3AF", fontSize: 13 }}>Nincs még rögzített vásárlásod.</div> : (

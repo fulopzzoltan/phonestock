@@ -143,6 +143,8 @@ tr:hover td{background:#FAFAFA}
 .quick-sale-btn{display:inline-flex;align-items:center;gap:6px;background:#F7F8FA;border:1px solid #E5E7EB;border-radius:999px;padding:9px 15px;font-family:inherit;font-size:12.5px;font-weight:600;color:#374151;cursor:pointer;transition:background .12s,border-color .12s,color .12s}
 .quick-sale-btn:hover{background:#F0FDF4;border-color:#BBF7D0;color:var(--accent-dark)}
 .quick-sale-btn:disabled{opacity:.6;cursor:default}
+.quick-sale-btn-custom{display:inline-flex;align-items:center;gap:6px;background:transparent;border:1.5px dashed var(--accent);border-radius:999px;padding:8.5px 15px;font-family:inherit;font-size:12.5px;font-weight:700;color:var(--accent-dark);cursor:pointer;transition:background .12s,border-color .12s}
+.quick-sale-btn-custom:hover{background:#F0FDF4}
 
 /* KOSÁR / POS-jellegű bevitel (Bevételek & Kiadások) */
 .basket-bar{background:#fff;border:1px solid #E5E7EB;border-radius:14px;padding:14px 18px;margin-bottom:16px}
@@ -355,8 +357,30 @@ tr:hover td{background:#FAFAFA}
 .account-nav-signout{margin-top:8px;border-top:1px solid #EEF0F2;padding-top:14px;color:#DC2626}
 .account-nav-signout:hover{background:#FEF2F2;color:#B91C1C}
 .account-main{flex:1;min-width:0;background:#fff;border:1px solid #EEF0F2;border-radius:16px;padding:24px;box-shadow:var(--shadow-card)}
+
+.cp-stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:18px}
+.cp-stat-card{background:#F9FAFB;border:1px solid #EEF0F2;border-radius:14px;padding:16px}
+.cp-stat-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.cp-stat-num{font-size:24px;font-weight:800;color:#111827;line-height:1}
+.cp-stat-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:var(--primary-soft);color:var(--primary-ink);flex-shrink:0}
+.cp-stat-label{font-size:12px;color:#6B7280;font-weight:600}
+
+.cp-loyalty-card{background:#F9FAFB;border:1px solid #EEF0F2;border-radius:16px;padding:22px}
+.cp-loyalty-ring-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:22px;text-align:center}
+.cp-loyalty-ring-label{font-size:13px;color:#374151;line-height:1.5;max-width:340px}
+.cp-tier-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.cp-tier-card{position:relative;border-radius:13px;padding:14px;border:1.5px solid #EEF0F2;background:#fff;display:flex;flex-direction:column;gap:8px}
+.cp-tier-card.reached{border-color:var(--primary);background:var(--primary-soft)}
+.cp-tier-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:#F9FAFB;border:1px solid #EEF0F2;color:#6B7280}
+.cp-tier-card.reached .cp-tier-icon{color:var(--primary-ink);border-color:var(--primary);background:#fff}
+.cp-tier-badge{position:absolute;top:12px;right:12px;width:20px;height:20px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center}
+.cp-tier-label{font-size:12.5px;font-weight:700;color:#111827;line-height:1.35;min-height:2.7em}
+.cp-tier-sub{font-size:11px;color:#9CA3AF;padding-top:8px;border-top:1px solid #EEF0F2;line-height:1.5}
+.cp-tier-card.reached .cp-tier-sub{color:#15803D;font-weight:700;border-color:rgba(29,185,84,.25)}
+
+.cp-referral-card{background:#F9FAFB;border:1px solid #EEF0F2;border-radius:16px;padding:18px 20px;margin-top:14px}
 @media (max-width:760px){
-  .account-shell{flex-direction:column}
+  .account-shell{flex-direction:column;align-items:stretch}
   .account-nav{width:100%;flex-direction:row;flex-wrap:wrap;gap:4px}
   .account-nav-signout{margin-top:0;border-top:none;padding-top:10px}
 }

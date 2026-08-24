@@ -251,6 +251,26 @@ export const UserIcon = (props) => (
   </svg>
 );
 
+export const ChargerIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M9 2v5M15 2v5M6 7h12l-1.5 6H16l-2 9-1-6H9l-2-9H7.5L6 7z" />
+  </svg>
+);
+
+export const HeadphoneIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M4 14v-2a8 8 0 0116 0v2" />
+    <rect x="2.5" y="14" width="5" height="7" rx="2" /><rect x="16.5" y="14" width="5" height="7" rx="2" />
+  </svg>
+);
+
+export const GiftIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <rect x="3" y="9" width="18" height="4" rx="1" /><path d="M4 13h16v7a1 1 0 01-1 1H5a1 1 0 01-1-1v-7zM12 9v12" />
+    <path d="M12 9C9 9 7.5 7.8 7.5 6.2 7.5 4.7 8.6 4 9.7 4 11.4 4 12 6.5 12 9zM12 9c3 0 4.5-1.2 4.5-2.8 0-1.5-1.1-2.2-2.2-2.2C12.6 4 12 6.5 12 9z" />
+  </svg>
+);
+
 export const CheckIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
     <path d="M20 6L9 17l-5-5" />
