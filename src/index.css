@@ -113,6 +113,9 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
 table{width:100%;border-collapse:collapse;font-size:12.5px}
 th{text-align:left;color:#6B7280;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.05em;padding:12px 16px;border-bottom:1px solid #F3F4F6;background:#FAFBFC;white-space:nowrap}
 td{padding:12px 16px;border-bottom:1px solid #F3F4F6;vertical-align:middle}
+.tw-compact th{padding:8px 14px}
+.tw-compact td{padding:7px 14px}
+.num-col{text-align:right}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:#FAFAFA}
 .empty{color:#9CA3AF;text-align:center;padding:44px 20px;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:2px}
@@ -153,7 +156,7 @@ tr:hover td{background:#FAFAFA}
 .basket-item-remove{border:none;background:none;color:#9CA3AF;cursor:pointer;padding:2px;display:flex}
 .basket-item-remove:hover{color:#DC2626}
 .basket-total{display:flex;align-items:center;justify-content:space-between;padding-top:8px;margin-top:4px;border-top:1px solid #F3F4F6;font-weight:700;font-size:13px}
-.basket-head-row td{background:var(--primary-soft);color:var(--primary-ink);font-size:11px;font-weight:700;padding:7px 16px}
+.basket-head-row td{background:#F3F4F6;color:#6B7280;font-size:11px;font-weight:700;padding:7px 16px}
 
 .amount-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px;padding:8px;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:var(--radius-md)}
 .amount-keypad-key{border:1px solid #E5E7EB;background:#fff;border-radius:var(--radius-sm);padding:12px 0;font-family:inherit;font-size:16px;font-weight:700;color:#111827;cursor:pointer;transition:background .1s,border-color .1s}
@@ -161,9 +164,9 @@ tr:hover td{background:#FAFAFA}
 .amount-keypad-key:active{background:#E5E7EB}
 .amount-keypad-ok{background:var(--primary);border-color:var(--primary);color:#fff}
 .amount-keypad-ok:hover{background:var(--primary-dark);border-color:var(--primary-dark)}
-.basket-item-tr td:first-child{border-left:3px solid var(--primary);padding-left:13px}
-.basket-head-mob{background:var(--primary-soft);color:var(--primary-ink);font-size:11px;font-weight:700;padding:7px 16px;border-bottom:1px solid #F3F4F6}
-.basket-item-mob{border-left:3px solid var(--primary);padding-left:13px}
+.basket-item-tr td:first-child{border-left:3px solid #D1D5DB;padding-left:13px}
+.basket-head-mob{background:#F3F4F6;color:#6B7280;font-size:11px;font-weight:700;padding:7px 16px;border-bottom:1px solid #F3F4F6}
+.basket-item-mob{border-left:3px solid #D1D5DB;padding-left:13px}
 
 /* BADGES */
 /* Közös alap minden címke-jellegű elemhez (st-*, badge-*, prob-pill, gar-pill,
@@ -181,9 +184,9 @@ tr:hover td{background:#FAFAFA}
 .badge-loc{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:600;background:#F0FDF4;color:#15803D;border:1px solid #BBF7D0}
 .badge-income{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700;background:#DCFCE7;color:#15803D}
 .badge-expense{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700;background:#FEE2E2;color:#B91C1C}
-.badge-refurb{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700;background:#FFEDD5;color:#C2410C}
-.badge-new{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700;background:#EDE9FE;color:#6D28D9}
-.badge-buyin{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700;background:#DBEAFE;color:#1D4ED8}
+.badge-refurb{display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:#fff;color:#C2410C;border:1px solid #FDBA74}
+.badge-new{display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:#fff;color:#6D28D9;border:1px solid #DDD6FE}
+.badge-buyin{display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:#fff;color:#1D4ED8;border:1px solid #BFDBFE}
 .prob-pill{display:inline-flex;padding:2px 7px;border-radius:var(--radius-pill);font-size:10.5px;font-weight:500;background:#F3F4F6;color:#374151;margin:1px}
 .gar-pill{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:var(--radius-pill);font-size:10.5px;font-weight:500;background:var(--info-soft);color:var(--info)}
 .sla-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700}

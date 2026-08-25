@@ -1944,7 +1944,7 @@ function AppShell() {
             deleteTransaction={deleteTransaction} setReceiptTxId={setReceiptTxId}
             productConditionById={productConditionById}
             smartQuickItems={QUICK_SALES} checkoutBasket={checkoutBasket}
-            todayClose={dayCloses.find((d) => d.date === today() && d.locationId === defaultLocId && !d.reopenedAt)}
+            dayCloses={dayCloses}
             closeDay={closeDay} reopenDay={reopenDay}
           />
         )}

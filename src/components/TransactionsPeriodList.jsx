@@ -65,23 +65,14 @@ function KindBadge({ t, productConditionById }) {
   return null;
 }
 
-export function TransactionRowsTable({ rows, locName, onEdit, onDelete, onOpenReceipt, busy, productConditionById }) {
+export function TransactionRowsTable({ rows, locName, onEdit, onDelete, onOpenReceipt, busy, productConditionById, showLocation = true }) {
   return (
     <>
       <table>
-        <thead><tr><th>Leírás</th><th>Típus</th><th>Kategória</th><th>Helyszín</th><th>Fizetés</th><th>Haszon</th><th>Összeg</th><th></th></tr></thead>
+        <thead><tr><th>Leírás</th><th>Típus</th><th>Kategória</th>{showLocation && <th>Helyszín</th>}<th>Fizetés</th><th className="num-col">Haszon</th><th className="num-col">Összeg</th><th></th></tr></thead>
         <tbody>
           {buildBasketEntries(rows).map((entry) => {
-            if (entry.kind === "basket-head") {
-              return (
-                <tr key={`bh-${entry.basketId}`} className="basket-head-row">
-                  <td colSpan={8}>
-                    Blokk · {entry.count} tétel · {entry.payment || "—"} ·{" "}
-                    <b>{entry.total >= 0 ? "+" : ""}{money(entry.total)}</b>
-                  </td>
-                </tr>
-              );
-            }
+            if (entry.kind === "basket-head") return null;
             const t = entry.tx;
             const isSale = t.type === "income" && t.category === "Készlet";
             return (
@@ -91,12 +82,12 @@ export function TransactionRowsTable({ rows, locName, onEdit, onDelete, onOpenRe
                 </td>
                 <td>{t.type === "income" ? <span className="badge-income">Bevétel</span> : <span className="badge-expense">Kiadás</span>}</td>
                 <td style={{ color: "#6B7280" }}>{t.category}</td>
-                <td><span className="badge-loc">{locName(t.locationId)}</span></td>
+                {showLocation && <td style={{ color: "#6B7280" }}>{locName(t.locationId)}</td>}
                 <td style={{ color: "#6B7280" }}>{t.payment || "—"}</td>
-                <td className="mono" style={{ color: "#6B7280" }}>
+                <td className="mono num-col" style={{ color: "#6B7280" }}>
                   {t.type === "income" ? money((Number(t.amount) || 0) - (Number(t.costPrice) || 0)) : "—"}
                 </td>
-                <td className="mono" style={{ fontWeight: 700, color: t.type === "income" ? "#15803D" : "#B91C1C" }}>
+                <td className="mono num-col" style={{ fontWeight: 700, color: t.type === "income" ? "#15803D" : "#B91C1C" }}>
                   {t.type === "income" ? "+" : "-"}{money(t.amount)}
                 </td>
                 <td style={{ display: "flex", gap: 5 }} onClick={(e) => isSale && e.stopPropagation()}>
@@ -110,14 +101,7 @@ export function TransactionRowsTable({ rows, locName, onEdit, onDelete, onOpenRe
       </table>
       <div className="mob-cards">
         {buildBasketEntries(rows).map((entry) => {
-          if (entry.kind === "basket-head") {
-            return (
-              <div key={`bh-${entry.basketId}`} className="basket-head-mob">
-                Blokk · {entry.count} tétel · {entry.payment || "—"} ·{" "}
-                <b>{entry.total >= 0 ? "+" : ""}{money(entry.total)}</b>
-              </div>
-            );
-          }
+          if (entry.kind === "basket-head") return null;
           const t = entry.tx;
           const isSale = t.type === "income" && t.category === "Készlet";
           return (
@@ -131,7 +115,7 @@ export function TransactionRowsTable({ rows, locName, onEdit, onDelete, onOpenRe
               <div className="mob-row-sub">
                 {t.type === "income" ? <span className="badge-income">Bevétel</span> : <span className="badge-expense">Kiadás</span>}
                 <span>{t.category}</span>
-                <span className="badge-loc">{locName(t.locationId)}</span>
+                {showLocation && <span style={{ color: "#6B7280" }}>{locName(t.locationId)}</span>}
                 <span>{t.payment || "—"}</span>
                 <span onClick={(e) => e.stopPropagation()} style={{ display: "inline-flex", gap: 5, marginLeft: "auto" }}>
                   <button className="iconbtn" disabled={busy} onClick={() => onEdit(t)}><EditIcon /></button>
@@ -146,7 +130,7 @@ export function TransactionRowsTable({ rows, locName, onEdit, onDelete, onOpenRe
   );
 }
 
-export default function TransactionsPeriodList({ transactions, locName, onEdit, onDelete, onOpenReceipt, busy, productConditionById }) {
+export default function TransactionsPeriodList({ transactions, locName, onEdit, onDelete, onOpenReceipt, busy, productConditionById, showLocation = true }) {
   const currentKey = adaptivePeriodBucket(today()).key;
   const [expanded, setExpanded] = useState(() => new Set([currentKey]));
   const [onlyOtherExpenses, setOnlyOtherExpenses] = useState(false);
@@ -227,7 +211,7 @@ export default function TransactionsPeriodList({ transactions, locName, onEdit, 
             </div>
             {isOpen && (
               <div className="tw" style={{ borderRadius: "0 0 10px 10px", borderTop: "2px solid #22C55E" }}>
-                <TransactionRowsTable rows={rows} locName={locName} onEdit={onEdit} onDelete={onDelete} onOpenReceipt={onOpenReceipt} busy={busy} productConditionById={productConditionById} />
+                <TransactionRowsTable rows={rows} locName={locName} onEdit={onEdit} onDelete={onDelete} onOpenReceipt={onOpenReceipt} busy={busy} productConditionById={productConditionById} showLocation={showLocation} />
               </div>
             )}
           </div>
