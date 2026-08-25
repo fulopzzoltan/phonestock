@@ -79,8 +79,8 @@ export const InvoiceIcon = (props) => (
 
 export const CashIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <rect x="2.5" y="6" width="19" height="12" rx="2" /><circle cx="12" cy="12" r="2.7" />
-    <path d="M6 6v0M18 18v0" />
+    <circle cx="12" cy="12" r="9" />
+    <path d="M14.5 8.7a3 3 0 00-2.7-1.5c-1.8 0-3 1-3 2.4 0 1.3 1 2 2.7 2.4 2 .5 3 1.1 3 2.4 0 1.4-1.3 2.4-3 2.4a3.4 3.4 0 01-3-1.7M12 5.5v1.7M12 16.8v1.7" />
   </svg>
 );
 

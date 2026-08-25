@@ -66,12 +66,13 @@ export function buildBasketEntries(rows) {
 }
 
 function KindBadge({ t, productConditionById }) {
-  const isBuyIn = t.type === "expense" && t.category === "Készlet" && /^(Beszámítás|Felvásárlás):/.test(t.description || "");
+  const info = productConditionById?.get?.(t.productId);
+  const fromSupplier = info?.source === "Számla" || info?.source === "Konszignáció";
+  const isBuyIn = t.type === "expense" && t.category === "Készlet" && !fromSupplier && /^(Beszámítás|Felvásárlás):/.test(t.description || "");
   if (isBuyIn) return <span className="badge-buyin">Bevásárlás</span>;
   if (t.type === "income" && t.category === "Készlet") {
-    const condition = productConditionById?.get?.(t.productId);
-    if (condition === "Refurbished") return <span className="badge-refurb">Felújított</span>;
-    if (condition === "New") return <span className="badge-new">Új</span>;
+    if (info?.condition === "Refurbished") return <span className="badge-refurb">Felújított</span>;
+    if (info?.condition === "New") return <span className="badge-new">Új</span>;
   }
   return null;
 }

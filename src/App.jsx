@@ -1549,7 +1549,7 @@ function AppShell() {
 
   const productConditionById = useMemo(() => {
     const m = new Map();
-    for (const p of stock) m.set(p.id, p.condition);
+    for (const p of stock) m.set(p.id, { condition: p.condition, source: p.source });
     return m;
   }, [stock]);
 
