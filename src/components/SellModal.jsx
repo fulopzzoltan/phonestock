@@ -10,6 +10,10 @@ export default function SellModal({ item, locName, customers = [], rewards = [],
     ? rewards.filter((r) => r.active && r.pointCost <= (selectedCustomer.loyaltyPointsBalance || 0)).sort((a, b) => a.sortOrder - b.sortOrder)
     : [];
   const [phoneTouched, setPhoneTouched] = useState(false);
+  const [hasFolia, setHasFolia] = useState(false);
+  const [foliaAr, setFoliaAr] = useState(10);
+  const [hasKabel, setHasKabel] = useState(false);
+  const [kabelAr, setKabelAr] = useState(5);
   const [hasTradeIn, setHasTradeIn] = useState(false);
   const emptyTradeIn = () => ({ brand: "", model: "", condition: "Refurbished", value: "" });
   const [tradeIns, setTradeIns] = useState([emptyTradeIn()]);
@@ -58,6 +62,32 @@ export default function SellModal({ item, locName, customers = [], rewards = [],
           <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#374151", fontWeight: 500, textTransform: "none", letterSpacing: 0, cursor: "pointer" }}>
             <input type="checkbox" className="chk" checked={f.marketingConsent} onChange={(e) => setF({ ...f, marketingConsent: e.target.checked })} />
             Hozzájárul, hogy akciókról/emlékeztetőkről SMS-ben értesítsük
+          </label>
+        </div>
+        <div className="field">
+          <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#374151", fontWeight: 500, textTransform: "none", letterSpacing: 0, cursor: "pointer" }}>
+            <input type="checkbox" className="chk" checked={hasFolia} onChange={(e) => setHasFolia(e.target.checked)} />
+            Fólia is ment vele
+            {hasFolia && (
+              <input
+                type="number" value={foliaAr} onChange={(e) => setFoliaAr(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+                style={{ width: 70, marginLeft: "auto" }} placeholder="Ár"
+              />
+            )}
+          </label>
+        </div>
+        <div className="field">
+          <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#374151", fontWeight: 500, textTransform: "none", letterSpacing: 0, cursor: "pointer" }}>
+            <input type="checkbox" className="chk" checked={hasKabel} onChange={(e) => setHasKabel(e.target.checked)} />
+            Kábel is ment vele
+            {hasKabel && (
+              <input
+                type="number" value={kabelAr} onChange={(e) => setKabelAr(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+                style={{ width: 70, marginLeft: "auto" }} placeholder="Ár"
+              />
+            )}
           </label>
         </div>
         <div className="field">
@@ -121,7 +151,7 @@ export default function SellModal({ item, locName, customers = [], rewards = [],
               category: "Készlet",
               description: `${item.brand} ${item.model}`,
               amount: f.price,
-              costPrice: item.costPrice,
+              costPrice: (Number(item.costPrice) || 0) + (hasFolia ? Number(foliaAr) || 0 : 0) + (hasKabel ? Number(kabelAr) || 0 : 0),
               warranty: item.warranty || null,
               productId: item.id,
               customerName: f.customerName,

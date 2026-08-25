@@ -20,6 +20,12 @@ export default function FinanceTab({
 
   const todayIncome = todayTx.filter((t) => t.type === "income").reduce((s, t) => s + (Number(t.amount) || 0), 0);
   const todayExpense = todayTx.filter((t) => t.type === "expense").reduce((s, t) => s + (Number(t.amount) || 0), 0);
+  const todayIncomeCash = todayTx.filter((t) => t.type === "income" && t.payment === "Készpénz").reduce((s, t) => s + (Number(t.amount) || 0), 0);
+  const todayIncomeCard = todayTx.filter((t) => t.type === "income" && t.payment === "Kártya").reduce((s, t) => s + (Number(t.amount) || 0), 0);
+  const todayExpenseReal = todayTx.filter((t) => t.type === "expense" && t.payment).reduce((s, t) => s + (Number(t.amount) || 0), 0);
+  const todayMargin = todayTx.filter((t) => t.type === "income").reduce((s, t) => s + ((Number(t.amount) || 0) - (Number(t.costPrice) || 0)), 0)
+    - todayTx.filter((t) => t.type === "expense" && !t.payment).reduce((s, t) => s + (Number(t.amount) || 0), 0);
+  const closeStale = todayClose && todayTx.length > (todayClose.snapshotTxCount ?? 0);
 
   const cashByLocation = allowedLocations.map((l) => {
     const locTx = (transactions || []).filter((t) => t.locationId === l.id && t.date === todayStr);
@@ -49,14 +55,26 @@ export default function FinanceTab({
       <div className="tw" style={{ padding: 16, marginTop: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
           <div style={{ fontSize: 14, fontWeight: 700 }}>Ma</div>
-          {todayClose ? (
-            <span className="badge-loc" style={{ color: "#15803D" }}>
-              ✓ Lezárva {new Date(todayClose.closedAt).toLocaleTimeString("hu-HU", { hour: "2-digit", minute: "2-digit" })}-kor
+          {todayClose && (
+            <span className="badge-loc" style={{ color: closeStale ? "#B45309" : "#15803D" }}>
+              {closeStale ? "⚠ Elavult zárás" : "✓ Lezárva"} {new Date(todayClose.closedAt).toLocaleTimeString("hu-HU", { hour: "2-digit", minute: "2-digit" })}-kor
             </span>
-          ) : (
-            <span style={{ fontSize: 12, color: "#6B7280" }}>+{money(todayIncome)} / -{money(todayExpense)}</span>
           )}
         </div>
+
+        <div className="statrow c4" style={{ marginBottom: 14 }}>
+          <div className="statcard"><div className="lbl">Bevétel (készpénz)</div><div className="val" style={{ color: "#15803D" }}>{money(todayIncomeCash)}</div></div>
+          <div className="statcard"><div className="lbl">Bevétel (kártya)</div><div className="val" style={{ color: "#15803D" }}>{money(todayIncomeCard)}</div></div>
+          <div className="statcard"><div className="lbl">Kiadás (valódi)</div><div className="val" style={{ color: "#B91C1C" }}>{money(todayExpenseReal)}</div></div>
+          <div className="statcard"><div className="lbl">Haszon (mai)</div><div className="val">{money(todayMargin)}</div></div>
+        </div>
+
+        {closeStale && (
+          <div style={{ fontSize: 12.5, color: "#92400E", background: "#FEF3C7", borderRadius: "var(--radius-sm)", padding: "8px 12px", marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
+            <span>{todayTx.length - todayClose.snapshotTxCount} új tétel érkezett a zárás óta — érdemes újranézni.</span>
+            <button type="button" className="btn sec sm" disabled={busy} onClick={() => closeDay(todayStr, defaultLocId)}>Zárás frissítése</button>
+          </div>
+        )}
 
         {todayTx.length === 0 ? (
           <EmptyState icon={FinanceIcon}>Ma még nincs rögzített tranzakció.</EmptyState>

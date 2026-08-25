@@ -554,8 +554,6 @@ function AppShell() {
       const product = stock.find((p) => p.id === txData.productId);
       unwrap(await supabase.from("products").update({ status: "sold" }).eq("id", txData.productId));
 
-      const accessories = [{ description: "Fólia", amount: 10 }];
-      if (product?.condition === "Refurbished") accessories.push({ description: "Kábel", amount: 5 });
       const basketId = crypto.randomUUID();
 
       const isConsignment = product?.acquisition?.acquisitionType === "consignment";
@@ -580,12 +578,6 @@ function AppShell() {
         newTxs.push(txFromApi(r[0]));
       }
       mainTxId = newTxs[0].id;
-      for (const acc of accessories) {
-        const ar = unwrap(await supabase.from("transactions").insert(
-          txToApi({ type: "expense", category: "Készlet", description: acc.description, amount: acc.amount, basketId }, locId)
-        ).select());
-        newTxs.push(txFromApi(ar[0]));
-      }
 
       let updatedStock = stock.map((i) => (i.id === txData.productId ? { ...i, status: "sold" } : i));
 
@@ -917,17 +909,26 @@ function AppShell() {
   }
   async function closeDay(date, locId) {
     await withBusy(async () => {
+      const dayTx = transactions.filter((t) => t.date === date && t.locationId === locId);
+      const snapshot = {
+        snapshot_income_cash: dayTx.filter((t) => t.type === "income" && t.payment === "Készpénz").reduce((s, t) => s + (Number(t.amount) || 0), 0),
+        snapshot_income_card: dayTx.filter((t) => t.type === "income" && t.payment === "Kártya").reduce((s, t) => s + (Number(t.amount) || 0), 0),
+        snapshot_expense_cash: dayTx.filter((t) => t.type === "expense" && t.payment).reduce((s, t) => s + (Number(t.amount) || 0), 0),
+        snapshot_margin: dayTx.filter((t) => t.type === "income").reduce((s, t) => s + ((Number(t.amount) || 0) - (Number(t.costPrice) || 0)), 0)
+          - dayTx.filter((t) => t.type === "expense" && !t.payment).reduce((s, t) => s + (Number(t.amount) || 0), 0),
+        snapshot_tx_count: dayTx.length,
+      };
       // (date, location_id) egyedi kulcs — ha a napot már lezártuk majd újranyitottuk,
       // az a sor még mindig ott van (csak reopened_at van rajta), így egy új insert
       // ütközne vele. Ilyenkor azt a meglévő sort zárjuk újra, nem hozunk létre másikat.
       const existing = dayCloses.find((d) => d.date === date && d.locationId === locId);
       if (existing) {
         const r = unwrap(await supabase.from("day_closes").update({
-          closed_by: user.id, closed_at: new Date().toISOString(), reopened_at: null, reopened_by: null,
+          closed_by: user.id, closed_at: new Date().toISOString(), reopened_at: null, reopened_by: null, ...snapshot,
         }).eq("id", existing.id).select());
         setDayCloses(dayCloses.map((d) => (d.id === existing.id ? dayCloseFromApi(r[0]) : d)));
       } else {
-        const r = unwrap(await supabase.from("day_closes").insert({ date, location_id: locId, closed_by: user.id }).select());
+        const r = unwrap(await supabase.from("day_closes").insert({ date, location_id: locId, closed_by: user.id, ...snapshot }).select());
         setDayCloses([dayCloseFromApi(r[0]), ...dayCloses]);
       }
     });
@@ -1411,7 +1412,7 @@ function AppShell() {
       setTicketModal(null);
     });
   }
-  async function setTicketStatus(id, status, subStatus = null) {
+  async function setTicketStatus(id, status, subStatus = null, payment = "Készpénz") {
     await withBusy(async () => {
       const ticket = tickets.find((t) => t.id === id);
       const becameReady = status === "Átadásra" && !(ticket && ticket.status === "Átadásra");
@@ -1437,7 +1438,7 @@ function AppShell() {
             category: "Szerviz",
             description: `Szerviz: ${ticket.customerName} — ${[ticket.brand, ticket.model].filter(Boolean).join(" ")}`,
             amount: ticket.price,
-            payment: "Készpénz",
+            payment,
             costPrice: ticket.matCost,
             customerName: ticket.customerName,
             customerPhone: ticket.customerPhone,

@@ -43,8 +43,8 @@ export default function ServiceTab({
     if (newIdx < 0 || newIdx >= STATUSES.length) return;
     setTicketStatus(id, STATUSES[newIdx].key, null);
   }
-  function handleCloseReady(id) {
-    setTicketStatus(id, "Átadásra", "Átadva");
+  function handleCloseReady(id, payment) {
+    setTicketStatus(id, "Átadásra", "Átadva", payment || "Készpénz");
   }
 
   return (

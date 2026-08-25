@@ -193,7 +193,8 @@ export default function TransactionsPeriodList({ transactions, locName, onEdit, 
         const { granularity, rows } = groups[key];
         const income = rows.filter((r) => r.type === "income").reduce((a, r) => a + (Number(r.amount) || 0), 0);
         const expense = rows.filter((r) => r.type === "expense").reduce((a, r) => a + (Number(r.amount) || 0), 0);
-        const margin = rows.filter((r) => r.type === "income").reduce((a, r) => a + ((Number(r.amount) || 0) - (Number(r.costPrice) || 0)), 0);
+        const margin = rows.filter((r) => r.type === "income").reduce((a, r) => a + ((Number(r.amount) || 0) - (Number(r.costPrice) || 0)), 0)
+          - rows.filter((r) => r.type === "expense" && !r.payment).reduce((a, r) => a + (Number(r.amount) || 0), 0);
         const isOpen = expanded.has(key);
         return (
           <div key={key} style={{ marginBottom: 14 }}>

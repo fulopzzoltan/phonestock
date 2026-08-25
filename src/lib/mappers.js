@@ -360,6 +360,9 @@ export const dayCloseFromApi = (r) => ({
   id: r.id, date: r.date, locationId: r.location_id,
   closedBy: r.closed_by, closedAt: r.closed_at,
   reopenedAt: r.reopened_at, reopenedBy: r.reopened_by,
+  snapshotIncomeCash: r.snapshot_income_cash, snapshotIncomeCard: r.snapshot_income_card,
+  snapshotExpenseCash: r.snapshot_expense_cash, snapshotMargin: r.snapshot_margin,
+  snapshotTxCount: r.snapshot_tx_count,
 });
 
 export const cashSettlementFromApi = (r) => ({

@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { money, subStatusCls, subStatusLabel, slaInfo, displayName, ticketCode, isStaleReady } from "../lib/utils";
 import { ClockIcon, ServiceIcon, WarrantyIcon, ChevronLeftIcon, ChevronRightIcon } from "./icons";
 import CallLink from "./CallLink";
 
 export default function TicketCard({ ticket, locName, onOpen, onStep, stepPrev, stepNext, onClose }) {
+  const [askingPayment, setAskingPayment] = useState(false);
   const probs = (ticket.issue || "").split(",").map((p) => p.trim()).filter(Boolean);
   const sla = slaInfo(ticket);
   const staleReady = isStaleReady(ticket);
@@ -55,9 +57,23 @@ export default function TicketCard({ ticket, locName, onOpen, onStep, stepPrev, 
         {ticket.folia ? <span className="t-folia">✓ Fólia</span> : <span className="t-date">{ticket.dateIn}</span>}
       </div>
       {onClose && ticket.status === "Átadásra" && ticket.subStatus !== "Sikertelen" && (
-        <button type="button" className="t-card-close-btn" onClick={(e) => { e.stopPropagation(); onClose(ticket.id); }}>
-          {Number(ticket.price) > 0 ? money(ticket.price) : "Ingyenes átadás"}
-        </button>
+        Number(ticket.price) > 0 ? (
+          askingPayment ? (
+            <div className="t-card-pay-row" onClick={(e) => e.stopPropagation()}>
+              <button type="button" className="t-card-pay-btn primary" onClick={() => onClose(ticket.id, "Készpénz")}>Készpénz</button>
+              <button type="button" className="t-card-pay-btn" onClick={() => onClose(ticket.id, "Kártya")}>Kártya</button>
+              <button type="button" className="t-card-pay-btn" onClick={() => onClose(ticket.id, "Átutalás")}>Átutalás</button>
+            </div>
+          ) : (
+            <button type="button" className="t-card-close-btn" onClick={(e) => { e.stopPropagation(); setAskingPayment(true); }}>
+              {money(ticket.price)}
+            </button>
+          )
+        ) : (
+          <button type="button" className="t-card-close-btn" onClick={(e) => { e.stopPropagation(); onClose(ticket.id, null); }}>
+            Ingyenes átadás
+          </button>
+        )
       )}
     </div>
   );
