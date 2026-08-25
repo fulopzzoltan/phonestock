@@ -24,8 +24,8 @@ function LocationStats({ loc, locTx, showHeading }) {
       <div className="statrow c4" style={{ marginBottom: 0 }}>
         <div className="statcard"><div className="lbl">Bevétel (készpénz)</div><div className="val" style={{ color: "#15803D" }}>{money(stats.incomeCash)}</div></div>
         <div className="statcard"><div className="lbl">Bevétel (kártya)</div><div className="val" style={{ color: "#15803D" }}>{money(stats.incomeCard)}</div></div>
-        <div className="statcard"><div className="lbl">Kiadás (valódi)</div><div className="val" style={{ color: "#B91C1C" }}>{money(stats.expenseReal)}</div></div>
-        <div className="statcard"><div className="lbl">Haszon (mai)</div><div className="val">{money(stats.margin)}</div></div>
+        <div className="statcard"><div className="lbl">Kiadás</div><div className="val" style={{ color: "#B91C1C" }}>{money(stats.expenseReal)}</div></div>
+        <div className="statcard"><div className="lbl">Ár rés</div><div className="val">{money(stats.margin)}</div></div>
       </div>
     </div>
   );
