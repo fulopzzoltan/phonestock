@@ -78,14 +78,14 @@ export default function BasketBar({ defaultLocId, busy, smartQuickItems, onCheck
 
   if (!defaultLocId) {
     return (
-      <div className="basket-bar">
+      <div>
         <div style={{ fontSize: 12.5, color: "#B91C1C" }}>Válassz helyszínt a bal oldali sávban a rögzítéshez.</div>
       </div>
     );
   }
 
   return (
-    <div className="basket-bar">
+    <div>
       <div className="seg" style={{ marginBottom: 12 }}>
         <button type="button" className={mode === "income" ? "active" : ""} onClick={() => { setMode("income"); setBasketItems([]); resetFree(); }}>Bevétel</button>
         <button type="button" className={mode === "expense" ? "active" : ""} onClick={() => { setMode("expense"); setBasketItems([]); resetFree(); }}>Kiadás</button>
