@@ -1187,6 +1187,7 @@ function AppShell() {
   async function editTransaction(id, data, locId) {
     await withBusy(async () => {
       const r = unwrap(await supabase.from("transactions").update(txToApi(data, locId)).eq("id", id).select());
+      if (!r[0]) throw new Error("A mentés nem sikerült — előfordulhat, hogy nincs jogosultságod ehhez a helyszínhez, vagy időközben törölték a tételt.");
       setTransactions(transactions.map((t) => (t.id === id ? txFromApi(r[0]) : t)));
       setTxModal(null);
     });

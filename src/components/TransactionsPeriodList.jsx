@@ -1,8 +1,19 @@
 import { useState } from "react";
 import { money, adaptivePeriodBucket, periodLabel, today } from "../lib/utils";
-import { EditIcon, FinanceIcon } from "./icons";
+import { EditIcon, FinanceIcon, CashIcon, CardIcon, TransferIcon } from "./icons";
 import ConfirmDelete from "./ConfirmDelete";
 import { EmptyState } from "./EmptyState";
+
+const num = (n) => Math.round(Number(n) || 0).toLocaleString("hu-HU");
+
+function PaymentIcon({ payment }) {
+  const common = { width: 15, height: 15 };
+  const wrap = (title, icon) => <span title={title} style={{ color: "#6B7280", display: "inline-flex" }}>{icon}</span>;
+  if (payment === "Készpénz") return wrap("Készpénz", <CashIcon {...common} />);
+  if (payment === "Kártya") return wrap("Kártya", <CardIcon {...common} />);
+  if (payment === "Átutalás") return wrap("Átutalás", <TransferIcon {...common} />);
+  return <span title="Nincs megadva" style={{ color: "#D1D5DB" }}>—</span>;
+}
 
 export function SmartBillBadge({ doc }) {
   if (!doc) return null;
@@ -69,7 +80,7 @@ export function TransactionRowsTable({ rows, locName, onEdit, onDelete, onOpenRe
   return (
     <>
       <table>
-        <thead><tr><th>Leírás</th><th>Típus</th><th>Kategória</th>{showLocation && <th>Helyszín</th>}<th>Fizetés</th><th className="num-col">Haszon</th><th className="num-col">Összeg</th><th></th></tr></thead>
+        <thead><tr><th>Leírás</th>{showLocation && <th>Helyszín</th>}<th>Fizetés</th><th className="num-col">Haszon</th><th className="num-col">Összeg</th><th></th></tr></thead>
         <tbody>
           {buildBasketEntries(rows).map((entry) => {
             if (entry.kind === "basket-head") return null;
@@ -80,15 +91,13 @@ export function TransactionRowsTable({ rows, locName, onEdit, onDelete, onOpenRe
                 <td style={{ fontWeight: 500, color: "#111827" }}>
                   {t.description} <KindBadge t={t} productConditionById={productConditionById} />{t.smartbillDoc && <> <SmartBillBadge doc={t.smartbillDoc} /></>}
                 </td>
-                <td>{t.type === "income" ? <span className="badge-income">Bevétel</span> : <span className="badge-expense">Kiadás</span>}</td>
-                <td style={{ color: "#6B7280" }}>{t.category}</td>
                 {showLocation && <td style={{ color: "#6B7280" }}>{locName(t.locationId)}</td>}
-                <td style={{ color: "#6B7280" }}>{t.payment || "—"}</td>
-                <td className="mono num-col" style={{ color: "#6B7280" }}>
-                  {t.type === "income" ? money((Number(t.amount) || 0) - (Number(t.costPrice) || 0)) : "—"}
+                <td><PaymentIcon payment={t.payment} /></td>
+                <td className="num-col" style={{ color: "#6B7280" }}>
+                  {t.type === "income" ? num((Number(t.amount) || 0) - (Number(t.costPrice) || 0)) : "—"}
                 </td>
-                <td className="mono num-col" style={{ fontWeight: 700, color: t.type === "income" ? "#15803D" : "#B91C1C" }}>
-                  {t.type === "income" ? "+" : "-"}{money(t.amount)}
+                <td className="num-col" style={{ fontWeight: 700, color: t.type === "income" ? "#15803D" : "#B91C1C" }}>
+                  {t.type === "income" ? "+" : "-"}{num(t.amount)}
                 </td>
                 <td style={{ display: "flex", gap: 5 }} onClick={(e) => isSale && e.stopPropagation()}>
                   <button className="iconbtn" disabled={busy} onClick={() => onEdit(t)}><EditIcon /></button>
@@ -109,14 +118,12 @@ export function TransactionRowsTable({ rows, locName, onEdit, onDelete, onOpenRe
               <div className="mob-row-top">
                 <div className="mob-row-main"><span>{t.description}</span><KindBadge t={t} productConditionById={productConditionById} />{t.smartbillDoc && <SmartBillBadge doc={t.smartbillDoc} />}</div>
                 <span className="mob-row-amount" style={{ color: t.type === "income" ? "#15803D" : "#B91C1C" }}>
-                  {t.type === "income" ? "+" : "-"}{money(t.amount)}
+                  {t.type === "income" ? "+" : "-"}{num(t.amount)}
                 </span>
               </div>
               <div className="mob-row-sub">
-                {t.type === "income" ? <span className="badge-income">Bevétel</span> : <span className="badge-expense">Kiadás</span>}
-                <span>{t.category}</span>
                 {showLocation && <span style={{ color: "#6B7280" }}>{locName(t.locationId)}</span>}
-                <span>{t.payment || "—"}</span>
+                <PaymentIcon payment={t.payment} />
                 <span onClick={(e) => e.stopPropagation()} style={{ display: "inline-flex", gap: 5, marginLeft: "auto" }}>
                   <button className="iconbtn" disabled={busy} onClick={() => onEdit(t)}><EditIcon /></button>
                   <ConfirmDelete disabled={busy} onConfirm={() => onDelete(t.id)} />
