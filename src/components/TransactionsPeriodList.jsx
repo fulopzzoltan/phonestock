@@ -138,6 +138,15 @@ export function TransactionRowsTable({ rows, locName, onEdit, onDelete, onOpenRe
   );
 }
 
+function dayStats(rows) {
+  const incomeCash = rows.filter((t) => t.type === "income" && t.payment === "Készpénz").reduce((s, t) => s + (Number(t.amount) || 0), 0);
+  const incomeCard = rows.filter((t) => t.type === "income" && t.payment === "Kártya").reduce((s, t) => s + (Number(t.amount) || 0), 0);
+  const expenseReal = rows.filter((t) => t.type === "expense" && t.payment).reduce((s, t) => s + (Number(t.amount) || 0), 0);
+  const margin = rows.filter((t) => t.type === "income").reduce((s, t) => s + ((Number(t.amount) || 0) - (Number(t.costPrice) || 0)), 0)
+    - rows.filter((t) => t.type === "expense" && !t.payment).reduce((s, t) => s + (Number(t.amount) || 0), 0);
+  return { incomeCash, incomeCard, expenseReal, margin };
+}
+
 export default function TransactionsPeriodList({ transactions, locName, onEdit, onDelete, onOpenReceipt, busy, productConditionById, showLocation = true }) {
   const currentKey = adaptivePeriodBucket(today()).key;
   const [expanded, setExpanded] = useState(() => new Set([currentKey]));
@@ -218,7 +227,18 @@ export default function TransactionsPeriodList({ transactions, locName, onEdit, 
               </div>
             </div>
             {isOpen && (
-              <div className="tw" style={{ borderRadius: "0 0 10px 10px", borderTop: "2px solid #22C55E" }}>
+              <div className="tw tw-compact" style={{ borderRadius: "0 0 10px 10px", borderTop: "2px solid #22C55E", padding: granularity === "day" ? 16 : 0 }}>
+                {granularity === "day" && (() => {
+                  const stats = dayStats(rows);
+                  return (
+                    <div className="statrow c4" style={{ marginBottom: 14 }}>
+                      <div className="statcard"><div className="lbl">Bevétel (készpénz)</div><div className="val" style={{ color: "#15803D" }}>{money(stats.incomeCash)}</div></div>
+                      <div className="statcard"><div className="lbl">Bevétel (kártya)</div><div className="val" style={{ color: "#15803D" }}>{money(stats.incomeCard)}</div></div>
+                      <div className="statcard"><div className="lbl">Kiadás</div><div className="val" style={{ color: "#B91C1C" }}>{money(stats.expenseReal)}</div></div>
+                      <div className="statcard"><div className="lbl">Árrés</div><div className="val">{money(stats.margin)}</div></div>
+                    </div>
+                  );
+                })()}
                 <TransactionRowsTable rows={rows} locName={locName} onEdit={onEdit} onDelete={onDelete} onOpenReceipt={onOpenReceipt} busy={busy} productConditionById={productConditionById} showLocation={showLocation} />
               </div>
             )}
