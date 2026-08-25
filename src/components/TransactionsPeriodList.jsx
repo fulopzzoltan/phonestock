@@ -81,26 +81,29 @@ export function TransactionRowsTable({ rows, locName, onEdit, onDelete, onOpenRe
   return (
     <>
       <table>
-        <thead><tr><th>Leírás</th>{showLocation && <th>Helyszín</th>}<th>Fizetés</th><th className="num-col">Haszon</th><th className="num-col">Összeg</th><th></th></tr></thead>
+        <thead><tr><th>Leírás</th>{showLocation && <th>Helyszín</th>}<th className="num-col">Összeg</th><th className="num-col">Haszon</th><th></th></tr></thead>
         <tbody>
           {buildBasketEntries(rows).map((entry) => {
             if (entry.kind === "basket-head") return null;
             const t = entry.tx;
-            const isSale = t.type === "income" && t.category === "Készlet";
+            const isSale = t.type === "income" && t.category === "Készlet" && !!t.productId;
             return (
               <tr key={t.id} className={entry.inBasket ? "basket-item-tr" : undefined} style={isSale ? { cursor: "pointer" } : undefined} onClick={isSale ? () => onOpenReceipt(t.id) : undefined}>
                 <td style={{ fontWeight: 500, color: "#111827" }}>
-                  {t.description} <KindBadge t={t} productConditionById={productConditionById} />{t.smartbillDoc && <> <SmartBillBadge doc={t.smartbillDoc} /></>}
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                    <PaymentIcon payment={t.payment} />
+                    {t.description}
+                  </span>{" "}
+                  <KindBadge t={t} productConditionById={productConditionById} />{t.smartbillDoc && <> <SmartBillBadge doc={t.smartbillDoc} /></>}
                 </td>
                 {showLocation && <td style={{ color: "#6B7280" }}>{locName(t.locationId)}</td>}
-                <td><PaymentIcon payment={t.payment} /></td>
-                <td className="num-col" style={{ color: "#6B7280" }}>
-                  {t.type === "income" ? num((Number(t.amount) || 0) - (Number(t.costPrice) || 0)) : "—"}
-                </td>
                 <td className="num-col" style={{ fontWeight: 700, color: t.type === "income" ? "#15803D" : "#B91C1C" }}>
                   {t.type === "income" ? "+" : "-"}{num(t.amount)}
                 </td>
-                <td style={{ display: "flex", gap: 5 }} onClick={(e) => isSale && e.stopPropagation()}>
+                <td className="num-col" style={{ color: "#6B7280" }}>
+                  {t.type === "income" ? num((Number(t.amount) || 0) - (Number(t.costPrice) || 0)) : "—"}
+                </td>
+                <td style={{ display: "flex", gap: 5, justifyContent: "flex-end" }} onClick={(e) => isSale && e.stopPropagation()}>
                   <button className="iconbtn" disabled={busy} onClick={() => onEdit(t)}><EditIcon /></button>
                   <ConfirmDelete disabled={busy} onConfirm={() => onDelete(t.id)} />
                 </td>
@@ -113,18 +116,17 @@ export function TransactionRowsTable({ rows, locName, onEdit, onDelete, onOpenRe
         {buildBasketEntries(rows).map((entry) => {
           if (entry.kind === "basket-head") return null;
           const t = entry.tx;
-          const isSale = t.type === "income" && t.category === "Készlet";
+          const isSale = t.type === "income" && t.category === "Készlet" && !!t.productId;
           return (
             <div key={t.id} className={`mob-row${entry.inBasket ? " basket-item-mob" : ""}`} onClick={isSale ? () => onOpenReceipt(t.id) : undefined} style={isSale ? undefined : { cursor: "default" }}>
               <div className="mob-row-top">
-                <div className="mob-row-main"><span>{t.description}</span><KindBadge t={t} productConditionById={productConditionById} />{t.smartbillDoc && <SmartBillBadge doc={t.smartbillDoc} />}</div>
+                <div className="mob-row-main"><PaymentIcon payment={t.payment} /><span>{t.description}</span><KindBadge t={t} productConditionById={productConditionById} />{t.smartbillDoc && <SmartBillBadge doc={t.smartbillDoc} />}</div>
                 <span className="mob-row-amount" style={{ color: t.type === "income" ? "#15803D" : "#B91C1C" }}>
                   {t.type === "income" ? "+" : "-"}{num(t.amount)}
                 </span>
               </div>
               <div className="mob-row-sub">
                 {showLocation && <span style={{ color: "#6B7280" }}>{locName(t.locationId)}</span>}
-                <PaymentIcon payment={t.payment} />
                 <span onClick={(e) => e.stopPropagation()} style={{ display: "inline-flex", gap: 5, marginLeft: "auto" }}>
                   <button className="iconbtn" disabled={busy} onClick={() => onEdit(t)}><EditIcon /></button>
                   <ConfirmDelete disabled={busy} onConfirm={() => onDelete(t.id)} />
