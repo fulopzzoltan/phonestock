@@ -90,11 +90,12 @@ export function TransactionRowsTable({ rows, locName, onEdit, onDelete, onOpenRe
             return (
               <tr key={t.id} className={entry.inBasket ? "basket-item-tr" : undefined} style={isSale ? { cursor: "pointer" } : undefined} onClick={isSale ? () => onOpenReceipt(t.id) : undefined}>
                 <td style={{ fontWeight: 500, color: "#111827" }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                     <PaymentIcon payment={t.payment} />
                     {t.description}
-                  </span>{" "}
-                  <KindBadge t={t} productConditionById={productConditionById} />{t.smartbillDoc && <> <SmartBillBadge doc={t.smartbillDoc} /></>}
+                    <KindBadge t={t} productConditionById={productConditionById} />
+                    {t.smartbillDoc && <SmartBillBadge doc={t.smartbillDoc} />}
+                  </span>
                 </td>
                 {showLocation && <td style={{ color: "#6B7280" }}>{locName(t.locationId)}</td>}
                 <td className="num-col" style={{ fontWeight: 700, color: t.type === "income" ? "#15803D" : "#B91C1C" }}>
