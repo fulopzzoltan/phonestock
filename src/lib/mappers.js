@@ -29,6 +29,7 @@ export const pFromApi = (r) => ({
 });
 
 export const pToApi = (p, locId) => ({
+  product_no: p.productNo !== "" && p.productNo != null ? Number(p.productNo) : undefined,
   brand: p.brand,
   model: p.model,
   condition: p.condition,
@@ -184,6 +185,7 @@ export const tFromApi = (r) => ({
 });
 
 export const tToApi = (t, locId) => ({
+  ticket_no: t.ticketNo !== "" && t.ticketNo != null ? Number(t.ticketNo) : undefined,
   customer_name: t.customerName,
   customer_phone: t.customerPhone || null,
   brand: t.brand,
@@ -277,6 +279,7 @@ export const partFromApi = (r) => ({
 });
 
 export const partToApi = (p) => ({
+  part_no: p.partNo !== "" && p.partNo != null ? Number(p.partNo) : undefined,
   name: p.name,
   brand: p.brand || null,
   model_fit: p.modelFit || null,

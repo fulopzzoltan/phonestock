@@ -36,6 +36,7 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
     consentGiven: !!ticket?.consentAt,
     marketingConsent: false,
     extra: parsed.extra || prefill?.extra || "",
+    ticketNo: ticket?.ticketNo ?? "",
   });
   const [tags, setTags] = useState(parsed.tags.length ? parsed.tags : (prefill?.tags || []));
   const [locId, setLocId] = useState(ticket?.locationId || defaultLocId || (locations.length === 1 ? locations[0]?.id : ""));
@@ -127,6 +128,10 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
         <div className="row2">
           <div className="field"><label>Márka</label><input value={f.brand} onChange={set("brand")} placeholder="Samsung, Apple..." /></div>
           <div className="field"><label>Modell</label><input value={f.model} onChange={set("model")} placeholder="S22, iPhone 12..." /></div>
+        </div>
+        <div className="field">
+          <label>Sorszám (kód) <span style={{ color: "#9CA3AF", fontWeight: 400 }}>— opcionális, üresen hagyva automatikusan a következő szabad szám kerül rá</span></label>
+          <input type="number" value={f.ticketNo} onChange={set("ticketNo")} placeholder="automatikus" />
         </div>
         <div className="row2">
           <div className="field"><label>IMEI</label><input value={f.imei} onChange={set("imei")} placeholder="35xxxxxxxxxxxxx" /></div>

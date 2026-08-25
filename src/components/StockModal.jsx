@@ -20,6 +20,7 @@ export default function StockModal({ product, prefill, locations, onClose, onSav
     batteryHealth: product?.batteryHealth ?? "",
     newPrice: product?.newPrice ?? "",
     stockStatus: product?.stockStatus || "polcon",
+    productNo: product?.productNo ?? "",
   });
   const [locId, setLocId] = useState(product?.locationId || prefill?.locationId || defaultLocId || locations[0]?.id || "");
   const [acqType, setAcqType] = useState("purchase");
@@ -88,6 +89,10 @@ export default function StockModal({ product, prefill, locations, onClose, onSav
         <div className="row2">
           <div className="field"><label>Márka</label><input value={f.brand} onChange={set("brand")} placeholder="Samsung" /></div>
           <div className="field"><label>Modell</label><input value={f.model} onChange={set("model")} placeholder="Galaxy S23" /></div>
+        </div>
+        <div className="field">
+          <label>Sorszám (kód) <span style={{ color: "#9CA3AF", fontWeight: 400 }}>— opcionális, üresen hagyva automatikusan a következő szabad szám kerül rá</span></label>
+          <input type="number" value={f.productNo} onChange={set("productNo")} placeholder="automatikus" />
         </div>
         <div className="field"><label>Állapot</label>
           <select

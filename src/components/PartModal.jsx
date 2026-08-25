@@ -14,6 +14,7 @@ export default function PartModal({ part, prefill, onClose, onSave, busy }) {
     source: part?.source || prefill?.source || "",
     origin: part?.origin || "",
     supplierSku: part?.supplierSku || "",
+    partNo: part?.partNo ?? "",
   });
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const valid = f.name.trim() && f.quantity !== "";
@@ -45,6 +46,10 @@ export default function PartModal({ part, prefill, onClose, onSave, busy }) {
             </select>
           </div>
           <div className="field"><label>Beszállítói cikkszám</label><input value={f.supplierSku} onChange={set("supplierSku")} placeholder="Opcionális" /></div>
+        </div>
+        <div className="field">
+          <label>Sorszám (kód) <span style={{ color: "#9CA3AF", fontWeight: 400 }}>— opcionális, üresen hagyva automatikusan a következő szabad szám kerül rá</span></label>
+          <input type="number" value={f.partNo} onChange={set("partNo")} placeholder="automatikus" />
         </div>
         <div className="modal-actions">
           <button className="btn sec" onClick={onClose}>Mégse</button>
