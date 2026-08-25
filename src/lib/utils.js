@@ -239,8 +239,8 @@ export const LEAVE_STATUS_CLS = { "Kérve": "badge-loc", "Jóváhagyva": "badge-
 
 // Gyakran eladott kiegészítők — egy kattintással rögzíthető bevétel (eladási ár + beszerzési ár)
 export const QUICK_SALES = [
-  { label: "Devia fólia", amount: 49, cost: 10 },
-  { label: "MagicBox üvegfólia", amount: 49, cost: 7 },
+  { label: "Devia", amount: 49, cost: 10 },
+  { label: "Üvegfólia", amount: 49, cost: 7 },
   { label: "Töltőkábel", amount: 25, cost: 4 },
   { label: "Tok", amount: 49, cost: 10 },
 ];

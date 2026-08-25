@@ -16,18 +16,14 @@ function dayStats(tx) {
   return { incomeCash, incomeCard, expenseReal, margin, income, expense };
 }
 
-function LocationBlock({
-  loc, locTx, todayStr, locName, busy, setTxModal, deleteTransaction, setReceiptTxId, productConditionById,
-  todayClose, closeDay, reopenDay, showHeading,
-}) {
-  const [confirmingClose, setConfirmingClose] = useState(false);
+function LocationStats({ loc, locTx, todayStr, busy, todayClose, closeDay, showHeading }) {
   const stats = dayStats(locTx);
   const closeStale = todayClose && locTx.length > (todayClose.snapshotTxCount ?? 0);
 
   return (
-    <div className="tw tw-compact" style={{ padding: 16, marginTop: 16 }}>
+    <div className="tw" style={{ padding: 16, marginTop: 16 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-        <div style={{ fontSize: 14, fontWeight: 700 }}>{showHeading ? `Ma — ${loc.name}` : "Ma"}</div>
+        <div style={{ fontSize: 14, fontWeight: 700 }}>{showHeading ? loc.name : "Ma"}</div>
         {todayClose && (
           <span className="badge-loc" style={{ color: closeStale ? "#B45309" : "#15803D" }}>
             {closeStale ? "⚠ Elavult zárás" : "✓ Lezárva"} {new Date(todayClose.closedAt).toLocaleTimeString("hu-HU", { hour: "2-digit", minute: "2-digit" })}-kor
@@ -35,7 +31,7 @@ function LocationBlock({
         )}
       </div>
 
-      <div className="statrow c4" style={{ marginBottom: 14 }}>
+      <div className="statrow c4" style={{ marginBottom: closeStale ? 14 : 0 }}>
         <div className="statcard"><div className="lbl">Bevétel (készpénz)</div><div className="val" style={{ color: "#15803D" }}>{money(stats.incomeCash)}</div></div>
         <div className="statcard"><div className="lbl">Bevétel (kártya)</div><div className="val" style={{ color: "#15803D" }}>{money(stats.incomeCard)}</div></div>
         <div className="statcard"><div className="lbl">Kiadás (valódi)</div><div className="val" style={{ color: "#B91C1C" }}>{money(stats.expenseReal)}</div></div>
@@ -43,11 +39,25 @@ function LocationBlock({
       </div>
 
       {closeStale && (
-        <div style={{ fontSize: 12.5, color: "#92400E", background: "#FEF3C7", borderRadius: "var(--radius-sm)", padding: "8px 12px", marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
+        <div style={{ fontSize: 12.5, color: "#92400E", background: "#FEF3C7", borderRadius: "var(--radius-sm)", padding: "8px 12px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
           <span>{locTx.length - todayClose.snapshotTxCount} új tétel érkezett a zárás óta — érdemes újranézni.</span>
           <button type="button" className="btn sec sm" disabled={busy} onClick={() => closeDay(todayStr, loc.id)}>Zárás frissítése</button>
         </div>
       )}
+    </div>
+  );
+}
+
+function LocationTable({
+  loc, locTx, todayStr, locName, busy, setTxModal, deleteTransaction, setReceiptTxId, productConditionById,
+  todayClose, closeDay, reopenDay, showHeading,
+}) {
+  const [confirmingClose, setConfirmingClose] = useState(false);
+  const stats = dayStats(locTx);
+
+  return (
+    <div className="tw tw-compact" style={{ padding: 16, marginTop: 16 }}>
+      {showHeading && <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>Ma — {loc.name}</div>}
 
       {locTx.length === 0 ? (
         <EmptyState icon={FinanceIcon}>Ma még nincs rögzített tranzakció.</EmptyState>
@@ -113,12 +123,16 @@ export default function FinanceTab({
     return { id: l.id, name: l.name, expected: income - expense };
   });
 
+  const locTxByLoc = Object.fromEntries(locsToShow.map((loc) => [
+    loc.id,
+    transactions.filter((t) => t.locationId === loc.id && t.date === todayStr).sort((a, b) => (a.createdAt || "").localeCompare(b.createdAt || "")),
+  ]));
+
   return (
     <>
       <div className="topbar">
         <div><div className="page-title">Bevételek &amp; Kiadások</div></div>
       </div>
-      <BasketBar defaultLocId={defaultLocId} busy={busy} smartQuickItems={smartQuickItems} onCheckout={checkoutBasket} />
 
       {cashByLocation.length > 0 && (
         <div className={`statrow c${Math.min(Math.max(cashByLocation.length, 1), 6)}`} style={{ marginTop: 16 }}>
@@ -131,29 +145,39 @@ export default function FinanceTab({
         </div>
       )}
 
-      {locsToShow.map((loc) => {
-        const locTx = transactions
-          .filter((t) => t.locationId === loc.id && t.date === todayStr)
-          .sort((a, b) => (a.createdAt || "").localeCompare(b.createdAt || ""));
-        return (
-          <LocationBlock
-            key={loc.id}
-            loc={loc}
-            locTx={locTx}
-            todayStr={todayStr}
-            locName={locName}
-            busy={busy}
-            setTxModal={setTxModal}
-            deleteTransaction={deleteTransaction}
-            setReceiptTxId={setReceiptTxId}
-            productConditionById={productConditionById}
-            todayClose={todayCloseFor(loc.id)}
-            closeDay={closeDay}
-            reopenDay={reopenDay}
-            showHeading={isAll}
-          />
-        );
-      })}
+      {locsToShow.map((loc) => (
+        <LocationStats
+          key={loc.id}
+          loc={loc}
+          locTx={locTxByLoc[loc.id]}
+          todayStr={todayStr}
+          busy={busy}
+          todayClose={todayCloseFor(loc.id)}
+          closeDay={closeDay}
+          showHeading={isAll}
+        />
+      ))}
+
+      <BasketBar defaultLocId={defaultLocId} busy={busy} smartQuickItems={smartQuickItems} onCheckout={checkoutBasket} />
+
+      {locsToShow.map((loc) => (
+        <LocationTable
+          key={loc.id}
+          loc={loc}
+          locTx={locTxByLoc[loc.id]}
+          todayStr={todayStr}
+          locName={locName}
+          busy={busy}
+          setTxModal={setTxModal}
+          deleteTransaction={deleteTransaction}
+          setReceiptTxId={setReceiptTxId}
+          productConditionById={productConditionById}
+          todayClose={todayCloseFor(loc.id)}
+          closeDay={closeDay}
+          reopenDay={reopenDay}
+          showHeading={isAll}
+        />
+      ))}
 
       <button type="button" className="btn sec sm" style={{ marginTop: 18 }} onClick={() => setShowHistory((v) => !v)}>
         {showHistory ? "Korábbi napok elrejtése" : "Korábbi napok megtekintése"}
