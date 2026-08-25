@@ -19,10 +19,12 @@ function monthLabel(y, m) { return `${y}. ${MONTH_NAMES[m]}`; }
 function dayStats(rows) {
   const incomeCash = rows.filter((t) => t.type === "income" && t.payment === "Készpénz").reduce((s, t) => s + (Number(t.amount) || 0), 0);
   const incomeCard = rows.filter((t) => t.type === "income" && t.payment === "Kártya").reduce((s, t) => s + (Number(t.amount) || 0), 0);
+  const expenseCash = rows.filter((t) => t.type === "expense" && t.payment === "Készpénz").reduce((s, t) => s + (Number(t.amount) || 0), 0);
   const expense = rows.filter((t) => t.type === "expense" && t.payment).reduce((s, t) => s + (Number(t.amount) || 0), 0);
   const margin = rows.filter((t) => t.type === "income").reduce((s, t) => s + ((Number(t.amount) || 0) - (Number(t.costPrice) || 0)), 0)
     - rows.filter((t) => t.type === "expense" && !t.payment).reduce((s, t) => s + (Number(t.amount) || 0), 0);
-  return { incomeCash, incomeCard, expense, margin };
+  const cashOnHand = incomeCash - expenseCash;
+  return { incomeCash, incomeCard, expenseCash, expense, margin, cashOnHand };
 }
 
 function MonthGrid({
@@ -184,11 +186,12 @@ export default function TransactionsCalendar({
             {closedDaysSet.has(selectedDay) && <span className="badge-loc" style={{ color: "#15803D" }}>✓ Lezárva</span>}
           </div>
           {selectedStats && (
-            <div className="statrow c4" style={{ marginBottom: 14 }}>
+            <div className="statrow c5" style={{ marginBottom: 14 }}>
               <div className="statcard"><div className="lbl">Bevétel (készpénz)</div><div className="val" style={{ color: "#15803D" }}>{money(selectedStats.incomeCash)}</div></div>
               <div className="statcard"><div className="lbl">Bevétel (kártya)</div><div className="val" style={{ color: "#15803D" }}>{money(selectedStats.incomeCard)}</div></div>
               <div className="statcard"><div className="lbl">Kiadás</div><div className="val" style={{ color: "#B91C1C" }}>{money(selectedStats.expense)}</div></div>
               <div className="statcard"><div className="lbl">Árrés</div><div className="val">{money(selectedStats.margin)}</div></div>
+              <div className="statcard accent"><div className="lbl">Kézpénz maradt</div><div className="val">{money(selectedStats.cashOnHand)}</div></div>
             </div>
           )}
           {selectedRows.length === 0 ? (
