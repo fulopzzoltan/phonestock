@@ -74,7 +74,7 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
 
 /* BOTTOM SHEET — "Több" panel + mobilon a modalok is ezt a mintát követik (lásd media query) */
 .bsheet-overlay{position:fixed;inset:0;background:rgba(17,24,39,.4);z-index:200;display:flex;align-items:flex-end}
-.bsheet-panel{background:#fff;width:100%;max-height:82vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:10px 12px calc(20px + env(safe-area-inset-bottom))}
+.bsheet-panel{background:#fff;width:100%;max-height:82vh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;border-radius:20px 20px 0 0;padding:10px 12px calc(20px + env(safe-area-inset-bottom))}
 .bsheet-handle{width:36px;height:4px;border-radius:999px;background:#E5E7EB;margin:2px auto 12px}
 
 .main{flex:1;padding:26px 30px;overflow-y:auto;min-width:0}
@@ -442,7 +442,10 @@ tr:hover td{background:#FAFAFA}
   .pgh{flex-wrap:wrap}
   .pgh-right{gap:10px}
   .pgh-hide-mob{display:none}
-  .main{padding-bottom:82px}
+  /* Mobilon a .main saját belső görgetése helyett a teljes body görögjön —
+     nested scroll container + position:fixed alsó sáv iOS Safarin "úszik"/együtt mozog
+     a tartalommal, ha a görgetés nem a document szintjén történik. */
+  .main{padding-bottom:82px;overflow-y:visible}
   .bottom-nav{display:flex}
 
   /* MODAL — alulról felcsúszó, teli szélességű lap, nem középre igazított kártya */
@@ -619,8 +622,8 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .chat-panel-input input{flex:1;border:1px solid #E5E7EB;border-radius:10px;padding:9px 11px;font-size:12.5px;font-family:inherit}
 .chat-panel-input .btn{padding:9px 14px;font-size:12px}
 @media (max-width:640px){
-  .chat-panel{right:12px;left:12px;width:auto;bottom:80px;height:min(460px,calc(100vh - 140px))}
-  .chat-fab{right:16px;bottom:80px}
+  .chat-panel{right:12px;left:12px;width:auto;bottom:calc(72px + env(safe-area-inset-bottom));height:min(460px,calc(100vh - 140px))}
+  .chat-fab{right:16px;bottom:calc(72px + env(safe-area-inset-bottom))}
 }
 
 .pub-scarcity-pill{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:#FEE2E2;color:#DC2626}
