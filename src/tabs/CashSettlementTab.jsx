@@ -9,6 +9,14 @@ function dayAfter(dateStr) {
   d.setUTCDate(d.getUTCDate() + 1);
   return d.toISOString().slice(0, 10);
 }
+function yesterday() {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
 function daysBetweenInclusive(a, b) {
   return Math.round((new Date(b + "T00:00:00Z") - new Date(a + "T00:00:00Z")) / 86400000) + 1;
 }
@@ -41,8 +49,7 @@ export default function CashSettlementTab({
   const [showList, setShowList] = useState(false);
 
   const lastSettlement = cashSettlements[0] || null;
-  const earliestTxDate = useMemo(() => transactions.reduce((min, t) => (!min || t.date < min ? t.date : min), null), [transactions]);
-  const periodStart = lastSettlement ? dayAfter(lastSettlement.periodEnd) : (customStart || earliestTxDate || today());
+  const periodStart = lastSettlement ? dayAfter(lastSettlement.periodEnd) : (customStart || yesterday());
   const periodEnd = today();
   const periodValid = periodStart <= periodEnd;
 
@@ -104,7 +111,7 @@ export default function CashSettlementTab({
       {!lastSettlement && (
         <div className="field" style={{ maxWidth: 260, marginBottom: 16 }}>
           <label>Időszak kezdete (első elszámolás)</label>
-          <input type="date" value={customStart || earliestTxDate || today()} onChange={(e) => setCustomStart(e.target.value)} />
+          <input type="date" value={customStart || yesterday()} onChange={(e) => setCustomStart(e.target.value)} />
         </div>
       )}
       <div style={{ fontSize: 13, color: "#6B7280", marginBottom: 16 }}>
