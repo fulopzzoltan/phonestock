@@ -3,20 +3,6 @@ import { money, today } from "../lib/utils";
 import { EmptyState } from "../components/EmptyState";
 import { FinanceIcon } from "../components/icons";
 import TransactionsPeriodList from "../components/TransactionsPeriodList";
-import ResponsiveTable from "../components/ResponsiveTable";
-
-function eachDateInPeriod(start, end) {
-  const dates = [];
-  let d = new Date(start + "T00:00:00Z");
-  const endD = new Date(end + "T00:00:00Z");
-  while (d <= endD) {
-    dates.push(d.toISOString().slice(0, 10));
-    d.setUTCDate(d.getUTCDate() + 1);
-  }
-  return dates;
-}
-
-const CARD_FEE_RATE = 0.012;
 
 function dayAfter(dateStr) {
   const d = new Date(dateStr + "T00:00:00Z");
@@ -27,13 +13,32 @@ function daysBetweenInclusive(a, b) {
   return Math.round((new Date(b + "T00:00:00Z") - new Date(a + "T00:00:00Z")) / 86400000) + 1;
 }
 
+// Greedy settle-up: minimális számú átutalással kiegyenlíti az egyenlegeket (N helyszínre is működik,
+// nem csak kettőre — ha csak két helyszín van, ez pontosan egy sima "A ad B-nek X-et" mondatot ad.
+function computeTransfers(locs) {
+  const creditors = locs.filter((l) => l.balance > 0.5).map((l) => ({ ...l })).sort((a, b) => b.balance - a.balance);
+  const debtors = locs.filter((l) => l.balance < -0.5).map((l) => ({ ...l, balance: -l.balance })).sort((a, b) => b.balance - a.balance);
+  const transfers = [];
+  let i = 0, j = 0;
+  while (i < debtors.length && j < creditors.length) {
+    const amt = Math.min(debtors[i].balance, creditors[j].balance);
+    transfers.push({ fromId: debtors[i].id, fromName: debtors[i].name, toId: creditors[j].id, toName: creditors[j].name, amount: amt });
+    debtors[i].balance -= amt;
+    creditors[j].balance -= amt;
+    if (debtors[i].balance < 0.5) i++;
+    if (creditors[j].balance < 0.5) j++;
+  }
+  return transfers;
+}
+
 export default function CashSettlementTab({
-  busy, transactions, cashHolders, cashSettlements, saveCashSettlement, users,
-  setTxModal, deleteTransaction, setReceiptTxId, dayCloses, allowedLocations, locName,
+  busy, transactions, cashSettlements, saveCashSettlement, users,
+  setTxModal, deleteTransaction, setReceiptTxId, allowedLocations, locName,
 }) {
   const [customStart, setCustomStart] = useState("");
-  const [holderAmounts, setHolderAmounts] = useState({});
+  const [countedByLoc, setCountedByLoc] = useState({});
   const [note, setNote] = useState("");
+  const [showList, setShowList] = useState(false);
 
   const lastSettlement = cashSettlements[0] || null;
   const earliestTxDate = useMemo(() => transactions.reduce((min, t) => (!min || t.date < min ? t.date : min), null), [transactions]);
@@ -42,41 +47,50 @@ export default function CashSettlementTab({
   const periodValid = periodStart <= periodEnd;
 
   const periodTx = useMemo(() => transactions.filter((t) => t.date >= periodStart && t.date <= periodEnd), [transactions, periodStart, periodEnd]);
-  const cashIncome = periodTx.filter((t) => t.type === "income" && t.payment === "Készpénz").reduce((s, t) => s + (Number(t.amount) || 0), 0);
-  const cashExpense = periodTx.filter((t) => t.type === "expense" && t.payment === "Készpénz").reduce((s, t) => s + (Number(t.amount) || 0), 0);
-  const cashExpected = cashIncome - cashExpense;
-  const cardIncomeGross = periodTx.filter((t) => t.type === "income" && t.payment === "Kártya").reduce((s, t) => s + (Number(t.amount) || 0), 0);
-  const cardIncomeNet = cardIncomeGross - cardIncomeGross * CARD_FEE_RATE;
+
+  const perLoc = useMemo(() => allowedLocations.map((loc) => {
+    const locTx = periodTx.filter((t) => t.locationId === loc.id);
+    const cashIncome = locTx.filter((t) => t.type === "income" && t.payment === "Készpénz").reduce((s, t) => s + (Number(t.amount) || 0), 0);
+    const cashExpense = locTx.filter((t) => t.type === "expense" && t.payment === "Készpénz").reduce((s, t) => s + (Number(t.amount) || 0), 0);
+    return { id: loc.id, name: loc.name, net: cashIncome - cashExpense };
+  }), [allowedLocations, periodTx]);
+
+  const totalNet = perLoc.reduce((s, l) => s + l.net, 0);
+  const fairShare = perLoc.length > 0 ? totalNet / perLoc.length : 0;
+  const withBalance = useMemo(() => perLoc.map((l) => ({ ...l, balance: l.net - fairShare })), [perLoc, fairShare]);
+  const transfers = useMemo(() => computeTransfers(withBalance), [withBalance]);
+  const allSettled = withBalance.length > 0 && transfers.length === 0;
+
+  const cardIncome = periodTx.filter((t) => t.type === "income" && t.payment === "Kártya").reduce((s, t) => s + (Number(t.amount) || 0), 0);
   const transferIncome = periodTx.filter((t) => t.type === "income" && t.payment === "Átutalás").reduce((s, t) => s + (Number(t.amount) || 0), 0);
-  // régi tranzakciókon (pl. korábban importált 2024-es adat) a payment mező üres lehet — ezt nem
-  // soroljuk készpénznek (bizonytalan), de a profitból nem hagyhatjuk ki, különben alábecsülnénk.
-  const unknownPaymentIncome = periodTx.filter((t) => t.type === "income" && !["Készpénz", "Kártya", "Átutalás"].includes(t.payment)).reduce((s, t) => s + (Number(t.amount) || 0), 0);
-  const totalExpenseAll = periodTx.filter((t) => t.type === "expense").reduce((s, t) => s + (Number(t.amount) || 0), 0);
-  const otherExpense = totalExpenseAll - cashExpense;
-  const totalProfit = cashExpected + cardIncomeNet + transferIncome + unknownPaymentIncome - otherExpense;
 
-  const activeHolders = cashHolders.filter((h) => h.active);
-  const cashCountedTotal = activeHolders.reduce((s, h) => s + (Number(holderAmounts[h.id]) || 0), 0);
-  const diff = cashCountedTotal - cashExpected;
-  const isOk = Math.abs(diff) <= 1;
-
-  function holderName(id) {
-    return cashHolders.find((h) => h.id === id)?.name || "?";
+  function holderNameFor(locId) {
+    return locName(locId);
   }
 
   function handleSubmit(e) {
     e.preventDefault();
     if (!periodValid) return;
-    const cashByHolder = {};
-    activeHolders.forEach((h) => { cashByHolder[h.id] = Number(holderAmounts[h.id]) || 0; });
-    const summary = `Elszámolás rögzítése (${periodStart} – ${periodEnd}): profit ${money(totalProfit)} (fejenként ${money(totalProfit / 2)}). Készpénz eltérés: ${diff > 0 ? "+" : ""}${money(diff)}. Rögzíted?`;
-    if (!confirm(summary)) return;
+    const locationBreakdown = withBalance.map((l) => ({
+      location_id: l.id,
+      location_name: l.name,
+      net_cash: l.net,
+      counted_cash: countedByLoc[l.id] !== undefined && countedByLoc[l.id] !== "" ? Number(countedByLoc[l.id]) : null,
+      fair_share: fairShare,
+      balance: l.balance,
+    }));
+    const summaryLine = transfers.length === 0
+      ? "Nincs teendő, egyenlőek."
+      : transfers.map((tr) => `${tr.fromName} ad át ${tr.toName}-nak ${money(tr.amount)}-t`).join("; ");
+    if (!confirm(`Elszámolás rögzítése (${periodStart} – ${periodEnd}): ${summaryLine} Rögzíted?`)) return;
     saveCashSettlement({
-      periodStart, periodEnd,
-      cashIncome, cashExpense, cashCountedTotal, cashByHolder,
-      cardIncome: cardIncomeNet, transferIncome, otherExpense, note,
+      periodStart, periodEnd, locationBreakdown, cardIncome, transferIncome,
+      payerLocationId: transfers[0]?.fromId ?? null,
+      payeeLocationId: transfers[0]?.toId ?? null,
+      transferAmount: transfers[0]?.amount ?? 0,
+      note,
     });
-    setHolderAmounts({});
+    setCountedByLoc({});
     setNote("");
     setCustomStart("");
   }
@@ -97,123 +111,122 @@ export default function CashSettlementTab({
         Időszak: <b style={{ color: "#111827" }}>{periodStart} – {periodEnd}</b>
         {periodValid && ` (${daysBetweenInclusive(periodStart, periodEnd)} nap)`}
       </div>
-      {unknownPaymentIncome > 0 && (
-        <div style={{ fontSize: 12, color: "var(--warning-ink)", background: "var(--warning-soft)", borderRadius: "var(--radius-sm)", padding: "7px 12px", marginBottom: 16 }}>
-          {money(unknownPaymentIncome)} bevételen nincs megadva fizetési mód (régi adat) — ez a profitba beleszámít, de a készpénz-egyeztetésben nem, mert nem tudjuk biztosan, készpénz volt-e.
-        </div>
-      )}
-
-      <div className="statrow c5" style={{ marginBottom: 16 }}>
-        <div className="statcard accent"><div className="lbl">Készpénz (rendszer szerint)</div><div className="val">{money(cashExpected)}</div></div>
-        <div className="statcard"><div className="lbl">Kártya (nettó, −1,2%)</div><div className="val">{money(cardIncomeNet)}</div></div>
-        <div className="statcard"><div className="lbl">Átutalás</div><div className="val">{money(transferIncome)}</div></div>
-        <div className="statcard"><div className="lbl">Egyéb kiadás</div><div className="val" style={{ color: "#B91C1C" }}>{money(otherExpense)}</div></div>
-        <div className="statcard"><div className="lbl">Profit (megosztandó)</div><div className="val" style={{ color: "#22C55E" }}>{money(totalProfit)}</div></div>
-      </div>
-
-      {periodValid && daysBetweenInclusive(periodStart, periodEnd) <= 62 && allowedLocations?.length > 0 && (
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
-          {eachDateInPeriod(periodStart, periodEnd).map((d) => {
-            const closesForDay = (dayCloses || []).filter((c) => c.date === d && !c.reopenedAt);
-            const allClosed = closesForDay.length >= allowedLocations.length;
-            return (
-              <span key={d} className="badge-loc" style={{ color: allClosed ? "#15803D" : "#B91C1C" }}>
-                {d}: {closesForDay.length}/{allowedLocations.length} zárva
-              </span>
-            );
-          })}
-        </div>
-      )}
-
-      <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>
-        Ebben az időszakban történt ({periodTx.length} tétel)
-      </div>
-      <div style={{ marginBottom: 22 }}>
-        <TransactionsPeriodList
-          transactions={periodTx}
-          locName={locName}
-          onEdit={setTxModal}
-          onDelete={deleteTransaction}
-          onOpenReceipt={setReceiptTxId}
-          busy={busy}
-        />
-      </div>
 
       <form className="tw" style={{ padding: 20 }} onSubmit={handleSubmit}>
-        <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", marginBottom: 12 }}>Kinél mennyi készpénz van most</div>
+        <div className="tw" style={{ marginBottom: 16, overflow: "hidden" }}>
+          <table>
+            <thead>
+              <tr>
+                <th>Helyszín</th>
+                <th className="num-col">Nettó cash</th>
+                <th className="num-col">Jár (fele)</th>
+                <th className="num-col">Egyenleg</th>
+              </tr>
+            </thead>
+            <tbody>
+              {withBalance.map((l) => (
+                <tr key={l.id}>
+                  <td style={{ fontWeight: 600 }}>{l.name}</td>
+                  <td className="num-col mono">{money(l.net)}</td>
+                  <td className="num-col mono" style={{ color: "#6B7280" }}>{money(fairShare)}</td>
+                  <td className="num-col mono" style={{ fontWeight: 700, color: l.balance > 0.5 ? "#15803D" : l.balance < -0.5 ? "#B91C1C" : "#6B7280" }}>
+                    {l.balance > 0 ? "+" : ""}{money(l.balance)}
+                  </td>
+                </tr>
+              ))}
+              <tr>
+                <td style={{ fontWeight: 700, color: "#374151" }}>Összesen</td>
+                <td className="num-col mono" style={{ fontWeight: 700 }}>{money(totalNet)}</td>
+                <td className="num-col mono" style={{ color: "#6B7280" }}>{money(totalNet)}</td>
+                <td className="num-col mono">0</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style={{ textAlign: "center", padding: "14px 10px", fontSize: 16, fontWeight: 700, color: allSettled ? "#15803D" : "#111827", background: "#F9FAFB", borderRadius: "var(--radius-md)", marginBottom: 16 }}>
+          {withBalance.length === 0 ? "Nincs helyszín az elszámoláshoz."
+            : allSettled ? "Nincs teendő, egyenlőek."
+            : transfers.map((tr, i) => (
+              <div key={i}>{tr.fromName} ad át {tr.toName}-nak <span style={{ color: "var(--accent)" }}>{money(tr.amount)}</span>-t.</div>
+            ))}
+        </div>
+
+        <div style={{ fontSize: 12, color: "#6B7280", marginBottom: 16, padding: "8px 12px", background: "#F9FAFB", borderRadius: "var(--radius-sm)" }}>
+          Ebben az időszakban emellett: <b style={{ color: "#111827" }}>{money(cardIncome)}</b> kártyás, <b style={{ color: "#111827" }}>{money(transferIncome)}</b> utalásos bevétel — ez a közös számlán van, nem kell elosztani.
+        </div>
+
+        <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", marginBottom: 12 }}>Fizikai ellenőrzés (opcionális) — ténylegesen mennyi készpénz van most</div>
         <div className="row3">
-          {activeHolders.map((h) => (
-            <div className="field" key={h.id}>
-              <label>{h.name}</label>
-              <input type="number" step="1" value={holderAmounts[h.id] ?? ""} onChange={(e) => setHolderAmounts((prev) => ({ ...prev, [h.id]: e.target.value }))} placeholder="0" />
-            </div>
-          ))}
+          {withBalance.map((l) => {
+            const counted = countedByLoc[l.id];
+            const diff = counted !== undefined && counted !== "" ? Number(counted) - l.net : null;
+            const ok = diff === null || Math.abs(diff) <= 1;
+            return (
+              <div className="field" key={l.id}>
+                <label>{l.name}</label>
+                <input type="number" step="1" value={counted ?? ""} onChange={(e) => setCountedByLoc((prev) => ({ ...prev, [l.id]: e.target.value }))} placeholder={String(Math.round(l.net))} />
+                {diff !== null && !ok && (
+                  <div style={{ fontSize: 11, color: "#B91C1C", marginTop: 3, fontWeight: 600 }}>Eltérés: {diff > 0 ? "+" : ""}{money(diff)}</div>
+                )}
+              </div>
+            );
+          })}
         </div>
         <div className="field">
           <label>Megjegyzés (opcionális)</label>
           <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="pl. eltérés oka" />
         </div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 4 }}>
-          <div>
-            <span style={{ fontSize: 12, color: "#6B7280", marginRight: 8 }}>Összesen: {money(cashCountedTotal)} · Eltérés:</span>
-            <span className="tag" style={{ fontSize: 13, background: isOk ? "var(--primary-soft)" : "var(--danger-soft)", color: isOk ? "var(--primary-ink)" : "var(--danger-ink)" }}>
-              {diff > 0 ? "+" : ""}{money(diff)}
-            </span>
-          </div>
-          <button type="submit" className="btn" disabled={busy || !periodValid}>Elszámolás rögzítése</button>
+        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
+          <button type="submit" className="btn" disabled={busy || !periodValid || withBalance.length === 0}>Elszámolás rögzítése</button>
         </div>
       </form>
+
+      <div style={{ marginTop: 18 }}>
+        <span className="toggle-link" onClick={() => setShowList((v) => !v)}>
+          {showList ? "Időszak tételeinek elrejtése" : `Időszak tételei megtekintése (${periodTx.length})`}
+        </span>
+        {showList && (
+          <div style={{ marginTop: 10 }}>
+            <TransactionsPeriodList transactions={periodTx} locName={locName} onEdit={setTxModal} onDelete={deleteTransaction} onOpenReceipt={setReceiptTxId} busy={busy} />
+          </div>
+        )}
+      </div>
 
       <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "22px 0 8px 2px" }}>Korábbi elszámolások</div>
       <div className="tw">
         {cashSettlements.length === 0 ? (
           <EmptyState icon={FinanceIcon}>Még nincs rögzített elszámolás.</EmptyState>
         ) : (
-          <ResponsiveTable
-            wrap={false}
-            columns={[{ key: "p", label: "Időszak" }, { key: "e", label: "Rendszer szerint" }, { key: "c", label: "Megszámolt" }, { key: "d", label: "Eltérés" }, { key: "pr", label: "Profit" }, { key: "h", label: "Fejenként" }, { key: "k", label: "Kinél volt" }, { key: "r", label: "Rögzítette" }]}
-            rows={cashSettlements}
-            rowKey={(s) => s.id}
-            renderRow={(s) => {
-              const d = s.cashCountedTotal - s.cashExpected;
-              const ok = Math.abs(d) <= 1;
-              const closer = users.find((u) => u.id === s.settledBy);
-              return (
-                <tr key={s.id}>
-                  <td className="mono">{s.periodStart} – {s.periodEnd}</td>
-                  <td className="mono">{money(s.cashExpected)}</td>
-                  <td className="mono">{money(s.cashCountedTotal)}</td>
-                  <td className="mono" style={{ fontWeight: 700, color: ok ? "#15803D" : "#B91C1C" }}>{d > 0 ? "+" : ""}{money(d)}</td>
-                  <td className="mono" style={{ fontWeight: 700 }}>{money(s.totalProfit)}</td>
-                  <td className="mono">{money(s.totalProfit / 2)}</td>
-                  <td style={{ color: "#6B7280", fontSize: 12 }}>
-                    {Object.entries(s.cashByHolder).map(([hid, amt]) => `${holderName(hid)}: ${money(amt)}`).join(" · ")}
-                  </td>
-                  <td>{closer?.fullName || "—"}</td>
-                </tr>
-              );
-            }}
-            renderMobileRow={(s) => {
-              const d = s.cashCountedTotal - s.cashExpected;
-              const ok = Math.abs(d) <= 1;
-              const closer = users.find((u) => u.id === s.settledBy);
-              return (
-                <div className="mob-row">
-                  <div className="mob-row-top">
-                    <div className="mob-row-main"><span>{s.periodStart} – {s.periodEnd}</span></div>
-                    <div className="mob-row-amount" style={{ color: ok ? "#15803D" : "#B91C1C" }}>{d > 0 ? "+" : ""}{money(d)}</div>
-                  </div>
-                  <div className="mob-row-sub">
-                    <span>Profit: {money(s.totalProfit)} (fejenként {money(s.totalProfit / 2)})</span>
-                    <span>{closer?.fullName || "—"}</span>
-                  </div>
-                  <div className="mob-row-sub">
-                    {Object.entries(s.cashByHolder).map(([hid, amt]) => `${holderName(hid)}: ${money(amt)}`).join(" · ")}
-                  </div>
-                </div>
-              );
-            }}
-          />
+          <table>
+            <thead>
+              <tr>
+                <th>Időszak</th>
+                <th>Helyszínenként (nettó)</th>
+                <th>Ki fizetett kinek</th>
+                <th>Rögzítette</th>
+              </tr>
+            </thead>
+            <tbody>
+              {cashSettlements.map((s) => {
+                const closer = users.find((u) => u.id === s.settledBy);
+                return (
+                  <tr key={s.id}>
+                    <td className="mono">{s.periodStart} – {s.periodEnd}</td>
+                    <td style={{ color: "#6B7280", fontSize: 12 }}>
+                      {(s.locationBreakdown || []).map((l) => `${l.location_name}: ${money(l.net_cash)}`).join(" · ")}
+                    </td>
+                    <td>
+                      {s.payerLocationId && s.payeeLocationId && Number(s.transferAmount) > 0 ? (
+                        <span>{holderNameFor(s.payerLocationId)} → {holderNameFor(s.payeeLocationId)}: <b>{money(s.transferAmount)}</b></span>
+                      ) : <span style={{ color: "#9CA3AF" }}>Egyenlő volt</span>}
+                    </td>
+                    <td>{closer?.fullName || "—"}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         )}
       </div>
     </>

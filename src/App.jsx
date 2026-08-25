@@ -899,10 +899,10 @@ function AppShell() {
     await withBusy(async () => {
       const r = unwrap(await supabase.from("cash_settlements").insert({
         period_start: data.periodStart, period_end: data.periodEnd,
-        cash_income: data.cashIncome, cash_expense: data.cashExpense,
-        cash_counted_total: data.cashCountedTotal, cash_by_holder: data.cashByHolder,
+        location_breakdown: data.locationBreakdown,
         card_income: data.cardIncome, transfer_income: data.transferIncome,
-        other_expense: data.otherExpense, note: data.note || null,
+        payer_location_id: data.payerLocationId, payee_location_id: data.payeeLocationId,
+        transfer_amount: data.transferAmount, note: data.note || null,
         settled_by: user.id,
       }).select());
       setCashSettlements([cashSettlementFromApi(r[0]), ...cashSettlements]);
@@ -1968,10 +1968,10 @@ function AppShell() {
 
         {isAdmin && tab === "cash-settlement" && (
           <CashSettlementTab
-            busy={busy} transactions={transactions} cashHolders={cashHolders} cashSettlements={cashSettlements}
+            busy={busy} transactions={transactions} cashSettlements={cashSettlements}
             saveCashSettlement={saveCashSettlement} users={users}
             setTxModal={setTxModal} deleteTransaction={deleteTransaction} setReceiptTxId={setReceiptTxId}
-            dayCloses={dayCloses} allowedLocations={allowedLocations} locName={locName}
+            allowedLocations={allowedLocations} locName={locName}
           />
         )}
 
