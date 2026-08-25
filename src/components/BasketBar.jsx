@@ -8,7 +8,7 @@ import AmountKeypad from "./AmountKeypad";
 // gyors rögzítést is enged kosarazás nélkül. A helyszín kizárólag a sidebar-ból jön
 // (defaultLocId) — nincs itt saját, második helyszín-választó, hogy ne legyen két hely,
 // ahol ugyanazt kell eldönteni.
-export default function BasketBar({ defaultLocId, busy, smartQuickItems, onCheckout }) {
+export default function BasketBar({ defaultLocId, busy, smartQuickItems, onCheckout, headerExtra }) {
   const [mode, setMode] = useState("income"); // income | expense
   const [basketItems, setBasketItems] = useState([]);
   const [basketPayment, setBasketPayment] = useState("Készpénz");
@@ -86,25 +86,29 @@ export default function BasketBar({ defaultLocId, busy, smartQuickItems, onCheck
 
   return (
     <div>
-      <div className="seg" style={{ marginBottom: 12 }}>
-        <button type="button" className={mode === "income" ? "active" : ""} onClick={() => { setMode("income"); setBasketItems([]); resetFree(); }}>Bevétel</button>
-        <button type="button" className={mode === "expense" ? "active" : ""} onClick={() => { setMode("expense"); setBasketItems([]); resetFree(); }}>Kiadás</button>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap", marginBottom: 18 }}>
+        <div className="seg">
+          <button type="button" className={mode === "income" ? "active" : ""} onClick={() => { setMode("income"); setBasketItems([]); resetFree(); }}>Bevétel</button>
+          <button type="button" className={mode === "expense" ? "active" : ""} onClick={() => { setMode("expense"); setBasketItems([]); resetFree(); }}>Kiadás</button>
+        </div>
+        {headerExtra}
       </div>
 
       {err && <div className="errbar">{err}</div>}
 
       {mode === "income" && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: freeOpen ? 10 : 0 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, marginBottom: freeOpen ? 10 : 0 }}>
+          {!freeOpen && <button type="button" className="btn sm" onClick={() => setFreeOpen(true)}>+ Egyéb tétel</button>}
+          <div style={{ width: 1, alignSelf: "stretch", background: "#E5E7EB" }} />
           {smartQuickItems.map((item) => (
             <button key={item.label} type="button" className="quick-sale-btn" disabled={busy} onClick={() => addQuickToBasket(item)}>
               {item.label} · {item.amount} Lei
             </button>
           ))}
-          {!freeOpen && <button type="button" className="quick-sale-btn-custom" onClick={() => setFreeOpen(true)}>+ Egyéb tétel</button>}
         </div>
       )}
       {mode === "expense" && !freeOpen && (
-        <button type="button" className="quick-sale-btn" onClick={() => setFreeOpen(true)}>+ Kiadás felvétele</button>
+        <button type="button" className="btn sm" onClick={() => setFreeOpen(true)}>+ Kiadás felvétele</button>
       )}
 
       {freeOpen && (

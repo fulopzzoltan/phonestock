@@ -39,23 +39,31 @@ function LocationRecordBox({
   const stats = dayStats(locTx);
   const closeStale = todayClose && locTx.length > (todayClose.snapshotTxCount ?? 0);
 
+  const closeControls = (
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      {todayClose && (
+        <span className="badge-loc" style={{ color: closeStale ? "#B45309" : "#15803D" }}>
+          {closeStale ? "⚠ Elavult zárás" : "✓ Lezárva"} {new Date(todayClose.closedAt).toLocaleTimeString("hu-HU", { hour: "2-digit", minute: "2-digit" })}-kor
+        </span>
+      )}
+      {todayClose ? (
+        <button type="button" className="btn sec sm" disabled={busy} onClick={() => reopenDay(todayClose.id)}>Visszavonás</button>
+      ) : locTx.length > 0 && !confirmingClose ? (
+        <button type="button" className="btn sm" onClick={() => setConfirmingClose(true)}>Nap zárása</button>
+      ) : null}
+    </div>
+  );
+
   return (
     <div className="tw tw-compact" style={{ padding: 16, marginTop: 16 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12, gap: 10, flexWrap: "wrap" }}>
-        {showHeading && <div style={{ fontSize: 14, fontWeight: 700 }}>Ma — {loc.name}</div>}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: "auto" }}>
-          {todayClose && (
-            <span className="badge-loc" style={{ color: closeStale ? "#B45309" : "#15803D" }}>
-              {closeStale ? "⚠ Elavult zárás" : "✓ Lezárva"} {new Date(todayClose.closedAt).toLocaleTimeString("hu-HU", { hour: "2-digit", minute: "2-digit" })}-kor
-            </span>
-          )}
-          {todayClose ? (
-            <button type="button" className="btn sec sm" disabled={busy} onClick={() => reopenDay(todayClose.id)}>Visszavonás</button>
-          ) : locTx.length > 0 && !confirmingClose ? (
-            <button type="button" className="btn sm" onClick={() => setConfirmingClose(true)}>Nap zárása</button>
-          ) : null}
+      {showBasket ? (
+        showHeading && <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>Ma — {loc.name}</div>
+      ) : (
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12, gap: 10, flexWrap: "wrap" }}>
+          {showHeading && <div style={{ fontSize: 14, fontWeight: 700 }}>Ma — {loc.name}</div>}
+          <div style={{ marginLeft: "auto" }}>{closeControls}</div>
         </div>
-      </div>
+      )}
 
       {closeStale && (
         <div style={{ fontSize: 12.5, color: "#92400E", background: "#FEF3C7", borderRadius: "var(--radius-sm)", padding: "8px 12px", marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
@@ -86,7 +94,7 @@ function LocationRecordBox({
 
       {showBasket && (
         <div style={{ borderBottom: "1px solid #F3F4F6", paddingBottom: 14, marginBottom: 14 }}>
-          <BasketBar defaultLocId={defaultLocId} busy={busy} smartQuickItems={smartQuickItems} onCheckout={checkoutBasket} />
+          <BasketBar defaultLocId={defaultLocId} busy={busy} smartQuickItems={smartQuickItems} onCheckout={checkoutBasket} headerExtra={closeControls} />
         </div>
       )}
 
@@ -168,7 +176,7 @@ export default function FinanceTab({
           reopenDay={reopenDay}
           showHeading={isAll}
           showBasket={loc.id === basketLocId}
-          defaultLocId={defaultLocId}
+          defaultLocId={basketLocId}
           smartQuickItems={smartQuickItems}
           checkoutBasket={checkoutBasket}
         />
