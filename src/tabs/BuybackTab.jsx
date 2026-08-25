@@ -4,6 +4,7 @@ import ConfirmDelete from "../components/ConfirmDelete";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import BuybackOfferCard from "../components/BuybackOfferCard";
 import HistorySection from "../components/HistorySection";
+import ResponsiveTable from "../components/ResponsiveTable";
 
 export default function BuybackTab({
   busy, buybackModels, setBuybackModelModal, deleteBuybackModel, buybackRules, setBuybackRuleModal, deleteBuybackRule,
@@ -61,19 +62,32 @@ export default function BuybackTab({
         filterFn={(o, q) => [o.customerName, o.brand, o.model].filter(Boolean).join(" ").toLowerCase().includes(q)}
       >
         {(rows) => (
-          <table>
-            <thead><tr><th>Eszköz</th><th>Ügyfél</th><th>Státusz</th><th>Végleges ár</th></tr></thead>
-            <tbody>
-              {rows.map((o) => (
-                <tr key={o.id} style={{ cursor: "pointer" }} onClick={() => setBuybackOfferDetailId(o.id)}>
-                  <td>{displayName(o.brand, o.model) || "—"}</td>
-                  <td>{o.customerName}</td>
-                  <td><span className={`st ${buybackStatusCls(o.status)}`}>{o.status}</span></td>
-                  <td className="mono" style={{ fontWeight: 700 }}>{money(o.finalPrice)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <ResponsiveTable
+            wrap={false}
+            columns={[{ key: "d", label: "Eszköz" }, { key: "c", label: "Ügyfél" }, { key: "s", label: "Státusz" }, { key: "p", label: "Végleges ár" }]}
+            rows={rows}
+            rowKey={(o) => o.id}
+            renderRow={(o) => (
+              <tr key={o.id} style={{ cursor: "pointer" }} onClick={() => setBuybackOfferDetailId(o.id)}>
+                <td>{displayName(o.brand, o.model) || "—"}</td>
+                <td>{o.customerName}</td>
+                <td><span className={`st ${buybackStatusCls(o.status)}`}>{o.status}</span></td>
+                <td className="mono" style={{ fontWeight: 700 }}>{money(o.finalPrice)}</td>
+              </tr>
+            )}
+            renderMobileRow={(o) => (
+              <div className="mob-row" onClick={() => setBuybackOfferDetailId(o.id)}>
+                <div className="mob-row-top">
+                  <div className="mob-row-main"><span>{displayName(o.brand, o.model) || "—"}</span></div>
+                  <div className="mob-row-amount">{money(o.finalPrice)}</div>
+                </div>
+                <div className="mob-row-sub">
+                  <span>{o.customerName}</span>
+                  <span className={`st ${buybackStatusCls(o.status)}`}>{o.status}</span>
+                </div>
+              </div>
+            )}
+          />
         )}
       </HistorySection>
 
@@ -85,24 +99,41 @@ export default function BuybackTab({
         {buybackModels.length === 0 ? (
           <EmptyState icon={BuybackIcon}>Nincs modell felvéve — az /eladom oldal addig üres marad.</EmptyState>
         ) : (
-          <table>
-            <thead><tr><th>Márka</th><th>Modell</th><th>Tárhely</th><th>Alapár</th><th>Állapot</th><th></th></tr></thead>
-            <tbody>
-              {buybackModels.map((m) => (
-                <tr key={m.id}>
-                  <td style={{ fontWeight: 600 }}>{m.brand}</td>
-                  <td>{m.model}</td>
-                  <td style={{ color: "#6B7280" }}>{m.storage || "—"}</td>
-                  <td className="mono" style={{ fontWeight: 700 }}>{money(m.basePrice)}</td>
-                  <td>{m.active ? <span className="badge-income">Aktív</span> : <span style={{ color: "#9CA3AF", fontSize: 12 }}>Inaktív</span>}</td>
-                  <td style={{ display: "flex", gap: 5 }}>
-                    <button className="iconbtn" disabled={busy} onClick={() => setBuybackModelModal(m)}><EditIcon /></button>
-                    <ConfirmDelete disabled={busy} onConfirm={() => deleteBuybackModel(m.id)} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <ResponsiveTable
+            wrap={false}
+            columns={[{ key: "b", label: "Márka" }, { key: "m", label: "Modell" }, { key: "s", label: "Tárhely" }, { key: "p", label: "Alapár" }, { key: "a", label: "Állapot" }, { key: "x", label: "" }]}
+            rows={buybackModels}
+            rowKey={(m) => m.id}
+            renderRow={(m) => (
+              <tr key={m.id}>
+                <td style={{ fontWeight: 600 }}>{m.brand}</td>
+                <td>{m.model}</td>
+                <td style={{ color: "#6B7280" }}>{m.storage || "—"}</td>
+                <td className="mono" style={{ fontWeight: 700 }}>{money(m.basePrice)}</td>
+                <td>{m.active ? <span className="badge-income">Aktív</span> : <span style={{ color: "#9CA3AF", fontSize: 12 }}>Inaktív</span>}</td>
+                <td style={{ display: "flex", gap: 5 }}>
+                  <button className="iconbtn" disabled={busy} onClick={() => setBuybackModelModal(m)}><EditIcon /></button>
+                  <ConfirmDelete disabled={busy} onConfirm={() => deleteBuybackModel(m.id)} />
+                </td>
+              </tr>
+            )}
+            renderMobileRow={(m) => (
+              <div className="mob-row">
+                <div className="mob-row-top">
+                  <div className="mob-row-main"><span>{m.brand} {m.model}</span></div>
+                  <div className="mob-row-amount">{money(m.basePrice)}</div>
+                </div>
+                <div className="mob-row-sub">
+                  <span>{m.storage || "—"}</span>
+                  {m.active ? <span className="badge-income">Aktív</span> : <span style={{ color: "#9CA3AF" }}>Inaktív</span>}
+                </div>
+                <div className="mob-row-sub" style={{ marginTop: 8 }}>
+                  <button className="iconbtn" disabled={busy} onClick={() => setBuybackModelModal(m)}><EditIcon /></button>
+                  <ConfirmDelete disabled={busy} onConfirm={() => deleteBuybackModel(m.id)} />
+                </div>
+              </div>
+            )}
+          />
         )}
       </div>
 
@@ -114,30 +145,53 @@ export default function BuybackTab({
         {buybackRules.length === 0 ? (
           <EmptyState icon={BuybackIcon}>Nincs levonási szabály — minden készülék az alapáron kerül felajánlásra, függetlenül az állapottól.</EmptyState>
         ) : (
-          <table>
-            <thead><tr><th>Kérdés</th><th>Válasz</th><th>Szöveg</th><th>Levonás</th><th>Állapot</th><th></th></tr></thead>
-            <tbody>
-              {buybackRules.map((r) => {
-                const q = BUYBACK_CONDITION_QUESTIONS.find((x) => x.key === r.questionKey);
-                const opt = q?.options.find((o) => o.key === r.answerKey);
-                return (
-                  <tr key={r.id}>
-                    <td style={{ color: "#6B7280", fontSize: 12.5 }}>{q?.question || r.questionKey}</td>
-                    <td style={{ fontSize: 12.5 }}>{opt?.label || r.answerKey}</td>
-                    <td style={{ fontWeight: 600 }}>{r.label}</td>
-                    <td className="mono" style={{ fontWeight: 700, color: "#DC2626" }}>
+          <ResponsiveTable
+            wrap={false}
+            columns={[{ key: "q", label: "Kérdés" }, { key: "a", label: "Válasz" }, { key: "l", label: "Szöveg" }, { key: "d", label: "Levonás" }, { key: "s", label: "Állapot" }, { key: "x", label: "" }]}
+            rows={buybackRules}
+            rowKey={(r) => r.id}
+            renderRow={(r) => {
+              const q = BUYBACK_CONDITION_QUESTIONS.find((x) => x.key === r.questionKey);
+              const opt = q?.options.find((o) => o.key === r.answerKey);
+              return (
+                <tr key={r.id}>
+                  <td style={{ color: "#6B7280", fontSize: 12.5 }}>{q?.question || r.questionKey}</td>
+                  <td style={{ fontSize: 12.5 }}>{opt?.label || r.answerKey}</td>
+                  <td style={{ fontWeight: 600 }}>{r.label}</td>
+                  <td className="mono" style={{ fontWeight: 700, color: "#DC2626" }}>
+                    −{r.deductionType === "percent" ? `${r.deductionValue}%` : money(r.deductionValue)}
+                  </td>
+                  <td>{r.active ? <span className="badge-income">Aktív</span> : <span style={{ color: "#9CA3AF", fontSize: 12 }}>Inaktív</span>}</td>
+                  <td style={{ display: "flex", gap: 5 }}>
+                    <button className="iconbtn" disabled={busy} onClick={() => setBuybackRuleModal(r)}><EditIcon /></button>
+                    <ConfirmDelete disabled={busy} onConfirm={() => deleteBuybackRule(r.id)} />
+                  </td>
+                </tr>
+              );
+            }}
+            renderMobileRow={(r) => {
+              const q = BUYBACK_CONDITION_QUESTIONS.find((x) => x.key === r.questionKey);
+              const opt = q?.options.find((o) => o.key === r.answerKey);
+              return (
+                <div className="mob-row">
+                  <div className="mob-row-top">
+                    <div className="mob-row-main"><span>{r.label}</span></div>
+                    <div className="mob-row-amount" style={{ color: "#DC2626" }}>
                       −{r.deductionType === "percent" ? `${r.deductionValue}%` : money(r.deductionValue)}
-                    </td>
-                    <td>{r.active ? <span className="badge-income">Aktív</span> : <span style={{ color: "#9CA3AF", fontSize: 12 }}>Inaktív</span>}</td>
-                    <td style={{ display: "flex", gap: 5 }}>
-                      <button className="iconbtn" disabled={busy} onClick={() => setBuybackRuleModal(r)}><EditIcon /></button>
-                      <ConfirmDelete disabled={busy} onConfirm={() => deleteBuybackRule(r.id)} />
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                    </div>
+                  </div>
+                  <div className="mob-row-sub">
+                    <span>{q?.question || r.questionKey}: {opt?.label || r.answerKey}</span>
+                    {r.active ? <span className="badge-income">Aktív</span> : <span style={{ color: "#9CA3AF" }}>Inaktív</span>}
+                  </div>
+                  <div className="mob-row-sub" style={{ marginTop: 8 }}>
+                    <button className="iconbtn" disabled={busy} onClick={() => setBuybackRuleModal(r)}><EditIcon /></button>
+                    <ConfirmDelete disabled={busy} onConfirm={() => deleteBuybackRule(r.id)} />
+                  </div>
+                </div>
+              );
+            }}
+          />
         )}
       </div>
     </>

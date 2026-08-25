@@ -44,22 +44,22 @@ function MonthGrid({
   const nextDisabled = viewY === now.getFullYear() && viewM === now.getMonth();
 
   return (
-    <div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+    <div style={{ maxWidth: 260, margin: "0 auto" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
         <button type="button" className="iconbtn" disabled={prevDisabled} onClick={() => onGoMonth(-1)} style={prevDisabled ? { opacity: 0.3, cursor: "default" } : undefined}>
-          <ChevronLeftIcon width={16} height={16} />
+          <ChevronLeftIcon width={14} height={14} />
         </button>
-        <div style={{ fontSize: 13.5, fontWeight: 700, textTransform: "capitalize" }}>{monthLabel(viewY, viewM)}</div>
+        <div style={{ fontSize: 12.5, fontWeight: 700, textTransform: "capitalize" }}>{monthLabel(viewY, viewM)}</div>
         <button type="button" className="iconbtn" disabled={nextDisabled} onClick={() => onGoMonth(1)} style={nextDisabled ? { opacity: 0.3, cursor: "default" } : undefined}>
-          <ChevronRightIcon width={16} height={16} />
+          <ChevronRightIcon width={14} height={14} />
         </button>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: 4 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 2 }}>
         {WEEKDAYS.map((w) => (
-          <div key={w} style={{ textAlign: "center", fontSize: 10.5, fontWeight: 700, color: "#9CA3AF", padding: "4px 0" }}>{w}</div>
+          <div key={w} style={{ textAlign: "center", fontSize: 9.5, fontWeight: 700, color: "#9CA3AF", padding: "2px 0" }}>{w}</div>
         ))}
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}>
         {cells.map((d, i) => {
           if (d === null) return <div key={`e${i}`} />;
           const dateStr = dstr(viewY, viewM, d);
@@ -84,8 +84,8 @@ function MonthGrid({
               onClick={() => onSelectDay(dateStr)}
               title={isTooOld ? "Csak admin láthatja a 30 napnál régebbi napokat" : undefined}
               style={{
-                aspectRatio: "1", borderRadius: "50%", fontSize: 12, fontFamily: "inherit", fontWeight: isToday || isSelected ? 700 : 500,
-                background: bg, color, border, cursor: disabled ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                aspectRatio: "1", borderRadius: "50%", fontSize: 11, fontFamily: "inherit", fontWeight: isToday || isSelected ? 700 : 500,
+                background: bg, color, border, cursor: disabled ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0,
               }}
             >
               {d}

@@ -3,6 +3,7 @@ import { money, today } from "../lib/utils";
 import { EmptyState } from "../components/EmptyState";
 import { FinanceIcon } from "../components/icons";
 import TransactionsPeriodList from "../components/TransactionsPeriodList";
+import ResponsiveTable from "../components/ResponsiveTable";
 
 function eachDateInPeriod(start, end) {
   const dates = [];
@@ -168,30 +169,51 @@ export default function CashSettlementTab({
         {cashSettlements.length === 0 ? (
           <EmptyState icon={FinanceIcon}>Még nincs rögzített elszámolás.</EmptyState>
         ) : (
-          <table>
-            <thead><tr><th>Időszak</th><th>Rendszer szerint</th><th>Megszámolt</th><th>Eltérés</th><th>Profit</th><th>Fejenként</th><th>Kinél volt</th><th>Rögzítette</th></tr></thead>
-            <tbody>
-              {cashSettlements.map((s) => {
-                const d = s.cashCountedTotal - s.cashExpected;
-                const ok = Math.abs(d) <= 1;
-                const closer = users.find((u) => u.id === s.settledBy);
-                return (
-                  <tr key={s.id}>
-                    <td className="mono">{s.periodStart} – {s.periodEnd}</td>
-                    <td className="mono">{money(s.cashExpected)}</td>
-                    <td className="mono">{money(s.cashCountedTotal)}</td>
-                    <td className="mono" style={{ fontWeight: 700, color: ok ? "#15803D" : "#B91C1C" }}>{d > 0 ? "+" : ""}{money(d)}</td>
-                    <td className="mono" style={{ fontWeight: 700 }}>{money(s.totalProfit)}</td>
-                    <td className="mono">{money(s.totalProfit / 2)}</td>
-                    <td style={{ color: "#6B7280", fontSize: 12 }}>
-                      {Object.entries(s.cashByHolder).map(([hid, amt]) => `${holderName(hid)}: ${money(amt)}`).join(" · ")}
-                    </td>
-                    <td>{closer?.fullName || "—"}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <ResponsiveTable
+            wrap={false}
+            columns={[{ key: "p", label: "Időszak" }, { key: "e", label: "Rendszer szerint" }, { key: "c", label: "Megszámolt" }, { key: "d", label: "Eltérés" }, { key: "pr", label: "Profit" }, { key: "h", label: "Fejenként" }, { key: "k", label: "Kinél volt" }, { key: "r", label: "Rögzítette" }]}
+            rows={cashSettlements}
+            rowKey={(s) => s.id}
+            renderRow={(s) => {
+              const d = s.cashCountedTotal - s.cashExpected;
+              const ok = Math.abs(d) <= 1;
+              const closer = users.find((u) => u.id === s.settledBy);
+              return (
+                <tr key={s.id}>
+                  <td className="mono">{s.periodStart} – {s.periodEnd}</td>
+                  <td className="mono">{money(s.cashExpected)}</td>
+                  <td className="mono">{money(s.cashCountedTotal)}</td>
+                  <td className="mono" style={{ fontWeight: 700, color: ok ? "#15803D" : "#B91C1C" }}>{d > 0 ? "+" : ""}{money(d)}</td>
+                  <td className="mono" style={{ fontWeight: 700 }}>{money(s.totalProfit)}</td>
+                  <td className="mono">{money(s.totalProfit / 2)}</td>
+                  <td style={{ color: "#6B7280", fontSize: 12 }}>
+                    {Object.entries(s.cashByHolder).map(([hid, amt]) => `${holderName(hid)}: ${money(amt)}`).join(" · ")}
+                  </td>
+                  <td>{closer?.fullName || "—"}</td>
+                </tr>
+              );
+            }}
+            renderMobileRow={(s) => {
+              const d = s.cashCountedTotal - s.cashExpected;
+              const ok = Math.abs(d) <= 1;
+              const closer = users.find((u) => u.id === s.settledBy);
+              return (
+                <div className="mob-row">
+                  <div className="mob-row-top">
+                    <div className="mob-row-main"><span>{s.periodStart} – {s.periodEnd}</span></div>
+                    <div className="mob-row-amount" style={{ color: ok ? "#15803D" : "#B91C1C" }}>{d > 0 ? "+" : ""}{money(d)}</div>
+                  </div>
+                  <div className="mob-row-sub">
+                    <span>Profit: {money(s.totalProfit)} (fejenként {money(s.totalProfit / 2)})</span>
+                    <span>{closer?.fullName || "—"}</span>
+                  </div>
+                  <div className="mob-row-sub">
+                    {Object.entries(s.cashByHolder).map(([hid, amt]) => `${holderName(hid)}: ${money(amt)}`).join(" · ")}
+                  </div>
+                </div>
+              );
+            }}
+          />
         )}
       </div>
     </>

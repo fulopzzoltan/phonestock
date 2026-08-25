@@ -1,39 +1,56 @@
+import { useState } from "react";
 import {
-  SettingsIcon, DashboardIcon, ServiceIcon, PhoneCaseIcon, BoardIcon,
-  PartsIcon, FinanceIcon, CustomersIcon, WarrantyIcon, UsersNavIcon, TrashNavIcon, LogoutIcon, BuybackIcon, LeaveIcon, RepairPriceIcon, CashSettlementIcon, InvoiceIcon,
+  BoardIcon, ServiceIcon, PhoneCaseIcon, FinanceIcon, MoreIcon,
+  PartsIcon, CustomersIcon, WarrantyIcon, CashSettlementIcon, InvoiceIcon, LeaveIcon,
+  DashboardIcon, UsersNavIcon, TrashNavIcon, BuybackIcon, RepairPriceIcon, SettingsIcon, LogoutIcon,
 } from "./icons";
+import BottomSheet from "./BottomSheet";
 import { SITE_URL } from "../lib/utils";
 
-// Mobilon (<=640px) ez a teljes komponens el van rejtve — ott a BottomNav.jsx veszi át a
-// navigáció szerepét (alsó sáv + "Több" bottom sheet), hogy applikáció-szerű legyen a felület.
-export default function Sidebar({
-  tab, setTab, setTicketModal, isAdmin, locFilter, setLocFilter, allowedLocations,
-  myLocationId, locName, profile, user, signOut, lastActiveLocationId,
+const FIXED = [
+  { key: "pult", label: "Pult", Icon: BoardIcon },
+  { key: "service", label: "Szerviz", Icon: ServiceIcon },
+  { key: "stock", label: "Telefonok", Icon: PhoneCaseIcon },
+  { key: "finance", label: "Bevétel", Icon: FinanceIcon },
+];
+
+export default function BottomNav({
+  tab, setTab, isAdmin, locFilter, setLocFilter, allowedLocations,
+  myLocationId, locName, profile, user, signOut,
 }) {
+  const [moreOpen, setMoreOpen] = useState(false);
+  const fixedKeys = FIXED.map((f) => f.key);
+  const isMoreActive = !fixedKeys.includes(tab);
+
   function go(nextTab) {
     setTab(nextTab);
+    setMoreOpen(false);
   }
+
   return (
-    <div className="sidebar">
-      <div className="sidebar-inner">
-        <div className="nav-lbl">Napi munka</div>
-        <button className={`navbtn ${tab === "pult" ? "active" : ""}`} onClick={() => go("pult")}><BoardIcon className="nav-ic" />Pult</button>
-        <div className="navrow">
-          <button className={`navbtn ${tab === "service" ? "active" : ""}`} onClick={() => go("service")}><ServiceIcon className="nav-ic" />Szerviz</button>
-          <button type="button" className="nav-quick-add" title="Új munkalap" onClick={() => { go("service"); setTicketModal("add"); }}>+</button>
-        </div>
-        <button className={`navbtn ${tab === "stock" ? "active" : ""}`} onClick={() => go("stock")}><PhoneCaseIcon className="nav-ic" />Telefonok</button>
+    <>
+      <nav className="bottom-nav">
+        {FIXED.map(({ key, label, Icon }) => (
+          <button key={key} type="button" className={`bnav-btn${tab === key ? " active" : ""}`} onClick={() => go(key)}>
+            <Icon className="bnav-ic" /><span>{label}</span>
+          </button>
+        ))}
+        <button type="button" className={`bnav-btn${moreOpen || isMoreActive ? " active" : ""}`} onClick={() => setMoreOpen(true)}>
+          <MoreIcon className="bnav-ic" /><span>Több</span>
+        </button>
+      </nav>
+
+      <BottomSheet open={moreOpen} onClose={() => setMoreOpen(false)}>
+        <div className="nav-lbl" style={{ marginTop: 0 }}>Napi munka</div>
         <button className={`navbtn ${tab === "parts" ? "active" : ""}`} onClick={() => go("parts")}><PartsIcon className="nav-ic" />Alkatrészek</button>
         <button className={`navbtn ${tab === "customers" ? "active" : ""}`} onClick={() => go("customers")}><CustomersIcon className="nav-ic" />Kliensek</button>
         <button className={`navbtn ${tab === "warranty" ? "active" : ""}`} onClick={() => go("warranty")}><WarrantyIcon className="nav-ic" />Garancia</button>
 
         <div className="nav-lbl">Pénzügyek</div>
-        <button className={`navbtn ${tab === "finance" ? "active" : ""}`} onClick={() => go("finance")}><FinanceIcon className="nav-ic" />Bevételek &amp; Kiadások</button>
         {isAdmin && (
           <button className={`navbtn ${tab === "cash-settlement" ? "active" : ""}`} onClick={() => go("cash-settlement")}><CashSettlementIcon className="nav-ic" />Elszámolás</button>
         )}
         <button className={`navbtn ${tab === "invoices" ? "active" : ""}`} onClick={() => go("invoices")}><InvoiceIcon className="nav-ic" />Számlák</button>
-
         {!isAdmin && (
           <button className={`navbtn ${tab === "leave" ? "active" : ""}`} onClick={() => go("leave")}><LeaveIcon className="nav-ic" />Szabadság</button>
         )}
@@ -51,25 +68,20 @@ export default function Sidebar({
             <button className={`navbtn ${tab === "repair-prices" ? "active" : ""}`} onClick={() => go("repair-prices")}><RepairPriceIcon className="nav-ic" />Szerviz árbecslő</button>
           </>
         )}
-      </div>
-      <div className="sidebar-bottom">
+
+        <div className="nav-lbl">Fiók</div>
         <a className="shop-preview-link" href={SITE_URL} target="_blank" rel="noopener noreferrer">Webshop megtekintése ↗</a>
-        {isAdmin && !lastActiveLocationId && (
-          <div style={{ fontSize: 11.5, color: "#B91C1C", marginBottom: 4, fontWeight: 600 }}>
-            Válaszd ki, melyik üzletben vagy most ↓
-          </div>
-        )}
         {isAdmin ? (
-          <div className="loc-sw">
+          <div className="loc-sw" style={{ marginTop: 8 }}>
             <button className={`loc-btn ${locFilter === "all" ? "active" : ""}`} onClick={() => setLocFilter("all")}>Mind</button>
             {allowedLocations.map((l) => (
               <button key={l.id} className={`loc-btn ${locFilter === l.id ? "active" : ""}`} onClick={() => setLocFilter(l.id)}>{l.name}</button>
             ))}
           </div>
         ) : (
-          <div className="loc-static">{myLocationId ? locName(myLocationId) : "Nincs helyszín"}</div>
+          <div className="loc-static" style={{ marginTop: 8 }}>{myLocationId ? locName(myLocationId) : "Nincs helyszín"}</div>
         )}
-        <div className="user-row">
+        <div className="user-row" style={{ marginTop: 8 }}>
           <div className="user-avatar">{(profile?.fullName || user?.email || "?").slice(0, 1).toUpperCase()}</div>
           <div className="user-meta">
             <div className="user-name">{profile?.fullName || user?.email}</div>
@@ -82,7 +94,7 @@ export default function Sidebar({
             <LogoutIcon />
           </button>
         </div>
-      </div>
-    </div>
+      </BottomSheet>
+    </>
   );
 }

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { money, today } from "../lib/utils";
 import { InvoiceIcon, ChevronDownIcon } from "../components/icons";
 import { EmptyState } from "../components/EmptyState";
+import ResponsiveTable from "../components/ResponsiveTable";
 
 const DOC_TYPE_LABELS = { invoice: "Számla", bon: "Bon", chitanta: "Nyugta" };
 const QUICK_DOC_TYPES = [
@@ -95,41 +96,68 @@ export default function InvoicesTab({ transactions, locName, isAdmin, setIssueIn
       {docs.length === 0 ? (
         <div className="tw"><EmptyState icon={InvoiceIcon}>Még nincs kiállított SmartBill dokumentum.</EmptyState></div>
       ) : (
-        <div className="tw">
-          <table>
-            <thead><tr><th>Leírás</th><th>Típus</th><th>Dátum</th><th>Helyszín</th><th>Összeg</th><th>Státusz</th><th>Szám</th><th></th></tr></thead>
-            <tbody>
-              {docs.map((t) => {
-                const d = t.smartbillDoc;
-                return (
-                  <tr key={t.id}>
-                    <td style={{ fontWeight: 500, color: "#111827" }}>{t.description}</td>
-                    <td><span className="badge-loc">{DOC_TYPE_LABELS[d.docType] || d.docType}</span></td>
-                    <td style={{ color: "#6B7280" }}>{t.date}</td>
-                    <td><span className="badge-loc">{locName(t.locationId)}</span></td>
-                    <td className="mono" style={{ fontWeight: 700, color: "#15803D" }}>+{money(t.amount)}</td>
-                    <td>
-                      {d.status === "issued" && <span className="badge-loc" style={{ color: "#15803D" }}>Kiállítva</span>}
-                      {d.status === "failed" && <span className="badge-loc" style={{ color: "#B91C1C" }} title={d.errorText || ""}>Hiba{d.errorText ? `: ${d.errorText}` : ""}</span>}
-                      {d.status === "pending" && <span className="badge-loc" style={{ color: "#6B7280" }}>Folyamatban</span>}
-                    </td>
-                    <td className="mono" style={{ color: "#6B7280" }}>
-                      {d.status === "issued" ? `${d.smartbillSeries}-${d.smartbillNumber}` : "—"}
-                    </td>
-                    <td>
-                      {d.status === "issued" && d.smartbillDocumentViewUrl && (
-                        <a href={d.smartbillDocumentViewUrl} target="_blank" rel="noreferrer" className="btn sec sm">Megnyitás</a>
-                      )}
-                      {d.status === "failed" && (
-                        <button type="button" className="btn sec sm" disabled={busy} onClick={() => retrySmartbillDocument(t)}>Újrapróbálás</button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <ResponsiveTable
+          columns={[{ key: "d", label: "Leírás" }, { key: "t", label: "Típus" }, { key: "dt", label: "Dátum" }, { key: "l", label: "Helyszín" }, { key: "a", label: "Összeg" }, { key: "s", label: "Státusz" }, { key: "n", label: "Szám" }, { key: "x", label: "" }]}
+          rows={docs}
+          rowKey={(t) => t.id}
+          renderRow={(t) => {
+            const d = t.smartbillDoc;
+            return (
+              <tr key={t.id}>
+                <td style={{ fontWeight: 500, color: "#111827" }}>{t.description}</td>
+                <td><span className="badge-loc">{DOC_TYPE_LABELS[d.docType] || d.docType}</span></td>
+                <td style={{ color: "#6B7280" }}>{t.date}</td>
+                <td><span className="badge-loc">{locName(t.locationId)}</span></td>
+                <td className="mono" style={{ fontWeight: 700, color: "#15803D" }}>+{money(t.amount)}</td>
+                <td>
+                  {d.status === "issued" && <span className="badge-loc" style={{ color: "#15803D" }}>Kiállítva</span>}
+                  {d.status === "failed" && <span className="badge-loc" style={{ color: "#B91C1C" }} title={d.errorText || ""}>Hiba{d.errorText ? `: ${d.errorText}` : ""}</span>}
+                  {d.status === "pending" && <span className="badge-loc" style={{ color: "#6B7280" }}>Folyamatban</span>}
+                </td>
+                <td className="mono" style={{ color: "#6B7280" }}>
+                  {d.status === "issued" ? `${d.smartbillSeries}-${d.smartbillNumber}` : "—"}
+                </td>
+                <td>
+                  {d.status === "issued" && d.smartbillDocumentViewUrl && (
+                    <a href={d.smartbillDocumentViewUrl} target="_blank" rel="noreferrer" className="btn sec sm">Megnyitás</a>
+                  )}
+                  {d.status === "failed" && (
+                    <button type="button" className="btn sec sm" disabled={busy} onClick={() => retrySmartbillDocument(t)}>Újrapróbálás</button>
+                  )}
+                </td>
+              </tr>
+            );
+          }}
+          renderMobileRow={(t) => {
+            const d = t.smartbillDoc;
+            return (
+              <div className="mob-row">
+                <div className="mob-row-top">
+                  <div className="mob-row-main"><span>{t.description}</span></div>
+                  <div className="mob-row-amount" style={{ color: "#15803D" }}>+{money(t.amount)}</div>
+                </div>
+                <div className="mob-row-sub">
+                  <span className="badge-loc">{DOC_TYPE_LABELS[d.docType] || d.docType}</span>
+                  <span>{t.date}</span>
+                  <span className="badge-loc">{locName(t.locationId)}</span>
+                  {d.status === "issued" && <span style={{ color: "#15803D" }}>Kiállítva {d.smartbillSeries}-{d.smartbillNumber}</span>}
+                  {d.status === "failed" && <span style={{ color: "#B91C1C" }}>Hiba{d.errorText ? `: ${d.errorText}` : ""}</span>}
+                  {d.status === "pending" && <span style={{ color: "#6B7280" }}>Folyamatban</span>}
+                </div>
+                {(d.status === "issued" && d.smartbillDocumentViewUrl) || d.status === "failed" ? (
+                  <div className="mob-row-sub" style={{ marginTop: 8 }}>
+                    {d.status === "issued" && d.smartbillDocumentViewUrl && (
+                      <a href={d.smartbillDocumentViewUrl} target="_blank" rel="noreferrer" className="btn sec sm">Megnyitás</a>
+                    )}
+                    {d.status === "failed" && (
+                      <button type="button" className="btn sec sm" disabled={busy} onClick={() => retrySmartbillDocument(t)}>Újrapróbálás</button>
+                    )}
+                  </div>
+                ) : null}
+              </div>
+            );
+          }}
+        />
       )}
 
       {isAdmin && (

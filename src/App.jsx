@@ -56,6 +56,7 @@ import LeaveBalanceModal from "./components/LeaveBalanceModal";
 import RepairPriceModal from "./components/RepairPriceModal";
 import { CloseIcon, ChatIcon } from "./components/icons";
 import Sidebar from "./components/Sidebar";
+import BottomNav from "./components/BottomNav";
 import TeamChatPanel from "./components/TeamChatPanel";
 import InviteEmployeeModal from "./components/InviteEmployeeModal";
 import ChangePasswordModal from "./components/ChangePasswordModal";
@@ -1890,6 +1891,11 @@ function AppShell() {
         tab={tab} setTab={setTab} setTicketModal={setTicketModal} isAdmin={isAdmin} locFilter={locFilter} setLocFilter={setLocFilter}
         allowedLocations={allowedLocations} myLocationId={myLocationId} locName={locName} profile={profile} user={user}
         signOut={signOut} lastActiveLocationId={lastActiveLocationId}
+      />
+      <BottomNav
+        tab={tab} setTab={setTab} isAdmin={isAdmin} locFilter={locFilter} setLocFilter={setLocFilter}
+        allowedLocations={allowedLocations} myLocationId={myLocationId} locName={locName} profile={profile} user={user}
+        signOut={signOut}
       />
 
       <div className="main">

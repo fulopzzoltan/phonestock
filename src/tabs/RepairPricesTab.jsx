@@ -2,6 +2,7 @@ import { money } from "../lib/utils";
 import { REPAIR_FAMILIES, PRICED_PROBLEMS, PROBLEM_LABELS } from "../lib/repairCatalog";
 import { RepairPriceIcon } from "../components/icons";
 import { EmptyState } from "../components/EmptyState";
+import ResponsiveTable from "../components/ResponsiveTable";
 
 export default function RepairPricesTab({
   repairPrices, setRepairPriceModal, repairLeads, repairLeadFilter, setRepairLeadFilter, busy,
@@ -16,7 +17,7 @@ export default function RepairPricesTab({
 
       <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>Árazási mátrix</div>
       <div className="tw" style={{ marginBottom: 22 }}>
-        <table>
+        <table className="keep-table-mobile">
           <thead><tr><th>Modellcsalád</th>{PRICED_PROBLEMS.map((tag) => <th key={tag}>{tag}</th>)}</tr></thead>
           <tbody>
             {Object.entries(REPAIR_FAMILIES).map(([familyKey, familyLabel]) => (
@@ -54,32 +55,58 @@ export default function RepairPricesTab({
         {filteredLeads.length === 0 ? (
           <EmptyState icon={RepairPriceIcon}>Nincs ilyen státuszú érdeklődő.</EmptyState>
         ) : (
-          <table>
-            <thead><tr><th>Ügyfél</th><th>Telefon</th><th>Eszköz</th><th>Probléma</th><th>Becsült ár</th><th>Helyszín</th><th>Beérkezett</th><th></th></tr></thead>
-            <tbody>
-              {filteredLeads.map((l) => (
-                <tr key={l.id}>
-                  <td style={{ fontWeight: 600 }}>{l.customerName}</td>
-                  <td className="mono">{l.customerPhone}</td>
-                  <td>{[l.brand, l.model].filter(Boolean).join(" ")}</td>
-                  <td>{l.problemTag ? (PROBLEM_LABELS[l.problemTag] || l.problemTag) : (l.note || "—")}</td>
-                  <td className="mono">{l.estimatedPrice != null ? money(l.estimatedPrice) : "—"}</td>
-                  <td><span className="badge-loc">{locName(l.preferredLocationId)}</span></td>
-                  <td className="mono" style={{ color: "#6B7280" }}>{(l.createdAt || "").slice(0, 10)}</td>
-                  <td style={{ display: "flex", gap: 6 }}>
-                    {l.status === "Új" && (
-                      <>
-                        <button className="btn sec sm" disabled={busy} onClick={() => { setRepairLeadConvert(l); setTicketModal("add"); }}>Munkalap létrehozása</button>
-                        <button className="btn sec sm" disabled={busy} onClick={() => rejectRepairLead(l.id)}>Elvetés</button>
-                      </>
-                    )}
-                    {l.status === "Feldolgozva" && <span className="badge-income">Feldolgozva</span>}
-                    {l.status === "Elvetve" && <span style={{ color: "#9CA3AF", fontSize: 12 }}>Elvetve</span>}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <ResponsiveTable
+            wrap={false}
+            columns={[{ key: "c", label: "Ügyfél" }, { key: "p", label: "Telefon" }, { key: "d", label: "Eszköz" }, { key: "pr", label: "Probléma" }, { key: "e", label: "Becsült ár" }, { key: "l", label: "Helyszín" }, { key: "dt", label: "Beérkezett" }, { key: "x", label: "" }]}
+            rows={filteredLeads}
+            rowKey={(l) => l.id}
+            renderRow={(l) => (
+              <tr key={l.id}>
+                <td style={{ fontWeight: 600 }}>{l.customerName}</td>
+                <td className="mono">{l.customerPhone}</td>
+                <td>{[l.brand, l.model].filter(Boolean).join(" ")}</td>
+                <td>{l.problemTag ? (PROBLEM_LABELS[l.problemTag] || l.problemTag) : (l.note || "—")}</td>
+                <td className="mono">{l.estimatedPrice != null ? money(l.estimatedPrice) : "—"}</td>
+                <td><span className="badge-loc">{locName(l.preferredLocationId)}</span></td>
+                <td className="mono" style={{ color: "#6B7280" }}>{(l.createdAt || "").slice(0, 10)}</td>
+                <td style={{ display: "flex", gap: 6 }}>
+                  {l.status === "Új" && (
+                    <>
+                      <button className="btn sec sm" disabled={busy} onClick={() => { setRepairLeadConvert(l); setTicketModal("add"); }}>Munkalap létrehozása</button>
+                      <button className="btn sec sm" disabled={busy} onClick={() => rejectRepairLead(l.id)}>Elvetés</button>
+                    </>
+                  )}
+                  {l.status === "Feldolgozva" && <span className="badge-income">Feldolgozva</span>}
+                  {l.status === "Elvetve" && <span style={{ color: "#9CA3AF", fontSize: 12 }}>Elvetve</span>}
+                </td>
+              </tr>
+            )}
+            renderMobileRow={(l) => (
+              <div className="mob-row">
+                <div className="mob-row-top">
+                  <div className="mob-row-main"><span>{l.customerName}</span></div>
+                  <div className="mob-row-amount">{l.estimatedPrice != null ? money(l.estimatedPrice) : "—"}</div>
+                </div>
+                <div className="mob-row-sub">
+                  <span className="mono">{l.customerPhone}</span>
+                  <span>{[l.brand, l.model].filter(Boolean).join(" ")}</span>
+                  <span>{l.problemTag ? (PROBLEM_LABELS[l.problemTag] || l.problemTag) : (l.note || "—")}</span>
+                  <span className="badge-loc">{locName(l.preferredLocationId)}</span>
+                  <span>{(l.createdAt || "").slice(0, 10)}</span>
+                </div>
+                <div className="mob-row-sub" style={{ marginTop: 8 }}>
+                  {l.status === "Új" && (
+                    <>
+                      <button className="btn sec sm" disabled={busy} onClick={() => { setRepairLeadConvert(l); setTicketModal("add"); }}>Munkalap létrehozása</button>
+                      <button className="btn sec sm" disabled={busy} onClick={() => rejectRepairLead(l.id)}>Elvetés</button>
+                    </>
+                  )}
+                  {l.status === "Feldolgozva" && <span className="badge-income">Feldolgozva</span>}
+                  {l.status === "Elvetve" && <span style={{ color: "#9CA3AF" }}>Elvetve</span>}
+                </div>
+              </div>
+            )}
+          />
         )}
       </div>
     </>

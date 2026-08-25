@@ -5,6 +5,7 @@ import ConfirmDelete from "../components/ConfirmDelete";
 import Thumb from "../components/Thumb";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import HistorySection from "../components/HistorySection";
+import ResponsiveTable from "../components/ResponsiveTable";
 
 const SORTS = [
   { key: "recent", label: "Legújabb elöl" },
@@ -73,34 +74,52 @@ export default function PartsTab({
                   {cat} <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({items.length} db)</span>
                 </div>
               </div>
-              <div className="tw">
-                <table>
-                  <thead><tr><th>Alkatrész</th><th>Márka/Illik</th><th>Készlet</th><th>Beérk. ár</th><th>Forrás</th><th></th></tr></thead>
-                  <tbody>
-                    {items.map((p) => (
-                      <tr key={p.id} style={{ cursor: "pointer" }} onClick={() => setPartDetailId(p.id)}>
-                        <td>
-                          <div className="stk-row">
-                            <Thumb brand={p.category || p.name} />
-                            <div>
-                              <div className="stk-name">{p.name}</div>
-                              <div className="stk-sub">{partCode(p.partNo) || "—"}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td style={{ color: "#6B7280", fontSize: 12 }}>{[p.brand, p.modelFit].filter(Boolean).join(" · ") || "—"}</td>
-                        <td style={{ fontWeight: 700 }}>{p.quantity} db</td>
-                        <td className="mono" style={{ color: "#6B7280" }}>{money(p.costPrice)}</td>
-                        <td style={{ color: "#6B7280", fontSize: 12 }}>{p.source || "—"}</td>
-                        <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
-                          <button className="iconbtn" disabled={busy} onClick={() => setPartModal(p)}><EditIcon /></button>
-                          <ConfirmDelete disabled={busy} onConfirm={() => deletePart(p.id)} />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <ResponsiveTable
+                columns={[{ key: "p", label: "Alkatrész" }, { key: "b", label: "Márka/Illik" }, { key: "q", label: "Készlet" }, { key: "c", label: "Beérk. ár" }, { key: "s", label: "Forrás" }, { key: "x", label: "" }]}
+                rows={items}
+                rowKey={(p) => p.id}
+                renderRow={(p) => (
+                  <tr key={p.id} style={{ cursor: "pointer" }} onClick={() => setPartDetailId(p.id)}>
+                    <td>
+                      <div className="stk-row">
+                        <Thumb brand={p.category || p.name} />
+                        <div>
+                          <div className="stk-name">{p.name}</div>
+                          <div className="stk-sub">{partCode(p.partNo) || "—"}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td style={{ color: "#6B7280", fontSize: 12 }}>{[p.brand, p.modelFit].filter(Boolean).join(" · ") || "—"}</td>
+                    <td style={{ fontWeight: 700 }}>{p.quantity} db</td>
+                    <td className="mono" style={{ color: "#6B7280" }}>{money(p.costPrice)}</td>
+                    <td style={{ color: "#6B7280", fontSize: 12 }}>{p.source || "—"}</td>
+                    <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
+                      <button className="iconbtn" disabled={busy} onClick={() => setPartModal(p)}><EditIcon /></button>
+                      <ConfirmDelete disabled={busy} onConfirm={() => deletePart(p.id)} />
+                    </td>
+                  </tr>
+                )}
+                renderMobileRow={(p) => (
+                  <div className="mob-row" onClick={() => setPartDetailId(p.id)}>
+                    <div className="mob-row-top">
+                      <div className="mob-row-main">
+                        <Thumb brand={p.category || p.name} />
+                        <span>{p.name}</span>
+                      </div>
+                      <div className="mob-row-amount">{p.quantity} db</div>
+                    </div>
+                    <div className="mob-row-sub">
+                      <span>{[p.brand, p.modelFit].filter(Boolean).join(" · ") || "—"}</span>
+                      <span>{money(p.costPrice)}</span>
+                      <span>{p.source || "—"}</span>
+                    </div>
+                    <div className="mob-row-sub" style={{ marginTop: 8 }} onClick={(e) => e.stopPropagation()}>
+                      <button className="iconbtn" disabled={busy} onClick={() => setPartModal(p)}><EditIcon /></button>
+                      <ConfirmDelete disabled={busy} onConfirm={() => deletePart(p.id)} />
+                    </div>
+                  </div>
+                )}
+              />
             </div>
           );
         })
@@ -114,21 +133,36 @@ export default function PartsTab({
         filterFn={(sp, q) => [sp.partName, sp.ticket.customerName, sp.ticket.brand, sp.ticket.model, ticketCode(sp.ticket.ticketNo, locName(sp.ticket.intakeLocationId || sp.ticket.locationId))].filter(Boolean).join(" ").toLowerCase().includes(q)}
       >
         {(rows) => (
-          <table>
-            <thead><tr><th>Alkatrész</th><th>Munkalap</th><th>Vevő</th><th>Menny.</th><th>Ár</th><th>Dátum</th></tr></thead>
-            <tbody>
-              {rows.map((sp) => (
-                <tr key={sp.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(sp.ticket.id)}>
-                  <td style={{ fontWeight: 600 }}>{sp.partName}</td>
-                  <td>{ticketCode(sp.ticket.ticketNo, locName(sp.ticket.intakeLocationId || sp.ticket.locationId))}</td>
-                  <td>{sp.ticket.customerName || "—"}</td>
-                  <td style={{ fontWeight: 700 }}>{sp.quantity} db</td>
-                  <td className="mono" style={{ fontWeight: 700 }}>{money((sp.costPrice || 0) * sp.quantity)}</td>
-                  <td className="mono" style={{ color: "#9CA3AF" }}>{(sp.usedAt || "").slice(0, 10) || "—"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <ResponsiveTable
+            wrap={false}
+            columns={[{ key: "p", label: "Alkatrész" }, { key: "t", label: "Munkalap" }, { key: "c", label: "Vevő" }, { key: "q", label: "Menny." }, { key: "a", label: "Ár" }, { key: "d", label: "Dátum" }]}
+            rows={rows}
+            rowKey={(sp) => sp.id}
+            renderRow={(sp) => (
+              <tr key={sp.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(sp.ticket.id)}>
+                <td style={{ fontWeight: 600 }}>{sp.partName}</td>
+                <td>{ticketCode(sp.ticket.ticketNo, locName(sp.ticket.intakeLocationId || sp.ticket.locationId))}</td>
+                <td>{sp.ticket.customerName || "—"}</td>
+                <td style={{ fontWeight: 700 }}>{sp.quantity} db</td>
+                <td className="mono" style={{ fontWeight: 700 }}>{money((sp.costPrice || 0) * sp.quantity)}</td>
+                <td className="mono" style={{ color: "#9CA3AF" }}>{(sp.usedAt || "").slice(0, 10) || "—"}</td>
+              </tr>
+            )}
+            renderMobileRow={(sp) => (
+              <div className="mob-row" onClick={() => setDetailId(sp.ticket.id)}>
+                <div className="mob-row-top">
+                  <div className="mob-row-main"><span>{sp.partName}</span></div>
+                  <div className="mob-row-amount">{money((sp.costPrice || 0) * sp.quantity)}</div>
+                </div>
+                <div className="mob-row-sub">
+                  <span>{ticketCode(sp.ticket.ticketNo, locName(sp.ticket.intakeLocationId || sp.ticket.locationId))}</span>
+                  <span>{sp.ticket.customerName || "—"}</span>
+                  <span>{sp.quantity} db</span>
+                  <span>{(sp.usedAt || "").slice(0, 10) || "—"}</span>
+                </div>
+              </div>
+            )}
+          />
         )}
       </HistorySection>
     </>
