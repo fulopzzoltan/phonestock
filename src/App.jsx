@@ -1947,6 +1947,7 @@ function AppShell() {
             smartQuickItems={QUICK_SALES} checkoutBasket={checkoutBasket}
             dayCloses={dayCloses}
             closeDay={closeDay} reopenDay={reopenDay}
+            isAdmin={isAdmin}
           />
         )}
 

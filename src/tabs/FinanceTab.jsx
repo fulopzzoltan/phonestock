@@ -1,7 +1,8 @@
 import { useState } from "react";
 import BasketBar from "../components/BasketBar";
-import TransactionsPeriodList, { TransactionRowsTable } from "../components/TransactionsPeriodList";
-import { LoadingState, EmptyState } from "../components/EmptyState";
+import { TransactionRowsTable } from "../components/TransactionsPeriodList";
+import TransactionsCalendar from "../components/TransactionsCalendar";
+import { EmptyState } from "../components/EmptyState";
 import { FinanceIcon } from "../components/icons";
 import { money, today } from "../lib/utils";
 
@@ -113,12 +114,12 @@ export default function FinanceTab({
   productConditionById,
   smartQuickItems, checkoutBasket,
   dayCloses, closeDay, reopenDay,
+  isAdmin,
 }) {
   const [showHistory, setShowHistory] = useState(false);
   const todayStr = today();
   const isAll = effectiveLocFilter === "all";
   const locsToShow = isAll ? allowedLocations : allowedLocations.filter((l) => l.id === effectiveLocFilter);
-  const historyTx = filteredTransactions.filter((t) => t.date !== todayStr);
 
   function todayCloseFor(locId) {
     return dayCloses.find((d) => d.date === todayStr && d.locationId === locId && !d.reopenedAt);
@@ -185,12 +186,22 @@ export default function FinanceTab({
       <button type="button" className="btn sec sm" style={{ marginTop: 18 }} onClick={() => setShowHistory((v) => !v)}>
         {showHistory ? "Korábbi napok elrejtése" : "Korábbi napok megtekintése"}
       </button>
-      {showHistory && (
-        loadingData ? <div className="tw"><LoadingState /></div> : (
-          <div style={{ marginTop: 12 }}>
-            <TransactionsPeriodList transactions={historyTx} locName={locName} onEdit={setTxModal} onDelete={deleteTransaction} onOpenReceipt={setReceiptTxId} busy={busy} productConditionById={productConditionById} showLocation={isAll} />
-          </div>
-        )
+      {showHistory && !loadingData && (
+        <div style={{ marginTop: 12 }}>
+          <TransactionsCalendar
+            transactions={filteredTransactions}
+            dayCloses={dayCloses}
+            allowedLocations={allowedLocations}
+            effectiveLocFilter={effectiveLocFilter}
+            isAdmin={isAdmin}
+            locName={locName}
+            onEdit={setTxModal}
+            onDelete={deleteTransaction}
+            onOpenReceipt={setReceiptTxId}
+            busy={busy}
+            productConditionById={productConditionById}
+          />
+        </div>
       )}
     </>
   );
