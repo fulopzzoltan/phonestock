@@ -86,11 +86,9 @@ export default function BasketBar({ defaultLocId, busy, smartQuickItems, onCheck
 
   return (
     <div className="basket-bar">
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", marginBottom: 10 }}>
-        <div className="seg">
-          <button type="button" className={mode === "income" ? "active" : ""} onClick={() => { setMode("income"); setBasketItems([]); resetFree(); }}>Bevétel</button>
-          <button type="button" className={mode === "expense" ? "active" : ""} onClick={() => { setMode("expense"); setBasketItems([]); resetFree(); }}>Kiadás</button>
-        </div>
+      <div className="seg" style={{ marginBottom: 12 }}>
+        <button type="button" className={mode === "income" ? "active" : ""} onClick={() => { setMode("income"); setBasketItems([]); resetFree(); }}>Bevétel</button>
+        <button type="button" className={mode === "expense" ? "active" : ""} onClick={() => { setMode("expense"); setBasketItems([]); resetFree(); }}>Kiadás</button>
       </div>
 
       {err && <div className="errbar">{err}</div>}
