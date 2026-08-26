@@ -182,6 +182,8 @@ export const tFromApi = (r) => ({
   ticketKind: r.ticket_kind,
   productId: r.product_id,
   intakeLocationId: r.intake_location_id,
+  handoverIncomeRecorded: !!r.handover_income_recorded,
+  handoverMaterialRecorded: !!r.handover_material_recorded,
 });
 
 export const tToApi = (t, locId) => ({

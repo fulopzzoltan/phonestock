@@ -1418,11 +1418,24 @@ function AppShell() {
     await withBusy(async () => {
       const ticket = tickets.find((t) => t.id === id);
       const becameReady = status === "Átadásra" && !(ticket && ticket.status === "Átadásra");
+      // A bevétel/anyagköltség tételt csak EGYSZER, a munkalap életében először hozzuk létre —
+      // ha valaki visszaállítja a státuszt, majd újra "Átadva"-ra teszi, ez ne írja fel duplán
+      // a Bevétel/Kiadás-t (és ne szaporítsa a hűségpontot, ami a tranzakció-insert triggerére épül).
+      const shouldRecordIncome = subStatus === "Átadva" && ticket && !ticket.handoverIncomeRecorded && (Number(ticket.price) || 0) > 0;
+      const shouldRecordMaterial = subStatus === "Átadva" && ticket && !ticket.handoverMaterialRecorded && ticket.ticketKind === "Saját készlet - garanciális" && (Number(ticket.matCost) || 0) > 0;
       const patch = { status, sub_status: subStatus };
       if (subStatus === "Átadva") patch.date_out = today();
       if (becameReady) patch.ready_at = new Date().toISOString();
+      if (shouldRecordIncome) patch.handover_income_recorded = true;
+      if (shouldRecordMaterial) patch.handover_material_recorded = true;
       unwrap(await supabase.from("service_tickets").update(patch).eq("id", id));
-      setTickets(tickets.map((t) => (t.id === id ? { ...t, status, subStatus, dateOut: subStatus === "Átadva" ? today() : t.dateOut, readyAt: becameReady ? patch.ready_at : t.readyAt } : t)));
+      setTickets(tickets.map((t) => (t.id === id ? {
+        ...t, status, subStatus,
+        dateOut: subStatus === "Átadva" ? today() : t.dateOut,
+        readyAt: becameReady ? patch.ready_at : t.readyAt,
+        handoverIncomeRecorded: shouldRecordIncome ? true : t.handoverIncomeRecorded,
+        handoverMaterialRecorded: shouldRecordMaterial ? true : t.handoverMaterialRecorded,
+      } : t)));
 
       if (settings.smsOnTicketReady && becameReady && subStatus === null && ticket && ticket.customerPhone) {
         const device = [ticket.brand, ticket.model].filter(Boolean).join(" ");
@@ -1433,7 +1446,7 @@ function AppShell() {
         });
       }
 
-      if (subStatus === "Átadva" && ticket && ticket.subStatus !== "Átadva" && (Number(ticket.price) || 0) > 0) {
+      if (shouldRecordIncome) {
         const r = unwrap(await supabase.from("transactions").insert({
           ...txToApi({
             type: "income",
@@ -1451,7 +1464,7 @@ function AppShell() {
         if (ticket.customerId) await refreshCustomerLoyalty(ticket.customerId);
       }
 
-      if (subStatus === "Átadva" && ticket && ticket.subStatus !== "Átadva" && ticket.ticketKind === "Saját készlet - garanciális" && (Number(ticket.matCost) || 0) > 0) {
+      if (shouldRecordMaterial) {
         const product = stock.find((p) => p.id === ticket.productId);
         const r2 = unwrap(await supabase.from("transactions").insert(txToApi({
           type: "expense",
