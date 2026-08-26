@@ -1673,7 +1673,11 @@ function AppShell() {
   }, [parts, partSearch]);
 
   const activeTickets = useMemo(() => filteredTickets.filter((t) => t.subStatus !== "Átadva"), [filteredTickets]);
-  const handedOverTickets = useMemo(() => filteredTickets.filter((t) => t.subStatus === "Átadva"), [filteredTickets]);
+  const handedOverTickets = useMemo(
+    () => filteredTickets.filter((t) => t.subStatus === "Átadva")
+      .sort((a, b) => (b.dateOut || "").localeCompare(a.dateOut || "") || (Number(b.ticketNo) || 0) - (Number(a.ticketNo) || 0)),
+    [filteredTickets]
+  );
 
 
   const svcStats = useMemo(() => {
