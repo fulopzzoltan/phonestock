@@ -269,6 +269,7 @@ export const loyaltyRewardToApi = (r) => ({
 export const partFromApi = (r) => ({
   id: r.id,
   partNo: r.part_no,
+  createdAt: r.created_at,
   name: r.name,
   brand: r.brand,
   modelFit: r.model_fit,

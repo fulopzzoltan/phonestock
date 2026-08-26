@@ -15,9 +15,9 @@ const SORTS = [
 ];
 
 function sortItems(items, sortBy) {
-  if (sortBy === "recent") return items;
   const arr = [...items];
-  if (sortBy === "qty-asc") arr.sort((a, b) => (Number(a.quantity) || 0) - (Number(b.quantity) || 0));
+  if (sortBy === "recent") arr.sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || "") || (Number(b.partNo) || 0) - (Number(a.partNo) || 0));
+  else if (sortBy === "qty-asc") arr.sort((a, b) => (Number(a.quantity) || 0) - (Number(b.quantity) || 0));
   else if (sortBy === "qty-desc") arr.sort((a, b) => (Number(b.quantity) || 0) - (Number(a.quantity) || 0));
   else if (sortBy === "name") arr.sort((a, b) => a.name.localeCompare(b.name));
   return arr;
