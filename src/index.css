@@ -407,7 +407,12 @@ tr:hover td{background:#FAFAFA}
 @media print{
   @page{ size: A4; margin: 8mm; }
   body *{visibility:hidden}
-  .shell{display:none}
+  /* #print-slip-root a .shell gyereke, ezért NEM lehet a .shell-t display:none-nal
+     kilőni (az magával vinné a nyomtatandó tartalmat is) — helyette a testvér
+     elemeit tüntetjük el és a .shell saját 100vh-s min-height-jét nullázzuk,
+     hogy ne maradjon utána egy üres extra nyomtatott oldal. */
+  .shell{min-height:0}
+  .shell>*:not(#print-slip-root){display:none!important}
   #print-slip-root,#print-slip-root *{visibility:visible}
   #print-slip-root{display:block;position:absolute;top:0;left:0;right:0;background:#fff;overflow:visible}
   .doc-page{page-break-after:always}
