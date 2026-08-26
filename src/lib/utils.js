@@ -78,11 +78,12 @@ export function partCode(partNo) {
 export function normalizeImei(imei) {
   return (imei || "").replace(/\D/g, "");
 }
-const TICKET_LOCATION_LETTERS = { "Gyimes": "GY", "Szentgyörgy": "SGY" };
+const TICKET_LOCATION_LETTERS = { "Gyimes": "GY", "Szentgyörgy": "CS" };
 // locationName = a felvétel (intake) helyszínének neve — ez a munkalap létrehozásakor
 // örökre rögzül (intake_location_id), nem változik akkor sem, ha a javítás közben
 // másik boltba kerül a telefon (location_id az él, azt mutatja a helyszín-címke).
-// Formátum: szám elöl, utána a helyszín-rövidítés, végén "S" (=szerviz) — pl. 2199GYS, 2227SGYS.
+// Formátum: szám elöl, utána a helyszín-rövidítés, végén "S" (=szerviz) — pl. 2199GYS, 2227CSS
+// (CS = Csíkszentgyörgy).
 export function ticketCode(ticketNo, locationName) {
   if (ticketNo == null) return null;
   const letter = TICKET_LOCATION_LETTERS[locationName] || "";
