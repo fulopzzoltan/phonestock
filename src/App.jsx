@@ -224,8 +224,8 @@ function AppShell() {
     requestAnimationFrame(() => window.print());
   }
 
-  async function loadAll() {
-    setLoadingData(true);
+  async function loadAll({ silent = false } = {}) {
+    if (!silent) setLoadingData(true);
     try {
       const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, bbOffers, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds, prodAcqs, dClosesR, loyRewards, loyLedger, custProfiles] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
@@ -303,9 +303,9 @@ function AppShell() {
       maybeSnapshotStockValue(prodRows, historyRows);
       setError("");
     } catch (e) {
-      setError("Betöltési hiba: " + e.message);
+      if (!silent) setError("Betöltési hiba: " + e.message);
     } finally {
-      setLoadingData(false);
+      if (!silent) setLoadingData(false);
     }
   }
 
@@ -327,6 +327,25 @@ function AppShell() {
   }
 
   useEffect(() => { loadAll(); }, []);
+
+  // Más eszközön/kollégánál mentett munkalap, alkatrész stb. eddig csak kézi újratöltésre
+  // jelent meg — csendben (loading-villanás nélkül) frissítünk, amikor a tab újra láthatóvá
+  // válik, plusz egy percenként háttérben is, amíg nyitva van a fül. Ez sima REST lekérés
+  // (ugyanaz, mint a kezdeti betöltés), NEM Realtime websocket-csatorna — azt korábban kivettük,
+  // mert a folyamatosan nyitva tartott websocket rontotta a be-/kijelentkezés megbízhatóságát.
+  useEffect(() => {
+    const interval = setInterval(() => { loadAll({ silent: true }); }, 60000);
+    function onVisible() {
+      if (document.visibilityState === "visible") loadAll({ silent: true });
+    }
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onVisible);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onVisible);
+    };
+  }, []);
 
   async function loadTrash() {
     setTrashLoading(true);
