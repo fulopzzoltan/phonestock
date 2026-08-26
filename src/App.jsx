@@ -83,9 +83,59 @@ function NoStaffAccess() {
   );
 }
 
+function PasswordRecoveryGate() {
+  const { completePasswordRecovery, signOut } = useAuth();
+  const [password, setPassword] = useState("");
+  const [password2, setPassword2] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function submit(e) {
+    e.preventDefault();
+    setError("");
+    if (password.length < 6) { setError("Legalább 6 karakter legyen a jelszó."); return; }
+    if (password !== password2) { setError("A két jelszó nem egyezik."); return; }
+    setBusy(true);
+    try {
+      await completePasswordRecovery(password);
+    } catch (err) {
+      setError(err.message || "Hiba történt.");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="pub-shop">
+      <PublicHeader activeNav="login" />
+      <main className="pub-lookup-main">
+        <div className="login-card" style={{ maxWidth: 380 }}>
+          <div className="login-title">Új jelszó megadása</div>
+          <p style={{ fontSize: 13, color: "#6B7280", lineHeight: 1.5, margin: "0 0 16px" }}>
+            Ez a link jelszó-visszaállításra szolgál — add meg az új jelszavad, utána újra be
+            kell majd jelentkezned vele. (Ez nem lép be automatikusan a rendszerbe.)
+          </p>
+          {error && <div className="errbar">{error}</div>}
+          <form onSubmit={submit}>
+            <div className="field"><label>Új jelszó</label><input type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" /></div>
+            <div className="field"><label>Új jelszó mégegyszer</label><input type="password" autoComplete="new-password" value={password2} onChange={(e) => setPassword2(e.target.value)} placeholder="••••••••" /></div>
+            <button className="btn" style={{ width: "100%", justifyContent: "center", marginTop: 6 }} disabled={busy} type="submit">
+              {busy ? "Mentés..." : "Jelszó mentése"}
+            </button>
+          </form>
+          <button type="button" className="login-note" style={{ background: "none", border: "none", cursor: "pointer", textDecoration: "underline", padding: 0 }} onClick={signOut}>
+            Mégse, vissza a bejelentkezéshez
+          </button>
+        </div>
+      </main>
+      <PublicFooter />
+    </div>
+  );
+}
+
 export default function App() {
-  const { session, loading, noStaffProfile } = useAuth();
+  const { session, loading, noStaffProfile, passwordRecovery } = useAuth();
   if (loading) return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F4F6F3", color: "#6B7280", fontSize: 13 }}>Betöltés...</div>;
+  if (passwordRecovery) return <PasswordRecoveryGate />;
   if (!session) return <Login />;
   if (noStaffProfile) return <NoStaffAccess />;
   return <AppShell />;
@@ -1039,7 +1089,7 @@ function AppShell() {
     let ok = false;
     await withBusy(async () => {
       const { data, error: fnError } = await supabase.functions.invoke("manage-employee", {
-        body: { action, userId },
+        body: { action, userId, origin: window.location.origin },
       });
       if (fnError || data?.error) {
         let msg = data?.error || fnError?.message || "Művelet sikertelen.";

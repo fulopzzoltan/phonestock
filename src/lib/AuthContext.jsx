@@ -32,6 +32,10 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(undefined); // undefined = loading, null = signed out
   const [profile, setProfile] = useState(null);
   const [profileLoading, setProfileLoading] = useState(false);
+  // Jelszó-visszaállító linkre kattintva a Supabase kliens automatikusan beállítja az adott
+  // fiók session-jét ("detectSessionInUrl") — enélkül a flag nélkül ez csendben lecserélné
+  // a böngészőben addig aktív (pl. admin) bejelentkezést arra a fiókra, amit épp visszaállítanak.
+  const [passwordRecovery, setPasswordRecovery] = useState(false);
   const signOutInFlight = useRef(false);
 
   const loadProfile = useCallback(async (userId) => {
@@ -54,6 +58,7 @@ export function AuthProvider({ children }) {
       if (data.session?.user?.id) loadProfile(data.session.user.id);
     });
     const { data: sub } = supabase.auth.onAuthStateChange((_event, sess) => {
+      if (_event === "PASSWORD_RECOVERY") setPasswordRecovery(true);
       setSession(sess ?? null);
       if (sess?.user?.id) loadProfile(sess.user.id);
       else setProfile(null);
@@ -94,9 +99,18 @@ export function AuthProvider({ children }) {
       // bejelentkezéskor) — a UI-t itt azonnal, kézzel is kijelentkezett állapotba állítjuk.
       setSession(null);
       setProfile(null);
+      setPasswordRecovery(false);
     } finally {
       signOutInFlight.current = false;
     }
+  }
+
+  async function completePasswordRecovery(newPassword) {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) throw new Error(error.message);
+    // Szándékosan nem hagyjuk bejelentkezve ebben a session-ben azt, aki a linket megnyitotta —
+    // mindig visszatér a normál bejelentkező képernyőre, ne keveredjen a fő app-élménnyel.
+    await signOut();
   }
 
   const value = {
@@ -110,6 +124,8 @@ export function AuthProvider({ children }) {
     noStaffProfile: !!session && !profileLoading && !profile,
     signIn,
     signOut,
+    passwordRecovery,
+    completePasswordRecovery,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
