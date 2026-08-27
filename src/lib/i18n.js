@@ -17,6 +17,9 @@ export const STRINGS = {
     footerRights: (y) => `© ${y} Telefonos — minden jog fenntartva.`,
     scarcity: "Utolsó darab", saveLabel: (n) => `Spórolsz ${n} Lei`,
     backToStock: "Vissza a készlethez", soldOut: "Ez a darab már elkelt, vagy nem található.",
+    wishlistToggle: "Kedvencekhez adás",
+    promoBuybackTitle: "Van egy régi telefonod?", promoBuybackDesc: "Beszámítjuk vagy megvesszük — kérj árajánlatot pár kattintással.", promoBuybackCta: "Árajánlatot kérek →",
+    promoRepairTitle: "Elromlott a telefonod?", promoRepairDesc: "Ingyenes árbecslő pár kérdésből — nézd meg, mennyibe kerülne a javítás.", promoRepairCta: "Árbecslést kérek →",
 
     // Telefon-részletoldal
     storageLabel: "Tárhely", colorLabel: "Szín", batteryLabel: "Akkumulátor", warrantyLabel: "Garancia",
@@ -66,6 +69,9 @@ export const STRINGS = {
     footerRights: (y) => `© ${y} Telefonos — toate drepturile rezervate.`,
     scarcity: "Ultima bucată", saveLabel: (n) => `Economisești ${n} Lei`,
     backToStock: "Înapoi la stoc", soldOut: "Această bucată s-a vândut deja sau nu a fost găsită.",
+    wishlistToggle: "Adaugă la favorite",
+    promoBuybackTitle: "Ai un telefon vechi?", promoBuybackDesc: "Îl preluăm sau îl cumpărăm — cere o ofertă din câteva click-uri.", promoBuybackCta: "Cer o ofertă →",
+    promoRepairTitle: "Ți s-a stricat telefonul?", promoRepairDesc: "Estimare gratuită din câteva întrebări — vezi cât ar costa reparația.", promoRepairCta: "Cer o estimare →",
 
     storageLabel: "Stocare", colorLabel: "Culoare", batteryLabel: "Baterie", warrantyLabel: "Garanție",
     interestedCall: "Sunt interesat — sună-ne",

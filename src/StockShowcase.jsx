@@ -1,13 +1,14 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, Fragment } from "react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "./lib/supabaseClient";
 import { photoUrl } from "./lib/imageResize";
 import { t, translateColor, translateWarranty } from "./lib/i18n";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
-import { SearchIcon, FilterIcon, CartIcon } from "./components/icons";
+import { SearchIcon, FilterIcon, CartIcon, HeartIcon, BuybackIcon, ServiceIcon, CheckIcon } from "./components/icons";
 import { EmptyState, LoadingState } from "./components/EmptyState";
 import { addToCart, useCart } from "./lib/cart";
+import { toggleWishlist, useWishlist } from "./lib/wishlist";
 
 const SITE = "https://phonestock-manager.netlify.app";
 
@@ -36,11 +37,12 @@ export default function StockShowcase({ lang = "hu" }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [q, setQ] = useState("");
-  const [brand, setBrand] = useState("all");
+  const [selectedBrands, setSelectedBrands] = useState([]);
   const [cond, setCond] = useState("all");
   const [sort, setSort] = useState("recommended");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const cart = useCart();
+  const wishlist = useWishlist();
 
   useEffect(() => {
     (async () => {
@@ -56,7 +58,10 @@ export default function StockShowcase({ lang = "hu" }) {
     })();
   }, []);
 
-  const brands = useMemo(() => ["all", ...new Set(phones.map((p) => p.brand))].sort((a, b) => (a === "all" ? -1 : b === "all" ? 1 : a.localeCompare(b))), [phones]);
+  const brands = useMemo(() => [...new Set(phones.map((p) => p.brand))].sort((a, b) => a.localeCompare(b)), [phones]);
+  function toggleBrand(b) {
+    setSelectedBrands((prev) => (prev.includes(b) ? prev.filter((x) => x !== b) : [...prev, b]));
+  }
 
   const stockCounts = useMemo(() => {
     const counts = {};
@@ -69,7 +74,7 @@ export default function StockShowcase({ lang = "hu" }) {
 
   const filtered = useMemo(() => {
     let items = phones.filter((p) => {
-      if (brand !== "all" && p.brand !== brand) return false;
+      if (selectedBrands.length > 0 && !selectedBrands.includes(p.brand)) return false;
       if (cond !== "all" && p.condition !== cond) return false;
       if (q.trim() && !`${p.brand} ${p.model} ${p.color || ""}`.toLowerCase().includes(q.trim().toLowerCase())) return false;
       return true;
@@ -81,9 +86,16 @@ export default function StockShowcase({ lang = "hu" }) {
       return a.brand.localeCompare(b.brand) || a.model.localeCompare(b.model);
     });
     return items;
-  }, [phones, brand, cond, q, sort]);
+  }, [phones, selectedBrands, cond, q, sort]);
 
-  const activeFilterCount = (brand !== "all" ? 1 : 0) + (cond !== "all" ? 1 : 0);
+  const activeFilterCount = selectedBrands.length + (cond !== "all" ? 1 : 0);
+
+  // A rácsba illesztett infó-kártyák (flip.ro mintájára) — valós, meglévő funkciókra mutatnak,
+  // nem kitalált akciók.
+  const PROMO_CARDS = [
+    { variant: "dark", Icon: BuybackIcon, title: s.promoBuybackTitle, desc: s.promoBuybackDesc, cta: s.promoBuybackCta, href: "/eladom" },
+    { variant: "accent", Icon: ServiceIcon, title: s.promoRepairTitle, desc: s.promoRepairDesc, cta: s.promoRepairCta, href: lang === "ro" ? "/ro/estimare" : "/becsles" },
+  ];
 
   const canonical = lang === "ro" ? `${SITE}/ro/telefoane` : `${SITE}/keszlet`;
   const title = lang === "ro" ? "Telefoane second-hand și noi — Telefonos" : "Használt és új telefonok — Telefonos";
@@ -127,24 +139,6 @@ export default function StockShowcase({ lang = "hu" }) {
             {activeFilterCount > 0 && <span className="pub-filters-count">{activeFilterCount}</span>}
           </button>
         </div>
-        <div className={`pub-filters-panel${filtersOpen ? " open" : ""}`}>
-          <div className="pub-chip-row">
-            {brands.map((b) => (
-              <button key={b} type="button" className={`pub-chip${brand === b ? " active" : ""}`} onClick={() => setBrand(b)}>{b === "all" ? s.allBrands : b}</button>
-            ))}
-          </div>
-          <div className="pub-chip-row">
-            <button type="button" className={`pub-chip${cond === "all" ? " active" : ""}`} onClick={() => setCond("all")}>{s.allConditions}</button>
-            <button type="button" className={`pub-chip${cond === "New" ? " active" : ""}`} onClick={() => setCond("New")}>{s.conditionNew}</button>
-            <button type="button" className={`pub-chip${cond === "Refurbished" ? " active" : ""}`} onClick={() => setCond("Refurbished")}>{s.conditionRefurb}</button>
-            <select className="pub-sort-select" value={sort} onChange={(e) => setSort(e.target.value)}>
-              <option value="recommended">{s.sortRecommended}</option>
-              <option value="price-asc">{s.sortPriceAsc}</option>
-              <option value="price-desc">{s.sortPriceDesc}</option>
-              <option value="brand">{s.sortBrand}</option>
-            </select>
-          </div>
-        </div>
       </PublicHeader>
 
       <div className="pub-results-bar">
@@ -153,78 +147,138 @@ export default function StockShowcase({ lang = "hu" }) {
 
       <main className="pub-main">
         {error && <div className="errbar">{error}</div>}
-        {loading ? (
-          <LoadingState />
-        ) : filtered.length === 0 ? (
-          <EmptyState icon={SearchIcon}>{s.noResults}</EmptyState>
-        ) : (
-          <div className="pub-grid">
-            {filtered.map((p) => {
-              const isLastOne = stockCounts[`${p.brand}|${p.model}|${p.storage || ""}`] === 1;
-              const hasAnchor = p.new_price && Number(p.new_price) > Number(p.sale_price);
-              const href = lang === "ro" ? `/ro/telefon/${p.id}` : `/telefon/${p.id}`;
-              return (
-                <div key={p.id} className="pub-card" role="link" tabIndex={0}
-                  onClick={() => { window.location.href = href; }}
-                  onKeyDown={(e) => { if (e.key === "Enter") window.location.href = href; }}
-                >
-                  <div className="pub-card-top">
-                    <span className={`pub-cond-pill ${p.condition === "New" ? "new" : "refurb"}`}>{p.condition === "New" ? s.conditionNew : s.conditionRefurb}</span>
-                    {isLastOne && <span className="pub-scarcity-pill">{s.scarcity}</span>}
-                  </div>
-                  <div className="pub-device-art">
-                    {p.photo_paths && p.photo_paths.length > 0 ? (
-                      <img
-                        src={photoUrl(p.photo_paths[0], "thumb")}
-                        alt={`${p.brand} ${p.model}`}
-                        className="pub-device-photo"
-                        loading="lazy"
-                        decoding="async"
-                        onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = photoUrl(p.photo_paths[0], "full"); }}
-                      />
-                    ) : deviceSvg}
-                  </div>
-                  <div className="pub-card-name">{p.brand} {p.model}</div>
-                  <div className="pub-card-specs">
-                    {p.storage && <span>{p.storage}</span>}
-                    {p.color && <span>{translateColor(p.color, lang)}</span>}
-                  </div>
-                  {p.battery_health != null && (
-                    <div className="pub-battery-row">
-                      <div className="pub-battery-track"><div className="pub-battery-fill" style={{ width: `${p.battery_health}%` }} /></div>
-                      <span className="pub-battery-label mono">{p.battery_health}%</span>
-                    </div>
-                  )}
-                  {p.warranty && (
-                    <div className="pub-warranty-tag">
-                      <svg viewBox="0 0 24 24" style={{ width: 11, height: 11, stroke: "var(--pub-ink-soft)", fill: "none", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" }}><path d="M12 3l7 2.5v5.8c0 4.2-2.9 7.6-7 8.7-4.1-1.1-7-4.5-7-8.7V5.5L12 3z" /></svg>
-                      {s.warrantyTag(translateWarranty(p.warranty, lang))}
-                    </div>
-                  )}
-                  <div className="pub-card-foot">
-                    <div>
-                      {hasAnchor && (
-                        <div className="pub-anchor">
-                          <span className="pub-anchor-old">{Number(p.new_price).toLocaleString("hu-HU")} Lei</span>
-                          <span className="pub-anchor-save">{s.saveLabel(Math.round(p.new_price - p.sale_price).toLocaleString("hu-HU"))}</span>
+        <div className="pub-body">
+          <aside className={`pub-sidebar${filtersOpen ? " open" : ""}`}>
+            <div className="pub-sidebar-group">
+              <div className="pub-sidebar-label">{s.allBrands}</div>
+              {brands.map((b) => (
+                <button key={b} type="button" className={`pub-check-row${selectedBrands.includes(b) ? " active" : ""}`} onClick={() => toggleBrand(b)}>
+                  <span className="pub-check">{selectedBrands.includes(b) && <CheckIcon width={10} height={10} strokeWidth={3} />}</span>
+                  <span className="pub-check-row-label">{b}</span>
+                </button>
+              ))}
+            </div>
+            <div className="pub-sidebar-group">
+              <div className="pub-sidebar-label">{s.allConditions}</div>
+              <button type="button" className={`pub-check-row${cond === "New" ? " active" : ""}`} onClick={() => setCond((c) => (c === "New" ? "all" : "New"))}>
+                <span className="pub-check">{cond === "New" && <CheckIcon width={10} height={10} strokeWidth={3} />}</span>
+                <span className="pub-check-row-label">{s.conditionNew}</span>
+              </button>
+              <button type="button" className={`pub-check-row${cond === "Refurbished" ? " active" : ""}`} onClick={() => setCond((c) => (c === "Refurbished" ? "all" : "Refurbished"))}>
+                <span className="pub-check">{cond === "Refurbished" && <CheckIcon width={10} height={10} strokeWidth={3} />}</span>
+                <span className="pub-check-row-label">{s.conditionRefurb}</span>
+              </button>
+            </div>
+          </aside>
+
+          <div className="pub-results">
+            <div className="pub-results-top">
+              <div />
+              <select className="pub-sort-select" value={sort} onChange={(e) => setSort(e.target.value)}>
+                <option value="recommended">{s.sortRecommended}</option>
+                <option value="price-asc">{s.sortPriceAsc}</option>
+                <option value="price-desc">{s.sortPriceDesc}</option>
+                <option value="brand">{s.sortBrand}</option>
+              </select>
+            </div>
+
+            {loading ? (
+              <LoadingState />
+            ) : filtered.length === 0 ? (
+              <EmptyState icon={SearchIcon}>{s.noResults}</EmptyState>
+            ) : (
+              <div className="pub-grid">
+                {filtered.map((p, i) => {
+                  const isLastOne = stockCounts[`${p.brand}|${p.model}|${p.storage || ""}`] === 1;
+                  const hasAnchor = p.new_price && Number(p.new_price) > Number(p.sale_price);
+                  const href = lang === "ro" ? `/ro/telefon/${p.id}` : `/telefon/${p.id}`;
+                  const inWishlist = wishlist.includes(p.id);
+                  const showPromo = (i + 1) % 8 === 0;
+                  const promo = showPromo ? PROMO_CARDS[(Math.floor((i + 1) / 8) - 1) % PROMO_CARDS.length] : null;
+                  return (
+                    <Fragment key={p.id}>
+                      <div className="pub-card" role="link" tabIndex={0}
+                        onClick={() => { window.location.href = href; }}
+                        onKeyDown={(e) => { if (e.key === "Enter") window.location.href = href; }}
+                      >
+                        <button
+                          type="button"
+                          className={`pub-wishlist-btn${inWishlist ? " active" : ""}`}
+                          aria-label={s.wishlistToggle}
+                          onClick={(e) => { e.stopPropagation(); toggleWishlist(p.id); }}
+                        >
+                          <HeartIcon width={14} height={14} />
+                        </button>
+                        <div className="pub-card-top">
+                          <span className={`pub-cond-pill ${p.condition === "New" ? "new" : "refurb"}`}>{p.condition === "New" ? s.conditionNew : s.conditionRefurb}</span>
+                          {isLastOne && <span className="pub-scarcity-pill">{s.scarcity}</span>}
                         </div>
+                        <div className="pub-device-art">
+                          {p.photo_paths && p.photo_paths.length > 0 ? (
+                            <img
+                              src={photoUrl(p.photo_paths[0], "thumb")}
+                              alt={`${p.brand} ${p.model}`}
+                              className="pub-device-photo"
+                              loading="lazy"
+                              decoding="async"
+                              onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = photoUrl(p.photo_paths[0], "full"); }}
+                            />
+                          ) : deviceSvg}
+                        </div>
+                        <div className="pub-card-name">{p.brand} {p.model}</div>
+                        <div className="pub-card-specs">
+                          {p.storage && <span>{p.storage}</span>}
+                          {p.color && <span>{translateColor(p.color, lang)}</span>}
+                        </div>
+                        {p.battery_health != null && (
+                          <div className="pub-battery-row">
+                            <div className="pub-battery-track"><div className="pub-battery-fill" style={{ width: `${p.battery_health}%` }} /></div>
+                            <span className="pub-battery-label mono">{p.battery_health}%</span>
+                          </div>
+                        )}
+                        {p.warranty && (
+                          <div className="pub-warranty-tag">
+                            <svg viewBox="0 0 24 24" style={{ width: 11, height: 11, stroke: "var(--pub-ink-soft)", fill: "none", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" }}><path d="M12 3l7 2.5v5.8c0 4.2-2.9 7.6-7 8.7-4.1-1.1-7-4.5-7-8.7V5.5L12 3z" /></svg>
+                            {s.warrantyTag(translateWarranty(p.warranty, lang))}
+                          </div>
+                        )}
+                        <div className="pub-card-foot">
+                          <div>
+                            {hasAnchor && (
+                              <div className="pub-anchor">
+                                <span className="pub-anchor-old">{Number(p.new_price).toLocaleString("hu-HU")} Lei</span>
+                                <span className="pub-anchor-save">{s.saveLabel(Math.round(p.new_price - p.sale_price).toLocaleString("hu-HU"))}</span>
+                              </div>
+                            )}
+                            <div className="pub-price mono">{Number(p.sale_price).toLocaleString("hu-HU")}<span className="pub-cur">Lei</span></div>
+                          </div>
+                          {cart.some((c) => c.id === p.id) ? (
+                            <a className="pub-ask-btn pub-ask-btn-added" href="/kosar" onClick={(e) => e.stopPropagation()}><CartIcon width={13} height={13} />Kosárban</a>
+                          ) : (
+                            <button type="button" className="pub-ask-btn" onClick={(e) => {
+                              e.stopPropagation();
+                              addToCart({ id: p.id, brand: p.brand, model: p.model, storage: p.storage, color: p.color, salePrice: p.sale_price, photoPath: p.photo_paths?.[0] || null, locationId: p.location_id, locationName: p.location_name });
+                            }}><CartIcon width={13} height={13} />Kosárba</button>
+                          )}
+                        </div>
+                      </div>
+                      {promo && (
+                        <a className={`pub-promo-card ${promo.variant}`} href={promo.href}>
+                          <div>
+                            <promo.Icon width={22} height={22} />
+                            <div className="pub-promo-title">{promo.title}</div>
+                            <div className="pub-promo-desc">{promo.desc}</div>
+                          </div>
+                          <span className="pub-promo-cta">{promo.cta}</span>
+                        </a>
                       )}
-                      <div className="pub-price mono">{Number(p.sale_price).toLocaleString("hu-HU")}<span className="pub-cur">Lei</span></div>
-                    </div>
-                    {cart.some((c) => c.id === p.id) ? (
-                      <a className="pub-ask-btn pub-ask-btn-added" href="/kosar" onClick={(e) => e.stopPropagation()}><CartIcon width={13} height={13} />Kosárban</a>
-                    ) : (
-                      <button type="button" className="pub-ask-btn" onClick={(e) => {
-                        e.stopPropagation();
-                        addToCart({ id: p.id, brand: p.brand, model: p.model, storage: p.storage, color: p.color, salePrice: p.sale_price, photoPath: p.photo_paths?.[0] || null, locationId: p.location_id, locationName: p.location_name });
-                      }}><CartIcon width={13} height={13} />Kosárba</button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+                    </Fragment>
+                  );
+                })}
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </main>
 
       <PublicFooter lang={lang} />
