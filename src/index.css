@@ -595,8 +595,6 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-check-row.active .pub-check-row-label{color:var(--pub-ink);font-weight:600}
 .pub-check-row-count{font-size:11px;color:var(--pub-ink-soft);opacity:.7;flex-shrink:0}
 .pub-results{flex:1;min-width:0}
-.pub-results-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.pub-results-top .pub-sort-select{margin-left:0}
 @media (max-width:900px){
   .pub-body{flex-direction:column}
   .pub-sidebar{display:none}

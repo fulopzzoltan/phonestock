@@ -210,8 +210,13 @@ export default function StockShowcase({ lang = "hu" }) {
       </PublicHeader>
 
       <div className="pub-results-bar">
-        <div className="pub-results-count">{loading ? "…" : s.resultsCount(filtered.length)}</div>
         <ReviewsBadge lang={lang} />
+        <select className="pub-sort-select" value={sort} onChange={(e) => setSort(e.target.value)}>
+          <option value="recommended">{s.sortRecommended}</option>
+          <option value="price-asc">{s.sortPriceAsc}</option>
+          <option value="price-desc">{s.sortPriceDesc}</option>
+          <option value="brand">{s.sortBrand}</option>
+        </select>
       </div>
 
       <main className="pub-main">
@@ -277,16 +282,6 @@ export default function StockShowcase({ lang = "hu" }) {
           </aside>
 
           <div className="pub-results">
-            <div className="pub-results-top">
-              <div />
-              <select className="pub-sort-select" value={sort} onChange={(e) => setSort(e.target.value)}>
-                <option value="recommended">{s.sortRecommended}</option>
-                <option value="price-asc">{s.sortPriceAsc}</option>
-                <option value="price-desc">{s.sortPriceDesc}</option>
-                <option value="brand">{s.sortBrand}</option>
-              </select>
-            </div>
-
             {loading ? (
               <LoadingState />
             ) : filtered.length === 0 ? (
