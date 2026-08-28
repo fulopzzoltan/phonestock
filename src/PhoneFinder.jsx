@@ -72,7 +72,9 @@ export default function PhoneFinder({ lang = "hu" }) {
   const brands = useMemo(() => {
     const counts = {};
     phones.forEach((p) => { counts[p.brand] = (counts[p.brand] || 0) + 1; });
-    return [...new Set(phones.map((p) => p.brand))].sort((a, b) => (counts[b] || 0) - (counts[a] || 0) || a.localeCompare(b));
+    return [...new Set(phones.map((p) => p.brand))]
+      .sort((a, b) => (counts[b] || 0) - (counts[a] || 0) || a.localeCompare(b))
+      .slice(0, 5);
   }, [phones]);
 
   const results = useMemo(() => {
