@@ -182,9 +182,9 @@ export default function PhoneFinder({ lang = "hu" }) {
           <div className="bb-card">
             <h1 className="bb-h1">{s.finderConditionQ}</h1>
             <div className="bb-grid bb-grid-1col">
+              <button type="button" className={`bb-option-card${answers.condition === "Refurbished" ? " active" : ""}`} onClick={() => pickCondition("Refurbished")}>{s.conditionRefurb}</button>
               <button type="button" className={`bb-option-card${answers.condition === "any" ? " active" : ""}`} onClick={() => pickCondition("any")}>{s.finderAny}</button>
               <button type="button" className={`bb-option-card${answers.condition === "New" ? " active" : ""}`} onClick={() => pickCondition("New")}>{s.conditionNew}</button>
-              <button type="button" className={`bb-option-card${answers.condition === "Refurbished" ? " active" : ""}`} onClick={() => pickCondition("Refurbished")}>{s.conditionRefurb}</button>
             </div>
           </div>
         )}
