@@ -15,6 +15,7 @@ const StockShowcase = lazy(() => import("./StockShowcase.jsx"));
 const PhoneDetail = lazy(() => import("./PhoneDetail.jsx"));
 const BuybackFlow = lazy(() => import("./BuybackFlow.jsx"));
 const RepairEstimator = lazy(() => import("./RepairEstimator.jsx"));
+const PhoneFinder = lazy(() => import("./PhoneFinder.jsx"));
 const CustomerPortal = lazy(() => import("./CustomerPortal.jsx"));
 const Cart = lazy(() => import("./Cart.jsx"));
 const Checkout = lazy(() => import("./Checkout.jsx"));
@@ -40,6 +41,7 @@ const shortMatch = window.location.pathname.match(/^\/s\/([a-f0-9]{8})\/?$/i);
 const phoneDetailMatch = window.location.pathname.match(/^\/telefon\/([0-9a-f-]{36})\/?$/i);
 const buybackMatch = window.location.pathname.match(/^\/eladom\/?$/i);
 const repairMatch = window.location.pathname.match(/^\/becsles\/?$/i);
+const finderMatch = window.location.pathname.match(/^\/segito\/?$/i);
 const accountMatch = window.location.pathname.match(/^\/fiok(\/.*)?$/i);
 const cartMatch = window.location.pathname.match(/^\/kosar\/?$/i);
 const checkoutMatch = window.location.pathname.match(/^\/penztar\/?$/i);
@@ -55,6 +57,7 @@ const stockMatch = window.location.pathname.match(/^\/(keszlet\/?)?$/i);
 const roStockMatch = window.location.pathname.match(/^\/ro\/telefoane\/?$/i);
 const roPhoneDetailMatch = window.location.pathname.match(/^\/ro\/telefon\/([0-9a-f-]{36})\/?$/i);
 const roRepairMatch = window.location.pathname.match(/^\/ro\/estimare\/?$/i);
+const roFinderMatch = window.location.pathname.match(/^\/ro\/asistent\/?$/i);
 
 function Root() {
   if (ADMIN_ONLY) return (
@@ -77,6 +80,8 @@ function Root() {
   if (buybackMatch) return <BuybackFlow />;
   if (roRepairMatch) return <RepairEstimator lang="ro" />;
   if (repairMatch) return <RepairEstimator lang="hu" />;
+  if (roFinderMatch) return <PhoneFinder lang="ro" />;
+  if (finderMatch) return <PhoneFinder lang="hu" />;
   if (roStockMatch) return <StockShowcase lang="ro" />;
   if (stockMatch) return <StockShowcase lang="hu" />;
   // Ismeretlen útvonal a publikus oldalon — a személyzeti admin ide már nem tartozik
@@ -86,7 +91,7 @@ function Root() {
 
 // Első látogatáskor, ha a böngésző/eszköz nyelve román, átirányítunk a RO tüköroldalra
 // (ha van neki) — utána ez sose fut le újra, sem automatikusan, sem a kézi HU/RO váltás után.
-const redirectingByLang = !ADMIN_ONLY && redirectToPreferredLang({ stockMatch, phoneDetailMatch, repairMatch });
+const redirectingByLang = !ADMIN_ONLY && redirectToPreferredLang({ stockMatch, phoneDetailMatch, repairMatch, finderMatch });
 
 if (!redirectingByLang) {
   ReactDOM.createRoot(document.getElementById("root")).render(

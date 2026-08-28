@@ -11,6 +11,7 @@ import { markLangChosen } from "../lib/langPref";
 const DEFAULT_LANG_TARGETS = {
   stock: { hu: "/", ro: "/ro/telefoane" },
   repair: { hu: "/becsles", ro: "/ro/estimare" },
+  finder: { hu: "/segito", ro: "/ro/asistent" },
 };
 const FALLBACK_LANG_TARGET = { hu: "/", ro: "/ro/telefoane" };
 

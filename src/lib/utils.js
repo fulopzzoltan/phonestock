@@ -78,6 +78,20 @@ export function partCode(partNo) {
 export function normalizeImei(imei) {
   return (imei || "").replace(/\D/g, "");
 }
+// A products.brand is szabad szöveg — előfordul véletlen záró szóköz az admin oldali gépelésből
+// ("Samsung " vs "Samsung"), ami a webshop szűrőiben duplikált márka-sorként jelenne meg.
+export function normalizeBrand(raw) {
+  return (raw || "").trim();
+}
+// A products.storage szabad szöveg — "32 GB", "32GB", "64" mind ugyanazt jelentheti,
+// mert admin oldalon szabadon gépelhető be. Ezt egységesítjük a webshop szűrőiben/listáiban,
+// hogy ne szerepeljen többször ugyanaz az érték.
+export function normalizeStorage(raw) {
+  if (!raw) return raw;
+  const m = String(raw).match(/(\d+)\s*(GB|TB)?/i);
+  if (!m) return raw.trim();
+  return `${m[1]} ${(m[2] || "GB").toUpperCase()}`;
+}
 const TICKET_LOCATION_LETTERS = { "Gyimes": "GY", "Szentgyörgy": "CS" };
 // locationName = a felvétel (intake) helyszínének neve — ez a munkalap létrehozásakor
 // örökre rögzül (intake_location_id), nem változik akkor sem, ha a javítás közben

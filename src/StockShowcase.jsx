@@ -3,9 +3,10 @@ import { Helmet } from "react-helmet-async";
 import { supabase } from "./lib/supabaseClient";
 import { photoUrl } from "./lib/imageResize";
 import { t, translateColor, translateWarranty } from "./lib/i18n";
+import { normalizeStorage, normalizeBrand } from "./lib/utils";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
-import { SearchIcon, FilterIcon, CartIcon, HeartIcon, BuybackIcon, ServiceIcon, PinIcon, CheckIcon, ChevronDownIcon } from "./components/icons";
+import { SearchIcon, FilterIcon, CartIcon, HeartIcon, BuybackIcon, ServiceIcon, PinIcon, FinderIcon, CheckIcon, ChevronDownIcon } from "./components/icons";
 import { EmptyState, LoadingState } from "./components/EmptyState";
 import { addToCart, useCart } from "./lib/cart";
 import { toggleWishlist, useWishlist } from "./lib/wishlist";
@@ -69,7 +70,7 @@ export default function StockShowcase({ lang = "hu" }) {
       try {
         const { data, error: err } = await supabase.rpc("get_public_stock");
         if (err) throw err;
-        setPhones(shuffle(data || []));
+        setPhones(shuffle((data || []).map((p) => ({ ...p, brand: normalizeBrand(p.brand) }))));
       } catch (err) {
         setError(err.message || "Hiba történt a készlet betöltése közben.");
       } finally {
@@ -105,7 +106,7 @@ export default function StockShowcase({ lang = "hu" }) {
   // hogy a lista ne "ugráljon" minden kattintásnál, csak tájékoztat, mennyi van összesen.
   const countsByBrand = useMemo(() => { const m = {}; phones.forEach((p) => { m[p.brand] = (m[p.brand] || 0) + 1; }); return m; }, [phones]);
   const countsByOS = useMemo(() => { const m = {}; phones.forEach((p) => { const o = osOf(p.brand); m[o] = (m[o] || 0) + 1; }); return m; }, [phones]);
-  const countsByStorage = useMemo(() => { const m = {}; phones.forEach((p) => { if (p.storage) m[p.storage] = (m[p.storage] || 0) + 1; }); return m; }, [phones]);
+  const countsByStorage = useMemo(() => { const m = {}; phones.forEach((p) => { const st = normalizeStorage(p.storage); if (st) m[st] = (m[st] || 0) + 1; }); return m; }, [phones]);
   const countsByCondition = useMemo(() => { const m = {}; phones.forEach((p) => { m[p.condition] = (m[p.condition] || 0) + 1; }); return m; }, [phones]);
 
   // A legtöbb készleten lévő márka elöl — a ritkábbak "Több márka" mögé kerülnek, hogy a
@@ -116,7 +117,7 @@ export default function StockShowcase({ lang = "hu" }) {
 
   const osOptions = useMemo(() => [...new Set(phones.map((p) => osOf(p.brand)))].sort((a) => (a === "iOS" ? -1 : 1)), [phones]);
 
-  const storages = useMemo(() => [...new Set(phones.map((p) => p.storage).filter(Boolean))]
+  const storages = useMemo(() => [...new Set(phones.map((p) => normalizeStorage(p.storage)).filter(Boolean))]
     .sort((a, b) => (parseInt(a, 10) || 0) - (parseInt(b, 10) || 0)), [phones]);
 
   function toggleGroup(key) {
@@ -127,7 +128,7 @@ export default function StockShowcase({ lang = "hu" }) {
     let items = phones.filter((p) => {
       if (selectedBrands.length > 0 && !selectedBrands.includes(p.brand)) return false;
       if (selectedConditions.length > 0 && !selectedConditions.includes(p.condition)) return false;
-      if (selectedStorages.length > 0 && !selectedStorages.includes(p.storage)) return false;
+      if (selectedStorages.length > 0 && !selectedStorages.includes(normalizeStorage(p.storage))) return false;
       if (selectedOS.length > 0 && !selectedOS.includes(osOf(p.brand))) return false;
       if (q.trim() && !`${p.brand} ${p.model} ${p.color || ""}`.toLowerCase().includes(q.trim().toLowerCase())) return false;
       return true;
@@ -150,6 +151,7 @@ export default function StockShowcase({ lang = "hu" }) {
     { variant: "accent", Icon: ServiceIcon, title: s.promoRepairTitle, desc: s.promoRepairDesc, cta: s.promoRepairCta, href: lang === "ro" ? "/ro/estimare" : "/becsles" },
     // Nem visz el sehova — a cél nem konverzió-elterelés, hanem bizalomépítés böngészés közben.
     { variant: "trust", Icon: PinIcon, title: s.promoTrustTitle, desc: s.promoTrustDesc, cta: s.promoTrustCta, href: null },
+    { variant: "accent", Icon: FinderIcon, title: s.finderPromoTitle, desc: s.finderPromoDesc, cta: s.finderPromoCta, href: lang === "ro" ? "/ro/asistent" : "/segito" },
   ];
 
   const canonical = lang === "ro" ? `${SITE}/ro/telefoane` : `${SITE}/keszlet`;
@@ -204,6 +206,13 @@ export default function StockShowcase({ lang = "hu" }) {
 
       <main className="pub-main">
         {error && <div className="errbar">{error}</div>}
+        <a className="pub-finder-banner" href={lang === "ro" ? "/ro/asistent" : "/segito"}>
+          <div className="pub-finder-banner-text">
+            <FinderIcon width={18} height={18} />
+            <div className="pub-finder-banner-title">{s.finderNavTitle}</div>
+          </div>
+          <span className="pub-finder-banner-cta">{s.finderNavCta}</span>
+        </a>
         <div className="pub-body">
           <aside className={`pub-sidebar${filtersOpen ? " open" : ""}`}>
             <ReviewsBadge lang={lang} style={{ marginBottom: 2 }} />
@@ -323,15 +332,9 @@ export default function StockShowcase({ lang = "hu" }) {
                         </div>
                         <div className="pub-card-name">{p.brand} {p.model}</div>
                         <div className="pub-card-specs">
-                          {p.storage && <span>{p.storage}</span>}
+                          {p.storage && <span>{normalizeStorage(p.storage)}</span>}
                           {p.color && <span>{translateColor(p.color, lang)}</span>}
                         </div>
-                        {p.battery_health != null && (
-                          <div className="pub-battery-row">
-                            <div className="pub-battery-track"><div className="pub-battery-fill" style={{ width: `${p.battery_health}%` }} /></div>
-                            <span className="pub-battery-label mono">{p.battery_health}%</span>
-                          </div>
-                        )}
                         {p.warranty && (
                           <div className="pub-warranty-tag">
                             <svg viewBox="0 0 24 24" style={{ width: 11, height: 11, stroke: "var(--pub-ink-soft)", fill: "none", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" }}><path d="M12 3l7 2.5v5.8c0 4.2-2.9 7.6-7 8.7-4.1-1.1-7-4.5-7-8.7V5.5L12 3z" /></svg>
@@ -353,7 +356,7 @@ export default function StockShowcase({ lang = "hu" }) {
                           ) : (
                             <button type="button" className="pub-ask-btn" aria-label="Kosárba" onClick={(e) => {
                               e.stopPropagation();
-                              addToCart({ id: p.id, brand: p.brand, model: p.model, storage: p.storage, color: p.color, salePrice: p.sale_price, photoPath: p.photo_paths?.[0] || null, locationId: p.location_id, locationName: p.location_name });
+                              addToCart({ id: p.id, brand: p.brand, model: p.model, storage: normalizeStorage(p.storage), color: p.color, salePrice: p.sale_price, photoPath: p.photo_paths?.[0] || null, locationId: p.location_id, locationName: p.location_name });
                             }}><CartIcon width={13} height={13} /><span className="pub-ask-btn-label">Kosárba</span></button>
                           )}
                         </div>

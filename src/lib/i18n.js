@@ -22,6 +22,24 @@ export const STRINGS = {
     promoRepairTitle: "Elromlott a telefonod?", promoRepairDesc: "Akkumulátorcsere már 200 Lejtől — nézd meg a te hibádra mennyibe kerülne, ingyen.", promoRepairCta: "Megnézem az árat →",
     promoTrustTitle: "Nem csak egy raktár", promoTrustDesc: "2 fizikai üzlet (Gyimes, Szentgyörgy) — új, felújított és gombos telefon egy helyen, szerviz is ugyanott.", promoTrustCta: "📍 Gyimes & Szentgyörgy",
 
+    // Telefon-választó segítő
+    finderNavTitle: "Melyik telefon illik hozzád?",
+    finderNavCta: "Segíts választani →",
+    finderPromoTitle: "Nem tudod, melyik telefont válaszd?", finderPromoDesc: "Válaszolj 4 gyors kérdésre, és mi kiválasztjuk a hozzád illő 2-3 telefont a készletből.", finderPromoCta: "Segíts választani →",
+    finderPageTitle: "Telefon-választó segítő — Telefonos",
+    finderPageDesc: "4 gyors kérdés, és kiválasztjuk a hozzád illő telefonokat a készletünkből.",
+    finderAny: "Bármelyik",
+    finderConditionQ: "Milyen állapotú telefont keresel?",
+    finderBudgetQ: "Mennyit szánnál rá?",
+    finderBudgetUnder: (n) => `${n} Lej alatt`, finderBudgetRange: (a, b) => `${a}-${b} Lej`, finderBudgetOver: (n) => `${n} Lej felett`,
+    finderStorageQ: "Mennyi tárhely kellene?",
+    finderBrandQ: "Van kedvenc márkád?", finderBrandHint: "Válassz akár többet is, vagy hagyd üresen, ha mindegy",
+    finderShowResults: "Ajánlatok megnézése",
+    finderResultTitle: (n) => n === 1 ? "1 telefon, ami illik hozzád:" : `${n} telefon, ami illik hozzád:`,
+    finderResultFallback: "A pontos igényed szerint nem volt találat, de ezek állnak hozzá legközelebb:",
+    finderRetryCta: "Újrapróbálom más válaszokkal",
+    finderNoStock: "Jelenleg nincs elérhető készlet — nézz vissza hamarosan.",
+
     // Vélemények
     reviewsTitle: "Amit a vásárlóink mondanak", reviewsBadge: (avg, n) => `${avg} · ${n} vélemény alapján`,
     reviewsEmpty: "Hamarosan itt lesznek az első véleményeink.",
@@ -84,6 +102,24 @@ export const STRINGS = {
     promoBuybackTitle: "Ai un telefon vechi?", promoBuybackDesc: "Pentru un iPhone 11 dăm chiar și până la 900 Lei — vezi cât valorează al tău în 30 de secunde.", promoBuybackCta: "Văd cât valorează →",
     promoRepairTitle: "Ți s-a stricat telefonul?", promoRepairDesc: "Schimb de baterie de la 200 Lei — vezi cât ar costa exact problema ta, gratuit.", promoRepairCta: "Văd prețul →",
     promoTrustTitle: "Nu doar un depozit", promoTrustDesc: "2 magazine fizice (Ghimeș, Sfântu Gheorghe) — telefoane noi, recondiționate și cu taste într-un singur loc, plus service la fața locului.", promoTrustCta: "📍 Ghimeș & Sfântu Gheorghe",
+
+    // Asistent de alegere telefon
+    finderNavTitle: "Ce telefon ți se potrivește?",
+    finderNavCta: "Ajută-mă să aleg →",
+    finderPromoTitle: "Nu știi ce telefon să alegi?", finderPromoDesc: "Răspunde la 4 întrebări rapide și îți alegem 2-3 telefoane potrivite din stoc.", finderPromoCta: "Ajută-mă să aleg →",
+    finderPageTitle: "Asistent de alegere telefon — Telefonos",
+    finderPageDesc: "4 întrebări rapide, și îți alegem telefoanele potrivite din stocul nostru.",
+    finderAny: "Oricare",
+    finderConditionQ: "Ce stare de telefon cauți?",
+    finderBudgetQ: "Cât ai vrea să cheltui?",
+    finderBudgetUnder: (n) => `Sub ${n} Lei`, finderBudgetRange: (a, b) => `${a}-${b} Lei`, finderBudgetOver: (n) => `Peste ${n} Lei`,
+    finderStorageQ: "Câtă stocare ți-ar trebui?",
+    finderBrandQ: "Ai o marcă preferată?", finderBrandHint: "Poți alege mai multe, sau lasă necompletat dacă nu contează",
+    finderShowResults: "Vezi recomandările",
+    finderResultTitle: (n) => n === 1 ? "1 telefon care ți se potrivește:" : `${n} telefoane care ți se potrivesc:`,
+    finderResultFallback: "Nu a fost o potrivire exactă, dar acestea sunt cele mai apropiate:",
+    finderRetryCta: "Încerc din nou cu alte răspunsuri",
+    finderNoStock: "Momentan nu avem stoc disponibil — revino curând.",
 
     // Recenzii
     reviewsTitle: "Ce spun clienții noștri", reviewsBadge: (avg, n) => `${avg} · pe baza a ${n} recenzii`,

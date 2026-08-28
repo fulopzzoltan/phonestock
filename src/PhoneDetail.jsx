@@ -9,6 +9,7 @@ import { PhoneCaseIcon, CartIcon, HeartIcon, CheckIcon, WarrantyIcon, PinIcon } 
 import { EmptyState, LoadingState } from "./components/EmptyState";
 import { addToCart, useCart } from "./lib/cart";
 import { toggleWishlist, useWishlist } from "./lib/wishlist";
+import { normalizeBrand, normalizeStorage } from "./lib/utils";
 import { ReviewsBadge } from "./components/PublicReviews";
 
 const SITE = "https://phonestock-manager.netlify.app";
@@ -35,7 +36,7 @@ export default function PhoneDetail({ id, lang = "hu" }) {
   useEffect(() => {
     (async () => {
       const { data } = await supabase.rpc("get_public_stock");
-      setAllPhones(data || []);
+      setAllPhones((data || []).map((p) => ({ ...p, brand: normalizeBrand(p.brand) })));
       setLoading(false);
     })();
   }, [id]);
@@ -94,7 +95,7 @@ export default function PhoneDetail({ id, lang = "hu" }) {
 
   const photos = phone.photo_paths || [];
   const canonical = lang === "ro" ? `${SITE}/ro/telefon/${id}` : `${SITE}/telefon/${id}`;
-  const title = `${phone.brand} ${phone.model}${phone.storage ? " " + phone.storage : ""}, ${Number(phone.sale_price).toLocaleString("hu-HU")} Lei | Telefonos`;
+  const title = `${phone.brand} ${phone.model}${phone.storage ? " " + normalizeStorage(phone.storage) : ""}, ${Number(phone.sale_price).toLocaleString("hu-HU")} Lei | Telefonos`;
   const description = lang === "ro"
     ? `${phone.brand} ${phone.model} ${phone.condition === "New" ? "nou" : "recondiționat"}${phone.warranty ? `, garanție ${translateWarranty(phone.warranty, "ro")}` : ""} — ${Number(phone.sale_price).toLocaleString("hu-HU")} Lei.`
     : `${phone.brand} ${phone.model} ${phone.condition === "New" ? "új" : "felújított"}${phone.warranty ? `, ${phone.warranty} garanciával` : ""} — ${Number(phone.sale_price).toLocaleString("hu-HU")} Lei.`;
@@ -131,14 +132,14 @@ export default function PhoneDetail({ id, lang = "hu" }) {
               {photos.length > 0 ? <img src={photoUrl(photos[0], "thumb")} alt="" /> : deviceSvg}
             </div>
             <div className="pub-sticky-info">
-              <div className="pub-sticky-name">{phone.brand} {phone.model}{phone.storage ? ` · ${phone.storage}` : ""}</div>
+              <div className="pub-sticky-name">{phone.brand} {phone.model}{phone.storage ? ` · ${normalizeStorage(phone.storage)}` : ""}</div>
               <div className="pub-sticky-cond">{phone.condition === "New" ? s.conditionNew : s.conditionRefurb}</div>
             </div>
             <div className="pub-sticky-price mono">{Number(phone.sale_price).toLocaleString("hu-HU")} <span>Lei</span></div>
             {cart.some((c) => c.id === phone.id) ? (
               <a className="pub-ask-btn pub-ask-btn-added" href="/kosar"><CartIcon width={13} height={13} />Kosárban</a>
             ) : (
-              <button type="button" className="pub-ask-btn" onClick={() => addToCart({ id: phone.id, brand: phone.brand, model: phone.model, storage: phone.storage, color: phone.color, salePrice: phone.sale_price, photoPath: photos[0] || null, locationId: phone.location_id, locationName: phone.location_name })}>
+              <button type="button" className="pub-ask-btn" onClick={() => addToCart({ id: phone.id, brand: phone.brand, model: phone.model, storage: normalizeStorage(phone.storage), color: phone.color, salePrice: phone.sale_price, photoPath: photos[0] || null, locationId: phone.location_id, locationName: phone.location_name })}>
                 <CartIcon width={13} height={13} />Kosárba
               </button>
             )}
@@ -190,7 +191,7 @@ export default function PhoneDetail({ id, lang = "hu" }) {
                 {phone.storage && (
                   <div className="pub-detail-spec-item">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="17" height="17"><rect x="7" y="2" width="10" height="20" rx="2" /><line x1="11" y1="18" x2="13" y2="18" /></svg>
-                    <div><div className="pub-detail-spec-label">{s.storageLabel}</div><div className="pub-detail-spec-value">{phone.storage}</div></div>
+                    <div><div className="pub-detail-spec-label">{s.storageLabel}</div><div className="pub-detail-spec-value">{normalizeStorage(phone.storage)}</div></div>
                   </div>
                 )}
                 {phone.color && (
@@ -233,7 +234,7 @@ export default function PhoneDetail({ id, lang = "hu" }) {
               {cart.some((c) => c.id === phone.id) ? (
                 <a className="pub-ask-btn pub-ask-btn-added" style={{ padding: "13px 22px", fontSize: 14 }} href="/kosar"><CartIcon width={15} height={15} />Kosárban — tovább a kosárhoz</a>
               ) : (
-                <button type="button" className="pub-ask-btn" style={{ padding: "13px 22px", fontSize: 14 }} onClick={() => addToCart({ id: phone.id, brand: phone.brand, model: phone.model, storage: phone.storage, color: phone.color, salePrice: phone.sale_price, photoPath: photos[0] || null, locationId: phone.location_id, locationName: phone.location_name })}>
+                <button type="button" className="pub-ask-btn" style={{ padding: "13px 22px", fontSize: 14 }} onClick={() => addToCart({ id: phone.id, brand: phone.brand, model: phone.model, storage: normalizeStorage(phone.storage), color: phone.color, salePrice: phone.sale_price, photoPath: photos[0] || null, locationId: phone.location_id, locationName: phone.location_name })}>
                   <CartIcon width={15} height={15} />Kosárba
                 </button>
               )}
@@ -286,7 +287,7 @@ export default function PhoneDetail({ id, lang = "hu" }) {
                       {rPhotos.length > 0 ? <img src={photoUrl(rPhotos[0], "thumb")} alt={`${p.brand} ${p.model}`} loading="lazy" decoding="async" /> : deviceSvg}
                     </div>
                     <div className="pub-related-name">{p.brand} {p.model}</div>
-                    <div className="pub-related-specs">{[p.storage, p.color ? translateColor(p.color, lang) : null].filter(Boolean).join(" · ")}</div>
+                    <div className="pub-related-specs">{[p.storage ? normalizeStorage(p.storage) : null, p.color ? translateColor(p.color, lang) : null].filter(Boolean).join(" · ")}</div>
                     <div className="pub-related-price">{Number(p.sale_price).toLocaleString("hu-HU")} Lei</div>
                   </a>
                 );

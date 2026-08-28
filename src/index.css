@@ -637,6 +637,17 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
   .pub-sidebar.open{display:flex;width:100%;position:static;margin-bottom:14px}
 }
 
+/* Telefon-választó segítő belépési sáv a rács fölött */
+.pub-finder-banner{display:flex;align-items:center;justify-content:space-between;gap:16px;background:var(--pub-accent-soft);border:1px solid var(--pub-accent);border-radius:var(--radius-lg);padding:14px 18px;margin-bottom:16px;text-decoration:none;transition:transform .14s}
+.pub-finder-banner:hover{transform:translateY(-1px);text-decoration:none}
+.pub-finder-banner-text{display:flex;align-items:center;gap:10px;color:var(--pub-accent-ink)}
+.pub-finder-banner-title{font-size:13.5px;font-weight:800;color:var(--pub-ink)}
+.pub-finder-banner-cta{flex-shrink:0;background:var(--pub-accent-ink);color:#fff;font-size:12px;font-weight:700;padding:9px 14px;border-radius:9px;white-space:nowrap}
+@media (max-width:560px){
+  .pub-finder-banner{flex-direction:column;align-items:stretch;text-align:left;gap:10px}
+  .pub-finder-banner-cta{text-align:center}
+}
+
 .pub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(192px,1fr));gap:14px}
 
 /* Kívánságlista gomb a kártyán */
@@ -672,10 +683,6 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-card-name{font-size:14.5px;font-weight:700;line-height:1.25}
 .pub-card-specs{font-size:11.5px;color:var(--pub-ink-soft);display:flex;gap:6px;flex-wrap:wrap}
 .pub-card-specs span:not(:last-child)::after{content:"·";margin-left:6px;color:var(--pub-line)}
-.pub-battery-row{display:flex;align-items:center;gap:7px}
-.pub-battery-track{flex:1;height:5px;border-radius:3px;background:var(--pub-line);overflow:hidden}
-.pub-battery-fill{height:100%;background:var(--pub-accent);border-radius:3px}
-.pub-battery-label{font-size:10.5px;color:var(--pub-ink-soft);flex-shrink:0}
 .pub-warranty-tag{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;color:var(--pub-ink-soft)}
 .pub-card-foot{margin-top:auto;padding-top:10px;border-top:1px solid var(--pub-line);display:flex;align-items:center;justify-content:space-between;gap:8px}
 .pub-price{font-size:18px;font-weight:700}
@@ -763,7 +770,6 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
   .pub-card-name{font-size:12.5px;line-height:1.2}
   .pub-card-specs{font-size:10px}
   .pub-cond-pill{font-size:9.5px;padding:2px 7px}
-  .pub-battery-label{font-size:9.5px}
   .pub-warranty-tag{font-size:9.5px}
   .pub-anchor-old{font-size:11px}
   .pub-anchor-save{font-size:10px}
