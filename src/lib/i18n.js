@@ -1,10 +1,10 @@
 export const STRINGS = {
   hu: {
-    navStock: "Készlet", navBuyback: "Eladás", navRepair: "Szerviz",
+    navStock: "Telefonok", navBuyback: "Eladás", navRepair: "Szerviz",
     navStatus: "Nyomonkövetés", navLogin: "Bejelentkezés", langSwitch: "RO",
 
     // Készlet-vitrin
-    searchPlaceholder: "Keresés — pl. iPhone 13, Samsung A07...", filters: "Szűrők",
+    searchPlaceholder: "Keresés — pl. iPhone 13...", filters: "Szűrők",
     allBrands: "Minden márka", allConditions: "Összes állapot", os: "Operációs rendszer",
     conditionNew: "Új", conditionRefurb: "Felújított", clearFilters: "Szűrők törlése",
     showMoreBrands: (n) => `+${n} további márka`, showFewerBrands: "Kevesebb mutatása",
@@ -66,7 +66,7 @@ export const STRINGS = {
     navStock: "Telefoane", navBuyback: "Vinde", navRepair: "Service",
     navStatus: "Urmărire", navLogin: "Autentificare", langSwitch: "HU",
 
-    searchPlaceholder: "Căutare — ex. iPhone 13, Samsung A07...", filters: "Filtre",
+    searchPlaceholder: "Căutare — ex. iPhone 13...", filters: "Filtre",
     allBrands: "Toate mărcile", allConditions: "Toate stările", os: "Sistem de operare",
     conditionNew: "Nou", conditionRefurb: "Recondiționat", clearFilters: "Șterge filtrele",
     showMoreBrands: (n) => `+${n} mărci suplimentare`, showFewerBrands: "Arată mai puține",

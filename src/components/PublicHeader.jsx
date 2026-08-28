@@ -23,6 +23,21 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
   const defaultTarget = DEFAULT_LANG_TARGETS[activeNav] || FALLBACK_LANG_TARGET;
   const resolvedLangHref = langSwitchHref || defaultTarget[otherLang];
 
+  const langSwitch = resolvedLangHref && (
+    <div className="pub-lang-switch" role="group" aria-label="Nyelv">
+      {lang === "ro" ? (
+        <a className="pub-lang-opt" href={resolvedLangHref}>HU</a>
+      ) : (
+        <span className="pub-lang-opt pub-lang-active">HU</span>
+      )}
+      {lang === "ro" ? (
+        <span className="pub-lang-opt pub-lang-active">RO</span>
+      ) : (
+        <a className="pub-lang-opt" href={resolvedLangHref}>RO</a>
+      )}
+    </div>
+  );
+
   return (
     <header className="pub-header">
       <div className="pub-header-inner">
@@ -80,7 +95,25 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
             )}
           </nav>
         </div>
+
         {children}
+
+        <div className="pub-account-links">
+          <a className={activeNav === "cart" ? "active" : ""} href="/kosar"><CartIcon width={15} height={15} />Kosár{cartCount > 0 ? ` (${cartCount})` : ""}</a>
+          <a className={activeNav === "login" ? "active" : ""} href="/fiok"><UserIcon width={15} height={15} />{s.navLogin}</a>
+        </div>
+
+        <div className="pub-header-row2">
+          <nav className="pub-row2-nav">
+            <a className={`pub-nav-link${activeNav === "stock" ? " active" : ""}`} href={stockHref}><PhoneCaseIcon className="pub-nav-link-icon" width={16} height={16} />{s.navStock}</a>
+            <a className={`pub-nav-link${activeNav === "repair" ? " active" : ""}`} href={repairHref}>{s.navRepair}</a>
+            <a className={`pub-nav-link${activeNav === "status" ? " active" : ""}`} href="/status">{s.navStatus}</a>
+          </nav>
+          <div className="pub-row2-right">
+            {langSwitch}
+            <a className="pub-nav-link pub-nav-cta" href="/eladom">{s.navBuyback}</a>
+          </div>
+        </div>
       </div>
     </header>
   );

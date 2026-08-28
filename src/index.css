@@ -527,6 +527,42 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-menu-toggle.open span:nth-child(2){opacity:0}
 .pub-menu-toggle.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
 
+/* Asztali két sávos fejléc (Flip.ro-mintára): 1. sor logó+keresés+fiók/kosár, 2. sor menüpontok+CTA.
+   Mobilon (≤640px) ez a két elem rejtve marad, ott a hamburger-menü (.pub-nav.open) viszi tovább
+   a navigációt, ahogy eddig is. */
+.pub-account-links{display:none}
+.pub-header-row2{display:none}
+@media (min-width:641px){
+  .pub-nav{display:none}
+  .pub-header-inner{
+    display:grid;
+    grid-template-columns:auto 1fr auto;
+    grid-template-areas:"brand search account" "row2 row2 row2";
+    align-items:center;
+    row-gap:10px;
+    column-gap:20px;
+  }
+  .pub-brand-row{grid-area:brand}
+  .pub-search-row{grid-area:search}
+  .pub-account-links{grid-area:account;display:flex;align-items:center;gap:8px}
+  .pub-account-links a{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 15px;border:1px solid var(--pub-line);border-radius:10px;font-size:12.5px;font-weight:700;color:var(--pub-ink-soft);text-decoration:none;white-space:nowrap;transition:border-color .12s,color .12s}
+  .pub-account-links a:hover,.pub-account-links a.active{border-color:var(--pub-accent);color:var(--pub-accent-ink)}
+  .pub-header-row2{
+    grid-area:row2;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    background:var(--pub-paper);
+    border:1px solid var(--pub-line);
+    border-radius:11px;
+    padding:6px 10px;
+  }
+  .pub-row2-nav{display:flex;align-items:center;gap:4px}
+  .pub-row2-right{display:flex;align-items:center;gap:10px}
+  .pub-row2-right .pub-lang-switch{margin:0}
+}
+
 @media (max-width:640px){
   .pub-logo-img{height:17px}
   .pub-menu-toggle{display:flex}
@@ -548,7 +584,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
   .pub-nav.open .pub-nav-link-icon{display:inline-flex;margin-right:8px;flex-shrink:0}
 }
 .pub-search-row{display:flex;align-items:center;gap:10px}
-.pub-search-box{display:flex;align-items:center;gap:10px;background:var(--pub-paper-raised);border:1px solid var(--pub-line);border-radius:12px;padding:12px 16px;max-width:480px;flex:1;box-shadow:var(--shadow-card);transition:border-color .12s}
+.pub-search-box{display:flex;align-items:center;gap:9px;height:38px;background:var(--pub-paper-raised);border:1px solid var(--pub-line);border-radius:10px;padding:0 14px;max-width:480px;flex:1;box-shadow:var(--shadow-card);transition:border-color .12s}
 .pub-search-box:focus-within{border-color:var(--pub-accent)}
 .pub-search-box input{border:none;background:none;outline:none;color:var(--pub-ink);font-size:14.5px;width:100%;font-family:inherit}
 .pub-filters-toggle{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--pub-line);background:var(--pub-paper-raised);color:var(--pub-ink);font-size:12.5px;font-weight:600;padding:0 13px;height:41px;border-radius:11px;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0}
