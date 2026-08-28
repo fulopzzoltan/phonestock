@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, Fragment } from "react";
+import { useState, useEffect, useMemo, useRef, Fragment } from "react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "./lib/supabaseClient";
 import { photoUrl } from "./lib/imageResize";
@@ -141,6 +141,17 @@ export default function StockShowcase({ lang = "hu" }) {
     });
     return items;
   }, [phones, selectedBrands, selectedConditions, selectedStorages, selectedOS, q, sort]);
+
+  const PAGE_SIZE = 30;
+  const [page, setPage] = useState(1);
+  useEffect(() => { setPage(1); }, [selectedBrands, selectedConditions, selectedStorages, selectedOS, q, sort]);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pagedItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const resultsTopRef = useRef(null);
+  function goToPage(p) {
+    setPage(p);
+    resultsTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   const activeFilterCount = selectedBrands.length + selectedConditions.length + selectedStorages.length + selectedOS.length;
 
@@ -286,21 +297,23 @@ export default function StockShowcase({ lang = "hu" }) {
             </SidebarGroup>
           </aside>
 
-          <div className="pub-results">
+          <div className="pub-results" ref={resultsTopRef}>
             {loading ? (
               <LoadingState />
             ) : filtered.length === 0 ? (
               <EmptyState icon={SearchIcon}>{s.noResults}</EmptyState>
             ) : (
               <div className="pub-grid">
-                {filtered.map((p, i) => {
+                {pagedItems.map((p, i) => {
                   const hasAnchor = p.new_price && Number(p.new_price) > Number(p.sale_price);
                   const href = lang === "ro" ? `/ro/telefon/${p.id}` : `/telefon/${p.id}`;
                   const inWishlist = wishlist.includes(p.id);
                   // Az első reklámkártya a 3. termék után jön, utána 6 termékenként ismétlődik
-                  // (3., 9., 15. termék után stb.).
-                  const showPromo = i >= 2 && (i - 2) % 6 === 0;
-                  const promo = showPromo ? PROMO_CARDS[Math.floor((i - 2) / 6) % PROMO_CARDS.length] : null;
+                  // (3., 9., 15. termék után stb.) — a teljes (lapozás előtti) listaindex alapján,
+                  // hogy az ütem oldalváltás után is folytatódjon.
+                  const absoluteIndex = (page - 1) * PAGE_SIZE + i;
+                  const showPromo = absoluteIndex >= 2 && (absoluteIndex - 2) % 6 === 0;
+                  const promo = showPromo ? PROMO_CARDS[Math.floor((absoluteIndex - 2) / 6) % PROMO_CARDS.length] : null;
                   return (
                     <Fragment key={p.id}>
                       <div className="pub-card" role="link" tabIndex={0}
@@ -377,6 +390,15 @@ export default function StockShowcase({ lang = "hu" }) {
                     </Fragment>
                   );
                 })}
+              </div>
+            )}
+            {!loading && totalPages > 1 && (
+              <div className="pub-pagination">
+                <button type="button" className="pub-page-btn" disabled={page === 1} onClick={() => goToPage(page - 1)} aria-label="Előző oldal">‹</button>
+                {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((p) => (
+                  <button key={p} type="button" className={`pub-page-btn${p === page ? " active" : ""}`} onClick={() => goToPage(p)}>{p}</button>
+                ))}
+                <button type="button" className="pub-page-btn" disabled={page === totalPages} onClick={() => goToPage(page + 1)} aria-label="Következő oldal">›</button>
               </div>
             )}
           </div>

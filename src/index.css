@@ -650,6 +650,12 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 
 .pub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(192px,1fr));gap:14px}
 
+.pub-pagination{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:28px;flex-wrap:wrap}
+.pub-page-btn{min-width:36px;height:36px;padding:0 10px;border:1px solid var(--pub-line);border-radius:9px;background:var(--pub-paper-raised);color:var(--pub-ink-soft);font-size:13px;font-weight:700;cursor:pointer;transition:border-color .12s,color .12s;font-family:inherit}
+.pub-page-btn:hover:not(:disabled){border-color:var(--pub-accent);color:var(--pub-ink)}
+.pub-page-btn.active{background:var(--pub-accent);border-color:var(--pub-accent);color:#fff}
+.pub-page-btn:disabled{opacity:.4;cursor:default}
+
 /* Kívánságlista gomb a kártyán */
 .pub-wishlist-btn{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:999px;background:var(--pub-paper-raised);border:1px solid var(--pub-line);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--pub-ink-soft);z-index:1}
 .pub-wishlist-btn:hover{border-color:var(--pub-accent)}
