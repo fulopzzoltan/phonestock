@@ -5,7 +5,7 @@ import { photoUrl } from "./lib/imageResize";
 import { t, translateColor, translateWarranty } from "./lib/i18n";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
-import { SearchIcon, FilterIcon, CartIcon, HeartIcon, BuybackIcon, ServiceIcon, CheckIcon } from "./components/icons";
+import { SearchIcon, FilterIcon, CartIcon, HeartIcon, BuybackIcon, ServiceIcon, CheckIcon, ChevronDownIcon } from "./components/icons";
 import { EmptyState, LoadingState } from "./components/EmptyState";
 import { addToCart, useCart } from "./lib/cart";
 import { toggleWishlist, useWishlist } from "./lib/wishlist";
@@ -32,6 +32,20 @@ function shuffle(arr) {
   return a;
 }
 
+const BRAND_COLLAPSE_LIMIT = 6;
+
+function SidebarGroup({ label, open, onToggle, children }) {
+  return (
+    <div className="pub-sidebar-group">
+      <button type="button" className="pub-sidebar-grouphead" onClick={onToggle}>
+        <span className="pub-sidebar-label" style={{ marginBottom: 0 }}>{label}</span>
+        <ChevronDownIcon style={{ transform: open ? "none" : "rotate(-90deg)", transition: "transform .15s", flexShrink: 0 }} />
+      </button>
+      {open && <div className="pub-sidebar-groupbody">{children}</div>}
+    </div>
+  );
+}
+
 export default function StockShowcase({ lang = "hu" }) {
   const s = t(lang);
   const [phones, setPhones] = useState([]);
@@ -44,6 +58,8 @@ export default function StockShowcase({ lang = "hu" }) {
   const [selectedOS, setSelectedOS] = useState([]);
   const [sort, setSort] = useState("recommended");
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [openGroups, setOpenGroups] = useState({ brand: true, os: false, storage: false, condition: false });
+  const [brandsExpanded, setBrandsExpanded] = useState(false);
   const cart = useCart();
   const wishlist = useWishlist();
   const { avg: reviewsAvg, count: reviewsCount } = usePublicReviews();
@@ -62,25 +78,18 @@ export default function StockShowcase({ lang = "hu" }) {
     })();
   }, []);
 
-  const brands = useMemo(() => [...new Set(phones.map((p) => p.brand))].sort((a, b) => a.localeCompare(b)), [phones]);
-  function toggleBrand(b) {
-    setSelectedBrands((prev) => (prev.includes(b) ? prev.filter((x) => x !== b) : [...prev, b]));
-  }
-
   // Nincs külön "operációs rendszer" mező az adatbázisban — a márkából derítjük
   // (Apple = iOS, minden más márka = Android), ez a szektorban egyértelmű megfeleltetés.
   const osOf = (brand) => (brand === "Apple" ? "iOS" : "Android");
-  const osOptions = useMemo(() => [...new Set(phones.map((p) => osOf(p.brand)))].sort((a) => (a === "iOS" ? -1 : 1)), [phones]);
   function toggleOS(o) {
     setSelectedOS((prev) => (prev.includes(o) ? prev.filter((x) => x !== o) : [...prev, o]));
   }
-
-  const storages = useMemo(() => [...new Set(phones.map((p) => p.storage).filter(Boolean))]
-    .sort((a, b) => (parseInt(a, 10) || 0) - (parseInt(b, 10) || 0)), [phones]);
+  function toggleBrand(b) {
+    setSelectedBrands((prev) => (prev.includes(b) ? prev.filter((x) => x !== b) : [...prev, b]));
+  }
   function toggleStorage(st) {
     setSelectedStorages((prev) => (prev.includes(st) ? prev.filter((x) => x !== st) : [...prev, st]));
   }
-
   function toggleCondition(c) {
     setSelectedConditions((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]));
   }
@@ -98,6 +107,21 @@ export default function StockShowcase({ lang = "hu" }) {
   const countsByOS = useMemo(() => { const m = {}; phones.forEach((p) => { const o = osOf(p.brand); m[o] = (m[o] || 0) + 1; }); return m; }, [phones]);
   const countsByStorage = useMemo(() => { const m = {}; phones.forEach((p) => { if (p.storage) m[p.storage] = (m[p.storage] || 0) + 1; }); return m; }, [phones]);
   const countsByCondition = useMemo(() => { const m = {}; phones.forEach((p) => { m[p.condition] = (m[p.condition] || 0) + 1; }); return m; }, [phones]);
+
+  // A legtöbb készleten lévő márka elöl — a ritkábbak "Több márka" mögé kerülnek, hogy a
+  // szűrő ne legyen elsőre egy 10+ soros lista.
+  const brands = useMemo(() => [...new Set(phones.map((p) => p.brand))]
+    .sort((a, b) => (countsByBrand[b] || 0) - (countsByBrand[a] || 0) || a.localeCompare(b)), [phones, countsByBrand]);
+  const visibleBrands = brandsExpanded ? brands : brands.slice(0, BRAND_COLLAPSE_LIMIT);
+
+  const osOptions = useMemo(() => [...new Set(phones.map((p) => osOf(p.brand)))].sort((a) => (a === "iOS" ? -1 : 1)), [phones]);
+
+  const storages = useMemo(() => [...new Set(phones.map((p) => p.storage).filter(Boolean))]
+    .sort((a, b) => (parseInt(a, 10) || 0) - (parseInt(b, 10) || 0)), [phones]);
+
+  function toggleGroup(key) {
+    setOpenGroups((prev) => ({ ...prev, [key]: !prev[key] }));
+  }
 
   const stockCounts = useMemo(() => {
     const counts = {};
@@ -199,20 +223,23 @@ export default function StockShowcase({ lang = "hu" }) {
               {activeFilterCount > 0 && <button type="button" className="pub-sidebar-clear" onClick={clearFilters}>{s.clearFilters}</button>}
             </div>
 
-            <div className="pub-sidebar-group">
-              <div className="pub-sidebar-label">{s.allBrands}</div>
-              {brands.map((b) => (
+            <SidebarGroup label={s.allBrands} open={openGroups.brand} onToggle={() => toggleGroup("brand")}>
+              {visibleBrands.map((b) => (
                 <button key={b} type="button" className={`pub-check-row${selectedBrands.includes(b) ? " active" : ""}`} onClick={() => toggleBrand(b)}>
                   <span className="pub-check">{selectedBrands.includes(b) && <CheckIcon width={10} height={10} strokeWidth={3} />}</span>
                   <span className="pub-check-row-label">{b}</span>
                   <span className="pub-check-row-count">{countsByBrand[b]}</span>
                 </button>
               ))}
-            </div>
+              {brands.length > BRAND_COLLAPSE_LIMIT && (
+                <button type="button" className="pub-sidebar-more" onClick={() => setBrandsExpanded((v) => !v)}>
+                  {brandsExpanded ? s.showFewerBrands : s.showMoreBrands(brands.length - BRAND_COLLAPSE_LIMIT)}
+                </button>
+              )}
+            </SidebarGroup>
 
             {osOptions.length > 1 && (
-              <div className="pub-sidebar-group">
-                <div className="pub-sidebar-label">{s.os}</div>
+              <SidebarGroup label={s.os} open={openGroups.os} onToggle={() => toggleGroup("os")}>
                 {osOptions.map((o) => (
                   <button key={o} type="button" className={`pub-check-row${selectedOS.includes(o) ? " active" : ""}`} onClick={() => toggleOS(o)}>
                     <span className="pub-check">{selectedOS.includes(o) && <CheckIcon width={10} height={10} strokeWidth={3} />}</span>
@@ -220,12 +247,11 @@ export default function StockShowcase({ lang = "hu" }) {
                     <span className="pub-check-row-count">{countsByOS[o]}</span>
                   </button>
                 ))}
-              </div>
+              </SidebarGroup>
             )}
 
             {storages.length > 0 && (
-              <div className="pub-sidebar-group">
-                <div className="pub-sidebar-label">{s.storageLabel}</div>
+              <SidebarGroup label={s.storageLabel} open={openGroups.storage} onToggle={() => toggleGroup("storage")}>
                 {storages.map((st) => (
                   <button key={st} type="button" className={`pub-check-row${selectedStorages.includes(st) ? " active" : ""}`} onClick={() => toggleStorage(st)}>
                     <span className="pub-check">{selectedStorages.includes(st) && <CheckIcon width={10} height={10} strokeWidth={3} />}</span>
@@ -233,11 +259,10 @@ export default function StockShowcase({ lang = "hu" }) {
                     <span className="pub-check-row-count">{countsByStorage[st]}</span>
                   </button>
                 ))}
-              </div>
+              </SidebarGroup>
             )}
 
-            <div className="pub-sidebar-group">
-              <div className="pub-sidebar-label">{s.allConditions}</div>
+            <SidebarGroup label={s.allConditions} open={openGroups.condition} onToggle={() => toggleGroup("condition")}>
               <button type="button" className={`pub-check-row${selectedConditions.includes("New") ? " active" : ""}`} onClick={() => toggleCondition("New")}>
                 <span className="pub-check">{selectedConditions.includes("New") && <CheckIcon width={10} height={10} strokeWidth={3} />}</span>
                 <span className="pub-check-row-label">{s.conditionNew}</span>
@@ -248,7 +273,7 @@ export default function StockShowcase({ lang = "hu" }) {
                 <span className="pub-check-row-label">{s.conditionRefurb}</span>
                 <span className="pub-check-row-count">{countsByCondition.Refurbished || 0}</span>
               </button>
-            </div>
+            </SidebarGroup>
           </aside>
 
           <div className="pub-results">
