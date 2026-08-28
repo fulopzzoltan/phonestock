@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from "react";
 import ReactDOM from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "./lib/AuthContext";
+import { redirectToPreferredLang } from "./lib/langPref";
 import "./index.css";
 
 // Útvonalanként külön chunk — így egy nyilvános látogató (készletoldal, becslő stb.)
@@ -83,12 +84,18 @@ function Root() {
   return <StockShowcase lang="hu" />;
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <HelmetProvider>
-      <Suspense fallback={<RouteFallback />}>
-        <Root />
-      </Suspense>
-    </HelmetProvider>
-  </React.StrictMode>
-);
+// Első látogatáskor, ha a böngésző/eszköz nyelve román, átirányítunk a RO tüköroldalra
+// (ha van neki) — utána ez sose fut le újra, sem automatikusan, sem a kézi HU/RO váltás után.
+const redirectingByLang = !ADMIN_ONLY && redirectToPreferredLang({ stockMatch, phoneDetailMatch, repairMatch });
+
+if (!redirectingByLang) {
+  ReactDOM.createRoot(document.getElementById("root")).render(
+    <React.StrictMode>
+      <HelmetProvider>
+        <Suspense fallback={<RouteFallback />}>
+          <Root />
+        </Suspense>
+      </HelmetProvider>
+    </React.StrictMode>
+  );
+}

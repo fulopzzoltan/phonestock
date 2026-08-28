@@ -2,6 +2,7 @@ import { useState } from "react";
 import { t } from "../lib/i18n";
 import { UserIcon, PhoneCaseIcon, ServiceIcon, ClockIcon, BuybackIcon, CartIcon } from "./icons";
 import { useCart } from "../lib/cart";
+import { markLangChosen } from "../lib/langPref";
 
 // Alapértelmezett nyelv-váltó célok oldalanként (aktív nav szerint) — a PhoneDetail.jsx ezt felülírja
 // a saját langSwitchHref propjával, mert ott a konkrét telefon id-jét is meg kell tartani.
@@ -26,14 +27,14 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
   const langSwitch = resolvedLangHref && (
     <div className="pub-lang-switch" role="group" aria-label="Nyelv">
       {lang === "ro" ? (
-        <a className="pub-lang-opt" href={resolvedLangHref}>HU</a>
+        <a className="pub-lang-opt" href={resolvedLangHref} onClick={() => markLangChosen("hu")}>HU</a>
       ) : (
         <span className="pub-lang-opt pub-lang-active">HU</span>
       )}
       {lang === "ro" ? (
         <span className="pub-lang-opt pub-lang-active">RO</span>
       ) : (
-        <a className="pub-lang-opt" href={resolvedLangHref}>RO</a>
+        <a className="pub-lang-opt" href={resolvedLangHref} onClick={() => markLangChosen("ro")}>RO</a>
       )}
     </div>
   );
@@ -82,14 +83,14 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
             {resolvedLangHref && (
               <div className="pub-lang-switch pub-lang-switch-mobile" role="group" aria-label="Nyelv">
                 {lang === "ro" ? (
-                  <a className="pub-lang-opt" href={resolvedLangHref}>HU</a>
+                  <a className="pub-lang-opt" href={resolvedLangHref} onClick={() => markLangChosen("hu")}>HU</a>
                 ) : (
                   <span className="pub-lang-opt pub-lang-active">HU</span>
                 )}
                 {lang === "ro" ? (
                   <span className="pub-lang-opt pub-lang-active">RO</span>
                 ) : (
-                  <a className="pub-lang-opt" href={resolvedLangHref}>RO</a>
+                  <a className="pub-lang-opt" href={resolvedLangHref} onClick={() => markLangChosen("ro")}>RO</a>
                 )}
               </div>
             )}

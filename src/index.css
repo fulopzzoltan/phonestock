@@ -553,10 +553,6 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
     align-items:center;
     justify-content:space-between;
     gap:16px;
-    background:var(--pub-paper);
-    border:1px solid var(--pub-line);
-    border-radius:11px;
-    padding:6px 10px;
   }
   .pub-row2-nav{display:flex;align-items:center;gap:4px}
   .pub-row2-right{display:flex;align-items:center;gap:10px}
