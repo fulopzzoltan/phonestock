@@ -2,8 +2,10 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "./lib/supabaseClient";
 import { calculateBuybackPrice } from "./lib/buybackPricing";
 import { BUYBACK_CONDITION_QUESTIONS as CONDITION_QUESTIONS } from "./lib/utils";
+import { recommendNearBudget } from "./lib/tradeEngine";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
+import PhoneMiniCard from "./components/PhoneMiniCard";
 import BuybackPriceBar from "./components/BuybackPriceBar";
 import { ClockIcon, FinanceIcon, CallIcon, PinIcon, PartsIcon, WarningIcon, BuybackIcon } from "./components/icons";
 import { EmptyState, LoadingState } from "./components/EmptyState";
@@ -19,6 +21,7 @@ export default function BuybackFlow() {
   const [rules, setRules] = useState([]);
   const [locations, setLocations] = useState([]);
   const [loadError, setLoadError] = useState("");
+  const [stockPhones, setStockPhones] = useState([]);
 
   const [stepIndex, setStepIndex] = useState(0);
   const [brand, setBrand] = useState(null);
@@ -56,6 +59,12 @@ export default function BuybackFlow() {
         setLoading(false);
       }
     })();
+    // A "vidd tovább" kereszt-ajánlathoz kellő készlet-adat külön, hibatűrő módon töltődik —
+    // ha ez elakadna, a fő felvásárlási folyamat attól még hibátlanul működjön tovább.
+    (async () => {
+      const { data, error } = await supabase.rpc("get_public_stock");
+      if (!error) setStockPhones(data || []);
+    })();
   }, []);
 
   const brands = useMemo(() => [...new Set(models.map((m) => m.brand))].sort(), [models]);
@@ -76,6 +85,11 @@ export default function BuybackFlow() {
   const step = STEP_KEYS[stepIndex];
   const showPriceBar = variant && stepIndex >= STEP_KEYS.indexOf("specs") + 1 && step !== "offer";
   const totalSteps = STEP_KEYS.length;
+
+  const tradeUpPhones = useMemo(
+    () => (pricing.price > 0 ? recommendNearBudget(stockPhones, pricing.price) : []),
+    [pricing.price, stockPhones]
+  );
 
   function goNext() { setStepIndex((i) => Math.min(i + 1, STEP_KEYS.length - 1)); }
   function goBack() { setStepIndex((i) => Math.max(i - 1, 0)); }
@@ -275,6 +289,21 @@ export default function BuybackFlow() {
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}><FinanceIcon width={14} height={14} /> Fizetés <b>átvételkor</b></div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}><CallIcon width={13} height={13} /> Utána hívunk egyeztetni</div>
             </div>
+            {tradeUpPhones.length > 0 && (
+              <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid var(--pub-line)" }}>
+                <div className="bb-label">Vidd tovább — fizess rá egy kicsit, és már viheted is:</div>
+                <div className="pub-grid" style={{ marginTop: 10 }}>
+                  {tradeUpPhones.map((p) => (
+                    <div key={p.id}>
+                      <PhoneMiniCard phone={p} />
+                      <div className="field-hint" style={{ marginTop: 6, textAlign: "center" }}>
+                        +{Math.max(0, Math.round(Number(p.sale_price) - pricing.price)).toLocaleString("hu-HU")} Lej ráfizetéssel
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="bb-label" style={{ marginTop: 18 }}>Hogyan add le a készüléket?</div>
             <div className="bb-delivery-row">
               <button type="button" className={`bb-delivery-card featured${deliveryMethod === "Személyes átadás" ? " active" : ""}`} onClick={() => setDeliveryMethod("Személyes átadás")}>

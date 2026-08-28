@@ -1,46 +1,17 @@
 import { useState, useEffect, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "./lib/supabaseClient";
-import { photoUrl } from "./lib/imageResize";
-import { t, translateColor, translateWarranty } from "./lib/i18n";
+import { t } from "./lib/i18n";
 import { normalizeStorage, normalizeBrand } from "./lib/utils";
+import { recommendPhones } from "./lib/tradeEngine";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
-import { CartIcon, WarningIcon } from "./components/icons";
+import PhoneMiniCard from "./components/PhoneMiniCard";
+import { WarningIcon } from "./components/icons";
 import { EmptyState, LoadingState } from "./components/EmptyState";
-import { addToCart, useCart } from "./lib/cart";
 
 const SITE = "https://phonestock-manager.netlify.app";
 const STEP_ORDER = ["condition", "budget", "storage", "brand", "result"];
-const BUDGET_RANGES = { under1000: [0, 1000], mid: [1000, 2000], over2000: [2000, Infinity] };
-
-const deviceSvg = (
-  <svg viewBox="0 0 40 64" fill="none" stroke="currentColor" strokeWidth="1.6">
-    <rect x="2" y="2" width="36" height="60" rx="7" />
-    <line x1="15" y1="56" x2="25" y2="56" strokeWidth="2.2" strokeLinecap="round" />
-  </svg>
-);
-
-function distanceFromBudget(price, key) {
-  const [lo, hi] = BUDGET_RANGES[key];
-  if (price < lo) return lo - price;
-  if (price > hi) return price - hi;
-  return 0;
-}
-
-// Fokozatosan lazító pontozás, sose kemény szűrés — így garantáltan van 1-3 találat,
-// amíg van készleten telefon, még ha egyik válasz sem passzol tökéletesen.
-function scorePhone(phone, answers) {
-  let score = 100;
-  if (answers.condition !== "any" && phone.condition !== answers.condition) score -= 40;
-  if (answers.budget !== "any") {
-    const dist = distanceFromBudget(Number(phone.sale_price) || 0, answers.budget);
-    score -= Math.min(50, dist / 20);
-  }
-  if (answers.storage !== "any" && normalizeStorage(phone.storage) !== answers.storage) score -= 15;
-  if (answers.brands.length > 0 && !answers.brands.includes(phone.brand)) score -= 20;
-  return score;
-}
 
 export default function PhoneFinder({ lang = "hu" }) {
   const s = t(lang);
@@ -49,7 +20,6 @@ export default function PhoneFinder({ lang = "hu" }) {
   const [loadError, setLoadError] = useState("");
   const [step, setStep] = useState("condition");
   const [answers, setAnswers] = useState({ condition: "any", budget: "any", storage: "any", brands: [] });
-  const cart = useCart();
 
   useEffect(() => {
     (async () => {
@@ -79,10 +49,7 @@ export default function PhoneFinder({ lang = "hu" }) {
 
   const results = useMemo(() => {
     if (step !== "result" || phones.length === 0) return [];
-    return [...phones]
-      .map((p) => ({ ...p, _score: scorePhone(p, answers) }))
-      .sort((a, b) => b._score - a._score)
-      .slice(0, 3);
+    return recommendPhones(phones, answers, 3);
   }, [step, phones, answers]);
 
   const isExactMatch = results.length > 0 && results[0]._score === 100;
@@ -233,53 +200,7 @@ export default function PhoneFinder({ lang = "hu" }) {
             <h1 className="bb-h1" style={{ marginBottom: 4 }}>{isExactMatch ? s.finderResultTitle(results.length) : s.finderResultFallback}</h1>
             {traitLabels.length > 0 && <div className="field-hint" style={{ marginBottom: 16 }}>{traitLabels.join(" · ")}</div>}
             <div className="pub-grid">
-              {results.map((p) => {
-                const href = lang === "ro" ? `/ro/telefon/${p.id}` : `/telefon/${p.id}`;
-                return (
-                  <div key={p.id} className="pub-card" role="link" tabIndex={0}
-                    onClick={() => { window.location.href = href; }}
-                    onKeyDown={(e) => { if (e.key === "Enter") window.location.href = href; }}
-                  >
-                    <div className="pub-card-top">
-                      <span className={`pub-cond-pill ${p.condition === "New" ? "new" : "refurb"}`}>{p.condition === "New" ? s.conditionNew : s.conditionRefurb}</span>
-                    </div>
-                    <div className="pub-device-art">
-                      {p.photo_paths && p.photo_paths.length > 0 ? (
-                        <img
-                          src={photoUrl(p.photo_paths[0], "thumb")}
-                          alt={`${p.brand} ${p.model}`}
-                          className="pub-device-photo"
-                          loading="lazy"
-                          decoding="async"
-                          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = photoUrl(p.photo_paths[0], "full"); }}
-                        />
-                      ) : deviceSvg}
-                    </div>
-                    <div className="pub-card-name">{p.brand} {p.model}</div>
-                    <div className="pub-card-specs">
-                      {p.storage && <span>{normalizeStorage(p.storage)}</span>}
-                      {p.color && <span>{translateColor(p.color, lang)}</span>}
-                    </div>
-                    {p.warranty && (
-                      <div className="pub-warranty-tag">
-                        <svg viewBox="0 0 24 24" style={{ width: 11, height: 11, stroke: "var(--pub-ink-soft)", fill: "none", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" }}><path d="M12 3l7 2.5v5.8c0 4.2-2.9 7.6-7 8.7-4.1-1.1-7-4.5-7-8.7V5.5L12 3z" /></svg>
-                        {s.warrantyTag(translateWarranty(p.warranty, lang))}
-                      </div>
-                    )}
-                    <div className="pub-card-foot">
-                      <div className="pub-price mono">{Number(p.sale_price).toLocaleString("hu-HU")}<span className="pub-cur">Lei</span></div>
-                      {cart.some((c) => c.id === p.id) ? (
-                        <a className="pub-ask-btn pub-ask-btn-added" href="/kosar" aria-label="Kosárban" onClick={(e) => e.stopPropagation()}><CartIcon width={13} height={13} /><span className="pub-ask-btn-label">Kosárban</span></a>
-                      ) : (
-                        <button type="button" className="pub-ask-btn" aria-label="Kosárba" onClick={(e) => {
-                          e.stopPropagation();
-                          addToCart({ id: p.id, brand: p.brand, model: p.model, storage: normalizeStorage(p.storage), color: p.color, salePrice: p.sale_price, photoPath: p.photo_paths?.[0] || null, locationId: p.location_id, locationName: p.location_name });
-                        }}><CartIcon width={13} height={13} /><span className="pub-ask-btn-label">Kosárba</span></button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+              {results.map((p) => <PhoneMiniCard key={p.id} phone={p} lang={lang} />)}
             </div>
             <button type="button" className="pub-back-link" style={{ border: "none", background: "none", cursor: "pointer", marginTop: 20, display: "block" }} onClick={retry}>{s.finderRetryCta}</button>
           </div>

@@ -4,8 +4,10 @@ import { supabase } from "./lib/supabaseClient";
 import { REPAIR_MODELS, PRICED_PROBLEMS, problemLabel } from "./lib/repairCatalog";
 import { PROBLEM_TAGS } from "./lib/utils";
 import { t } from "./lib/i18n";
+import { findBuybackValue, isRepairUneconomical, recommendNearBudget } from "./lib/tradeEngine";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
+import PhoneMiniCard from "./components/PhoneMiniCard";
 import { CallIcon, PinIcon, WarningIcon } from "./components/icons";
 import { EmptyState, LoadingState } from "./components/EmptyState";
 import { ReviewsBadge } from "./components/PublicReviews";
@@ -21,6 +23,8 @@ export default function RepairEstimator({ lang = "hu" }) {
   const [prices, setPrices] = useState([]);
   const [availability, setAvailability] = useState([]);
   const [locations, setLocations] = useState([]);
+  const [buybackModels, setBuybackModels] = useState([]);
+  const [stockPhones, setStockPhones] = useState([]);
 
   const [step, setStep] = useState("model");
   const [query, setQuery] = useState("");
@@ -60,6 +64,16 @@ export default function RepairEstimator({ lang = "hu" }) {
         setLoading(false);
       }
     })();
+    // A kereszt-ajánlathoz kellő adatok külön, hibatűrő módon töltődnek — ha ez elakadna,
+    // a szerviz-becslő fő funkciója (ár, foglalás) attól még hibátlanul működjön tovább.
+    (async () => {
+      const [bm, sp] = await Promise.all([
+        supabase.rpc("get_buyback_models"),
+        supabase.rpc("get_public_stock"),
+      ]);
+      if (!bm.error) setBuybackModels(bm.data || []);
+      if (!sp.error) setStockPhones(sp.data || []);
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -80,6 +94,13 @@ export default function RepairEstimator({ lang = "hu" }) {
   const stockAvailable = selectedPriceRow?.part_category
     ? availability.some((a) => a.part_category === selectedPriceRow.part_category && a.available)
     : null;
+
+  const buybackValue = selectedModel ? findBuybackValue(selectedModel.brand, selectedModel.model, buybackModels) : null;
+  const repairUneconomical = isRepairUneconomical(displayPrice, buybackValue);
+  const crossOfferPhones = useMemo(
+    () => (repairUneconomical ? recommendNearBudget(stockPhones, buybackValue) : []),
+    [repairUneconomical, buybackValue, stockPhones]
+  );
 
   function pickModel(m) {
     setSelectedModel(m);
@@ -299,6 +320,15 @@ export default function RepairEstimator({ lang = "hu" }) {
                 )}
                 {stockAvailable === false && (
                   <div className="pub-stock-note unavailable">{s.repairStockUnavail}</div>
+                )}
+                {crossOfferPhones.length > 0 && (
+                  <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid var(--pub-line)" }}>
+                    <div className="field-hint" style={{ fontWeight: 700, color: "var(--pub-ink)" }}>{s.crossOfferBuybackValue(Math.round(buybackValue))}</div>
+                    <div className="bb-label" style={{ marginTop: 10 }}>{s.crossOfferSwapCta}</div>
+                    <div className="pub-grid" style={{ marginTop: 10 }}>
+                      {crossOfferPhones.map((p) => <PhoneMiniCard key={p.id} phone={p} lang={lang} />)}
+                    </div>
+                  </div>
                 )}
                 {!showLeadForm ? (
                   <button type="button" className="btn" style={{ width: "100%", justifyContent: "center", marginTop: 14 }} onClick={() => setShowLeadForm(true)}>{s.repairBookSlot}</button>
