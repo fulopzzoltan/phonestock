@@ -1,13 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "./lib/supabaseClient";
 import { photoUrl } from "./lib/imageResize";
 import { t, translateColor, translateWarranty } from "./lib/i18n";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
-import { PhoneCaseIcon, CartIcon } from "./components/icons";
+import { PhoneCaseIcon, CartIcon, HeartIcon, CheckIcon, WarrantyIcon, PinIcon } from "./components/icons";
 import { EmptyState, LoadingState } from "./components/EmptyState";
 import { addToCart, useCart } from "./lib/cart";
+import { toggleWishlist, useWishlist } from "./lib/wishlist";
+import { ReviewsBadge } from "./components/PublicReviews";
 
 const SITE = "https://phonestock-manager.netlify.app";
 
@@ -20,18 +22,54 @@ const deviceSvg = (
 
 export default function PhoneDetail({ id, lang = "hu" }) {
   const s = t(lang);
-  const [phone, setPhone] = useState(null);
+  const [allPhones, setAllPhones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activePhoto, setActivePhoto] = useState(0);
+  const [showStickyBar, setShowStickyBar] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(0);
   const cart = useCart();
+  const wishlist = useWishlist();
+  const ctaSentinelRef = useRef(null);
+  const hasSeenCtaRef = useRef(false);
 
   useEffect(() => {
     (async () => {
       const { data } = await supabase.rpc("get_public_stock");
-      setPhone((data || []).find((p) => p.id === id) || null);
+      setAllPhones(data || []);
       setLoading(false);
     })();
   }, [id]);
+
+  const phone = useMemo(() => allPhones.find((p) => p.id === id) || null, [allPhones, id]);
+  const related = useMemo(
+    () => (phone ? allPhones.filter((p) => p.id !== phone.id && p.brand === phone.brand).slice(0, 4) : []),
+    [allPhones, phone]
+  );
+
+  useEffect(() => {
+    const header = document.querySelector(".pub-header");
+    if (header) setHeaderHeight(header.offsetHeight);
+  }, [phone]);
+
+  // A mini sáv csak akkor jelenjen meg, ha a felhasználó már túlgörgetett a valódi
+  // Kosárba gombon — mobilon a galéria a kártya adatai előtt van a DOM-ban, így a gomb
+  // kezdetben "nem látszik" (lentebb van), de ez még nem jelenti, hogy túlgörgettünk rajta.
+  useEffect(() => {
+    hasSeenCtaRef.current = false;
+    setShowStickyBar(false);
+    if (!ctaSentinelRef.current) return;
+    const el = ctaSentinelRef.current;
+    const obs = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        hasSeenCtaRef.current = true;
+        setShowStickyBar(false);
+      } else if (hasSeenCtaRef.current) {
+        setShowStickyBar(true);
+      }
+    }, { rootMargin: `-${headerHeight}px 0px 0px 0px` });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [phone?.id, headerHeight]);
 
   const langSwitchHref = lang === "ro" ? `/telefon/${id}` : `/ro/telefon/${id}`;
 
@@ -85,8 +123,33 @@ export default function PhoneDetail({ id, lang = "hu" }) {
         })}</script>
       </Helmet>
       <PublicHeader activeNav="stock" lang={lang} langSwitchHref={langSwitchHref} />
+
+      {showStickyBar && (
+        <div className="pub-sticky-bar" style={{ top: headerHeight }}>
+          <div className="pub-sticky-bar-inner">
+            <div className="pub-sticky-thumb">
+              {photos.length > 0 ? <img src={photoUrl(photos[0], "thumb")} alt="" /> : deviceSvg}
+            </div>
+            <div className="pub-sticky-info">
+              <div className="pub-sticky-name">{phone.brand} {phone.model}{phone.storage ? ` · ${phone.storage}` : ""}</div>
+              <div className="pub-sticky-cond">{phone.condition === "New" ? s.conditionNew : s.conditionRefurb}</div>
+            </div>
+            <div className="pub-sticky-price mono">{Number(phone.sale_price).toLocaleString("hu-HU")} <span>Lei</span></div>
+            {cart.some((c) => c.id === phone.id) ? (
+              <a className="pub-ask-btn pub-ask-btn-added" href="/kosar"><CartIcon width={13} height={13} />Kosárban</a>
+            ) : (
+              <button type="button" className="pub-ask-btn" onClick={() => addToCart({ id: phone.id, brand: phone.brand, model: phone.model, storage: phone.storage, color: phone.color, salePrice: phone.sale_price, photoPath: photos[0] || null, locationId: phone.location_id, locationName: phone.location_name })}>
+                <CartIcon width={13} height={13} />Kosárba
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       <main className="pub-detail-main">
-        <a href={lang === "ro" ? "/ro/telefoane" : "/"} className="pub-back-link">← {s.backToStock}</a>
+        <div className="pub-breadcrumb">
+          <a href={lang === "ro" ? "/ro/telefoane" : "/"}>{s.navStock}</a> › <span>{phone.brand}</span> › <span className="current">{phone.model}</span>
+        </div>
         <div className="pub-detail-grid">
           <div className="pub-detail-gallery">
             <div className="pub-detail-photo-main">
@@ -115,16 +178,49 @@ export default function PhoneDetail({ id, lang = "hu" }) {
                 ))}
               </div>
             )}
+
+            <div className="pub-detail-box">
+              <div className="pub-detail-box-title">{phone.condition === "New" ? s.detailConditionNewTitle : s.detailConditionRefurbTitle}</div>
+              <div className="pub-detail-box-text">{phone.condition === "New" ? s.detailConditionNewDesc : s.detailConditionRefurbDesc}</div>
+            </div>
+
+            <div className="pub-detail-box">
+              <div className="pub-sidebar-label" style={{ marginBottom: 14 }}>{s.detailSpecsTitle}</div>
+              <div className="pub-detail-specs-grid">
+                {phone.storage && (
+                  <div className="pub-detail-spec-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="17" height="17"><rect x="7" y="2" width="10" height="20" rx="2" /><line x1="11" y1="18" x2="13" y2="18" /></svg>
+                    <div><div className="pub-detail-spec-label">{s.storageLabel}</div><div className="pub-detail-spec-value">{phone.storage}</div></div>
+                  </div>
+                )}
+                {phone.color && (
+                  <div className="pub-detail-spec-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="17" height="17"><circle cx="12" cy="12" r="9" /></svg>
+                    <div><div className="pub-detail-spec-label">{s.colorLabel}</div><div className="pub-detail-spec-value">{translateColor(phone.color, lang)}</div></div>
+                  </div>
+                )}
+                {phone.battery_health != null && (
+                  <div className="pub-detail-spec-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="17" height="17"><rect x="1" y="7" width="18" height="10" rx="2" /><line x1="21" y1="10" x2="21" y2="14" /></svg>
+                    <div><div className="pub-detail-spec-label">{s.batteryLabel}</div><div className="pub-detail-spec-value">{phone.battery_health}%</div></div>
+                  </div>
+                )}
+                {phone.warranty && (
+                  <div className="pub-detail-spec-item">
+                    <WarrantyIcon width={17} height={17} />
+                    <div><div className="pub-detail-spec-label">{s.warrantyLabel}</div><div className="pub-detail-spec-value">{translateWarranty(phone.warranty, lang)}</div></div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
+
           <div className="pub-detail-info">
             <span className={`pub-cond-pill ${phone.condition === "New" ? "new" : "refurb"}`}>{phone.condition === "New" ? s.conditionNew : s.conditionRefurb}</span>
             <h1 className="pub-detail-title">{phone.brand} {phone.model}</h1>
-            <div className="pub-detail-specs">
-              {phone.storage && <div><b>{s.storageLabel}</b> {phone.storage}</div>}
-              {phone.color && <div><b>{s.colorLabel}</b> {translateColor(phone.color, lang)}</div>}
-              {phone.battery_health != null && <div><b>{s.batteryLabel}</b> {phone.battery_health}%</div>}
-              {phone.warranty && <div><b>{s.warrantyLabel}</b> {translateWarranty(phone.warranty, lang)}</div>}
-            </div>
+
+            <ReviewsBadge lang={lang} style={{ marginBottom: 16 }} />
+
             {phone.new_price && Number(phone.new_price) > Number(phone.sale_price) && (
               <div className="pub-anchor" style={{ fontSize: 14 }}>
                 <span className="pub-anchor-old">{Number(phone.new_price).toLocaleString("hu-HU")} Lei</span>
@@ -132,17 +228,72 @@ export default function PhoneDetail({ id, lang = "hu" }) {
               </div>
             )}
             <div className="pub-detail-price mono">{Number(phone.sale_price).toLocaleString("hu-HU")}<span className="pub-cur">Lei</span></div>
-            {cart.some((c) => c.id === phone.id) ? (
-              <a className="pub-ask-btn pub-ask-btn-added" style={{ padding: "13px 22px", fontSize: 14 }} href="/kosar"><CartIcon width={15} height={15} />Kosárban — tovább a kosárhoz</a>
-            ) : (
-              <button type="button" className="pub-ask-btn" style={{ padding: "13px 22px", fontSize: 14 }} onClick={() => addToCart({ id: phone.id, brand: phone.brand, model: phone.model, storage: phone.storage, color: phone.color, salePrice: phone.sale_price, photoPath: photos[0] || null, locationId: phone.location_id, locationName: phone.location_name })}>
-                <CartIcon width={15} height={15} />Kosárba
+
+            <div className="pub-detail-cta-row">
+              {cart.some((c) => c.id === phone.id) ? (
+                <a className="pub-ask-btn pub-ask-btn-added" style={{ padding: "13px 22px", fontSize: 14 }} href="/kosar"><CartIcon width={15} height={15} />Kosárban — tovább a kosárhoz</a>
+              ) : (
+                <button type="button" className="pub-ask-btn" style={{ padding: "13px 22px", fontSize: 14 }} onClick={() => addToCart({ id: phone.id, brand: phone.brand, model: phone.model, storage: phone.storage, color: phone.color, salePrice: phone.sale_price, photoPath: photos[0] || null, locationId: phone.location_id, locationName: phone.location_name })}>
+                  <CartIcon width={15} height={15} />Kosárba
+                </button>
+              )}
+              <button
+                type="button"
+                className={`pub-detail-wishlist-btn${wishlist.includes(phone.id) ? " active" : ""}`}
+                aria-label={s.wishlistToggle}
+                onClick={() => toggleWishlist(phone.id)}
+              >
+                <HeartIcon width={18} height={18} />
               </button>
-            )}
-            <a className="pub-ask-btn" style={{ padding: "10px 18px", fontSize: 12.5, marginTop: 8, background: "none", color: "var(--pub-ink-soft)" }} href="tel:0773985278">{s.interestedCall}</a>
+            </div>
+
+            <div ref={ctaSentinelRef} />
+
+            <div className="pub-detail-trust">
+              {phone.warranty && (
+                <div className="pub-detail-trust-row">
+                  <WarrantyIcon width={19} height={19} />
+                  <div><div className="pub-detail-trust-title">{s.detailTrustWarranty(translateWarranty(phone.warranty, lang))}</div><div className="pub-detail-trust-sub">{s.detailTrustWarrantySub}</div></div>
+                </div>
+              )}
+              <div className="pub-detail-trust-row">
+                <CheckIcon width={19} height={19} strokeWidth={2.4} />
+                <div><div className="pub-detail-trust-title">{s.detailTrustCondition}</div><div className="pub-detail-trust-sub">{s.detailTrustConditionSub}</div></div>
+              </div>
+              {phone.location_name && (
+                <div className="pub-detail-trust-row">
+                  <PinIcon width={19} height={19} />
+                  <div><div className="pub-detail-trust-title">{s.detailTrustPickup}</div><div className="pub-detail-trust-sub">{s.detailTrustPickupSub(phone.location_name)}</div></div>
+                </div>
+              )}
+            </div>
+
+            <a className="pub-ask-btn" style={{ padding: "10px 18px", fontSize: 12.5, background: "none", color: "var(--pub-ink-soft)" }} href="tel:0773985278">{s.interestedCall}</a>
             <div className="pub-detail-note">{s.priceNote}</div>
           </div>
         </div>
+
+        {related.length > 0 && (
+          <div className="pub-related">
+            <div className="pub-related-title">{s.detailRelatedTitle}</div>
+            <div className="pub-related-grid">
+              {related.map((p) => {
+                const rPhotos = p.photo_paths || [];
+                const href = lang === "ro" ? `/ro/telefon/${p.id}` : `/telefon/${p.id}`;
+                return (
+                  <a key={p.id} className="pub-related-card" href={href}>
+                    <div className="pub-related-photo">
+                      {rPhotos.length > 0 ? <img src={photoUrl(rPhotos[0], "thumb")} alt={`${p.brand} ${p.model}`} loading="lazy" decoding="async" /> : deviceSvg}
+                    </div>
+                    <div className="pub-related-name">{p.brand} {p.model}</div>
+                    <div className="pub-related-specs">{[p.storage, p.color ? translateColor(p.color, lang) : null].filter(Boolean).join(" · ")}</div>
+                    <div className="pub-related-price">{Number(p.sale_price).toLocaleString("hu-HU")} Lei</div>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </main>
       <PublicFooter lang={lang} />
     </div>

@@ -30,6 +30,12 @@ export const STRINGS = {
     storageLabel: "Tárhely", colorLabel: "Szín", batteryLabel: "Akkumulátor", warrantyLabel: "Garancia",
     interestedCall: "Érdekel — hívj minket",
     priceNote: "Az ár és a készlet folyamatosan frissül, végleges adásvétel az üzletben történik.",
+    detailTrustWarranty: (w) => `${w} garancia`, detailTrustWarrantySub: "A készülékre és a benne lévő alkatrészekre",
+    detailTrustCondition: "Ellenőrzött, tesztelt állapot", detailTrustConditionSub: "Kijelző, akku, kamerák és gombok átvizsgálva átadás előtt",
+    detailTrustPickup: "Személyes átvétel", detailTrustPickupSub: (loc) => `${loc} üzletünkben, mielőtt fizetsz, kipróbálhatod`,
+    detailConditionNewTitle: "Vadonatúj állapot", detailConditionNewDesc: "Ez a készülék bontatlan vagy szinte használatlan állapotban van, gyári tartozékokkal.",
+    detailConditionRefurbTitle: "Felújított állapot", detailConditionRefurbDesc: "Ezt a készüléket átvizsgáltuk és teszteltük, mielőtt polcra került — kijelző, akkumulátor, kamerák és minden gomb, port működését ellenőriztük. Apró, futólag látható kopásnyomok lehetnek rajta.",
+    detailSpecsTitle: "Specifikáció", detailRelatedTitle: "Hasonló telefonok",
 
     // Szerviz árbecslő
     repairWhatPhone: "Milyen telefonod van?",
@@ -86,6 +92,12 @@ export const STRINGS = {
     storageLabel: "Stocare", colorLabel: "Culoare", batteryLabel: "Baterie", warrantyLabel: "Garanție",
     interestedCall: "Sunt interesat — sună-ne",
     priceNote: "Prețul și stocul se actualizează constant, tranzacția finală are loc în magazin.",
+    detailTrustWarranty: (w) => `Garanție ${w}`, detailTrustWarrantySub: "Pentru dispozitiv și piesele incluse",
+    detailTrustCondition: "Stare verificată și testată", detailTrustConditionSub: "Ecran, baterie, camere și butoane verificate înainte de predare",
+    detailTrustPickup: "Ridicare personală", detailTrustPickupSub: (loc) => `La magazinul nostru din ${loc} — îl poți încerca înainte să plătești`,
+    detailConditionNewTitle: "Stare nou-nouță", detailConditionNewDesc: "Acest dispozitiv este nedesfăcut sau aproape neutilizat, cu accesoriile originale.",
+    detailConditionRefurbTitle: "Stare recondiționată", detailConditionRefurbDesc: "Acest dispozitiv a fost verificat și testat înainte să ajungă pe raft — am verificat ecranul, bateria, camerele și fiecare buton, port. Pot exista mici urme de uzură, vizibile doar de aproape.",
+    detailSpecsTitle: "Specificații", detailRelatedTitle: "Telefoane similare",
 
     repairWhatPhone: "Ce telefon ai?",
     repairSearchPlaceholder: "Căutare — ex. iPhone 12, Galaxy A54...",

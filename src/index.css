@@ -755,6 +755,56 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-detail-specs b{color:var(--pub-ink);font-weight:600;margin-right:6px}
 .pub-detail-price{font-size:30px;font-weight:800;margin:6px 0 16px}
 .pub-detail-note{font-size:12px;color:var(--pub-ink-soft);margin-top:12px}
+
+.pub-breadcrumb{font-size:12.5px;color:var(--pub-ink-soft);margin-bottom:18px}
+.pub-breadcrumb a{color:var(--pub-ink-soft)} .pub-breadcrumb a:hover{color:var(--pub-ink)}
+.pub-breadcrumb .current{color:var(--pub-ink)}
+
+.pub-detail-box{margin-top:16px;background:var(--pub-paper-raised);border:1px solid var(--pub-line);border-radius:var(--radius-lg);padding:18px 20px}
+.pub-detail-box-title{font-size:13.5px;font-weight:800;margin-bottom:8px}
+.pub-detail-box-text{font-size:12.5px;color:var(--pub-ink-soft);line-height:1.6}
+.pub-detail-specs-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 20px}
+.pub-detail-spec-item{display:flex;align-items:center;gap:10px}
+.pub-detail-spec-item svg{flex-shrink:0;color:var(--pub-ink-soft)}
+.pub-detail-spec-label{font-size:10.5px;color:var(--pub-ink-soft)}
+.pub-detail-spec-value{font-size:13px;font-weight:600}
+
+.pub-detail-cta-row{display:flex;gap:10px;margin-top:6px}
+.pub-detail-cta-row .pub-ask-btn{flex:1}
+.pub-detail-wishlist-btn{width:48px;height:48px;flex-shrink:0;border-radius:11px;border:1px solid var(--pub-line);background:#fff;display:flex;align-items:center;justify-content:center;color:var(--pub-ink-soft);cursor:pointer}
+.pub-detail-wishlist-btn:hover{border-color:var(--pub-accent)}
+.pub-detail-wishlist-btn.active{color:var(--pub-accent);border-color:var(--pub-accent)}
+.pub-detail-wishlist-btn.active svg{fill:currentColor}
+
+.pub-detail-trust{display:flex;flex-direction:column;gap:8px;margin:20px 0}
+.pub-detail-trust-row{display:flex;align-items:center;gap:12px;background:var(--pub-paper-raised);border:1px solid var(--pub-line);border-radius:12px;padding:12px 14px}
+.pub-detail-trust-row svg{flex-shrink:0;color:var(--pub-accent-ink)}
+.pub-detail-trust-title{font-size:12.5px;font-weight:700}
+.pub-detail-trust-sub{font-size:11px;color:var(--pub-ink-soft)}
+
+.pub-sticky-bar{position:sticky;z-index:4;background:#fff;border-bottom:1px solid var(--pub-line);box-shadow:0 4px 14px rgba(16,24,40,.06)}
+.pub-sticky-bar-inner{max-width:1000px;margin:0 auto;padding:10px 24px;display:flex;align-items:center;gap:14px}
+.pub-sticky-thumb{width:38px;height:38px;border-radius:8px;background:var(--pub-paper);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--pub-ink-soft)}
+.pub-sticky-thumb img{width:100%;height:100%;object-fit:cover}
+.pub-sticky-thumb svg{height:22px;opacity:.7}
+.pub-sticky-info{flex:1;min-width:0}
+.pub-sticky-name{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pub-sticky-cond{font-size:11px;color:var(--pub-ink-soft)}
+.pub-sticky-price{font-size:16px;font-weight:800;flex-shrink:0}
+@media (max-width:600px){.pub-sticky-cond{display:none}}
+
+.pub-related{margin-top:56px}
+.pub-related-title{font-size:17px;font-weight:800;margin-bottom:16px}
+.pub-related-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media (max-width:760px){.pub-related-grid{grid-template-columns:repeat(2,1fr)}}
+.pub-related-card{background:var(--pub-paper-raised);border:1px solid var(--pub-line);border-radius:var(--radius-lg);padding:14px;text-decoration:none;color:inherit;display:block;transition:transform .14s}
+.pub-related-card:hover{transform:translateY(-2px)}
+.pub-related-photo{background:var(--pub-paper);border-radius:10px;height:110px;margin-bottom:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--pub-ink-soft)}
+.pub-related-photo img{width:100%;height:100%;object-fit:cover}
+.pub-related-photo svg{height:60px;opacity:.7}
+.pub-related-name{font-size:12.5px;font-weight:700}
+.pub-related-specs{font-size:11px;color:var(--pub-ink-soft);margin:2px 0 6px}
+.pub-related-price{font-size:14px;font-weight:800}
 .pub-lookup-main{max-width:1180px;margin:0 auto;padding:40px 24px 64px;display:flex;justify-content:center}
 
 .mock-pay-banner{background:#FEF3C7;border-bottom:1px solid #FDE68A;color:#92400E;text-align:center;font-size:12.5px;font-weight:700;padding:9px 16px}
