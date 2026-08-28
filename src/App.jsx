@@ -384,7 +384,7 @@ function AppShell() {
   // (ugyanaz, mint a kezdeti betöltés), NEM Realtime websocket-csatorna — azt korábban kivettük,
   // mert a folyamatosan nyitva tartott websocket rontotta a be-/kijelentkezés megbízhatóságát.
   useEffect(() => {
-    const interval = setInterval(() => { loadAll({ silent: true }); }, 60000);
+    const interval = setInterval(() => { loadAll({ silent: true }); }, 300000);
     function onVisible() {
       if (document.visibilityState === "visible") loadAll({ silent: true });
     }
