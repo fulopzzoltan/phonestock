@@ -2,6 +2,7 @@ import { useState } from "react";
 import LocationField from "./LocationField";
 import { CloseIcon } from "./icons";
 import { WARRANTIES, SOURCES, STOCK_STATUSES, CONDITION_GRADES, conditionGradeKey } from "../lib/utils";
+import { ChipField, DropdownField } from "./FormPickers";
 
 function SectionHead({ n, title, sub }) {
   return (
@@ -113,17 +114,12 @@ export default function StockModal({ product, prefill, locations, onClose, onSav
 
         <div className="wf-sec">
           <SectionHead n={isEdit ? 2 : 3} title="Állapot & specifikáció" sub="Kondíció, tárhely, szín, IMEI" />
-          <div className="field"><label>Állapot</label>
-            <select
-              value={conditionGradeKey(f.condition, f.grade)}
-              onChange={(e) => {
-                const key = e.target.value;
-                setF(key === "New" ? { ...f, condition: "New", grade: "" } : { ...f, condition: "Refurbished", grade: key });
-              }}
-            >
-              {CONDITION_GRADES.map((g) => <option key={g.key} value={g.key}>{g.label}</option>)}
-            </select>
-          </div>
+          <ChipField
+            label="Állapot"
+            value={conditionGradeKey(f.condition, f.grade)}
+            onChange={(key) => setF(key === "New" ? { ...f, condition: "New", grade: "" } : { ...f, condition: "Refurbished", grade: key })}
+            options={CONDITION_GRADES.map((g) => ({ key: g.key, label: g.label }))}
+          />
           <div className="row2">
             <div className="field"><label>Tárhely</label><input value={f.storage} onChange={set("storage")} placeholder="128GB" /></div>
             <div className="field"><label>Szín</label><input value={f.color} onChange={set("color")} placeholder="Fekete" /></div>
@@ -148,26 +144,25 @@ export default function StockModal({ product, prefill, locations, onClose, onSav
             <label>Becsült új kori ár (Lei) <span style={{ color: "#9CA3AF", fontWeight: 400 }}>— opcionális, a vitrinen áthúzva jelenik meg</span></label>
             <input type="number" value={f.newPrice} onChange={set("newPrice")} placeholder="pl. 2500" />
           </div>
-          <div className="row2">
-            <div className="field"><label>Garancia</label>
-              <select value={f.warranty} onChange={set("warranty")}>
-                <option value="">Nincs</option>
-                {WARRANTIES.map((w) => <option key={w} value={w}>{w}</option>)}
-              </select>
-            </div>
-            <div className="field"><label>Forrás</label>
-              <select value={f.source} onChange={set("source")}>
-                <option value="">—</option>
-                {SOURCES.map((s) => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
-          </div>
-          <div className="field">
-            <label>Raktár állapot <span style={{ color: "#9CA3AF", fontWeight: 400 }}>— csak "Polcon" látszik a nyilvános webshopban</span></label>
-            <select value={f.stockStatus} onChange={set("stockStatus")}>
-              {STOCK_STATUSES.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
-            </select>
-          </div>
+          <DropdownField
+            label="Garancia"
+            value={f.warranty}
+            onChange={(v) => setF({ ...f, warranty: v })}
+            options={[{ key: "", label: "Nincs" }, ...WARRANTIES.map((w) => ({ key: w, label: w }))]}
+          />
+          <ChipField
+            label="Forrás"
+            value={f.source}
+            onChange={(key) => setF({ ...f, source: key })}
+            options={[{ key: "", label: "—" }, ...SOURCES.map((s) => ({ key: s, label: s }))]}
+          />
+          <ChipField
+            label="Raktár állapot"
+            hint={<span style={{ color: "#9CA3AF", fontWeight: 400 }}>— csak "Polcon" látszik a nyilvános webshopban</span>}
+            value={f.stockStatus}
+            onChange={(key) => setF({ ...f, stockStatus: key })}
+            options={STOCK_STATUSES.map((s) => ({ key: s.key, label: s.label }))}
+          />
         </div>
 
         <div className="modal-actions">

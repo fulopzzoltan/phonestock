@@ -3,6 +3,7 @@ import LocationField from "./LocationField";
 import { CloseIcon } from "./icons";
 import { PROBLEM_TAGS, WARRANTIES, STATUSES, SUB_STATUSES, statusLabel, normalizeImei, money, ticketCode } from "../lib/utils";
 import CustomerAutocomplete from "./CustomerAutocomplete";
+import { ChipField, DropdownField } from "./FormPickers";
 
 function parseIssue(issue) {
   const parts = (issue || "").split(",").map((p) => p.trim()).filter(Boolean);
@@ -85,20 +86,20 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
 
         <div className="wf-sec">
           <SectionHead n={1} title="Alapadatok" sub="Helyszín és a munkalap státusza" />
-          <div className="row2">
-            <LocationField locations={locations} value={locId} onChange={setLocId} />
-            <div className="field"><label>Státusz</label>
-              <select value={f.status} onChange={(e) => setF({ ...f, status: e.target.value, subStatus: SUB_STATUSES[e.target.value]?.[0]?.key ?? null })}>
-                {STATUSES.map((s) => <option key={s.key} value={s.key}>{statusLabel(s.key)}</option>)}
-              </select>
-            </div>
-          </div>
+          <LocationField locations={locations} value={locId} onChange={setLocId} />
+          <ChipField
+            label="Státusz"
+            value={f.status}
+            onChange={(key) => setF({ ...f, status: key, subStatus: SUB_STATUSES[key]?.[0]?.key ?? null })}
+            options={STATUSES.map((s) => ({ key: s.key, label: statusLabel(s.key) }))}
+          />
           {(SUB_STATUSES[f.status] || []).length > 1 && (
-            <div className="field"><label>Altípus</label>
-              <select value={f.subStatus ?? ""} onChange={(e) => setF({ ...f, subStatus: e.target.value || null })}>
-                {SUB_STATUSES[f.status].map((s) => <option key={s.label} value={s.key ?? ""}>{s.label}</option>)}
-              </select>
-            </div>
+            <ChipField
+              label="Altípus"
+              value={f.subStatus ?? null}
+              onChange={(key) => setF({ ...f, subStatus: key })}
+              options={SUB_STATUSES[f.status].map((s) => ({ key: s.key ?? null, label: s.label }))}
+            />
           )}
         </div>
 
@@ -154,12 +155,12 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
           </div>
           <div className="row2">
             <div className="field"><label>IMEI</label><input value={f.imei} onChange={set("imei")} placeholder="35xxxxxxxxxxxxx" /></div>
-            <div className="field"><label>Technikus</label>
-              <select value={f.assignedTo} onChange={set("assignedTo")}>
-                <option value="">— nincs hozzárendelve —</option>
-                {users.map((u) => <option key={u.id} value={u.id}>{u.fullName || u.email}</option>)}
-              </select>
-            </div>
+            <DropdownField
+              label="Technikus"
+              value={f.assignedTo}
+              onChange={(v) => setF({ ...f, assignedTo: v })}
+              options={[{ key: "", label: "— nincs hozzárendelve —" }, ...users.map((u) => ({ key: u.id, label: u.fullName || u.email }))]}
+            />
           </div>
           <div className="field">
             <label>Sorszám (kód) <span style={{ color: "#9CA3AF", fontWeight: 400 }}>— opcionális, üresen hagyva automatikusan a következő szabad szám kerül rá</span></label>
@@ -195,12 +196,12 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
           <div className="row3">
             <div className="field"><label>Árajánlat (Lei)</label><input type="number" value={f.price} onChange={set("price")} placeholder="0" /></div>
             <div className="field"><label>Anyagköltség (Lei)</label><input type="number" value={f.matCost} onChange={set("matCost")} placeholder="0" /></div>
-            <div className="field"><label>Garancia</label>
-              <select value={f.warranty} onChange={set("warranty")}>
-                <option value="">—</option>
-                {WARRANTIES.map((w) => <option key={w} value={w}>{w}</option>)}
-              </select>
-            </div>
+            <DropdownField
+              label="Garancia"
+              value={f.warranty}
+              onChange={(v) => setF({ ...f, warranty: v })}
+              options={[{ key: "", label: "—" }, ...WARRANTIES.map((w) => ({ key: w, label: w }))]}
+            />
           </div>
           <div className="row2">
             <div className="field"><label>Határidő (SLA)</label><input type="date" value={f.dueDate} onChange={set("dueDate")} /></div>
