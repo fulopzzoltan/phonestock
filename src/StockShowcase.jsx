@@ -296,10 +296,10 @@ export default function StockShowcase({ lang = "hu" }) {
                   const hasAnchor = p.new_price && Number(p.new_price) > Number(p.sale_price);
                   const href = lang === "ro" ? `/ro/telefon/${p.id}` : `/telefon/${p.id}`;
                   const inWishlist = wishlist.includes(p.id);
-                  // Az első reklámkártya már a 3. termék után jön (nem a 8.), utána marad a
-                  // 8-as ritmus (3., 11., 19. termék után stb.).
-                  const showPromo = i >= 2 && (i - 2) % 8 === 0;
-                  const promo = showPromo ? PROMO_CARDS[Math.floor((i - 2) / 8) % PROMO_CARDS.length] : null;
+                  // Az első reklámkártya a 3. termék után jön, utána 6 termékenként ismétlődik
+                  // (3., 9., 15. termék után stb.).
+                  const showPromo = i >= 2 && (i - 2) % 6 === 0;
+                  const promo = showPromo ? PROMO_CARDS[Math.floor((i - 2) / 6) % PROMO_CARDS.length] : null;
                   return (
                     <Fragment key={p.id}>
                       <div className="pub-card" role="link" tabIndex={0}
