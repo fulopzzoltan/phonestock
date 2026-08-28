@@ -18,8 +18,9 @@ export const STRINGS = {
     saveLabel: (n) => `Spórolsz ${n} Lei`,
     backToStock: "Vissza a készlethez", soldOut: "Ez a darab már elkelt, vagy nem található.",
     wishlistToggle: "Kedvencekhez adás",
-    promoBuybackTitle: "Van egy régi telefonod?", promoBuybackDesc: "Beszámítjuk vagy megvesszük — kérj árajánlatot pár kattintással.", promoBuybackCta: "Árajánlatot kérek →",
-    promoRepairTitle: "Elromlott a telefonod?", promoRepairDesc: "Ingyenes árbecslő pár kérdésből — nézd meg, mennyibe kerülne a javítás.", promoRepairCta: "Árbecslést kérek →",
+    promoBuybackTitle: "Van egy régi telefonod?", promoBuybackDesc: "Egy iPhone 11-ért pl. akár 900 Lejt is adunk — nézd meg a tiédet 30 másodperc alatt.", promoBuybackCta: "Megnézem, mennyit ér →",
+    promoRepairTitle: "Elromlott a telefonod?", promoRepairDesc: "Akkumulátorcsere már 200 Lejtől — nézd meg a te hibádra mennyibe kerülne, ingyen.", promoRepairCta: "Megnézem az árat →",
+    promoTrustTitle: "Nem csak egy raktár", promoTrustDesc: "2 fizikai üzlet (Gyimes, Szentgyörgy) — új, felújított és gombos telefon egy helyen, szerviz is ugyanott.", promoTrustCta: "📍 Gyimes & Szentgyörgy",
 
     // Vélemények
     reviewsTitle: "Amit a vásárlóink mondanak", reviewsBadge: (avg, n) => `${avg} · ${n} vélemény alapján`,
@@ -80,8 +81,9 @@ export const STRINGS = {
     saveLabel: (n) => `Economisești ${n} Lei`,
     backToStock: "Înapoi la stoc", soldOut: "Această bucată s-a vândut deja sau nu a fost găsită.",
     wishlistToggle: "Adaugă la favorite",
-    promoBuybackTitle: "Ai un telefon vechi?", promoBuybackDesc: "Îl preluăm sau îl cumpărăm — cere o ofertă din câteva click-uri.", promoBuybackCta: "Cer o ofertă →",
-    promoRepairTitle: "Ți s-a stricat telefonul?", promoRepairDesc: "Estimare gratuită din câteva întrebări — vezi cât ar costa reparația.", promoRepairCta: "Cer o estimare →",
+    promoBuybackTitle: "Ai un telefon vechi?", promoBuybackDesc: "Pentru un iPhone 11 dăm chiar și până la 900 Lei — vezi cât valorează al tău în 30 de secunde.", promoBuybackCta: "Văd cât valorează →",
+    promoRepairTitle: "Ți s-a stricat telefonul?", promoRepairDesc: "Schimb de baterie de la 200 Lei — vezi cât ar costa exact problema ta, gratuit.", promoRepairCta: "Văd prețul →",
+    promoTrustTitle: "Nu doar un depozit", promoTrustDesc: "2 magazine fizice (Ghimeș, Sfântu Gheorghe) — telefoane noi, recondiționate și cu taste într-un singur loc, plus service la fața locului.", promoTrustCta: "📍 Ghimeș & Sfântu Gheorghe",
 
     // Recenzii
     reviewsTitle: "Ce spun clienții noștri", reviewsBadge: (avg, n) => `${avg} · pe baza a ${n} recenzii`,

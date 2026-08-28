@@ -5,7 +5,7 @@ import { photoUrl } from "./lib/imageResize";
 import { t, translateColor, translateWarranty } from "./lib/i18n";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
-import { SearchIcon, FilterIcon, CartIcon, HeartIcon, BuybackIcon, ServiceIcon, CheckIcon, ChevronDownIcon } from "./components/icons";
+import { SearchIcon, FilterIcon, CartIcon, HeartIcon, BuybackIcon, ServiceIcon, PinIcon, CheckIcon, ChevronDownIcon } from "./components/icons";
 import { EmptyState, LoadingState } from "./components/EmptyState";
 import { addToCart, useCart } from "./lib/cart";
 import { toggleWishlist, useWishlist } from "./lib/wishlist";
@@ -148,6 +148,8 @@ export default function StockShowcase({ lang = "hu" }) {
   const PROMO_CARDS = [
     { variant: "dark", Icon: BuybackIcon, title: s.promoBuybackTitle, desc: s.promoBuybackDesc, cta: s.promoBuybackCta, href: "/eladom" },
     { variant: "accent", Icon: ServiceIcon, title: s.promoRepairTitle, desc: s.promoRepairDesc, cta: s.promoRepairCta, href: lang === "ro" ? "/ro/estimare" : "/becsles" },
+    // Nem visz el sehova — a cél nem konverzió-elterelés, hanem bizalomépítés böngészés közben.
+    { variant: "trust", Icon: PinIcon, title: s.promoTrustTitle, desc: s.promoTrustDesc, cta: s.promoTrustCta, href: null },
   ];
 
   const canonical = lang === "ro" ? `${SITE}/ro/telefoane` : `${SITE}/keszlet`;
@@ -356,16 +358,19 @@ export default function StockShowcase({ lang = "hu" }) {
                           )}
                         </div>
                       </div>
-                      {promo && (
-                        <a className={`pub-promo-card ${promo.variant}`} href={promo.href}>
-                          <div>
-                            <promo.Icon width={22} height={22} />
-                            <div className="pub-promo-title">{promo.title}</div>
-                            <div className="pub-promo-desc">{promo.desc}</div>
-                          </div>
-                          <span className="pub-promo-cta">{promo.cta}</span>
-                        </a>
-                      )}
+                      {promo && (() => {
+                        const Tag = promo.href ? "a" : "div";
+                        return (
+                          <Tag className={`pub-promo-card ${promo.variant}`} {...(promo.href ? { href: promo.href } : {})}>
+                            <div>
+                              <promo.Icon width={22} height={22} />
+                              <div className="pub-promo-title">{promo.title}</div>
+                              <div className="pub-promo-desc">{promo.desc}</div>
+                            </div>
+                            <span className="pub-promo-cta">{promo.cta}</span>
+                          </Tag>
+                        );
+                      })()}
                     </Fragment>
                   );
                 })}

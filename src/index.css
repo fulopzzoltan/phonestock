@@ -651,12 +651,15 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-promo-card.dark{background:var(--pub-ink);color:#fff}
 .pub-promo-card.dark .pub-promo-desc{color:#C7CDCF}
 .pub-promo-card.accent{background:var(--pub-accent-soft);border:1px solid var(--pub-accent);color:var(--pub-accent-ink)}
+.pub-promo-card.trust{background:var(--pub-paper-raised);border:1px solid var(--pub-line);color:var(--pub-ink);cursor:default}
+.pub-promo-card.trust:hover{transform:none}
 .pub-promo-title{font-size:15px;font-weight:800;line-height:1.25;margin-top:8px;color:inherit}
 .pub-promo-card.accent .pub-promo-title{color:var(--pub-ink)}
 .pub-promo-desc{font-size:12px;line-height:1.4}
 .pub-promo-cta{font-size:12.5px;font-weight:700;padding:9px 0;border-radius:9px;text-align:center}
 .pub-promo-card.dark .pub-promo-cta{background:var(--pub-accent);color:var(--pub-ink)}
 .pub-promo-card.accent .pub-promo-cta{background:var(--pub-accent-ink);color:#fff}
+.pub-promo-card.trust .pub-promo-cta{background:transparent;border:1px solid var(--pub-line);color:var(--pub-ink-soft)}
 .pub-card{background:var(--pub-paper-raised);border:1px solid var(--pub-line);border-radius:var(--radius-lg);padding:16px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow-card);transition:transform .14s;cursor:pointer;position:relative}
 .pub-card:hover{transform:translateY(-2px)}
 .pub-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding-right:34px}
