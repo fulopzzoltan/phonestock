@@ -32,7 +32,7 @@ export const STRINGS = {
     finderConditionQ: "Milyen állapotú telefont keresel?",
     finderBudgetQ: "Mennyit szánnál rá?",
     finderBudgetUnder: (n) => `${n} Lej alatt`, finderBudgetRange: (a, b) => `${a}-${b} Lej`, finderBudgetOver: (n) => `${n} Lej felett`,
-    finderStorageQ: "Mennyi tárhely kellene?",
+    finderStorageQ: "Mennyi tárhelyre van szükséged?",
     finderBrandQ: "Van kedvenc márkád?", finderBrandHint: "Válassz akár többet is, vagy hagyd üresen, ha mindegy",
     finderShowResults: "Ajánlatok megnézése",
     finderResultTitle: (n) => n === 1 ? "1 telefon, ami illik hozzád:" : `${n} telefon, ami illik hozzád:`,
