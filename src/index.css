@@ -637,7 +637,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
   .pub-sidebar.open{display:flex;width:100%;position:static;margin-bottom:14px}
 }
 
-.pub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:14px}
+.pub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(192px,1fr));gap:14px}
 
 /* Kívánságlista gomb a kártyán */
 .pub-wishlist-btn{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:999px;background:var(--pub-paper-raised);border:1px solid var(--pub-line);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--pub-ink-soft);z-index:1}
@@ -663,7 +663,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-cond-pill{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px}
 .pub-cond-pill.new{background:var(--pub-new-soft);color:var(--pub-new)}
 .pub-cond-pill.refurb{background:var(--pub-accent-soft);color:var(--pub-accent-ink)}
-.pub-device-art{height:132px;display:flex;align-items:center;justify-content:center;color:var(--pub-ink);border-radius:10px;overflow:hidden;background:var(--pub-paper)}
+.pub-device-art{height:168px;display:flex;align-items:center;justify-content:center;color:var(--pub-ink);border-radius:10px;overflow:hidden;background:var(--pub-paper)}
 .pub-device-art svg{height:78px;opacity:.88}
 .pub-device-photo{width:100%;height:100%;object-fit:cover;display:block}
 .pub-card-name{font-size:14.5px;font-weight:700;line-height:1.25}
