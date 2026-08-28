@@ -49,6 +49,7 @@ const orderStatusMatch = window.location.pathname.match(/^\/rendeles\/([0-9a-f-]
 const paymentMockMatch = window.location.pathname.match(/^\/fizetes\/([0-9a-f-]{36})\/?$/i);
 const termsMatch = window.location.pathname.match(/^\/aszf\/?$/i);
 const privacyMatch = window.location.pathname.match(/^\/adatvedelem\/?$/i);
+const returnsMatch = window.location.pathname.match(/^\/visszakuldes\/?$/i);
 // "/" és "/keszlet" is a nyilvános készletoldalt mutatja — ez az, amit valaki
 // a Netlify domain-re érkezve először lát, nem a bejelentkezés.
 const stockMatch = window.location.pathname.match(/^\/(keszlet\/?)?$/i);
@@ -75,6 +76,7 @@ function Root() {
   if (paymentMockMatch) return <PaymentMock token={paymentMockMatch[1]} />;
   if (termsMatch) return <LegalPage title="Általános Szerződési Feltételek" variant="terms" />;
   if (privacyMatch) return <LegalPage title="Adatvédelmi tájékoztató" variant="privacy" />;
+  if (returnsMatch) return <LegalPage title="Visszaküldési és Visszatérítési Szabályzat" variant="returns" />;
   if (roPhoneDetailMatch) return <PhoneDetail id={roPhoneDetailMatch[1]} lang="ro" />;
   if (phoneDetailMatch) return <PhoneDetail id={phoneDetailMatch[1]} lang="hu" />;
   if (buybackMatch) return <BuybackFlow />;

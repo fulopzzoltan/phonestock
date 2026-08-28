@@ -723,9 +723,14 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-footer-logo{height:20px;width:auto;display:block}
 .pub-footer-about{margin:0;font-size:12px;line-height:1.6;color:var(--pub-ink-soft);max-width:280px}
 .pub-footer-phone{display:inline-flex;align-items:center;gap:6px;font-weight:700;color:var(--pub-ink)!important}
+.pub-footer-social{display:flex;gap:10px;margin-top:2px}
+.pub-footer-social a{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;background:var(--pub-paper-raised);border:1px solid var(--pub-line);color:var(--pub-ink-soft)!important;text-decoration:none!important;transition:border-color .12s,color .12s}
+.pub-footer-social a:hover{border-color:var(--pub-accent);color:var(--pub-accent-ink)!important}
 .pub-footer-heading{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--pub-ink);margin-bottom:2px}
 .pub-footer-loc{display:flex;align-items:center;gap:6px;font-size:12.5px}
 .pub-footer-bottom{border-top:1px solid var(--pub-line);padding-top:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:11.5px}
+.pub-footer-bottom-left{display:flex;flex-direction:column;gap:3px}
+.pub-footer-company{color:var(--pub-ink-soft);opacity:.75;font-size:11px}
 .pub-footer-legal{display:flex;gap:16px}
 .pub-footer-legal a{color:var(--pub-ink-soft);text-decoration:none}
 .pub-footer-legal a:hover{color:var(--pub-accent-ink);text-decoration:underline}

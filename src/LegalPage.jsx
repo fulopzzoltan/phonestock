@@ -117,14 +117,140 @@ const TERMS_CONTENT = (
   </>
 );
 
+const PRIVACY_CONTENT = (
+  <>
+    <h2>1. Az adatkezelő adatai</h2>
+    <ul>
+      <li>Adatkezelő: Telefonos S.R.L.</li>
+      <li>Cégjegyzékszám (CUI): 50623366</li>
+      <li>Székhely: Lunca de Sus 494, bloc 3, ap. 6.</li>
+      <li>E-mail: <a href="mailto:info@telefonos.ro">info@telefonos.ro</a></li>
+      <li>Telefonszám: <a href="tel:0773985278">0773 985 278</a></li>
+    </ul>
+    <p>A Telefonos SRL a hatályos román és európai uniós (GDPR) szabályozásnak megfelelően kezeli a személyes adatokat.</p>
+
+    <h2>2. Milyen adatokat kezelünk</h2>
+    <p>Rendeléskor és a weboldal használata során az alábbiakat kérhetjük el:</p>
+    <ul>
+      <li>név, e-mail cím, telefonszám</li>
+      <li>számlázási és szállítási adatok</li>
+      <li>a rendelés részletei (termék, ár, fizetési mód)</li>
+      <li>amit üzenetben vagy hívásban megadsz, ha felveszed velünk a kapcsolatot</li>
+    </ul>
+    <p>Egészségügyi, politikai vagy más különleges adatot nem gyűjtünk.</p>
+
+    <h2>3. Miért kezeljük ezeket az adatokat</h2>
+    <ul>
+      <li>hogy fel tudjuk dolgozni és teljesíteni tudjuk a rendelésed</li>
+      <li>hogy kapcsolatba tudjunk lépni veled</li>
+      <li>számlázáshoz és a jogszabályi kötelezettségeink teljesítéséhez</li>
+      <li>garanciális és szervizügyekhez</li>
+      <li>hogy válaszolni tudjunk a kérdéseidre, panaszaidra</li>
+      <li>hogy jobbá tegyük a weboldalt</li>
+    </ul>
+
+    <h2>4. Milyen jogalapon</h2>
+    <ul>
+      <li>a hozzájárulásod</li>
+      <li>a köztünk létrejövő szerződés teljesítése</li>
+      <li>jogszabályi kötelezettség</li>
+      <li>jogos érdekünk (pl. ügyfélszolgálat, biztonság)</li>
+    </ul>
+
+    <h2>5. Meddig tároljuk az adataidat</h2>
+    <ul>
+      <li>rendelési és számlázási adatok: a jogszabály által előírt ideig</li>
+      <li>kapcsolattartási adatok: amíg az ügyed lezárul</li>
+      <li>marketing célú adatok: amíg vissza nem vonod a hozzájárulásod</li>
+    </ul>
+
+    <h2>6. Kivel osztjuk meg az adataidat</h2>
+    <p>
+      Csak azokkal a partnerekkel, akikre a rendelésed teljesítéséhez ténylegesen szükség van — például futárszolgálat,
+      számlázási és könyvelési szolgáltató, tárhely- és rendszerüzemeltető, illetve fizetési szolgáltató, ha online fizetsz.
+      Mindegyikük csak annyi adatot kap, amennyi a saját feladatához kell.
+    </p>
+
+    <h2>7. Sütik és böngésző-tárolás</h2>
+    <p>
+      Nem használunk követő vagy hirdetési sütiket. A böngésződ csak azt tárolja el helyben, ami a webshop
+      működéséhez kell — például a kosarad tartalmát, a kedvenceidet és a nyelvi beállításodat —, hogy ezek
+      megmaradjanak, amíg legközelebb visszatérsz. Ezt bármikor törölheted a böngésződ beállításaiból.
+    </p>
+
+    <h2>8. A jogaid</h2>
+    <p>Bármikor jogod van:</p>
+    <ul>
+      <li>tájékoztatást kérni arról, milyen adatot kezelünk rólad</li>
+      <li>hozzáférni ezekhez az adatokhoz</li>
+      <li>kérni a helyesbítésüket</li>
+      <li>kérni a törlésüket</li>
+      <li>korlátozni az adatkezelést</li>
+      <li>kikérni az adataidat (adathordozhatóság)</li>
+      <li>tiltakozni az adatkezelés ellen</li>
+    </ul>
+    <p>Ha ezek közül bármelyikkel élnél, írj nekünk: 📧 <a href="mailto:info@telefonos.ro">info@telefonos.ro</a></p>
+
+    <h2>9. Adatbiztonság</h2>
+    <p>Megfelelő technikai és szervezési intézkedésekkel védjük az adataidat a jogosulatlan hozzáféréstől, módosítástól vagy elvesztéstől.</p>
+
+    <h2>10. Panasz</h2>
+    <p>Ha úgy érzed, hogy az adataid kezelése nem felel meg a jogszabályoknak, panasszal fordulhatsz az illetékes adatvédelmi hatósághoz, vagy egyszerűen írj nekünk — igyekszünk gyorsan rendezni.</p>
+
+    <h2>11. Záró rendelkezés</h2>
+    <p>Ezt a tájékoztatót időről időre frissíthetjük — a változás a weboldalon történő közzététellel lép hatályba.</p>
+  </>
+);
+
+const RETURNS_CONTENT = (
+  <>
+    <p>A Vásárlót a hatályos jogszabályok szerint 14 naptári napon belül indokolás nélküli elállási jog illeti meg az online kötött szerződések esetén.</p>
+
+    <h2>1. Az elállási jog gyakorlása</h2>
+    <p>Az elállási jog a termék átvételének napjától számított 14 naptári napon belül gyakorolható.</p>
+    <p>Az elállási szándékot az alábbi módokon jelezheted:</p>
+    <ul>
+      <li>e-mailben: <a href="mailto:info@telefonos.ro">info@telefonos.ro</a>,</li>
+      <li>írásban, egyértelmű nyilatkozattal.</li>
+    </ul>
+
+    <h2>2. Visszaküldés feltételei</h2>
+    <p>A terméket hiánytalan, sértetlen állapotban, lehetőség szerint az eredeti csomagolásban kell visszajuttatnod.</p>
+    <p>Felelsz a termék értékcsökkenéséért, amennyiben az a szükséges kipróbálást meghaladó használatból ered.</p>
+    <p>A visszaküldés közvetlen költsége téged terhel, kivéve, ha ettől eltérően állapodunk meg.</p>
+
+    <h2>3. Visszatérítés</h2>
+    <p>Az elállás elfogadását követően a kifizetett összeget – a jogszabályoknak megfelelően – legkésőbb 14 napon belül visszatérítjük, ugyanazon a fizetési módon, amellyel a vásárlást teljesítetted, kivéve, ha másban állapodunk meg.</p>
+
+    <h2>4. Elállási jog kizárása</h2>
+    <p>Az elállási jog nem gyakorolható olyan esetekben, amelyeket a hatályos jogszabályok kizárnak, különösen:</p>
+    <ul>
+      <li>személyre szabott termékek esetén,</li>
+      <li>olyan termékeknél, amelyek higiéniai vagy adatbiztonsági okokból felbontást követően nem küldhetők vissza.</li>
+    </ul>
+
+    <h2>5. Garanciális visszaküldés</h2>
+    <p>Ha a készülékkel garanciális probléma merül fel, az elállási jogtól függetlenül a garanciális ügyintézés vonatkozik rá — ennek részletei az Általános Szerződési Feltételek 6. pontjában olvashatók.</p>
+
+    <h2>6. Elérhetőség</h2>
+    <ul>
+      <li>📧 <a href="mailto:info@telefonos.ro">info@telefonos.ro</a></li>
+      <li>📞 <a href="tel:0773985278">0773 985 278</a></li>
+    </ul>
+  </>
+);
+
+const CONTENT_BY_VARIANT = { terms: TERMS_CONTENT, privacy: PRIVACY_CONTENT, returns: RETURNS_CONTENT };
+
 export default function LegalPage({ title, variant }) {
+  const content = CONTENT_BY_VARIANT[variant];
   return (
     <div className="pub-shop">
       <PublicHeader activeNav="stock" />
       <main className="pub-legal-main">
         <h1 className="pub-legal-title">{title}</h1>
-        {variant === "terms" ? (
-          <div className="pub-legal-body">{TERMS_CONTENT}</div>
+        {content ? (
+          <div className="pub-legal-body">{content}</div>
         ) : (
           <div className="login-card" style={{ maxWidth: 520 }}>
             <div className="login-note">
