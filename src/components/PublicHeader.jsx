@@ -100,8 +100,8 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
         {children}
 
         <div className="pub-account-links">
-          <a className={activeNav === "cart" ? "active" : ""} href="/kosar"><CartIcon width={15} height={15} />Kosár{cartCount > 0 ? ` (${cartCount})` : ""}</a>
-          <a className={activeNav === "login" ? "active" : ""} href="/fiok"><UserIcon width={15} height={15} />{s.navLogin}</a>
+          {langSwitch}
+          <a className={`pub-account-link${activeNav === "login" ? " active" : ""}`} href="/fiok"><UserIcon width={15} height={15} />{s.navLogin}</a>
         </div>
 
         <div className="pub-header-row2">
@@ -109,10 +109,10 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
             <a className={`pub-nav-link${activeNav === "stock" ? " active" : ""}`} href={stockHref}><PhoneCaseIcon className="pub-nav-link-icon" width={16} height={16} />{s.navStock}</a>
             <a className={`pub-nav-link${activeNav === "repair" ? " active" : ""}`} href={repairHref}>{s.navRepair}</a>
             <a className={`pub-nav-link${activeNav === "status" ? " active" : ""}`} href="/status">{s.navStatus}</a>
+            <a className={`pub-nav-link${activeNav === "buyback" ? " active" : ""}`} href="/eladom">{s.navBuyback}</a>
           </nav>
           <div className="pub-row2-right">
-            {langSwitch}
-            <a className="pub-nav-link pub-nav-cta" href="/eladom">{s.navBuyback}</a>
+            <a className={`pub-account-link${activeNav === "cart" ? " active" : ""}`} href="/kosar"><CartIcon width={15} height={15} />Kosár{cartCount > 0 ? ` (${cartCount})` : ""}</a>
           </div>
         </div>
       </div>
