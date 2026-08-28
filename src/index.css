@@ -699,19 +699,30 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 
 /* VÉLEMÉNYEK (publikus) */
 .pub-reviews-badge{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--pub-ink-soft)}
+.pub-reviews-badge.stacked{flex-direction:column;align-items:flex-start;gap:4px}
 .pub-reviews-section{max-width:1240px;margin:44px auto 0;padding:0 24px}
-.pub-reviews-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.pub-reviews-head{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:20px}
 .pub-reviews-title{font-size:19px;font-weight:800;color:var(--pub-ink)}
-.pub-reviews-avg{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--pub-ink-soft)}
-.pub-reviews-row{display:flex;gap:14px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x proximity}
-.pub-review-card{flex:0 0 260px;scroll-snap-align:start;background:var(--pub-paper-raised);border:1px solid var(--pub-line);border-radius:var(--radius-lg);padding:16px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-card)}
-.pub-review-body{font-size:13px;color:var(--pub-ink);line-height:1.5;flex:1}
-.pub-review-foot{display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--pub-ink-soft);padding-top:8px;border-top:1px solid var(--pub-line)}
-.pub-review-author{font-weight:700;color:var(--pub-ink)}
+.pub-reviews-subtitle{font-size:12.5px;color:var(--pub-ink-soft);margin-top:4px}
+.pub-reviews-scorecard{flex-shrink:0;background:var(--pub-paper-raised);border:1px solid var(--pub-line);border-radius:var(--radius-lg);padding:12px 18px;text-align:center;box-shadow:var(--shadow-card)}
+.pub-reviews-scorecard-num{display:inline-flex;align-items:center;gap:8px;font-size:18px;font-weight:800;color:var(--pub-ink)}
+.pub-reviews-scorecard-count{font-size:11.5px;color:var(--pub-ink-soft);margin-top:4px}
+
+.pub-reviews-carousel{position:relative}
+.pub-reviews-row{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:4px;scrollbar-width:none}
+.pub-reviews-row::-webkit-scrollbar{display:none}
+.pub-review-card{flex:0 0 270px;scroll-snap-align:start;background:var(--pub-paper-raised);border:1px solid var(--pub-line);border-radius:var(--radius-lg);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-card)}
+.pub-review-author{font-weight:700;font-size:13.5px;color:var(--pub-ink)}
+.pub-review-stars-row{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--pub-ink-soft)}
+.pub-review-body{font-size:13px;color:var(--pub-ink);line-height:1.55;flex:1}
+.pub-review-foot{font-size:11.5px;color:var(--pub-ink-soft);padding-top:8px;border-top:1px solid var(--pub-line)}
 .pub-review-reply{font-size:11.5px;color:var(--pub-ink-soft);background:var(--pub-paper);border-radius:9px;padding:8px 10px}
-@media (max-width:640px){
-  .pub-review-card{flex-basis:220px}
-}
+
+.pub-reviews-nav{position:absolute;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:999px;background:var(--pub-paper-raised);border:1px solid var(--pub-line);box-shadow:var(--shadow-card);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--pub-ink);z-index:1}
+.pub-reviews-nav:hover{border-color:var(--pub-accent);color:var(--pub-accent-ink)}
+.pub-reviews-nav.prev{left:-6px}
+.pub-reviews-nav.next{right:-6px}
+@media (max-width:640px){.pub-reviews-nav{display:none}}
 
 .pub-footer{border-top:1px solid var(--pub-line);padding:36px 24px 24px;margin-top:32px;background:var(--pub-paper-raised)}
 .pub-footer-inner{max-width:1180px;margin:0 auto;font-size:12px;color:var(--pub-ink-soft);line-height:1.6}

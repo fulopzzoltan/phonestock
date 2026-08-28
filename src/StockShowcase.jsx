@@ -294,7 +294,7 @@ export default function StockShowcase({ lang = "hu" }) {
               </button>
             </SidebarGroup>
 
-            <ReviewsBadge lang={lang} style={{ marginTop: 4 }} />
+            <ReviewsBadge lang={lang} stacked style={{ marginTop: 4 }} />
           </aside>
 
           <div className="pub-results" ref={resultsTopRef}>
