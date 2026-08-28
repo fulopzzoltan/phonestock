@@ -9,6 +9,7 @@ import { SearchIcon, FilterIcon, CartIcon, HeartIcon, BuybackIcon, ServiceIcon, 
 import { EmptyState, LoadingState } from "./components/EmptyState";
 import { addToCart, useCart } from "./lib/cart";
 import { toggleWishlist, useWishlist } from "./lib/wishlist";
+import ReviewsSection, { ReviewsBadge, usePublicReviews } from "./components/PublicReviews";
 
 const SITE = "https://phonestock-manager.netlify.app";
 
@@ -45,6 +46,7 @@ export default function StockShowcase({ lang = "hu" }) {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const cart = useCart();
   const wishlist = useWishlist();
+  const { avg: reviewsAvg, count: reviewsCount } = usePublicReviews();
 
   useEffect(() => {
     (async () => {
@@ -161,6 +163,12 @@ export default function StockShowcase({ lang = "hu" }) {
             { "@type": "PostalAddress", addressLocality: "Ghimeș", addressRegion: "Harghita", addressCountry: "RO" },
             { "@type": "PostalAddress", addressLocality: "Sfântu Gheorghe", addressRegion: "Covasna", addressCountry: "RO" },
           ],
+          ...(reviewsCount > 0 ? {
+            aggregateRating: {
+              "@type": "AggregateRating",
+              ratingValue: reviewsAvg.toFixed(1), bestRating: 5, worstRating: 1, ratingCount: reviewsCount,
+            },
+          } : {}),
         })}</script>
       </Helmet>
       <PublicHeader activeNav="stock" lang={lang}>
@@ -179,6 +187,7 @@ export default function StockShowcase({ lang = "hu" }) {
 
       <div className="pub-results-bar">
         <div className="pub-results-count">{loading ? "…" : s.resultsCount(filtered.length)}</div>
+        <ReviewsBadge lang={lang} />
       </div>
 
       <main className="pub-main">
@@ -351,6 +360,8 @@ export default function StockShowcase({ lang = "hu" }) {
           </div>
         </div>
       </main>
+
+      <ReviewsSection lang={lang} />
 
       <PublicFooter lang={lang} />
     </div>

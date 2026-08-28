@@ -266,6 +266,29 @@ export const loyaltyRewardToApi = (r) => ({
   sort_order: Number(r.sortOrder) || 0,
 });
 
+export const reviewFromApi = (r) => ({
+  id: r.id,
+  authorName: r.author_name,
+  rating: r.rating,
+  body: r.body,
+  reviewDate: r.review_date,
+  source: r.source,
+  locationId: r.location_id,
+  isPublished: r.is_published !== false,
+  replyText: r.reply_text,
+  createdAt: r.created_at,
+});
+export const reviewToApi = (r) => ({
+  author_name: r.authorName,
+  rating: Number(r.rating) || 5,
+  body: r.body,
+  review_date: r.reviewDate,
+  source: r.source || "kezi",
+  location_id: r.locationId || null,
+  is_published: r.isPublished !== false,
+  reply_text: r.replyText || null,
+});
+
 export const partFromApi = (r) => ({
   id: r.id,
   partNo: r.part_no,

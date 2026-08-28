@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
 import { thumbPathOf } from "./lib/imageResize";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi, buybackOfferFromApi, loyaltyLedgerFromApi, loyaltyRewardFromApi, loyaltyRewardToApi, customerProfileFromApi } from "./lib/mappers";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi, buybackOfferFromApi, loyaltyLedgerFromApi, loyaltyRewardFromApi, loyaltyRewardToApi, customerProfileFromApi, reviewFromApi, reviewToApi } from "./lib/mappers";
 import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, normalizeImei, money, ticketCode } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
@@ -33,6 +33,7 @@ import LeaveTab from "./tabs/LeaveTab";
 import BuybackTab from "./tabs/BuybackTab";
 import BuybackOfferDetailPanel from "./components/BuybackOfferDetailPanel";
 import RepairPricesTab from "./tabs/RepairPricesTab";
+import ReviewsTab from "./tabs/ReviewsTab";
 import UsersTab from "./tabs/UsersTab";
 import TrashTab from "./tabs/TrashTab";
 import SettingsTab from "./tabs/SettingsTab";
@@ -230,6 +231,7 @@ function AppShell() {
   const [repairPrices, setRepairPrices] = useState([]);
   const [repairLeads, setRepairLeads] = useState([]);
   const [cashHolders, setCashHolders] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [cashSettlements, setCashSettlements] = useState([]);
   const [dayCloses, setDayCloses] = useState([]);
   const [repairPriceModal, setRepairPriceModal] = useState(null); // null | { familyKey, problemTag }
@@ -277,7 +279,7 @@ function AppShell() {
   async function loadAll({ silent = false } = {}) {
     if (!silent) setLoadingData(true);
     try {
-      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, bbOffers, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds, prodAcqs, dClosesR, loyRewards, loyLedger, custProfiles] = await Promise.all([
+      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, bbOffers, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds, prodAcqs, dClosesR, loyRewards, loyLedger, custProfiles, revs] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         fetchAllRows(() => supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false })),
         fetchAllRows(() => supabase.from("transactions").select("*, smartbill_documents(*), signatures(*)").is("deleted_at", null).order("date", { ascending: false })),
@@ -309,6 +311,7 @@ function AppShell() {
         supabase.from("loyalty_rewards").select("*").order("sort_order", { ascending: true }),
         fetchAllRows(() => supabase.from("loyalty_points_ledger").select("*").order("created_at", { ascending: false })),
         supabase.from("customer_profiles").select("*"),
+        supabase.from("reviews").select("*").order("review_date", { ascending: false }),
       ]);
       setLocations(unwrap(locs) || []);
       const prodRows = unwrap(prods) || [];
@@ -330,6 +333,7 @@ function AppShell() {
       setLoyaltyRewards((unwrap(loyRewards) || []).map(loyaltyRewardFromApi));
       setLoyaltyLedger((unwrap(loyLedger) || []).map(loyaltyLedgerFromApi));
       setCustomerProfiles((unwrap(custProfiles) || []).map(customerProfileFromApi));
+      setReviews((unwrap(revs) || []).map(reviewFromApi));
       setMonthlySummaries((unwrap(msums) || []).map(monthlySummaryFromApi));
       setWarranties((unwrap(warrs) || []).map(warrantyFromApi));
       setBuybackModels((unwrap(bbModels) || []).map(buybackModelFromApi));
@@ -1238,6 +1242,33 @@ function AppShell() {
     });
   }
 
+  // REVIEWS (webshop vélemények)
+  async function addReview(data) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("reviews").insert({ ...reviewToApi(data), created_by: user.id }).select());
+      setReviews((prev) => [reviewFromApi(r[0]), ...prev]);
+    });
+  }
+  async function editReview(id, data) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("reviews").update(reviewToApi(data)).eq("id", id).select());
+      setReviews((prev) => prev.map((rv) => (rv.id === id ? reviewFromApi(r[0]) : rv)));
+    });
+  }
+  async function deleteReview(id) {
+    await withBusy(async () => {
+      unwrap(await supabase.from("reviews").delete().eq("id", id));
+      setReviews((prev) => prev.filter((rv) => rv.id !== id));
+    });
+  }
+  async function bulkImportReviews(rows) {
+    await withBusy(async () => {
+      const payload = rows.map((r) => ({ ...reviewToApi(r), created_by: user.id }));
+      const r = unwrap(await supabase.from("reviews").insert(payload).select());
+      setReviews((prev) => [...(r || []).map(reviewFromApi), ...prev]);
+    });
+  }
+
   // TRANSACTIONS
   async function addTransaction(data, locId) {
     await withBusy(async () => {
@@ -2131,6 +2162,13 @@ function AppShell() {
             repairPrices={repairPrices} setRepairPriceModal={setRepairPriceModal} repairLeads={repairLeads}
             repairLeadFilter={repairLeadFilter} setRepairLeadFilter={setRepairLeadFilter} busy={busy}
             setRepairLeadConvert={setRepairLeadConvert} setTicketModal={setTicketModal} rejectRepairLead={rejectRepairLead} locName={locName}
+          />
+        )}
+
+        {!noLocationAssigned && isAdmin && tab === "reviews" && (
+          <ReviewsTab
+            reviews={reviews} locations={allowedLocations} locName={locName} busy={busy}
+            addReview={addReview} editReview={editReview} deleteReview={deleteReview} bulkImportReviews={bulkImportReviews}
           />
         )}
 

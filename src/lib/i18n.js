@@ -21,6 +21,10 @@ export const STRINGS = {
     promoBuybackTitle: "Van egy régi telefonod?", promoBuybackDesc: "Beszámítjuk vagy megvesszük — kérj árajánlatot pár kattintással.", promoBuybackCta: "Árajánlatot kérek →",
     promoRepairTitle: "Elromlott a telefonod?", promoRepairDesc: "Ingyenes árbecslő pár kérdésből — nézd meg, mennyibe kerülne a javítás.", promoRepairCta: "Árbecslést kérek →",
 
+    // Vélemények
+    reviewsTitle: "Amit a vásárlóink mondanak", reviewsBadge: (avg, n) => `${avg} · ${n} vélemény alapján`,
+    reviewsEmpty: "Hamarosan itt lesznek az első véleményeink.",
+
     // Telefon-részletoldal
     storageLabel: "Tárhely", colorLabel: "Szín", batteryLabel: "Akkumulátor", warrantyLabel: "Garancia",
     interestedCall: "Érdekel — hívj minket",
@@ -72,6 +76,10 @@ export const STRINGS = {
     wishlistToggle: "Adaugă la favorite",
     promoBuybackTitle: "Ai un telefon vechi?", promoBuybackDesc: "Îl preluăm sau îl cumpărăm — cere o ofertă din câteva click-uri.", promoBuybackCta: "Cer o ofertă →",
     promoRepairTitle: "Ți s-a stricat telefonul?", promoRepairDesc: "Estimare gratuită din câteva întrebări — vezi cât ar costa reparația.", promoRepairCta: "Cer o estimare →",
+
+    // Recenzii
+    reviewsTitle: "Ce spun clienții noștri", reviewsBadge: (avg, n) => `${avg} · pe baza a ${n} recenzii`,
+    reviewsEmpty: "În curând vor apărea aici primele noastre recenzii.",
 
     storageLabel: "Stocare", colorLabel: "Culoare", batteryLabel: "Baterie", warrantyLabel: "Garanție",
     interestedCall: "Sunt interesat — sună-ne",

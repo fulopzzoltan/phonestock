@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   BoardIcon, ServiceIcon, PhoneCaseIcon, FinanceIcon, MoreIcon,
   PartsIcon, CustomersIcon, WarrantyIcon, CashSettlementIcon, InvoiceIcon, LeaveIcon,
-  DashboardIcon, UsersNavIcon, TrashNavIcon, BuybackIcon, RepairPriceIcon, SettingsIcon, LogoutIcon,
+  DashboardIcon, UsersNavIcon, TrashNavIcon, BuybackIcon, RepairPriceIcon, ReviewsIcon, SettingsIcon, LogoutIcon,
 } from "./icons";
 import BottomSheet from "./BottomSheet";
 import { SITE_URL } from "../lib/utils";
@@ -66,6 +66,7 @@ export default function BottomNav({
             <div className="nav-lbl">Webshop</div>
             <button className={`navbtn ${tab === "buyback" ? "active" : ""}`} onClick={() => go("buyback")}><BuybackIcon className="nav-ic" />Felvásárlás</button>
             <button className={`navbtn ${tab === "repair-prices" ? "active" : ""}`} onClick={() => go("repair-prices")}><RepairPriceIcon className="nav-ic" />Szerviz árbecslő</button>
+            <button className={`navbtn ${tab === "reviews" ? "active" : ""}`} onClick={() => go("reviews")}><ReviewsIcon className="nav-ic" />Vélemények</button>
           </>
         )}
 

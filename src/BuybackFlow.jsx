@@ -7,6 +7,7 @@ import PublicFooter from "./components/PublicFooter";
 import BuybackPriceBar from "./components/BuybackPriceBar";
 import { ClockIcon, FinanceIcon, CallIcon, PinIcon, PartsIcon, WarningIcon, BuybackIcon } from "./components/icons";
 import { EmptyState, LoadingState } from "./components/EmptyState";
+import { ReviewsBadge } from "./components/PublicReviews";
 
 const COLORS = ["Fekete", "Fehér", "Kék", "Zöld", "Ezüst", "Egyéb"];
 
@@ -179,6 +180,7 @@ export default function BuybackFlow() {
     <div className="pub-shop">
       <PublicHeader activeNav="buyback" />
       <main className="bb-main">
+        <ReviewsBadge style={{ marginBottom: 12 }} />
         <div className="bb-progress">
           <div className="bb-progress-track"><div className="bb-progress-fill" style={{ width: `${((stepIndex + 1) / totalSteps) * 100}%` }} /></div>
           <span className="bb-progress-label">{stepIndex + 1}/{totalSteps}</span>

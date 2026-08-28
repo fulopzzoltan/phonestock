@@ -8,6 +8,7 @@ import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 import { CallIcon, PinIcon, WarningIcon } from "./components/icons";
 import { EmptyState, LoadingState } from "./components/EmptyState";
+import { ReviewsBadge } from "./components/PublicReviews";
 
 const SITE = "https://phonestock-manager.netlify.app";
 const OTHER_PROBLEMS = PROBLEM_TAGS.filter((tag) => !PRICED_PROBLEMS.includes(tag));
@@ -212,6 +213,7 @@ export default function RepairEstimator({ lang = "hu" }) {
       {seoHead}
       <PublicHeader activeNav="repair" lang={lang} />
       <main className="bb-main">
+        <ReviewsBadge lang={lang} style={{ marginBottom: 12 }} />
         {step !== "custom" && (
           <div className="pub-steps">
             {STEP_ORDER.map((st, i) => (
