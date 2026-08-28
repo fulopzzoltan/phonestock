@@ -38,7 +38,9 @@ export default function StockShowcase({ lang = "hu" }) {
   const [error, setError] = useState("");
   const [q, setQ] = useState("");
   const [selectedBrands, setSelectedBrands] = useState([]);
-  const [cond, setCond] = useState("all");
+  const [selectedConditions, setSelectedConditions] = useState([]);
+  const [selectedStorages, setSelectedStorages] = useState([]);
+  const [selectedOS, setSelectedOS] = useState([]);
   const [sort, setSort] = useState("recommended");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const cart = useCart();
@@ -63,6 +65,38 @@ export default function StockShowcase({ lang = "hu" }) {
     setSelectedBrands((prev) => (prev.includes(b) ? prev.filter((x) => x !== b) : [...prev, b]));
   }
 
+  // Nincs külön "operációs rendszer" mező az adatbázisban — a márkából derítjük
+  // (Apple = iOS, minden más márka = Android), ez a szektorban egyértelmű megfeleltetés.
+  const osOf = (brand) => (brand === "Apple" ? "iOS" : "Android");
+  const osOptions = useMemo(() => [...new Set(phones.map((p) => osOf(p.brand)))].sort((a) => (a === "iOS" ? -1 : 1)), [phones]);
+  function toggleOS(o) {
+    setSelectedOS((prev) => (prev.includes(o) ? prev.filter((x) => x !== o) : [...prev, o]));
+  }
+
+  const storages = useMemo(() => [...new Set(phones.map((p) => p.storage).filter(Boolean))]
+    .sort((a, b) => (parseInt(a, 10) || 0) - (parseInt(b, 10) || 0)), [phones]);
+  function toggleStorage(st) {
+    setSelectedStorages((prev) => (prev.includes(st) ? prev.filter((x) => x !== st) : [...prev, st]));
+  }
+
+  function toggleCondition(c) {
+    setSelectedConditions((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]));
+  }
+
+  function clearFilters() {
+    setSelectedBrands([]);
+    setSelectedConditions([]);
+    setSelectedStorages([]);
+    setSelectedOS([]);
+  }
+
+  // Szűrő-melléksáv opciónkénti darabszáma — a teljes (aktuális szűréstől független) készletből,
+  // hogy a lista ne "ugráljon" minden kattintásnál, csak tájékoztat, mennyi van összesen.
+  const countsByBrand = useMemo(() => { const m = {}; phones.forEach((p) => { m[p.brand] = (m[p.brand] || 0) + 1; }); return m; }, [phones]);
+  const countsByOS = useMemo(() => { const m = {}; phones.forEach((p) => { const o = osOf(p.brand); m[o] = (m[o] || 0) + 1; }); return m; }, [phones]);
+  const countsByStorage = useMemo(() => { const m = {}; phones.forEach((p) => { if (p.storage) m[p.storage] = (m[p.storage] || 0) + 1; }); return m; }, [phones]);
+  const countsByCondition = useMemo(() => { const m = {}; phones.forEach((p) => { m[p.condition] = (m[p.condition] || 0) + 1; }); return m; }, [phones]);
+
   const stockCounts = useMemo(() => {
     const counts = {};
     phones.forEach((p) => {
@@ -75,7 +109,9 @@ export default function StockShowcase({ lang = "hu" }) {
   const filtered = useMemo(() => {
     let items = phones.filter((p) => {
       if (selectedBrands.length > 0 && !selectedBrands.includes(p.brand)) return false;
-      if (cond !== "all" && p.condition !== cond) return false;
+      if (selectedConditions.length > 0 && !selectedConditions.includes(p.condition)) return false;
+      if (selectedStorages.length > 0 && !selectedStorages.includes(p.storage)) return false;
+      if (selectedOS.length > 0 && !selectedOS.includes(osOf(p.brand))) return false;
       if (q.trim() && !`${p.brand} ${p.model} ${p.color || ""}`.toLowerCase().includes(q.trim().toLowerCase())) return false;
       return true;
     });
@@ -86,9 +122,9 @@ export default function StockShowcase({ lang = "hu" }) {
       return a.brand.localeCompare(b.brand) || a.model.localeCompare(b.model);
     });
     return items;
-  }, [phones, selectedBrands, cond, q, sort]);
+  }, [phones, selectedBrands, selectedConditions, selectedStorages, selectedOS, q, sort]);
 
-  const activeFilterCount = selectedBrands.length + (cond !== "all" ? 1 : 0);
+  const activeFilterCount = selectedBrands.length + selectedConditions.length + selectedStorages.length + selectedOS.length;
 
   // A rácsba illesztett infó-kártyák (flip.ro mintájára) — valós, meglévő funkciókra mutatnak,
   // nem kitalált akciók.
@@ -149,24 +185,59 @@ export default function StockShowcase({ lang = "hu" }) {
         {error && <div className="errbar">{error}</div>}
         <div className="pub-body">
           <aside className={`pub-sidebar${filtersOpen ? " open" : ""}`}>
+            <div className="pub-sidebar-head">
+              <div className="pub-sidebar-title">{s.filters}</div>
+              {activeFilterCount > 0 && <button type="button" className="pub-sidebar-clear" onClick={clearFilters}>{s.clearFilters}</button>}
+            </div>
+
             <div className="pub-sidebar-group">
               <div className="pub-sidebar-label">{s.allBrands}</div>
               {brands.map((b) => (
                 <button key={b} type="button" className={`pub-check-row${selectedBrands.includes(b) ? " active" : ""}`} onClick={() => toggleBrand(b)}>
                   <span className="pub-check">{selectedBrands.includes(b) && <CheckIcon width={10} height={10} strokeWidth={3} />}</span>
                   <span className="pub-check-row-label">{b}</span>
+                  <span className="pub-check-row-count">{countsByBrand[b]}</span>
                 </button>
               ))}
             </div>
+
+            {osOptions.length > 1 && (
+              <div className="pub-sidebar-group">
+                <div className="pub-sidebar-label">{s.os}</div>
+                {osOptions.map((o) => (
+                  <button key={o} type="button" className={`pub-check-row${selectedOS.includes(o) ? " active" : ""}`} onClick={() => toggleOS(o)}>
+                    <span className="pub-check">{selectedOS.includes(o) && <CheckIcon width={10} height={10} strokeWidth={3} />}</span>
+                    <span className="pub-check-row-label">{o}</span>
+                    <span className="pub-check-row-count">{countsByOS[o]}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {storages.length > 0 && (
+              <div className="pub-sidebar-group">
+                <div className="pub-sidebar-label">{s.storageLabel}</div>
+                {storages.map((st) => (
+                  <button key={st} type="button" className={`pub-check-row${selectedStorages.includes(st) ? " active" : ""}`} onClick={() => toggleStorage(st)}>
+                    <span className="pub-check">{selectedStorages.includes(st) && <CheckIcon width={10} height={10} strokeWidth={3} />}</span>
+                    <span className="pub-check-row-label">{st}</span>
+                    <span className="pub-check-row-count">{countsByStorage[st]}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
             <div className="pub-sidebar-group">
               <div className="pub-sidebar-label">{s.allConditions}</div>
-              <button type="button" className={`pub-check-row${cond === "New" ? " active" : ""}`} onClick={() => setCond((c) => (c === "New" ? "all" : "New"))}>
-                <span className="pub-check">{cond === "New" && <CheckIcon width={10} height={10} strokeWidth={3} />}</span>
+              <button type="button" className={`pub-check-row${selectedConditions.includes("New") ? " active" : ""}`} onClick={() => toggleCondition("New")}>
+                <span className="pub-check">{selectedConditions.includes("New") && <CheckIcon width={10} height={10} strokeWidth={3} />}</span>
                 <span className="pub-check-row-label">{s.conditionNew}</span>
+                <span className="pub-check-row-count">{countsByCondition.New || 0}</span>
               </button>
-              <button type="button" className={`pub-check-row${cond === "Refurbished" ? " active" : ""}`} onClick={() => setCond((c) => (c === "Refurbished" ? "all" : "Refurbished"))}>
-                <span className="pub-check">{cond === "Refurbished" && <CheckIcon width={10} height={10} strokeWidth={3} />}</span>
+              <button type="button" className={`pub-check-row${selectedConditions.includes("Refurbished") ? " active" : ""}`} onClick={() => toggleCondition("Refurbished")}>
+                <span className="pub-check">{selectedConditions.includes("Refurbished") && <CheckIcon width={10} height={10} strokeWidth={3} />}</span>
                 <span className="pub-check-row-label">{s.conditionRefurb}</span>
+                <span className="pub-check-row-count">{countsByCondition.Refurbished || 0}</span>
               </button>
             </div>
           </aside>

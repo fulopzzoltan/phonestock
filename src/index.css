@@ -575,15 +575,21 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 
 /* Oldalsávos szűrés (bsgmag.ro hatás) */
 .pub-body{display:flex;gap:20px;align-items:flex-start}
-.pub-sidebar{width:216px;flex-shrink:0;background:var(--pub-paper-raised);border:1px solid var(--pub-line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:18px;position:sticky;top:84px}
+.pub-sidebar{width:230px;flex-shrink:0;background:var(--pub-paper-raised);border:1px solid var(--pub-line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:16px;position:sticky;top:84px}
+.pub-sidebar-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pub-sidebar-title{font-size:13.5px;font-weight:800;color:var(--pub-ink)}
+.pub-sidebar-clear{border:none;background:none;font-family:inherit;font-size:11.5px;font-weight:600;color:var(--pub-accent-ink);cursor:pointer;padding:0}
+.pub-sidebar-clear:hover{text-decoration:underline}
 .pub-sidebar-group{border-top:1px solid var(--pub-line);padding-top:16px}
-.pub-sidebar-group:first-child{border-top:none;padding-top:0}
+.pub-sidebar-head + .pub-sidebar-group{border-top:none;padding-top:0}
 .pub-sidebar-label{font-size:11px;font-weight:700;color:var(--pub-ink-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
-.pub-check-row{display:flex;align-items:center;gap:8px;cursor:pointer;padding:3px 0;border:none;background:none;font-family:inherit;width:100%;text-align:left}
-.pub-check{width:16px;height:16px;border:1.5px solid var(--pub-line);border-radius:5px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;color:#fff}
+.pub-check-row{display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 8px;margin:0 -8px;border:none;border-radius:8px;background:none;font-family:inherit;width:calc(100% + 16px);text-align:left;transition:background-color .1s}
+.pub-check-row:hover{background:var(--pub-paper)}
+.pub-check{width:16px;height:16px;border:1.5px solid var(--pub-line);border-radius:5px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;color:#fff;transition:background-color .1s,border-color .1s}
 .pub-check-row.active .pub-check{background:var(--pub-accent);border-color:var(--pub-accent)}
-.pub-check-row-label{font-size:12.5px;color:var(--pub-ink-soft)}
+.pub-check-row-label{font-size:12.5px;color:var(--pub-ink-soft);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pub-check-row.active .pub-check-row-label{color:var(--pub-ink);font-weight:600}
+.pub-check-row-count{font-size:11px;color:var(--pub-ink-soft);opacity:.7;flex-shrink:0}
 .pub-results{flex:1;min-width:0}
 .pub-results-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .pub-results-top .pub-sort-select{margin-left:0}

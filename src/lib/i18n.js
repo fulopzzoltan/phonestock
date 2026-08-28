@@ -5,8 +5,8 @@ export const STRINGS = {
 
     // Készlet-vitrin
     searchPlaceholder: "Keresés — pl. iPhone 13, Samsung A07...", filters: "Szűrők",
-    allBrands: "Minden márka", allConditions: "Összes állapot",
-    conditionNew: "Új", conditionRefurb: "Felújított",
+    allBrands: "Minden márka", allConditions: "Összes állapot", os: "Operációs rendszer",
+    conditionNew: "Új", conditionRefurb: "Felújított", clearFilters: "Szűrők törlése",
     sortRecommended: "Ajánlott sorrend", sortPriceAsc: "Ár: olcsóbb elöl", sortPriceDesc: "Ár: drágább elöl", sortBrand: "Márka szerint",
     resultsCount: (n) => `${n} telefon készleten`,
     loading: "Betöltés...", noResults: "Nincs találat a szűrésre — próbálj más márkát vagy keresőszót.",
@@ -57,8 +57,8 @@ export const STRINGS = {
     navStatus: "Urmărire", navLogin: "Autentificare", langSwitch: "HU",
 
     searchPlaceholder: "Căutare — ex. iPhone 13, Samsung A07...", filters: "Filtre",
-    allBrands: "Toate mărcile", allConditions: "Toate stările",
-    conditionNew: "Nou", conditionRefurb: "Recondiționat",
+    allBrands: "Toate mărcile", allConditions: "Toate stările", os: "Sistem de operare",
+    conditionNew: "Nou", conditionRefurb: "Recondiționat", clearFilters: "Șterge filtrele",
     sortRecommended: "Recomandat", sortPriceAsc: "Preț: crescător", sortPriceDesc: "Preț: descrescător", sortBrand: "După marcă",
     resultsCount: (n) => `${n} telefoane în stoc`,
     loading: "Se încarcă...", noResults: "Niciun rezultat — încearcă altă marcă sau alt cuvânt cheie.",
