@@ -380,18 +380,18 @@ function AppShell() {
 
   // Más eszközön/kollégánál mentett munkalap, alkatrész stb. eddig csak kézi újratöltésre
   // jelent meg — csendben (loading-villanás nélkül) frissítünk, amikor a tab újra láthatóvá
-  // válik, plusz egy percenként háttérben is, amíg nyitva van a fül. Ez sima REST lekérés
-  // (ugyanaz, mint a kezdeti betöltés), NEM Realtime websocket-csatorna — azt korábban kivettük,
-  // mert a folyamatosan nyitva tartott websocket rontotta a be-/kijelentkezés megbízhatóságát.
+  // válik (visszaváltasz rá). Nincs időzített háttér-lekérdezés — ha több eszközön/fülön
+  // is nyitva van az admin, ne terheljék feleslegesen egymást; a visszaváltás ténye már
+  // magától elegendő jelzés a frissítésre. Ez sima REST lekérés (ugyanaz, mint a kezdeti
+  // betöltés), NEM Realtime websocket-csatorna — azt korábban kivettük, mert a folyamatosan
+  // nyitva tartott websocket rontotta a be-/kijelentkezés megbízhatóságát.
   useEffect(() => {
-    const interval = setInterval(() => { loadAll({ silent: true }); }, 300000);
     function onVisible() {
       if (document.visibilityState === "visible") loadAll({ silent: true });
     }
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("focus", onVisible);
     return () => {
-      clearInterval(interval);
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("focus", onVisible);
     };
