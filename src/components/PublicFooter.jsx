@@ -67,7 +67,7 @@ export default function PublicFooter({ lang = "hu" }) {
         <div className="pub-footer-bottom">
           <div className="pub-footer-bottom-left">
             <span>{s.footerRights(new Date().getFullYear())}</span>
-            <span className="pub-footer-company">Telefonos S.R.L. · CUI 50623366 · Lunca de Sus 494, bloc 3, ap. 6.</span>
+            <span className="pub-footer-company">Telefonos S.R.L. · CUI 50623366</span>
           </div>
           <span className="pub-footer-legal">
             <a href="/aszf">{s.footerTerms}</a>

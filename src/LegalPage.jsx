@@ -123,7 +123,6 @@ const PRIVACY_CONTENT = (
     <ul>
       <li>Adatkezelő: Telefonos S.R.L.</li>
       <li>Cégjegyzékszám (CUI): 50623366</li>
-      <li>Székhely: Lunca de Sus 494, bloc 3, ap. 6.</li>
       <li>E-mail: <a href="mailto:info@telefonos.ro">info@telefonos.ro</a></li>
       <li>Telefonszám: <a href="tel:0773985278">0773 985 278</a></li>
     </ul>
