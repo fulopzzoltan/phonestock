@@ -5,11 +5,13 @@ const TERMS_CONTENT = (
   <>
     <h2>1. Szolgáltató adatai</h2>
     <ul>
-      <li>A weboldalt üzemeltető cég: Telefonos SRL</li>
+      <li>A weboldalt üzemeltető cég: Telefonos Keze SRL</li>
+      <li>Cégjegyzékszám (Nr. Reg. Com.): J2025034208000</li>
+      <li>Adószám (CUI): 51785064</li>
+      <li>Székhely: Gyimesfelsőlok (Lunca de Sus) 494, 3. tömbház, B lépcsőház, 6. ap., 537155, Hargita megye, Románia</li>
       <li>Weboldal: telefonos.ro</li>
       <li>E-mail: <a href="mailto:info@telefonos.ro">info@telefonos.ro</a></li>
       <li>Telefonszám: <a href="tel:0773985278">0773 985 278</a></li>
-      <li>Székhely: Románia</li>
     </ul>
     <p>A Szolgáltató mobiltelefonok és tartozékok értékesítésével, valamint szervizszolgáltatásokkal foglalkozik.</p>
     <p>A Szolgáltató nem végez készülék-felvásárlást magánszemélyektől.</p>
@@ -41,13 +43,13 @@ const TERMS_CONTENT = (
     <p>A Szolgáltató fenntartja a jogot az árak módosítására, mely nem érinti a már leadott és visszaigazolt rendeléseket.</p>
     <p>Elérhető fizetési módok:</p>
     <ul>
-      <li>személyes átvételkor történő fizetés</li>
+      <li>készpénzes vagy bankkártyás fizetés személyes átvételkor, üzleteinkben</li>
       <li>utánvétes fizetés</li>
-      <li>online fizetés (amennyiben elérhető)</li>
+      <li>online bankkártyás fizetés (Visa, Mastercard) a Netopia Payments biztonságos fizetési rendszerén keresztül, amennyiben elérhető</li>
     </ul>
 
     <h2>6. Garancia</h2>
-    <p>A Telefonos SRL a telefonos.ro weboldalon értékesített készülékekre a hatályos román és európai uniós jogszabályoknak megfelelő garanciát vállal.</p>
+    <p>A Telefonos Keze SRL a telefonos.ro weboldalon értékesített készülékekre a hatályos román és európai uniós jogszabályoknak megfelelő garanciát vállal.</p>
 
     <h3>6.1. A garancia tartalma</h3>
     <p>Új, használt és felújított készülékek esetén a garancia időtartama a termékoldalon vagy az átvételkor kapott dokumentumokban kerül feltüntetésre.</p>
@@ -105,6 +107,16 @@ const TERMS_CONTENT = (
     </ul>
     <p>A Szolgáltató törekszik a panaszok gyors és korrekt rendezésére.</p>
 
+    <h3>8.1. Alternatív vitarendezés (ANPC)</h3>
+    <p>
+      Ha a panaszod a Szolgáltatóval közvetlenül nem rendeződik, jogodban áll a Fogyasztóvédelmi Hatósághoz (ANPC)
+      fordulni, vagy az Európai Bizottság online vitarendezési (SOL/ODR) platformját igénybe venni:
+    </p>
+    <ul>
+      <li>ANPC: <a href="https://anpc.ro" target="_blank" rel="noopener noreferrer">anpc.ro</a></li>
+      <li>SOL platform: <a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener noreferrer">ec.europa.eu/consumers/odr</a></li>
+    </ul>
+
     <h2>9. Felelősség</h2>
     <p>A Szolgáltató nem vállal felelősséget:</p>
     <ul>
@@ -121,12 +133,14 @@ const PRIVACY_CONTENT = (
   <>
     <h2>1. Az adatkezelő adatai</h2>
     <ul>
-      <li>Adatkezelő: Telefonos S.R.L.</li>
-      <li>Cégjegyzékszám (CUI): 50623366</li>
+      <li>Adatkezelő: Telefonos Keze SRL</li>
+      <li>Cégjegyzékszám (Nr. Reg. Com.): J2025034208000</li>
+      <li>Adószám (CUI): 51785064</li>
+      <li>Székhely: Gyimesfelsőlok (Lunca de Sus) 494, 3. tömbház, B lépcsőház, 6. ap., 537155, Hargita megye, Románia</li>
       <li>E-mail: <a href="mailto:info@telefonos.ro">info@telefonos.ro</a></li>
       <li>Telefonszám: <a href="tel:0773985278">0773 985 278</a></li>
     </ul>
-    <p>A Telefonos SRL a hatályos román és európai uniós (GDPR) szabályozásnak megfelelően kezeli a személyes adatokat.</p>
+    <p>A Telefonos Keze SRL a hatályos román és európai uniós (GDPR) szabályozásnak megfelelően kezeli a személyes adatokat.</p>
 
     <h2>2. Milyen adatokat kezelünk</h2>
     <p>Rendeléskor és a weboldal használata során az alábbiakat kérhetjük el:</p>

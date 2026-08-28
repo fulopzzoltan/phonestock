@@ -33,6 +33,8 @@ export default function PublicFooter({ lang = "hu" }) {
             </div>
             <p className="pub-footer-about">{s.footer}</p>
             <a className="pub-footer-phone" href="tel:0773985278"><CallIcon width={12} height={12} />0773 985 278</a>
+            <a className="pub-footer-phone" href="mailto:info@telefonos.ro">info@telefonos.ro</a>
+            <div className="pub-footer-loc"><PinIcon width={12} height={12} />Gyimesfelsőlok (Lunca de Sus) 494, Hargita megye</div>
             <div className="pub-footer-social">
               {SOCIAL_LINKS.map(({ Icon, href, label }) => (
                 <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>
@@ -67,7 +69,7 @@ export default function PublicFooter({ lang = "hu" }) {
         <div className="pub-footer-bottom">
           <div className="pub-footer-bottom-left">
             <span>{s.footerRights(new Date().getFullYear())}</span>
-            <span className="pub-footer-company">Telefonos S.R.L. · CUI 50623366</span>
+            <span className="pub-footer-company">Telefonos Keze SRL · CUI 51785064 · Reg. Com. J2025034208000</span>
           </div>
           <span className="pub-footer-legal">
             <a href="/aszf">{s.footerTerms}</a>
