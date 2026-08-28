@@ -123,15 +123,6 @@ export default function StockShowcase({ lang = "hu" }) {
     setOpenGroups((prev) => ({ ...prev, [key]: !prev[key] }));
   }
 
-  const stockCounts = useMemo(() => {
-    const counts = {};
-    phones.forEach((p) => {
-      const key = `${p.brand}|${p.model}|${p.storage || ""}`;
-      counts[key] = (counts[key] || 0) + 1;
-    });
-    return counts;
-  }, [phones]);
-
   const filtered = useMemo(() => {
     let items = phones.filter((p) => {
       if (selectedBrands.length > 0 && !selectedBrands.includes(p.brand)) return false;
@@ -292,7 +283,6 @@ export default function StockShowcase({ lang = "hu" }) {
             ) : (
               <div className="pub-grid">
                 {filtered.map((p, i) => {
-                  const isLastOne = stockCounts[`${p.brand}|${p.model}|${p.storage || ""}`] === 1;
                   const hasAnchor = p.new_price && Number(p.new_price) > Number(p.sale_price);
                   const href = lang === "ro" ? `/ro/telefon/${p.id}` : `/telefon/${p.id}`;
                   const inWishlist = wishlist.includes(p.id);
@@ -316,7 +306,6 @@ export default function StockShowcase({ lang = "hu" }) {
                         </button>
                         <div className="pub-card-top">
                           <span className={`pub-cond-pill ${p.condition === "New" ? "new" : "refurb"}`}>{p.condition === "New" ? s.conditionNew : s.conditionRefurb}</span>
-                          {isLastOne && <span className="pub-scarcity-pill">{s.scarcity}</span>}
                         </div>
                         <div className="pub-device-art">
                           {p.photo_paths && p.photo_paths.length > 0 ? (

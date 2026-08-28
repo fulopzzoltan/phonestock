@@ -748,7 +748,6 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
   .chat-fab{right:16px;bottom:calc(72px + env(safe-area-inset-bottom))}
 }
 
-.pub-scarcity-pill{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:#FEE2E2;color:#DC2626}
 .pub-anchor{display:flex;align-items:baseline;gap:8px;margin-bottom:2px}
 .pub-anchor-old{font-size:12px;color:var(--pub-ink-soft);text-decoration:line-through}
 .pub-anchor-save{font-size:11px;font-weight:700;color:var(--pub-accent-ink);background:var(--pub-accent-soft);padding:2px 7px;border-radius:6px}
@@ -761,7 +760,6 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
   .pub-card-name{font-size:12.5px;line-height:1.2}
   .pub-card-specs{font-size:10px}
   .pub-cond-pill{font-size:9.5px;padding:2px 7px}
-  .pub-scarcity-pill{font-size:9.5px;padding:2px 7px}
   .pub-battery-label{font-size:9.5px}
   .pub-warranty-tag{font-size:9.5px}
   .pub-anchor-old{font-size:11px}
