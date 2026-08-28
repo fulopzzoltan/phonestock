@@ -73,8 +73,8 @@ function Root() {
   if (checkoutMatch) return <Checkout />;
   if (orderStatusMatch) return <OrderStatus token={orderStatusMatch[1]} />;
   if (paymentMockMatch) return <PaymentMock token={paymentMockMatch[1]} />;
-  if (termsMatch) return <LegalPage title="Általános Szerződési Feltételek" />;
-  if (privacyMatch) return <LegalPage title="Adatvédelmi tájékoztató" />;
+  if (termsMatch) return <LegalPage title="Általános Szerződési Feltételek" variant="terms" />;
+  if (privacyMatch) return <LegalPage title="Adatvédelmi tájékoztató" variant="privacy" />;
   if (roPhoneDetailMatch) return <PhoneDetail id={roPhoneDetailMatch[1]} lang="ro" />;
   if (phoneDetailMatch) return <PhoneDetail id={phoneDetailMatch[1]} lang="hu" />;
   if (buybackMatch) return <BuybackFlow />;

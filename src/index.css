@@ -854,6 +854,17 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-related-price{font-size:14px;font-weight:800}
 .pub-lookup-main{max-width:1180px;margin:0 auto;padding:40px 24px 64px;display:flex;justify-content:center}
 
+.pub-legal-main{max-width:760px;margin:0 auto;padding:40px 24px 64px}
+.pub-legal-title{font-size:26px;font-weight:800;margin-bottom:28px;color:var(--pub-ink)}
+.pub-legal-body h2{font-size:16.5px;font-weight:800;margin:32px 0 10px;color:var(--pub-ink)}
+.pub-legal-body h2:first-child{margin-top:0}
+.pub-legal-body h3{font-size:14px;font-weight:700;margin:20px 0 8px;color:var(--pub-ink)}
+.pub-legal-body p{font-size:14px;line-height:1.65;color:var(--pub-ink-soft);margin:0 0 12px}
+.pub-legal-body ul{margin:0 0 14px;padding-left:20px}
+.pub-legal-body li{font-size:14px;line-height:1.6;color:var(--pub-ink-soft);margin-bottom:6px}
+.pub-legal-body a{color:var(--pub-accent-ink);text-decoration:none}
+.pub-legal-body a:hover{text-decoration:underline}
+
 .pub-cart-main{max-width:1000px;margin:0 auto;padding:24px 24px 64px}
 .pub-cart-title{font-size:26px;font-weight:800;margin:10px 0 22px}
 .pub-cart-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:32px;align-items:start}
