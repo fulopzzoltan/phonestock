@@ -563,12 +563,9 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-chip-row{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
 .pub-chip{border:1px solid var(--pub-line);background:var(--pub-paper-raised);color:var(--pub-ink-soft);font-size:12.5px;font-weight:600;padding:7px 13px;border-radius:999px;cursor:pointer;font-family:inherit;transition:border-color .12s,color .12s,background .12s;white-space:nowrap}
 .pub-chip.active{border-color:var(--pub-accent);color:var(--pub-accent-ink);background:var(--pub-accent-soft)}
-.pub-sort-select{margin-left:auto;border:1px solid var(--pub-line);background:var(--pub-paper-raised);color:var(--pub-ink);font-size:12.5px;font-weight:600;padding:8px 12px;border-radius:10px;cursor:pointer;font-family:inherit}
 @media (max-width:640px){
   .pub-search-box{max-width:none}
 }
-.pub-results-bar{max-width:1180px;margin:0 auto;padding:18px 24px 4px;font-size:13px;color:var(--pub-ink-soft);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
-.pub-results-bar b{color:var(--pub-ink);font-weight:700}
 .pub-main{max-width:1180px;margin:0 auto;padding:14px 24px 64px}
 .pub-empty{text-align:center;padding:64px 20px;color:var(--pub-ink-soft);font-size:13.5px;display:flex;flex-direction:column;align-items:center;gap:6px}
 .pub-empty svg{width:34px;height:34px;color:var(--pub-line);margin-bottom:6px}
@@ -587,6 +584,13 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-sidebar-groupbody{display:flex;flex-direction:column}
 .pub-sidebar-more{display:block;border:none;background:none;font-family:inherit;font-size:11.5px;font-weight:600;color:var(--pub-accent-ink);cursor:pointer;padding:6px 8px;margin:2px -8px 0;text-align:left}
 .pub-sidebar-more:hover{text-decoration:underline}
+.pub-sort-field{position:relative;display:flex;align-items:center;margin-bottom:16px}
+.pub-sort-field svg{position:absolute;color:var(--pub-ink-soft);pointer-events:none}
+.pub-sort-field svg:first-child{left:12px;width:15px;height:15px}
+.pub-sort-field svg:last-child{right:12px;width:12px;height:12px}
+.pub-sort-field select{appearance:none;-webkit-appearance:none;width:100%;border:1px solid var(--pub-line);background:var(--pub-paper-raised);color:var(--pub-ink);font-size:12.5px;font-weight:700;font-family:inherit;padding:11px 32px;border-radius:11px;cursor:pointer;transition:border-color .12s,box-shadow .12s}
+.pub-sort-field select:hover{border-color:var(--pub-accent)}
+.pub-sort-field select:focus{outline:none;border-color:var(--pub-accent);box-shadow:0 0 0 3px var(--pub-accent-soft)}
 .pub-check-row{display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 8px;margin:0 -8px;border:none;border-radius:8px;background:none;font-family:inherit;width:calc(100% + 16px);text-align:left;transition:background-color .1s}
 .pub-check-row:hover{background:var(--pub-paper)}
 .pub-check{width:16px;height:16px;border:1.5px solid var(--pub-line);border-radius:5px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;color:#fff;transition:background-color .1s,border-color .1s}
@@ -601,7 +605,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
   .pub-sidebar.open{display:flex;width:100%;position:static;margin-bottom:14px}
 }
 
-.pub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:14px;margin-top:14px}
+.pub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:14px}
 
 /* Kívánságlista gomb a kártyán */
 .pub-wishlist-btn{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:999px;background:var(--pub-paper-raised);border:1px solid var(--pub-line);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--pub-ink-soft);z-index:1}

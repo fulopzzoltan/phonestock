@@ -209,20 +209,23 @@ export default function StockShowcase({ lang = "hu" }) {
         </div>
       </PublicHeader>
 
-      <div className="pub-results-bar">
-        <ReviewsBadge lang={lang} />
-        <select className="pub-sort-select" value={sort} onChange={(e) => setSort(e.target.value)}>
-          <option value="recommended">{s.sortRecommended}</option>
-          <option value="price-asc">{s.sortPriceAsc}</option>
-          <option value="price-desc">{s.sortPriceDesc}</option>
-          <option value="brand">{s.sortBrand}</option>
-        </select>
-      </div>
-
       <main className="pub-main">
         {error && <div className="errbar">{error}</div>}
         <div className="pub-body">
           <aside className={`pub-sidebar${filtersOpen ? " open" : ""}`}>
+            <ReviewsBadge lang={lang} style={{ marginBottom: 2 }} />
+
+            <div className="pub-sort-field">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
+              <select value={sort} onChange={(e) => setSort(e.target.value)}>
+                <option value="recommended">{s.sortRecommended}</option>
+                <option value="price-asc">{s.sortPriceAsc}</option>
+                <option value="price-desc">{s.sortPriceDesc}</option>
+                <option value="brand">{s.sortBrand}</option>
+              </select>
+              <ChevronDownIcon />
+            </div>
+
             <div className="pub-sidebar-head">
               <div className="pub-sidebar-title">{s.filters}</div>
               {activeFilterCount > 0 && <button type="button" className="pub-sidebar-clear" onClick={clearFilters}>{s.clearFilters}</button>}
