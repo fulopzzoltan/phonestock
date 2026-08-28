@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "../lib/supabaseClient";
-import { StarIcon, ChevronLeftIcon, ChevronRightIcon } from "./icons";
+import { StarIcon, ChevronLeftIcon, ChevronRightIcon, CloseIcon } from "./icons";
 import { t } from "../lib/i18n";
 
 export function usePublicReviews() {
@@ -45,11 +45,29 @@ export function ReviewsBadge({ lang = "hu", style, stacked = false }) {
   );
 }
 
+function ReviewCard({ r }) {
+  return (
+    <div className="pub-review-card">
+      <div className="pub-review-author">{r.author_name}</div>
+      <div className="pub-review-stars-row">
+        <StarRow n={r.rating} size={13} />
+        <span>{r.rating}/5</span>
+      </div>
+      <div className="pub-review-body">{r.body}</div>
+      <div className="pub-review-foot">{(r.review_date || "").slice(0, 10)}</div>
+      {r.reply_text && (
+        <div className="pub-review-reply"><b>Telefonos:</b> {r.reply_text}</div>
+      )}
+    </div>
+  );
+}
+
 // Teljes vélemény-szekció kártyás kocsival — a főoldalra, a becslő/felvásárlás oldalak aljára tehető.
 export default function ReviewsSection({ lang = "hu", limit = 8 }) {
   const s = t(lang);
   const { reviews, loading, avg, count } = usePublicReviews();
   const rowRef = useRef(null);
+  const [showAll, setShowAll] = useState(false);
   if (loading || count === 0) return null;
 
   function scrollRow(dir) {
@@ -71,23 +89,27 @@ export default function ReviewsSection({ lang = "hu", limit = 8 }) {
       <div className="pub-reviews-carousel">
         <button type="button" className="pub-reviews-nav prev" aria-label="Előző" onClick={() => scrollRow(-1)}><ChevronLeftIcon width={16} height={16} /></button>
         <div className="pub-reviews-row" ref={rowRef}>
-          {reviews.slice(0, limit).map((r) => (
-            <div key={r.id} className="pub-review-card">
-              <div className="pub-review-author">{r.author_name}</div>
-              <div className="pub-review-stars-row">
-                <StarRow n={r.rating} size={13} />
-                <span>{r.rating}/5</span>
-              </div>
-              <div className="pub-review-body">{r.body}</div>
-              <div className="pub-review-foot">{(r.review_date || "").slice(0, 10)}</div>
-              {r.reply_text && (
-                <div className="pub-review-reply"><b>Telefonos:</b> {r.reply_text}</div>
-              )}
-            </div>
-          ))}
+          {reviews.slice(0, limit).map((r) => <ReviewCard key={r.id} r={r} />)}
         </div>
         <button type="button" className="pub-reviews-nav next" aria-label="Következő" onClick={() => scrollRow(1)}><ChevronRightIcon width={16} height={16} /></button>
       </div>
+      {count > limit && (
+        <button type="button" className="pub-reviews-viewall" onClick={() => setShowAll(true)}>{s.reviewsViewAll(count)}</button>
+      )}
+
+      {showAll && (
+        <div className="overlay" onClick={() => setShowAll(false)}>
+          <div className="modal pub-reviews-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="pub-reviews-modal-head">
+              <div className="pub-reviews-title">{s.reviewsTitle}</div>
+              <button type="button" className="iconbtn" onClick={() => setShowAll(false)}><CloseIcon /></button>
+            </div>
+            <div className="pub-reviews-modal-list">
+              {reviews.map((r) => <ReviewCard key={r.id} r={r} />)}
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

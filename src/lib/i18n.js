@@ -44,6 +44,7 @@ export const STRINGS = {
     reviewsTitle: "Amit a vásárlóink mondanak", reviewsBadge: (avg, n) => `${avg} · ${n} vélemény alapján`,
     reviewsSubtitle: "Valós vélemények, valódi vásárlóktól.",
     reviewsBasedOn: (n) => n === 1 ? "1 vélemény alapján" : `${n} vélemény alapján`,
+    reviewsViewAll: (n) => `Mind a(z) ${n} vélemény megtekintése →`,
     reviewsEmpty: "Hamarosan itt lesznek az első véleményeink.",
 
     // Telefon-részletoldal
@@ -129,6 +130,7 @@ export const STRINGS = {
     reviewsTitle: "Ce spun clienții noștri", reviewsBadge: (avg, n) => `${avg} · pe baza a ${n} recenzii`,
     reviewsSubtitle: "Recenzii reale, de la clienți reali.",
     reviewsBasedOn: (n) => n === 1 ? "pe baza a 1 recenzie" : `pe baza a ${n} recenzii`,
+    reviewsViewAll: (n) => `Vezi toate cele ${n} recenzii →`,
     reviewsEmpty: "În curând vor apărea aici primele noastre recenzii.",
 
     storageLabel: "Stocare", colorLabel: "Culoare", batteryLabel: "Baterie", warrantyLabel: "Garanție",

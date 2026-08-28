@@ -724,6 +724,15 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-reviews-nav.next{right:-6px}
 @media (max-width:640px){.pub-reviews-nav{display:none}}
 
+.pub-reviews-viewall{display:block;margin:18px auto 0;background:none;border:none;color:var(--pub-accent-ink);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.pub-reviews-viewall:hover{text-decoration:underline}
+
+.pub-reviews-modal{max-width:640px;width:100%;padding:0;display:flex;flex-direction:column;max-height:80vh}
+.pub-reviews-modal-head{display:flex;align-items:center;justify-content:space-between;padding:20px 22px;border-bottom:1px solid var(--pub-line);flex-shrink:0}
+.pub-reviews-modal-head .pub-reviews-title{margin:0}
+.pub-reviews-modal-list{overflow-y:auto;padding:18px 22px 22px;display:flex;flex-direction:column;gap:12px}
+.pub-reviews-modal-list .pub-review-card{flex:none}
+
 .pub-footer{border-top:1px solid var(--pub-line);padding:36px 24px 24px;margin-top:32px;background:var(--pub-paper-raised)}
 .pub-footer-inner{max-width:1180px;margin:0 auto;font-size:12px;color:var(--pub-ink-soft);line-height:1.6}
 .pub-footer-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:28px;padding-bottom:26px}
