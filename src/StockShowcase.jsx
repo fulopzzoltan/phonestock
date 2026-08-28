@@ -226,8 +226,6 @@ export default function StockShowcase({ lang = "hu" }) {
         </a>
         <div className="pub-body">
           <aside className={`pub-sidebar${filtersOpen ? " open" : ""}`}>
-            <ReviewsBadge lang={lang} style={{ marginBottom: 2 }} />
-
             <div className="pub-sort-field">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
               <select value={sort} onChange={(e) => setSort(e.target.value)}>
@@ -295,6 +293,8 @@ export default function StockShowcase({ lang = "hu" }) {
                 <span className="pub-check-row-count">{countsByCondition.Refurbished || 0}</span>
               </button>
             </SidebarGroup>
+
+            <ReviewsBadge lang={lang} style={{ marginTop: 4 }} />
           </aside>
 
           <div className="pub-results" ref={resultsTopRef}>
