@@ -349,12 +349,12 @@ export default function StockShowcase({ lang = "hu" }) {
                             <div className="pub-price mono">{Number(p.sale_price).toLocaleString("hu-HU")}<span className="pub-cur">Lei</span></div>
                           </div>
                           {cart.some((c) => c.id === p.id) ? (
-                            <a className="pub-ask-btn pub-ask-btn-added" href="/kosar" onClick={(e) => e.stopPropagation()}><CartIcon width={13} height={13} />Kosárban</a>
+                            <a className="pub-ask-btn pub-ask-btn-added" href="/kosar" aria-label="Kosárban" onClick={(e) => e.stopPropagation()}><CartIcon width={13} height={13} /><span className="pub-ask-btn-label">Kosárban</span></a>
                           ) : (
-                            <button type="button" className="pub-ask-btn" onClick={(e) => {
+                            <button type="button" className="pub-ask-btn" aria-label="Kosárba" onClick={(e) => {
                               e.stopPropagation();
                               addToCart({ id: p.id, brand: p.brand, model: p.model, storage: p.storage, color: p.color, salePrice: p.sale_price, photoPath: p.photo_paths?.[0] || null, locationId: p.location_id, locationName: p.location_name });
-                            }}><CartIcon width={13} height={13} />Kosárba</button>
+                            }}><CartIcon width={13} height={13} /><span className="pub-ask-btn-label">Kosárba</span></button>
                           )}
                         </div>
                       </div>
