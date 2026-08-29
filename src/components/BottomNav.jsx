@@ -16,11 +16,12 @@ const FIXED = [
 
 export default function BottomNav({
   tab, setTab, isAdmin, locFilter, setLocFilter, allowedLocations,
-  myLocationId, locName, profile, user, signOut,
+  myLocationId, locName, profile, user, signOut, pultPendingCounts,
 }) {
   const [moreOpen, setMoreOpen] = useState(false);
   const fixedKeys = FIXED.map((f) => f.key);
   const isMoreActive = !fixedKeys.includes(tab);
+  const pultTotal = pultPendingCounts ? pultPendingCounts.webOrders + pultPendingCounts.waiting + pultPendingCounts.notes : 0;
 
   function go(nextTab) {
     setTab(nextTab);
@@ -32,7 +33,11 @@ export default function BottomNav({
       <nav className="bottom-nav">
         {FIXED.map(({ key, label, Icon }) => (
           <button key={key} type="button" className={`bnav-btn${tab === key ? " active" : ""}`} onClick={() => go(key)}>
-            <Icon className="bnav-ic" /><span>{label}</span>
+            <span className="bnav-ic-wrap">
+              <Icon className="bnav-ic" />
+              {key === "pult" && pultTotal > 0 && <span className="bnav-badge">{pultTotal}</span>}
+            </span>
+            <span>{label}</span>
           </button>
         ))}
         <button type="button" className={`bnav-btn${moreOpen || isMoreActive ? " active" : ""}`} onClick={() => setMoreOpen(true)}>

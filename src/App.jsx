@@ -2002,17 +2002,26 @@ function AppShell() {
 
   const noLocationAssigned = !isAdmin && !myLocationId;
 
+  // A Pult fülön három, egymástól független dolog vár reakcióra — ezeket jelezzük
+  // számozott jelvényekkel a navigáción is, hogy anélkül is látszódjon, hány
+  // feladat van, hogy megnyitnánk a fület.
+  const pultPendingCounts = {
+    webOrders: webOrders.length,
+    waiting: waitingItems.filter((w) => w.status !== "lezarva").length,
+    notes: notes.filter((n) => n.status === "open").length,
+  };
+
   return (
     <div className="shell">
       <Sidebar
         tab={tab} setTab={setTab} setTicketModal={setTicketModal} isAdmin={isAdmin} locFilter={locFilter} setLocFilter={setLocFilter}
         allowedLocations={allowedLocations} myLocationId={myLocationId} locName={locName} profile={profile} user={user}
-        signOut={signOut} lastActiveLocationId={lastActiveLocationId}
+        signOut={signOut} lastActiveLocationId={lastActiveLocationId} pultPendingCounts={pultPendingCounts}
       />
       <BottomNav
         tab={tab} setTab={setTab} isAdmin={isAdmin} locFilter={locFilter} setLocFilter={setLocFilter}
         allowedLocations={allowedLocations} myLocationId={myLocationId} locName={locName} profile={profile} user={user}
-        signOut={signOut}
+        signOut={signOut} pultPendingCounts={pultPendingCounts}
       />
 
       <div className="main">

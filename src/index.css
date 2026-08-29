@@ -51,6 +51,11 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
 .navbtn:hover{background:rgba(29,185,84,.07);color:#101828}
 .navbtn.active{background:var(--sidebar-accent-soft);color:var(--sidebar-accent-text);font-weight:600}
 .nav-ic{width:18px;height:18px;flex-shrink:0}
+.nav-pill-group{display:inline-flex;gap:4px;margin-left:auto}
+.nav-pill{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;font-size:10.5px;font-weight:700;line-height:1}
+.nav-pill.blue{background:#DBEAFE;color:#1D4ED8}
+.nav-pill.amber{background:#FEF3C7;color:#B45309}
+.nav-pill.violet{background:#EDE9FE;color:#6D28D9}
 .sidebar-bottom{padding:16px 12px;border-top:1px solid #E8EAEF}
 .loc-sw{display:flex;gap:2px;background:#F1F2F6;border-radius:12px;padding:3px;margin-bottom:12px}
 .loc-btn{flex:1;border:none;background:none;color:var(--sidebar-text);font-family:inherit;font-size:11px;font-weight:600;padding:7px 4px;border-radius:9px;cursor:pointer}
@@ -71,6 +76,8 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
 .bnav-btn span{font-size:10.5px;font-weight:600}
 .bnav-ic{width:21px;height:21px}
 .bnav-btn.active{color:var(--sidebar-accent-text)}
+.bnav-ic-wrap{position:relative;display:inline-flex}
+.bnav-badge{position:absolute;top:-5px;right:-8px;min-width:15px;height:15px;padding:0 4px;border-radius:999px;background:#DC2626;color:#fff;font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1}
 
 /* BOTTOM SHEET — "Több" panel + mobilon a modalok is ezt a mintát követik (lásd media query) */
 .bsheet-overlay{position:fixed;inset:0;background:rgba(17,24,39,.4);z-index:200;display:flex;align-items:flex-end}

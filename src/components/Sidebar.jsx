@@ -8,7 +8,7 @@ import { SITE_URL } from "../lib/utils";
 // navigáció szerepét (alsó sáv + "Több" bottom sheet), hogy applikáció-szerű legyen a felület.
 export default function Sidebar({
   tab, setTab, setTicketModal, isAdmin, locFilter, setLocFilter, allowedLocations,
-  myLocationId, locName, profile, user, signOut, lastActiveLocationId,
+  myLocationId, locName, profile, user, signOut, lastActiveLocationId, pultPendingCounts,
 }) {
   function go(nextTab) {
     setTab(nextTab);
@@ -17,7 +17,16 @@ export default function Sidebar({
     <div className="sidebar">
       <div className="sidebar-inner">
         <div className="nav-lbl">Napi munka</div>
-        <button className={`navbtn ${tab === "pult" ? "active" : ""}`} onClick={() => go("pult")}><BoardIcon className="nav-ic" />Pult</button>
+        <button className={`navbtn ${tab === "pult" ? "active" : ""}`} onClick={() => go("pult")}>
+          <BoardIcon className="nav-ic" />Pult
+          {pultPendingCounts && (
+            <span className="nav-pill-group">
+              {pultPendingCounts.webOrders > 0 && <span className="nav-pill blue" title="Webes rendelés">{pultPendingCounts.webOrders}</span>}
+              {pultPendingCounts.waiting > 0 && <span className="nav-pill amber" title="Várakozik valamire">{pultPendingCounts.waiting}</span>}
+              {pultPendingCounts.notes > 0 && <span className="nav-pill violet" title="Nyitott cetli">{pultPendingCounts.notes}</span>}
+            </span>
+          )}
+        </button>
         <div className="navrow">
           <button className={`navbtn ${tab === "service" ? "active" : ""}`} onClick={() => go("service")}><ServiceIcon className="nav-ic" />Szerviz</button>
           <button type="button" className="nav-quick-add" title="Új munkalap" onClick={() => { go("service"); setTicketModal("add"); }}>+</button>
