@@ -114,7 +114,7 @@ const TERMS_CONTENT = (
     </p>
     <ul>
       <li>ANPC: <a href="https://anpc.ro" target="_blank" rel="noopener noreferrer">anpc.ro</a></li>
-      <li>SOL platform: <a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener noreferrer">ec.europa.eu/consumers/odr</a></li>
+      <li>SAL platform (Soluționarea Alternativă a Litigiilor): <a href="https://reclamatiisal.anpc.ro" target="_blank" rel="noopener noreferrer">reclamatiisal.anpc.ro</a></li>
     </ul>
 
     <h2>9. Felelősség</h2>

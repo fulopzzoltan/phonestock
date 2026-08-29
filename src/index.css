@@ -44,7 +44,7 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
 .nav-lbl{font-size:10px;font-weight:600;color:var(--sidebar-text-dim);text-transform:uppercase;letter-spacing:.08em;padding:0 12px;margin:20px 0 8px}
 .nav-lbl:first-of-type{margin-top:0}
 .navbtn{display:flex;align-items:center;gap:11px;width:100%;border:none;background:none;color:var(--sidebar-text);font-family:inherit;font-size:13.5px;font-weight:500;padding:10px 12px;border-radius:12px;cursor:pointer;text-align:left;margin-bottom:2px;transition:background .12s,color .12s}
-.navrow{display:flex;align-items:center;gap:4px;margin-bottom:2px}
+.navrow{display:flex;align-items:center;gap:4px;margin-bottom:2px;padding-right:12px}
 .navrow .navbtn{margin-bottom:0;flex:1;min-width:0}
 .nav-quick-add{width:22px;height:22px;flex-shrink:0;border:none;border-radius:6px;background:var(--sidebar-accent);color:#fff;font-size:15px;font-weight:800;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .nav-quick-add:hover{background:var(--accent-dark)}
