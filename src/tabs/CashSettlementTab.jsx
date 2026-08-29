@@ -23,18 +23,20 @@ function daysBetweenInclusive(a, b) {
 
 // Greedy settle-up: minimális számú átutalással kiegyenlíti az egyenlegeket (N helyszínre is működik,
 // nem csak kettőre — ha csak két helyszín van, ez pontosan egy sima "A ad B-nek X-et" mondatot ad.
+// Ez fizikai készpénz-mozgatás, nem elszámolási tartozás: akinél TÖBB a készpénz (pozitív egyenleg,
+// "surplus"), az adja át a különbözetet annak, akinél KEVESEBB van (negatív egyenleg, "deficit").
 function computeTransfers(locs) {
-  const creditors = locs.filter((l) => l.balance > 0.5).map((l) => ({ ...l })).sort((a, b) => b.balance - a.balance);
-  const debtors = locs.filter((l) => l.balance < -0.5).map((l) => ({ ...l, balance: -l.balance })).sort((a, b) => b.balance - a.balance);
+  const surplus = locs.filter((l) => l.balance > 0.5).map((l) => ({ ...l })).sort((a, b) => b.balance - a.balance);
+  const deficit = locs.filter((l) => l.balance < -0.5).map((l) => ({ ...l, balance: -l.balance })).sort((a, b) => b.balance - a.balance);
   const transfers = [];
   let i = 0, j = 0;
-  while (i < debtors.length && j < creditors.length) {
-    const amt = Math.min(debtors[i].balance, creditors[j].balance);
-    transfers.push({ fromId: debtors[i].id, fromName: debtors[i].name, toId: creditors[j].id, toName: creditors[j].name, amount: amt });
-    debtors[i].balance -= amt;
-    creditors[j].balance -= amt;
-    if (debtors[i].balance < 0.5) i++;
-    if (creditors[j].balance < 0.5) j++;
+  while (i < surplus.length && j < deficit.length) {
+    const amt = Math.min(surplus[i].balance, deficit[j].balance);
+    transfers.push({ fromId: surplus[i].id, fromName: surplus[i].name, toId: deficit[j].id, toName: deficit[j].name, amount: amt });
+    surplus[i].balance -= amt;
+    deficit[j].balance -= amt;
+    if (surplus[i].balance < 0.5) i++;
+    if (deficit[j].balance < 0.5) j++;
   }
   return transfers;
 }
@@ -159,8 +161,9 @@ export default function CashSettlementTab({
             ))}
         </div>
 
-        <div style={{ fontSize: 12, color: "#6B7280", marginBottom: 16, padding: "8px 12px", background: "#F9FAFB", borderRadius: "var(--radius-sm)" }}>
-          Ebben az időszakban emellett: <b style={{ color: "#111827" }}>{money(cardIncome)}</b> kártyás, <b style={{ color: "#111827" }}>{money(transferIncome)}</b> utalásos bevétel — ez a közös számlán van, nem kell elosztani.
+        <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+          <span className="badge-income">Kártyás: {money(cardIncome)}</span>
+          <span className="badge-income">Utalásos: {money(transferIncome)}</span>
         </div>
 
         <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", marginBottom: 12 }}>Fizikai ellenőrzés (opcionális) — ténylegesen mennyi készpénz van most</div>
