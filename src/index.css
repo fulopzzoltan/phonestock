@@ -737,17 +737,26 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-promo-desc{font-size:12px;line-height:1.4;margin-top:6px}
 .pub-promo-tag{display:block;width:100%;box-sizing:border-box;text-align:center;font-size:12px;font-weight:700;padding:9px 0;border-radius:9px}
 
-.pub-promo-card.loc{background:#12181A;color:#fff}
-.pub-promo-card.loc .pub-promo-desc{color:rgba(255,255,255,.72)}
-.pub-promo-card.loc .pub-promo-tag{background:rgba(255,255,255,.14);color:#fff}
+.pub-promo-benefits-title{font-size:16px;font-weight:800;line-height:1.25}
+.pub-promo-benefits-rows{flex:1;display:flex;flex-direction:column;justify-content:center;gap:26px}
+.pub-promo-benefits-row{display:flex;align-items:center;gap:12px}
+.pub-promo-benefits-ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex:none}
+.pub-promo-benefits-label{font-size:13px;font-weight:600;line-height:1.3}
 
-.pub-promo-card.warranty{background:var(--pub-accent);color:#fff}
-.pub-promo-card.warranty .pub-promo-desc{color:rgba(255,255,255,.82)}
-.pub-promo-card.warranty .pub-promo-tag{background:rgba(255,255,255,.18);color:#fff}
+.pub-promo-card.benefits-green{background:var(--pub-accent);color:#fff}
+.pub-promo-card.benefits-green .pub-promo-benefits-ic{background:rgba(255,255,255,.18)}
 
-.pub-promo-card.tested{background:#0B4D22;color:#fff}
-.pub-promo-card.tested .pub-promo-desc{color:rgba(255,255,255,.72)}
-.pub-promo-card.tested .pub-promo-tag{background:rgba(255,255,255,.14);color:#fff}
+.pub-promo-card.benefits-dark{background:#12181A;color:#fff}
+.pub-promo-card.benefits-dark .pub-promo-benefits-ic{background:rgba(29,185,84,.22);color:var(--pub-accent)}
+
+.pub-promo-card.benefits-light{
+  color:var(--pub-ink);border:1px solid var(--pub-line);
+  background:
+    radial-gradient(120% 90% at 10% 0%, rgba(29,185,84,.22) 0%, rgba(29,185,84,0) 55%),
+    radial-gradient(90% 90% at 95% 100%, rgba(245,181,61,.20) 0%, rgba(245,181,61,0) 55%),
+    #F4FBF6;
+}
+.pub-promo-card.benefits-light .pub-promo-benefits-ic{background:var(--pub-accent-soft);color:var(--pub-accent-ink)}
 
 .pub-promo-card.try{background:#D99A1F;color:#12181A}
 .pub-promo-card.try .pub-promo-desc{color:rgba(18,24,26,.68)}

@@ -6,7 +6,7 @@ import { t, translateColor, translateWarranty } from "./lib/i18n";
 import { normalizeStorage, normalizeBrand } from "./lib/utils";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
-import { SearchIcon, FilterIcon, CartIcon, HeartIcon, FinderIcon, CheckIcon, ChevronDownIcon } from "./components/icons";
+import { SearchIcon, FilterIcon, CartIcon, HeartIcon, FinderIcon, CheckIcon, ChevronDownIcon, WarrantyIcon, PinIcon } from "./components/icons";
 import { EmptyState, LoadingState } from "./components/EmptyState";
 import { addToCart, useCart } from "./lib/cart";
 import { toggleWishlist, useWishlist } from "./lib/wishlist";
@@ -157,10 +157,15 @@ export default function StockShowcase({ lang = "hu" }) {
 
   // A rácsba illesztett bizalomépítő kártyák — egyik sem visz el a telefonok közül,
   // a cél nem konverzió-elterelés, hanem bizalomépítés böngészés közben.
+  const CORE_BENEFITS = [
+    { Icon: WarrantyIcon, label: s.trustWarrantyTitle },
+    { Icon: PinIcon, label: s.trustLocTitle },
+    { Icon: CheckIcon, label: s.trustTestedTitle },
+  ];
   const PROMO_CARDS = [
-    { variant: "loc", title: s.trustLocTitle, desc: s.trustLocDesc, tag: s.trustLocTag },
-    { variant: "warranty", title: s.trustWarrantyTitle, desc: s.trustWarrantyDesc, tag: s.trustWarrantyTag },
-    { variant: "tested", title: s.trustTestedTitle, desc: s.trustTestedDesc, tag: s.trustTestedTag },
+    { variant: "benefits-green" },
+    { variant: "benefits-dark" },
+    { variant: "benefits-light" },
     { variant: "try", title: s.trustTryTitle, desc: s.trustTryDesc, tag: s.trustTryTag },
     { variant: "service", title: s.trustServiceTitle, desc: s.trustServiceDesc, tag: s.trustServiceTag },
   ];
@@ -377,7 +382,19 @@ export default function StockShowcase({ lang = "hu" }) {
                           )}
                         </div>
                       </div>
-                      {promo && (
+                      {promo && (promo.variant.startsWith("benefits") ? (
+                        <div className={`pub-promo-card ${promo.variant}`}>
+                          <div className="pub-promo-benefits-title">{s.trustBenefitsTitle}</div>
+                          <div className="pub-promo-benefits-rows">
+                            {CORE_BENEFITS.map((b, i) => (
+                              <div className="pub-promo-benefits-row" key={i}>
+                                <span className="pub-promo-benefits-ic"><b.Icon width={17} height={17} /></span>
+                                <span className="pub-promo-benefits-label">{b.label}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
                         <div className={`pub-promo-card ${promo.variant}`}>
                           <div>
                             <div className="pub-promo-title">{promo.title}</div>
@@ -385,7 +402,7 @@ export default function StockShowcase({ lang = "hu" }) {
                           </div>
                           <span className="pub-promo-tag">{promo.tag}</span>
                         </div>
-                      )}
+                      ))}
                     </Fragment>
                   );
                 })}
