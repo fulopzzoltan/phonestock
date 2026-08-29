@@ -34,7 +34,6 @@ export default function PublicFooter({ lang = "hu" }) {
             <p className="pub-footer-about">{s.footer}</p>
             <a className="pub-footer-phone" href="tel:0773985278"><CallIcon width={12} height={12} />0773 985 278</a>
             <a className="pub-footer-phone" href="mailto:info@telefonos.ro">info@telefonos.ro</a>
-            <div className="pub-footer-loc"><PinIcon width={12} height={12} />Gyimesfelsőlok (Lunca de Sus) 494, Hargita megye</div>
             <div className="pub-footer-social">
               {SOCIAL_LINKS.map(({ Icon, href, label }) => (
                 <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>
