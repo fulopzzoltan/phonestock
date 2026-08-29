@@ -15,6 +15,7 @@ export default function PublicFooter({ lang = "hu" }) {
   const [locations, setLocations] = useState([]);
   const stockHref = lang === "ro" ? "/ro/telefoane" : "/";
   const repairHref = lang === "ro" ? "/ro/estimare" : "/becsles";
+  const faqHref = lang === "ro" ? "/ro/intrebari-frecvente" : "/gyik";
 
   useEffect(() => {
     (async () => {
@@ -79,6 +80,7 @@ export default function PublicFooter({ lang = "hu" }) {
             <span>{s.footerRights(new Date().getFullYear())}</span>
           </div>
           <span className="pub-footer-legal">
+            <a href={faqHref}>{s.footerFaq}</a>
             <a href="/aszf">{s.footerTerms}</a>
             <a href="/visszakuldes">{s.footerReturns}</a>
             <a href="/adatvedelem">{s.footerPrivacy}</a>

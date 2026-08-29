@@ -983,6 +983,27 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-legal-body a{color:var(--pub-accent-ink);text-decoration:none}
 .pub-legal-body a:hover{text-decoration:underline}
 
+.pub-faq-main{max-width:880px;margin:0 auto;padding:40px 24px 64px}
+.pub-faq-title{font-size:26px;font-weight:800;color:var(--pub-ink);margin-bottom:6px}
+.pub-faq-subtitle{font-size:14px;color:var(--pub-ink-soft);margin:0 0 28px}
+
+.pub-faq-chips{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:28px}
+.pub-faq-chip{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;background:var(--pub-paper-raised);border:1px solid var(--pub-line);border-radius:var(--radius-lg);padding:16px 10px;cursor:pointer;font-family:inherit;color:var(--pub-ink-soft);transition:border-color .12s,color .12s,background .12s}
+.pub-faq-chip span{font-size:12px;font-weight:700;line-height:1.3}
+.pub-faq-chip:hover{border-color:var(--pub-accent)}
+.pub-faq-chip.active{background:var(--pub-accent-soft);border-color:var(--pub-accent);color:var(--pub-accent-ink)}
+
+.pub-faq-list{display:flex;flex-direction:column;gap:10px}
+.pub-faq-item{background:var(--pub-paper-raised);border:1px solid var(--pub-line);border-radius:var(--radius-lg);overflow:hidden}
+.pub-faq-q{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;background:none;border:none;padding:16px 18px;text-align:left;font-family:inherit;font-size:14px;font-weight:700;color:var(--pub-ink);cursor:pointer}
+.pub-faq-q:hover{color:var(--pub-accent-ink)}
+.pub-faq-q svg{color:var(--pub-ink-soft);flex-shrink:0}
+.pub-faq-a{padding:0 18px 18px;font-size:13.5px;line-height:1.6;color:var(--pub-ink-soft)}
+.pub-faq-loc-list{margin:0;padding-left:18px}
+@media (max-width:640px){
+  .pub-faq-chips{grid-template-columns:repeat(2,1fr)}
+}
+
 .pub-cart-main{max-width:1000px;margin:0 auto;padding:24px 24px 64px}
 .pub-cart-title{font-size:26px;font-weight:800;margin:10px 0 22px}
 .pub-cart-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:32px;align-items:start}

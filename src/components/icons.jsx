@@ -379,3 +379,9 @@ export const TiktokIcon = (props) => (
     <path d="M16.5 3c.4 2.1 1.7 3.6 3.9 3.9v2.7c-1.4 0-2.7-.4-3.9-1.2v6.5a5.4 5.4 0 11-5.4-5.4c.2 0 .5 0 .7.05v2.8a2.6 2.6 0 102.6 2.6V3h2.1z" />
   </svg>
 );
+
+export const ReturnIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M3 10h11a5 5 0 010 10H9" /><polyline points="7 5 3 10 7 15" />
+  </svg>
+);
