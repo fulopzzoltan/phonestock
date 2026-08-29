@@ -671,14 +671,31 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 }
 
 /* Telefon-választó segítő belépési sáv a rács fölött */
-.pub-finder-banner{display:flex;align-items:center;justify-content:space-between;gap:16px;background:var(--pub-accent-soft);border:1px solid var(--pub-accent);border-radius:var(--radius-lg);padding:14px 18px;margin-bottom:16px;text-decoration:none;transition:transform .14s}
+@keyframes pubfinder-bob1{0%,100%{transform:translateY(0) rotate(0deg);opacity:.55}50%{transform:translateY(-7px) rotate(12deg);opacity:.9}}
+@keyframes pubfinder-bob2{0%,100%{transform:translateY(0) rotate(0deg);opacity:.4}50%{transform:translateY(6px) rotate(-10deg);opacity:.75}}
+@keyframes pubfinder-bob3{0%,100%{transform:translateY(0) scale(1);opacity:.5}50%{transform:translateY(-4px) scale(1.15);opacity:.85}}
+@keyframes pubfinder-icon-pulse{0%,100%{box-shadow:0 0 0 0 rgba(29,185,84,.35)}50%{box-shadow:0 0 0 8px rgba(29,185,84,0)}}
+.pub-finder-banner{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:16px;border:1px solid var(--pub-line);border-radius:var(--radius-lg);padding:14px 18px;margin-bottom:16px;text-decoration:none;transition:transform .14s;
+  background:
+    radial-gradient(120% 160% at 8% 15%, rgba(29,185,84,.30) 0%, rgba(29,185,84,0) 55%),
+    radial-gradient(90% 140% at 92% 100%, rgba(245,181,61,.28) 0%, rgba(245,181,61,0) 55%),
+    var(--pub-paper-raised);
+  box-shadow:var(--shadow-card);
+}
 .pub-finder-banner:hover{transform:translateY(-1px);text-decoration:none}
-.pub-finder-banner-text{display:flex;align-items:center;gap:10px;color:var(--pub-accent-ink)}
-.pub-finder-banner-title{font-size:13.5px;font-weight:800;color:var(--pub-ink)}
-.pub-finder-banner-cta{flex-shrink:0;background:var(--pub-accent-ink);color:#fff;font-size:12px;font-weight:700;padding:9px 14px;border-radius:9px;white-space:nowrap}
+.pub-finder-spark{position:absolute;color:var(--pub-accent);pointer-events:none}
+.pub-finder-spark svg{display:block}
+.pub-finder-spark-1{top:14px;right:130px;animation:pubfinder-bob1 3.4s ease-in-out infinite}
+.pub-finder-spark-2{bottom:12px;right:210px;animation:pubfinder-bob2 4s ease-in-out infinite .3s}
+.pub-finder-spark-3{top:50%;right:80px;margin-top:-5px;animation:pubfinder-bob3 2.6s ease-in-out infinite .6s;color:#D99A1F}
+.pub-finder-banner-text{position:relative;display:flex;align-items:center;gap:12px}
+.pub-finder-icon-wrap{width:34px;height:34px;flex-shrink:0;border-radius:10px;background:var(--pub-paper-raised);border:1px solid var(--pub-line);display:flex;align-items:center;justify-content:center;color:var(--pub-accent-ink);animation:pubfinder-icon-pulse 2.6s ease-out infinite}
+.pub-finder-banner-title{font-size:15.5px;font-weight:700;color:#374151}
+.pub-finder-banner-cta{position:relative;flex-shrink:0;display:inline-flex;align-items:center;background:var(--pub-accent);color:#fff;font-size:13px;font-weight:600;padding:10px 18px;border-radius:12px;white-space:nowrap;box-shadow:0 4px 12px rgba(29,185,84,.25)}
 @media (max-width:560px){
   .pub-finder-banner{flex-direction:column;align-items:stretch;text-align:left;gap:10px}
-  .pub-finder-banner-cta{text-align:center}
+  .pub-finder-banner-cta{text-align:center;justify-content:center}
+  .pub-finder-spark{display:none}
 }
 
 .pub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(192px,1fr));gap:14px}
@@ -696,20 +713,30 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-wishlist-btn.active svg{fill:currentColor}
 
 /* Infó-kártyák a rácsba illesztve (flip.ro hatás) */
-.pub-promo-card{border-radius:var(--radius-lg);padding:18px;display:flex;flex-direction:column;justify-content:space-between;gap:12px;text-decoration:none;transition:transform .14s}
-.pub-promo-card:hover{transform:translateY(-2px);text-decoration:none}
-.pub-promo-card.dark{background:var(--pub-ink);color:#fff}
-.pub-promo-card.dark .pub-promo-desc{color:#C7CDCF}
-.pub-promo-card.accent{background:var(--pub-accent-soft);border:1px solid var(--pub-accent);color:var(--pub-accent-ink)}
-.pub-promo-card.trust{background:var(--pub-paper-raised);border:1px solid var(--pub-line);color:var(--pub-ink);cursor:default}
-.pub-promo-card.trust:hover{transform:none}
-.pub-promo-title{font-size:15px;font-weight:800;line-height:1.25;margin-top:8px;color:inherit}
-.pub-promo-card.accent .pub-promo-title{color:var(--pub-ink)}
-.pub-promo-desc{font-size:12px;line-height:1.4}
-.pub-promo-cta{font-size:12.5px;font-weight:700;padding:9px 0;border-radius:9px;text-align:center}
-.pub-promo-card.dark .pub-promo-cta{background:var(--pub-accent);color:var(--pub-ink)}
-.pub-promo-card.accent .pub-promo-cta{background:var(--pub-accent-ink);color:#fff}
-.pub-promo-card.trust .pub-promo-cta{background:transparent;border:1px solid var(--pub-line);color:var(--pub-ink-soft)}
+.pub-promo-card{border-radius:var(--radius-lg);padding:18px;display:flex;flex-direction:column;justify-content:space-between;gap:16px;min-height:172px}
+.pub-promo-title{font-size:16px;font-weight:800;line-height:1.25}
+.pub-promo-desc{font-size:12px;line-height:1.4;margin-top:6px}
+.pub-promo-tag{display:block;width:100%;box-sizing:border-box;text-align:center;font-size:12px;font-weight:700;padding:9px 0;border-radius:9px}
+
+.pub-promo-card.loc{background:#12181A;color:#fff}
+.pub-promo-card.loc .pub-promo-desc{color:rgba(255,255,255,.72)}
+.pub-promo-card.loc .pub-promo-tag{background:rgba(255,255,255,.14);color:#fff}
+
+.pub-promo-card.warranty{background:var(--pub-accent);color:#fff}
+.pub-promo-card.warranty .pub-promo-desc{color:rgba(255,255,255,.82)}
+.pub-promo-card.warranty .pub-promo-tag{background:rgba(255,255,255,.18);color:#fff}
+
+.pub-promo-card.tested{background:#0B4D22;color:#fff}
+.pub-promo-card.tested .pub-promo-desc{color:rgba(255,255,255,.72)}
+.pub-promo-card.tested .pub-promo-tag{background:rgba(255,255,255,.14);color:#fff}
+
+.pub-promo-card.try{background:#D99A1F;color:#12181A}
+.pub-promo-card.try .pub-promo-desc{color:rgba(18,24,26,.68)}
+.pub-promo-card.try .pub-promo-tag{background:rgba(255,255,255,.55);color:#5B3E0C}
+
+.pub-promo-card.service{background:#8A5F0E;color:#fff}
+.pub-promo-card.service .pub-promo-desc{color:rgba(255,255,255,.75)}
+.pub-promo-card.service .pub-promo-tag{background:rgba(255,255,255,.18);color:#fff}
 .pub-card{background:var(--pub-paper-raised);border:1px solid var(--pub-line);border-radius:var(--radius-lg);padding:16px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow-card);transition:transform .14s;cursor:pointer;position:relative}
 .pub-card:hover{transform:translateY(-2px)}
 .pub-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding-right:34px}

@@ -6,7 +6,7 @@ import { t, translateColor, translateWarranty } from "./lib/i18n";
 import { normalizeStorage, normalizeBrand } from "./lib/utils";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
-import { SearchIcon, FilterIcon, CartIcon, HeartIcon, BuybackIcon, ServiceIcon, PinIcon, FinderIcon, CheckIcon, ChevronDownIcon } from "./components/icons";
+import { SearchIcon, FilterIcon, CartIcon, HeartIcon, FinderIcon, CheckIcon, ChevronDownIcon } from "./components/icons";
 import { EmptyState, LoadingState } from "./components/EmptyState";
 import { addToCart, useCart } from "./lib/cart";
 import { toggleWishlist, useWishlist } from "./lib/wishlist";
@@ -155,14 +155,14 @@ export default function StockShowcase({ lang = "hu" }) {
 
   const activeFilterCount = selectedBrands.length + selectedConditions.length + selectedStorages.length + selectedOS.length;
 
-  // A rácsba illesztett infó-kártyák (flip.ro mintájára) — valós, meglévő funkciókra mutatnak,
-  // nem kitalált akciók.
+  // A rácsba illesztett bizalomépítő kártyák — egyik sem visz el a telefonok közül,
+  // a cél nem konverzió-elterelés, hanem bizalomépítés böngészés közben.
   const PROMO_CARDS = [
-    { variant: "dark", Icon: BuybackIcon, title: s.promoBuybackTitle, desc: s.promoBuybackDesc, cta: s.promoBuybackCta, href: "/eladom" },
-    { variant: "accent", Icon: ServiceIcon, title: s.promoRepairTitle, desc: s.promoRepairDesc, cta: s.promoRepairCta, href: lang === "ro" ? "/ro/estimare" : "/becsles" },
-    // Nem visz el sehova — a cél nem konverzió-elterelés, hanem bizalomépítés böngészés közben.
-    { variant: "trust", Icon: PinIcon, title: s.promoTrustTitle, desc: s.promoTrustDesc, cta: s.promoTrustCta, href: null },
-    { variant: "accent", Icon: FinderIcon, title: s.finderPromoTitle, desc: s.finderPromoDesc, cta: s.finderPromoCta, href: lang === "ro" ? "/ro/asistent" : "/segito" },
+    { variant: "loc", title: s.trustLocTitle, desc: s.trustLocDesc, tag: s.trustLocTag },
+    { variant: "warranty", title: s.trustWarrantyTitle, desc: s.trustWarrantyDesc, tag: s.trustWarrantyTag },
+    { variant: "tested", title: s.trustTestedTitle, desc: s.trustTestedDesc, tag: s.trustTestedTag },
+    { variant: "try", title: s.trustTryTitle, desc: s.trustTryDesc, tag: s.trustTryTag },
+    { variant: "service", title: s.trustServiceTitle, desc: s.trustServiceDesc, tag: s.trustServiceTag },
   ];
 
   const canonical = lang === "ro" ? `${SITE}/ro/telefoane` : `${SITE}/keszlet`;
@@ -218,8 +218,11 @@ export default function StockShowcase({ lang = "hu" }) {
       <main className="pub-main">
         {error && <div className="errbar">{error}</div>}
         <a className="pub-finder-banner" href={lang === "ro" ? "/ro/asistent" : "/segito"}>
+          <span className="pub-finder-spark pub-finder-spark-1"><FinderIcon width={12} height={12} /></span>
+          <span className="pub-finder-spark pub-finder-spark-2"><FinderIcon width={9} height={9} /></span>
+          <span className="pub-finder-spark pub-finder-spark-3"><FinderIcon width={7} height={7} /></span>
           <div className="pub-finder-banner-text">
-            <FinderIcon width={18} height={18} />
+            <div className="pub-finder-icon-wrap"><FinderIcon width={18} height={18} /></div>
             <div className="pub-finder-banner-title">{s.finderNavTitle}</div>
           </div>
           <span className="pub-finder-banner-cta">{s.finderNavCta}</span>
@@ -374,19 +377,15 @@ export default function StockShowcase({ lang = "hu" }) {
                           )}
                         </div>
                       </div>
-                      {promo && (() => {
-                        const Tag = promo.href ? "a" : "div";
-                        return (
-                          <Tag className={`pub-promo-card ${promo.variant}`} {...(promo.href ? { href: promo.href } : {})}>
-                            <div>
-                              <promo.Icon width={22} height={22} />
-                              <div className="pub-promo-title">{promo.title}</div>
-                              <div className="pub-promo-desc">{promo.desc}</div>
-                            </div>
-                            <span className="pub-promo-cta">{promo.cta}</span>
-                          </Tag>
-                        );
-                      })()}
+                      {promo && (
+                        <div className={`pub-promo-card ${promo.variant}`}>
+                          <div>
+                            <div className="pub-promo-title">{promo.title}</div>
+                            <div className="pub-promo-desc">{promo.desc}</div>
+                          </div>
+                          <span className="pub-promo-tag">{promo.tag}</span>
+                        </div>
+                      )}
                     </Fragment>
                   );
                 })}
