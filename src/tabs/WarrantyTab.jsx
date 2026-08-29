@@ -37,14 +37,14 @@ export default function WarrantyTab({
         {loadingData ? <LoadingState /> : rows.length === 0 ? <EmptyState icon={WarrantyIcon}>Nincs aktív garancia.</EmptyState> : (
           <>
             <table>
-              <thead><tr><th>Ügyfél</th><th>Termék / Eszköz</th><th>Garancia</th><th>Lejárat</th></tr></thead>
+              <thead><tr><th>Ügyfél</th><th className="col-grow">Termék / Eszköz</th><th>Garancia</th><th>Lejárat</th></tr></thead>
               <tbody>
                 {rows.map((w) => (
                   <tr key={w.key} style={{ cursor: "pointer" }} onClick={() => setWarrantyDetailKey(w.key)}>
-                    <td style={{ fontWeight: 600 }}>{w.customerName || "—"}</td>
+                    <td style={{ fontWeight: 600, whiteSpace: "nowrap" }}>{w.customerName || "—"}</td>
                     <td>{w.label || "—"}</td>
-                    <td><span className="gar-pill">{w.warranty}</span></td>
-                    <td className="mono" style={{ fontWeight: 700, color: "#111827" }}>{w.expiry}</td>
+                    <td style={{ whiteSpace: "nowrap" }}><span className="gar-pill">{w.warranty}</span></td>
+                    <td className="mono" style={{ color: "#6B7280", whiteSpace: "nowrap" }}>{w.expiry}</td>
                   </tr>
                 ))}
               </tbody>
@@ -76,14 +76,14 @@ export default function WarrantyTab({
       >
         {(rows) => (
           <table>
-            <thead><tr><th>Ügyfél</th><th>Termék / Eszköz</th><th>Garancia</th><th>Lejárt</th></tr></thead>
+            <thead><tr><th>Ügyfél</th><th className="col-grow">Termék / Eszköz</th><th>Garancia</th><th>Lejárt</th></tr></thead>
             <tbody>
               {rows.map((w) => (
                 <tr key={w.key} style={{ cursor: "pointer" }} onClick={() => setWarrantyDetailKey(w.key)}>
-                  <td style={{ fontWeight: 600 }}>{w.customerName || "—"}</td>
+                  <td style={{ fontWeight: 600, whiteSpace: "nowrap" }}>{w.customerName || "—"}</td>
                   <td>{w.label || "—"}</td>
-                  <td><span className="gar-pill">{w.warranty}</span></td>
-                  <td className="mono" style={{ color: "#9CA3AF" }}>{w.expiry}</td>
+                  <td style={{ whiteSpace: "nowrap" }}><span className="gar-pill">{w.warranty}</span></td>
+                  <td className="mono" style={{ color: "#9CA3AF", whiteSpace: "nowrap" }}>{w.expiry}</td>
                 </tr>
               ))}
             </tbody>

@@ -81,16 +81,16 @@ export default function PartsTab({
                 </div>
               </div>
               <ResponsiveTable
-                columns={[{ key: "p", label: "Alkatrész", className: "parts-name-col" }, { key: "c", label: "Beérk. ár" }, { key: "s", label: "Forrás" }, { key: "x", label: "" }]}
+                columns={[{ key: "p", label: "Alkatrész", className: "col-grow" }, { key: "c", label: "Beérk. ár" }, { key: "s", label: "Forrás" }, { key: "x", label: "" }]}
                 rows={items}
                 rowKey={(p) => p.id}
                 renderRow={(p) => (
                   <tr key={p.id} style={{ cursor: "pointer" }} onClick={() => setPartDetailId(p.id)}>
                     <td>
                       <div className="stk-name" style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        <span className="stk-sub" style={{ marginTop: 0 }}>{partCode(p.partNo) || "—"}</span>
                         {p.name}{[p.brand, p.modelFit].filter(Boolean).length > 0 ? ` — ${[p.brand, p.modelFit].filter(Boolean).join(", ")}` : ""}
                       </div>
-                      <div className="stk-sub">{partCode(p.partNo) || "—"}</div>
                     </td>
                     <td className="mono" style={{ color: "#6B7280", whiteSpace: "nowrap" }}>{money(p.costPrice)}</td>
                     <td style={{ color: "#6B7280", fontSize: 12, whiteSpace: "nowrap" }}>{p.source || "—"}</td>
@@ -106,6 +106,7 @@ export default function PartsTab({
                     <div className="mob-row-top">
                       <div className="mob-row-main" style={{ minWidth: 0 }}>
                         <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{partCode(p.partNo) || "—"}</span>
                           {p.name}{[p.brand, p.modelFit].filter(Boolean).length > 0 ? ` — ${[p.brand, p.modelFit].filter(Boolean).join(", ")}` : ""}
                         </span>
                       </div>
