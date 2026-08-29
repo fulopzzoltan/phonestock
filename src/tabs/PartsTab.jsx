@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { money, PART_CATEGORIES, partCode, ticketCode } from "../lib/utils";
 import { SearchIcon, EditIcon, PartsIcon } from "../components/icons";
 import ConfirmDelete from "../components/ConfirmDelete";
-import Thumb from "../components/Thumb";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import HistorySection from "../components/HistorySection";
 import ResponsiveTable from "../components/ResponsiveTable";
@@ -25,9 +24,16 @@ function sortItems(items, sortBy) {
 
 const CATS = [...PART_CATEGORIES, "Egyéb"];
 
+const UseIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <rect x="3" y="7" width="18" height="12" rx="2" /><path d="M8 7V5.5A1.5 1.5 0 019.5 4h5A1.5 1.5 0 0116 5.5V7" />
+    <path d="M9.5 13l2 2 3.5-3.5" />
+  </svg>
+);
+
 export default function PartsTab({
   busy, setPartModal, partSearch, setPartSearch, loadingData, filteredParts, setPartDetailId, deletePart,
-  allUsedParts = [], locName, setDetailId, setPdfImportModal,
+  allUsedParts = [], locName, setDetailId, setPdfImportModal, onUsePart,
 }) {
   const [catFilter, setCatFilter] = useState("all");
   const [sortBy, setSortBy] = useState("recent");
@@ -75,25 +81,22 @@ export default function PartsTab({
                 </div>
               </div>
               <ResponsiveTable
-                columns={[{ key: "p", label: "Alkatrész" }, { key: "b", label: "Márka/Illik" }, { key: "q", label: "Készlet" }, { key: "c", label: "Beérk. ár" }, { key: "s", label: "Forrás" }, { key: "x", label: "" }]}
+                columns={[{ key: "p", label: "Alkatrész" }, { key: "q", label: "Készlet" }, { key: "c", label: "Beérk. ár" }, { key: "s", label: "Forrás" }, { key: "x", label: "" }]}
                 rows={items}
                 rowKey={(p) => p.id}
                 renderRow={(p) => (
                   <tr key={p.id} style={{ cursor: "pointer" }} onClick={() => setPartDetailId(p.id)}>
-                    <td>
-                      <div className="stk-row">
-                        <Thumb brand={p.category || p.name} />
-                        <div>
-                          <div className="stk-name">{p.name}</div>
-                          <div className="stk-sub">{partCode(p.partNo) || "—"}</div>
-                        </div>
+                    <td style={{ maxWidth: 0 }}>
+                      <div className="stk-name" style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {p.name}{[p.brand, p.modelFit].filter(Boolean).length > 0 ? ` — ${[p.brand, p.modelFit].filter(Boolean).join(", ")}` : ""}
                       </div>
+                      <div className="stk-sub">{partCode(p.partNo) || "—"}</div>
                     </td>
-                    <td style={{ color: "#6B7280", fontSize: 12 }}>{[p.brand, p.modelFit].filter(Boolean).join(" · ") || "—"}</td>
                     <td style={{ fontWeight: 700 }}>{p.quantity} db</td>
                     <td className="mono" style={{ color: "#6B7280" }}>{money(p.costPrice)}</td>
                     <td style={{ color: "#6B7280", fontSize: 12 }}>{p.source || "—"}</td>
                     <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
+                      <button type="button" className="use-btn" disabled={busy || !p.quantity} onClick={() => onUsePart(p)}><UseIcon width={13} height={13} />Felhasználás</button>
                       <button className="iconbtn" disabled={busy} onClick={() => setPartModal(p)}><EditIcon /></button>
                       <ConfirmDelete disabled={busy} onConfirm={() => deletePart(p.id)} />
                     </td>
@@ -102,18 +105,19 @@ export default function PartsTab({
                 renderMobileRow={(p) => (
                   <div className="mob-row" onClick={() => setPartDetailId(p.id)}>
                     <div className="mob-row-top">
-                      <div className="mob-row-main">
-                        <Thumb brand={p.category || p.name} />
-                        <span>{p.name}</span>
+                      <div className="mob-row-main" style={{ minWidth: 0 }}>
+                        <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {p.name}{[p.brand, p.modelFit].filter(Boolean).length > 0 ? ` — ${[p.brand, p.modelFit].filter(Boolean).join(", ")}` : ""}
+                        </span>
                       </div>
                       <div className="mob-row-amount">{p.quantity} db</div>
                     </div>
                     <div className="mob-row-sub">
-                      <span>{[p.brand, p.modelFit].filter(Boolean).join(" · ") || "—"}</span>
                       <span>{money(p.costPrice)}</span>
                       <span>{p.source || "—"}</span>
                     </div>
-                    <div className="mob-row-sub" style={{ marginTop: 8 }} onClick={(e) => e.stopPropagation()}>
+                    <div className="mob-row-sub" style={{ marginTop: 8, gap: 6 }} onClick={(e) => e.stopPropagation()}>
+                      <button type="button" className="use-btn" disabled={busy || !p.quantity} onClick={() => onUsePart(p)}><UseIcon width={13} height={13} />Felhasználás</button>
                       <button className="iconbtn" disabled={busy} onClick={() => setPartModal(p)}><EditIcon /></button>
                       <ConfirmDelete disabled={busy} onConfirm={() => deletePart(p.id)} />
                     </div>

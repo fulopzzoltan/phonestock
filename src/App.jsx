@@ -12,6 +12,7 @@ import StockModal from "./components/StockModal";
 import SellModal from "./components/SellModal";
 import IssueInvoiceModal from "./components/IssueInvoiceModal";
 import PartModal from "./components/PartModal";
+import PartUsageModal from "./components/PartUsageModal";
 import PdfOrderImportModal from "./components/PdfOrderImportModal";
 import DetailPanel from "./components/DetailPanel";
 import ProductDetailPanel from "./components/ProductDetailPanel";
@@ -193,6 +194,8 @@ function AppShell() {
   const [txModal, setTxModal] = useState(null); // null | tx obj (edit)
   const [ticketModal, setTicketModal] = useState(null); // null | "add" | ticket obj (edit)
   const [ownServiceModal, setOwnServiceModal] = useState(null); // { product, kind } | null
+  const [partUsageModal, setPartUsageModal] = useState(null); // { part } | null
+  const [pendingPartUsage, setPendingPartUsage] = useState(null); // { part, qty } | null — az Alkatrészek fülről indított "Felhasználás" vár egy most létrejövő saját-készlet munkalapra
   const [detailId, setDetailId] = useState(null);
   const [productDetailId, setProductDetailId] = useState(null);
   const [partDetailId, setPartDetailId] = useState(null);
@@ -529,7 +532,7 @@ function AppShell() {
 
   async function withBusy(fn) {
     setBusy(true);
-    try { await fn(); setError(""); }
+    try { const result = await fn(); setError(""); return result; }
     catch (e) { setError(e.message || "Hiba történt."); }
     finally { setBusy(false); }
   }
@@ -1461,7 +1464,7 @@ function AppShell() {
 
   // SERVICE
   async function addTicket(data, locId) {
-    await withBusy(async () => {
+    return await withBusy(async () => {
       let customerId = data.customerId || null;
       if (!customerId && data.customerPhone) {
         const { data: cid } = await supabase.rpc("upsert_customer", { p_name: data.customerName, p_phone: data.customerPhone });
@@ -1487,6 +1490,7 @@ function AppShell() {
           setError("Az SMS nem ment ki (a mentés egyébként sikeres volt) — nézd meg a konzolt vagy próbáld újra.");
         });
       }
+      return newTicket;
     });
   }
   function openOwnServiceModal(product) {
@@ -1494,8 +1498,15 @@ function AppShell() {
     setOwnServiceModal({ product, kind });
   }
   async function saveOwnServiceTicket(data, locId) {
-    await addTicket(data, locId);
+    const newTicket = await addTicket(data, locId);
     setOwnServiceModal(null);
+    // Ha az Alkatrészek fülről indult "Felhasználás" akadt meg azon, hogy még nem volt
+    // aktív munkalapja a telefonnak, most hogy létrejött, rögtön hozzácsatoljuk az alkatrészt.
+    if (newTicket && pendingPartUsage) {
+      const { part, qty } = pendingPartUsage;
+      setPendingPartUsage(null);
+      await addPartToTicket(newTicket.id, part, qty);
+    }
     // szándékosan NEM zárjuk be a ProductDetailPanel-t — a felhasználó rögtön lássa
     // a most létrejött "Előkészítés / szerviz" szekciót és kezdje címkézni az alkatrészeket.
   }
@@ -1641,6 +1652,27 @@ function AppShell() {
 
       setTickets(tickets.map((t) => (t.id === ticketId ? { ...t, matCost: newMatCost, usedParts: (t.usedParts || []).filter((sp) => sp.id !== usedPart.id) } : t)));
     });
+  }
+  function openPartUsageModal(part) {
+    setPartUsageModal({ part });
+  }
+  async function usePartForTicket(ticketId, part, qty) {
+    await addPartToTicket(ticketId, part, qty);
+    setPartUsageModal(null);
+  }
+  async function usePartForProduct(product, part, qty) {
+    const existingTicket = tickets.find((t) => t.productId === product.id && t.ticketKind !== "Ügyfél" && t.subStatus !== "Átadva");
+    if (existingTicket) {
+      await addPartToTicket(existingTicket.id, part, qty);
+      setPartUsageModal(null);
+    } else {
+      // Nincs még aktív munkalapja ennek a telefonnak — a meglévő "saját készlet" munkalap-felvevő
+      // űrlapot nyitjuk meg, és amint elmentik, a saveOwnServiceTicket automatikusan hozzácsatolja
+      // ezt az alkatrészt az újonnan létrejött munkalaphoz (ld. pendingPartUsage).
+      setPendingPartUsage({ part, qty });
+      setPartUsageModal(null);
+      openOwnServiceModal(product);
+    }
   }
 
   // FILTERED DATA
@@ -2116,7 +2148,7 @@ function AppShell() {
             busy={busy} setPartModal={setPartModal} partSearch={partSearch} setPartSearch={setPartSearch}
             loadingData={loadingData} filteredParts={filteredParts} setPartDetailId={setPartDetailId} deletePart={deletePart}
             partsStats={partsStats} allUsedParts={allUsedParts} locName={locName} setDetailId={setDetailId}
-            setPdfImportModal={setPdfImportModal}
+            setPdfImportModal={setPdfImportModal} onUsePart={openPartUsageModal}
           />
         )}
 
@@ -2229,6 +2261,18 @@ function AppShell() {
           onClose={() => setPartModal(null)}
           busy={busy}
           onSave={(data) => (typeof partModal === "object" && partModal?.id ? editPart(partModal.id, data) : addPart(data))}
+        />
+      )}
+      {partUsageModal && (
+        <PartUsageModal
+          part={partUsageModal.part}
+          tickets={tickets}
+          stock={stock}
+          locName={locName}
+          busy={busy}
+          onUseForTicket={usePartForTicket}
+          onUseForProduct={usePartForProduct}
+          onClose={() => setPartUsageModal(null)}
         />
       )}
       {pdfImportModal && (
