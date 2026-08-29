@@ -81,7 +81,7 @@ export default function PartsTab({
                 </div>
               </div>
               <ResponsiveTable
-                columns={[{ key: "p", label: "Alkatrész" }, { key: "q", label: "Készlet" }, { key: "c", label: "Beérk. ár" }, { key: "s", label: "Forrás" }, { key: "x", label: "" }]}
+                columns={[{ key: "p", label: "Alkatrész" }, { key: "c", label: "Beérk. ár" }, { key: "x", label: "" }, { key: "s", label: "Forrás" }]}
                 rows={items}
                 rowKey={(p) => p.id}
                 renderRow={(p) => (
@@ -92,14 +92,13 @@ export default function PartsTab({
                       </div>
                       <div className="stk-sub">{partCode(p.partNo) || "—"}</div>
                     </td>
-                    <td style={{ fontWeight: 700 }}>{p.quantity} db</td>
                     <td className="mono" style={{ color: "#6B7280" }}>{money(p.costPrice)}</td>
-                    <td style={{ color: "#6B7280", fontSize: 12 }}>{p.source || "—"}</td>
                     <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
                       <button type="button" className="use-btn" disabled={busy || !p.quantity} onClick={() => onUsePart(p)}><UseIcon width={13} height={13} />Felhasználás</button>
                       <button className="iconbtn" disabled={busy} onClick={() => setPartModal(p)}><EditIcon /></button>
                       <ConfirmDelete disabled={busy} onConfirm={() => deletePart(p.id)} />
                     </td>
+                    <td style={{ color: "#6B7280", fontSize: 12, textAlign: "right" }}>{p.source || "—"}</td>
                   </tr>
                 )}
                 renderMobileRow={(p) => (
@@ -110,16 +109,13 @@ export default function PartsTab({
                           {p.name}{[p.brand, p.modelFit].filter(Boolean).length > 0 ? ` — ${[p.brand, p.modelFit].filter(Boolean).join(", ")}` : ""}
                         </span>
                       </div>
-                      <div className="mob-row-amount">{p.quantity} db</div>
-                    </div>
-                    <div className="mob-row-sub">
-                      <span>{money(p.costPrice)}</span>
-                      <span>{p.source || "—"}</span>
+                      <div className="mob-row-amount">{money(p.costPrice)}</div>
                     </div>
                     <div className="mob-row-sub" style={{ marginTop: 8, gap: 6 }} onClick={(e) => e.stopPropagation()}>
                       <button type="button" className="use-btn" disabled={busy || !p.quantity} onClick={() => onUsePart(p)}><UseIcon width={13} height={13} />Felhasználás</button>
                       <button className="iconbtn" disabled={busy} onClick={() => setPartModal(p)}><EditIcon /></button>
                       <ConfirmDelete disabled={busy} onConfirm={() => deletePart(p.id)} />
+                      <span style={{ marginLeft: "auto", fontSize: 11 }}>{p.source || "—"}</span>
                     </div>
                   </div>
                 )}
