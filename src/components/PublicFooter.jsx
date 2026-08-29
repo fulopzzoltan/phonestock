@@ -56,6 +56,7 @@ export default function PublicFooter({ lang = "hu" }) {
           <div className="pub-footer-col">
             <div className="pub-footer-heading">{s.footerAccount}</div>
             <a href="/fiok">{s.footerMyAccount}</a>
+            <a href={faqHref}>{s.footerFaq}</a>
           </div>
 
           <div className="pub-footer-col">
@@ -80,7 +81,6 @@ export default function PublicFooter({ lang = "hu" }) {
             <span>{s.footerRights(new Date().getFullYear())}</span>
           </div>
           <span className="pub-footer-legal">
-            <a href={faqHref}>{s.footerFaq}</a>
             <a href="/aszf">{s.footerTerms}</a>
             <a href="/visszakuldes">{s.footerReturns}</a>
             <a href="/adatvedelem">{s.footerPrivacy}</a>

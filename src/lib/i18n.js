@@ -13,7 +13,7 @@ export const STRINGS = {
     warrantyTag: (w) => `${w} garancia`, interested: "Érdekel",
     footer: "Telefonos — az árak és a raktárkészlet folyamatosan frissülnek, végleges ár a szervizben/üzletben.",
     footerShop: "Vásárlás", footerCart: "Kosár", footerAccount: "Fiók", footerMyAccount: "Fiókom",
-    footerLocations: "Üzleteink", footerLegal: "Jogi", footerTerms: "ÁSZF", footerReturns: "Visszaküldés", footerPrivacy: "Adatvédelem", footerPayment: "Biztonságos fizetés", footerFaq: "GYIK",
+    footerLocations: "Üzleteink", footerLegal: "Jogi", footerTerms: "ÁSZF", footerReturns: "Visszaküldés", footerPrivacy: "Adatvédelem", footerPayment: "Biztonságos fizetés", footerFaq: "Gyakori kérdések",
     footerRights: (y) => `© ${y} Telefonos — minden jog fenntartva.`,
     saveLabel: (n) => `Spórolsz ${n} Lei`,
     backToStock: "Vissza a készlethez", soldOut: "Ez a darab már elkelt, vagy nem található.",
