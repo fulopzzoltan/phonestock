@@ -275,6 +275,7 @@ tr:hover td{background:#FAFAFA}
 .stk-card-iconbtn.edit{background:#F1F2F6;color:#4B5563}
 .stk-card-actions .btn{height:36px}
 .stk-actions{display:flex;gap:6px;align-items:center}
+.parts-name-col{width:100%}
 .stk-actions .iconbtn{padding:6px;border-radius:9px}
 .stk-actions .iconbtn svg{width:15px;height:15px}
 

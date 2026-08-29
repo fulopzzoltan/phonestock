@@ -81,24 +81,24 @@ export default function PartsTab({
                 </div>
               </div>
               <ResponsiveTable
-                columns={[{ key: "p", label: "Alkatrész" }, { key: "c", label: "Beérk. ár" }, { key: "x", label: "" }, { key: "s", label: "Forrás" }]}
+                columns={[{ key: "p", label: "Alkatrész", className: "parts-name-col" }, { key: "c", label: "Beérk. ár" }, { key: "s", label: "Forrás" }, { key: "x", label: "" }]}
                 rows={items}
                 rowKey={(p) => p.id}
                 renderRow={(p) => (
                   <tr key={p.id} style={{ cursor: "pointer" }} onClick={() => setPartDetailId(p.id)}>
-                    <td style={{ maxWidth: 0 }}>
+                    <td>
                       <div className="stk-name" style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                         {p.name}{[p.brand, p.modelFit].filter(Boolean).length > 0 ? ` — ${[p.brand, p.modelFit].filter(Boolean).join(", ")}` : ""}
                       </div>
                       <div className="stk-sub">{partCode(p.partNo) || "—"}</div>
                     </td>
-                    <td className="mono" style={{ color: "#6B7280" }}>{money(p.costPrice)}</td>
+                    <td className="mono" style={{ color: "#6B7280", whiteSpace: "nowrap" }}>{money(p.costPrice)}</td>
+                    <td style={{ color: "#6B7280", fontSize: 12, whiteSpace: "nowrap" }}>{p.source || "—"}</td>
                     <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
                       <button type="button" className="use-btn" disabled={busy || !p.quantity} onClick={() => onUsePart(p)}><UseIcon width={13} height={13} />Felhasználás</button>
                       <button className="iconbtn" disabled={busy} onClick={() => setPartModal(p)}><EditIcon /></button>
                       <ConfirmDelete disabled={busy} onConfirm={() => deletePart(p.id)} />
                     </td>
-                    <td style={{ color: "#6B7280", fontSize: 12, textAlign: "right" }}>{p.source || "—"}</td>
                   </tr>
                 )}
                 renderMobileRow={(p) => (
@@ -112,10 +112,10 @@ export default function PartsTab({
                       <div className="mob-row-amount">{money(p.costPrice)}</div>
                     </div>
                     <div className="mob-row-sub" style={{ marginTop: 8, gap: 6 }} onClick={(e) => e.stopPropagation()}>
-                      <button type="button" className="use-btn" disabled={busy || !p.quantity} onClick={() => onUsePart(p)}><UseIcon width={13} height={13} />Felhasználás</button>
+                      <span style={{ fontSize: 11 }}>{p.source || "—"}</span>
+                      <button type="button" className="use-btn" style={{ marginLeft: "auto" }} disabled={busy || !p.quantity} onClick={() => onUsePart(p)}><UseIcon width={13} height={13} />Felhasználás</button>
                       <button className="iconbtn" disabled={busy} onClick={() => setPartModal(p)}><EditIcon /></button>
                       <ConfirmDelete disabled={busy} onConfirm={() => deletePart(p.id)} />
-                      <span style={{ marginLeft: "auto", fontSize: 11 }}>{p.source || "—"}</span>
                     </div>
                   </div>
                 )}
