@@ -56,6 +56,20 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
 .nav-pill.blue{background:#DBEAFE;color:#1D4ED8}
 .nav-pill.amber{background:#FEF3C7;color:#B45309}
 .nav-pill.violet{background:#EDE9FE;color:#6D28D9}
+.util-row{padding:12px;border-bottom:1px solid #E8EAEF;display:flex;align-items:center;gap:6px}
+.loc-drop-wrap{position:relative;flex:1}
+.loc-drop{width:100%;display:flex;align-items:center;justify-content:space-between;gap:6px;border:1px solid #E8EAEF;background:#F8FAFB;border-radius:9px;padding:7px 9px;font-size:11.5px;font-weight:700;color:#101828;cursor:pointer;font-family:inherit}
+.loc-drop.static{cursor:default}
+.loc-drop-left{display:flex;align-items:center;gap:6px;color:#5B6472;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.loc-drop-menu{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid #E8EAEF;border-radius:10px;box-shadow:0 8px 24px rgba(16,24,40,.12);padding:4px;z-index:20}
+.loc-drop-item{display:block;width:100%;text-align:left;border:none;background:none;font-family:inherit;font-size:12px;font-weight:600;color:#5B6472;padding:8px 9px;border-radius:7px;cursor:pointer}
+.loc-drop-item:hover{background:#F1F2F6}
+.loc-drop-item.active{background:#E8FBEF;color:#0F7A36}
+.util-icon-btn{width:30px;height:30px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border:1px solid #E8EAEF;border-radius:9px;color:#5B6472}
+.util-icon-btn:hover{border-color:#1DB954;color:#0F7A36}
+.group-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;border:none;background:none;padding:8px 12px;cursor:pointer;font-size:10px;font-weight:600;color:#98A1B0;text-transform:uppercase;letter-spacing:.08em;margin-top:20px;font-family:inherit}
+.group-body{padding-left:6px;border-left:2px solid #F1F2F6;margin-left:12px}
+.group-body .navbtn{padding-left:10px}
 .sidebar-bottom{padding:16px 12px;border-top:1px solid #E8EAEF}
 .loc-sw{display:flex;gap:2px;background:#F1F2F6;border-radius:12px;padding:3px;margin-bottom:12px}
 .loc-btn{flex:1;border:none;background:none;color:var(--sidebar-text);font-family:inherit;font-size:11px;font-weight:600;padding:7px 4px;border-radius:9px;cursor:pointer}

@@ -4,6 +4,12 @@ export const CloseIcon = (props) => (
   </svg>
 );
 
+export const ExternalLinkIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M18 13v6a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h6" /><path d="M15 3h6v6" /><path d="M10 14L21 3" />
+  </svg>
+);
+
 export const TrashIcon = (props) => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
     <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" />
