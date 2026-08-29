@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import { SearchIcon, WarrantyIcon } from "../components/icons";
-import Thumb from "../components/Thumb";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import HistorySection from "../components/HistorySection";
 
@@ -43,12 +42,7 @@ export default function WarrantyTab({
                 {rows.map((w) => (
                   <tr key={w.key} style={{ cursor: "pointer" }} onClick={() => setWarrantyDetailKey(w.key)}>
                     <td style={{ fontWeight: 600 }}>{w.customerName || "—"}</td>
-                    <td>
-                      <div className="stk-row">
-                        <Thumb brand={w.label || "?"} size="sm" />
-                        <div>{w.label || "—"}</div>
-                      </div>
-                    </td>
+                    <td>{w.label || "—"}</td>
                     <td><span className="gar-pill">{w.warranty}</span></td>
                     <td className="mono" style={{ fontWeight: 700, color: "#111827" }}>{w.expiry}</td>
                   </tr>
@@ -63,7 +57,7 @@ export default function WarrantyTab({
                     <span className="mob-row-amount">{w.expiry}</span>
                   </div>
                   <div className="mob-row-sub">
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><Thumb brand={w.label || "?"} size="sm" />{w.label || "—"}</span>
+                    <span>{w.label || "—"}</span>
                     <span className="gar-pill">{w.warranty}</span>
                   </div>
                 </div>
@@ -87,7 +81,7 @@ export default function WarrantyTab({
               {rows.map((w) => (
                 <tr key={w.key} style={{ cursor: "pointer" }} onClick={() => setWarrantyDetailKey(w.key)}>
                   <td style={{ fontWeight: 600 }}>{w.customerName || "—"}</td>
-                  <td><div className="stk-row"><Thumb brand={w.label || "?"} size="sm" /><div>{w.label || "—"}</div></div></td>
+                  <td>{w.label || "—"}</td>
                   <td><span className="gar-pill">{w.warranty}</span></td>
                   <td className="mono" style={{ color: "#9CA3AF" }}>{w.expiry}</td>
                 </tr>
