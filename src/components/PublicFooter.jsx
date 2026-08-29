@@ -76,6 +76,13 @@ export default function PublicFooter({ lang = "hu" }) {
             <a href="/adatvedelem">{s.footerPrivacy}</a>
           </span>
         </div>
+
+        <div className="pub-footer-badges">
+          <a href="https://netopia-payments.com" target="_blank" rel="noopener noreferrer"><img src="/netopiacolor-telefonos.png" alt="Netopia Payments" /></a>
+          <img src="/Mastercard-Logo.png" alt="Mastercard" />
+          <img src="/visacolor-telefonos.png" alt="Visa" />
+          <a href="https://anpc.ro/ce-este-sal/" target="_blank" rel="noopener noreferrer"><img src="/anpc_sal.v1787810231.png" alt="ANPC SAL" /></a>
+        </div>
       </div>
     </footer>
   );

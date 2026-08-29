@@ -842,6 +842,9 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-footer-legal{display:flex;gap:16px}
 .pub-footer-legal a{color:var(--pub-ink-soft);text-decoration:none}
 .pub-footer-legal a:hover{color:var(--pub-accent-ink);text-decoration:underline}
+
+.pub-footer-badges{display:flex;align-items:center;gap:18px;margin-top:16px;padding-top:16px;border-top:1px solid var(--pub-line)}
+.pub-footer-badges img{height:28px;width:auto;display:block}
 @media (max-width:760px){
   .pub-footer-grid{grid-template-columns:1fr 1fr;gap:24px 16px}
 }
