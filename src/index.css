@@ -656,7 +656,8 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 
 /* Oldalsávos szűrés (bsgmag.ro hatás) */
 .pub-body{display:flex;gap:20px;align-items:flex-start}
-.pub-sidebar{width:230px;flex-shrink:0;background:var(--pub-paper-raised);border:1px solid var(--pub-line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:16px}
+.pub-sidebar{width:230px;flex-shrink:0;display:flex;flex-direction:column;gap:16px}
+.pub-sidebar-card{background:var(--pub-paper-raised);border:1px solid var(--pub-line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:16px}
 .pub-sidebar-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .pub-sidebar-title{font-size:13.5px;font-weight:800;color:var(--pub-ink)}
 .pub-sidebar-clear{border:none;background:none;font-family:inherit;font-size:11.5px;font-weight:600;color:var(--pub-accent-ink);cursor:pointer;padding:0}
@@ -668,7 +669,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-sidebar-groupbody{display:flex;flex-direction:column}
 .pub-sidebar-more{display:block;border:none;background:none;font-family:inherit;font-size:11.5px;font-weight:600;color:var(--pub-accent-ink);cursor:pointer;padding:6px 8px;margin:2px -8px 0;text-align:left}
 .pub-sidebar-more:hover{text-decoration:underline}
-.pub-sort-field{position:relative;display:flex;align-items:center;margin-bottom:16px}
+.pub-sort-field{position:relative;display:flex;align-items:center}
 .pub-sort-field svg{position:absolute;color:var(--pub-ink-soft);pointer-events:none}
 .pub-sort-field svg:first-child{left:12px;width:15px;height:15px}
 .pub-sort-field svg:last-child{right:12px;width:12px;height:12px}

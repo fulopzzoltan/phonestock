@@ -255,17 +255,20 @@ export default function StockShowcase({ lang = "hu" }) {
         </a>
         <div className="pub-body">
           <aside className={`pub-sidebar${filtersOpen ? " open" : ""}`}>
-            <div className="pub-sort-field">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
-              <select value={sort} onChange={(e) => setSort(e.target.value)}>
-                <option value="recommended">{s.sortRecommended}</option>
-                <option value="price-asc">{s.sortPriceAsc}</option>
-                <option value="price-desc">{s.sortPriceDesc}</option>
-                <option value="brand">{s.sortBrand}</option>
-              </select>
-              <ChevronDownIcon />
+            <div className="pub-sidebar-card">
+              <div className="pub-sort-field">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
+                <select value={sort} onChange={(e) => setSort(e.target.value)}>
+                  <option value="recommended">{s.sortRecommended}</option>
+                  <option value="price-asc">{s.sortPriceAsc}</option>
+                  <option value="price-desc">{s.sortPriceDesc}</option>
+                  <option value="brand">{s.sortBrand}</option>
+                </select>
+                <ChevronDownIcon />
+              </div>
             </div>
 
+            <div className="pub-sidebar-card">
             <div className="pub-sidebar-head">
               <div className="pub-sidebar-title">{s.filters}</div>
               {activeFilterCount > 0 && <button type="button" className="pub-sidebar-clear" onClick={clearFilters}>{s.clearFilters}</button>}
@@ -322,8 +325,11 @@ export default function StockShowcase({ lang = "hu" }) {
                 <span className="pub-check-row-count">{countsByCondition.Refurbished || 0}</span>
               </button>
             </SidebarGroup>
+            </div>
 
-            <ReviewsBadge lang={lang} stacked style={{ marginTop: 4 }} />
+            <div className="pub-sidebar-card">
+              <ReviewsBadge lang={lang} stacked />
+            </div>
           </aside>
 
           <div className="pub-results" ref={resultsTopRef}>
