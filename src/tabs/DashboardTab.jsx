@@ -13,10 +13,10 @@ const SectionHead = ({ icon: Icon, children }) => (
 export default function DashboardTab({
   effectiveLocFilter, locName, stockStats, stockHistory, svcStats,
   monthlyTrendSummary, currentMonthLive, monthlySummaries, locations,
-  txStats, partsStats, customerStats, todoItems, setDetailId, setWarrantyDetailKey, setTab,
+  txStats, partsStats, customerStats, todoItems, setDetailId,
   stockSparkline, dailyIncomeTrend,
 }) {
-  const todoCount = (todoItems?.slaTickets.length || 0) + (todoItems?.soonWarranties.length || 0);
+  const todoCount = todoItems?.slaTickets.length || 0;
 
   return (
     <>
@@ -27,29 +27,14 @@ export default function DashboardTab({
       {todoCount > 0 && (
         <>
           <SectionHead icon={WarningIcon}>Ma figyelni kell rá</SectionHead>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginBottom: 26 }}>
-            {todoItems.slaTickets.length > 0 && (
-              <div className="statcard">
-                <div className="dp-section-title">Lejáró/lejárt munkalapok</div>
-                {todoItems.slaTickets.map(({ ticket: t, sla }) => (
-                  <div key={t.id} className="dp-row" style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
-                    <span className="dp-key">{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))} — {displayName(t.brand, t.model) || t.customerName}</span>
-                    <span className="tag" style={{ background: sla.level === "overdue" ? "var(--danger-soft)" : "var(--warning-soft)", color: sla.level === "overdue" ? "var(--danger-ink)" : "var(--warning-ink)" }}>{sla.label}</span>
-                  </div>
-                ))}
+          <div className="statcard" style={{ marginBottom: 26 }}>
+            <div className="dp-section-title">Lejáró/lejárt munkalapok</div>
+            {todoItems.slaTickets.map(({ ticket: t, sla }) => (
+              <div key={t.id} className="dp-row" style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
+                <span className="dp-key">{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))} — {displayName(t.brand, t.model) || t.customerName}</span>
+                <span className="tag" style={{ background: sla.level === "overdue" ? "var(--danger-soft)" : "var(--warning-soft)", color: sla.level === "overdue" ? "var(--danger-ink)" : "var(--warning-ink)" }}>{sla.label}</span>
               </div>
-            )}
-            {todoItems.soonWarranties.length > 0 && (
-              <div className="statcard">
-                <div className="dp-section-title">Hamarosan lejáró garanciák</div>
-                {todoItems.soonWarranties.map((w) => (
-                  <div key={w.key} className="dp-row" style={{ cursor: "pointer" }} onClick={() => { setTab("warranty"); setWarrantyDetailKey(w.key); }}>
-                    <span className="dp-key">{w.customerName || "—"} — {w.label || "—"}</span>
-                    <span className="tag" style={{ background: "var(--warning-soft)", color: "var(--warning-ink)" }}>{w.expiry}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+            ))}
           </div>
         </>
       )}

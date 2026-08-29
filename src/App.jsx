@@ -1907,7 +1907,7 @@ function AppShell() {
       }));
     return [...saleItems, ...serviceItems, ...manualItems];
   }
-  const activeWarranties = useMemo(() => buildWarrantyItems(true).sort((a, b) => (a.expiry || "").localeCompare(b.expiry || "")), [transactions, tickets, warranties]);
+  const activeWarranties = useMemo(() => buildWarrantyItems(true).sort((a, b) => (b.from || "").localeCompare(a.from || "")), [transactions, tickets, warranties]);
   const expiredWarranties = useMemo(() => buildWarrantyItems(false).sort((a, b) => (b.expiry || "").localeCompare(a.expiry || "")), [transactions, tickets, warranties]);
   const filteredWarranties = warrantyFilter === "all" ? activeWarranties : activeWarranties.filter((w) => w.kind === warrantyFilter);
 
@@ -1916,13 +1916,8 @@ function AppShell() {
       .map((t) => ({ ticket: t, sla: slaInfo(t) }))
       .filter((x) => x.sla && (x.sla.level === "warn" || x.sla.level === "overdue"))
       .sort((a, b) => a.sla.days - b.sla.days);
-    const soonWarranties = activeWarranties.filter((w) => {
-      if (!w.expiry) return false;
-      const daysLeft = Math.ceil((new Date(w.expiry) - new Date(today())) / 86400000);
-      return daysLeft <= 14 && daysLeft >= 0;
-    }).sort((a, b) => (a.expiry || "").localeCompare(b.expiry || ""));
-    return { slaTickets, soonWarranties };
-  }, [activeTickets, activeWarranties]);
+    return { slaTickets };
+  }, [activeTickets]);
 
   const leaveYear = new Date().getFullYear();
   const leaveBalanceByUser = useMemo(() => {
@@ -2085,7 +2080,7 @@ function AppShell() {
             effectiveLocFilter={effectiveLocFilter} locName={locName} stockStats={stockStats} stockHistory={stockHistory}
             svcStats={svcStats} monthlyTrendSummary={monthlyTrendSummary} currentMonthLive={currentMonthLive}
             monthlySummaries={monthlySummaries} locations={locations} txStats={txStats} partsStats={partsStats} customerStats={customerStats}
-            todoItems={todoItems} setDetailId={setDetailId} setWarrantyDetailKey={setWarrantyDetailKey} setTab={setTab}
+            todoItems={todoItems} setDetailId={setDetailId}
             stockSparkline={stockHistory.slice(-14).map((h) => h.value)} dailyIncomeTrend={dailyIncomeTrend}
           />
         )}
@@ -2164,7 +2159,7 @@ function AppShell() {
           <WarrantyTab
             busy={busy} setWarrantyModal={setWarrantyModal} activeWarranties={activeWarranties}
             warrantyFilter={warrantyFilter} setWarrantyFilter={setWarrantyFilter} loadingData={loadingData}
-            filteredWarranties={filteredWarranties} setWarrantyDetailKey={setWarrantyDetailKey} locName={locName}
+            filteredWarranties={filteredWarranties} setWarrantyDetailKey={setWarrantyDetailKey}
             expiredWarranties={expiredWarranties}
           />
         )}

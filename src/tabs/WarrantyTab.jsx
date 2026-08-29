@@ -1,7 +1,5 @@
 import { useMemo, useState } from "react";
-import { today } from "../lib/utils";
 import { SearchIcon, WarrantyIcon } from "../components/icons";
-import CallLink from "../components/CallLink";
 import Thumb from "../components/Thumb";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import HistorySection from "../components/HistorySection";
@@ -10,7 +8,7 @@ const FILTERS = [["all", "Mind"], ["sale", "Telefon garancia"], ["service", "Sze
 
 export default function WarrantyTab({
   busy, setWarrantyModal, warrantyFilter, setWarrantyFilter, loadingData, filteredWarranties,
-  setWarrantyDetailKey, locName, expiredWarranties,
+  setWarrantyDetailKey, expiredWarranties,
 }) {
   const [search, setSearch] = useState("");
 
@@ -40,54 +38,36 @@ export default function WarrantyTab({
         {loadingData ? <LoadingState /> : rows.length === 0 ? <EmptyState icon={WarrantyIcon}>Nincs aktív garancia.</EmptyState> : (
           <>
             <table>
-              <thead><tr><th>Típus</th><th>Ügyfél</th><th>Termék / Eszköz</th><th>Garancia</th><th>Lejárat</th><th>Helyszín</th><th>Művelet</th></tr></thead>
+              <thead><tr><th>Ügyfél</th><th>Termék / Eszköz</th><th>Garancia</th><th>Lejárat</th></tr></thead>
               <tbody>
-                {rows.map((w) => {
-                  const daysLeft = w.expiry ? Math.ceil((new Date(w.expiry) - new Date(today())) / 86400000) : null;
-                  return (
-                    <tr key={w.key} style={{ cursor: "pointer" }} onClick={() => setWarrantyDetailKey(w.key)}>
-                      <td>{w.kind === "sale" ? <span className="badge-income">Eladás</span> : <span className="badge-loc">Szerviz</span>}</td>
-                      <td style={{ fontWeight: 600 }}>{w.customerName || "—"}</td>
-                      <td>
-                        <div className="stk-row">
-                          <Thumb brand={w.label || "?"} size="sm" />
-                          <div>{w.label || "—"}</div>
-                        </div>
-                      </td>
-                      <td><span className="gar-pill">{w.warranty}</span></td>
-                      <td className="mono" style={{ fontWeight: 700, color: daysLeft != null && daysLeft <= 14 ? "#DC2626" : "#111827" }}>
-                        {w.expiry} {daysLeft != null && <span style={{ fontWeight: 500, color: "#9CA3AF" }}>({daysLeft} nap)</span>}
-                      </td>
-                      <td><span className="badge-loc">{locName(w.locationId)}</span></td>
-                      <td onClick={(e) => e.stopPropagation()}>
-                        <CallLink phone={w.customerPhone} />
-                      </td>
-                    </tr>
-                  );
-                })}
+                {rows.map((w) => (
+                  <tr key={w.key} style={{ cursor: "pointer" }} onClick={() => setWarrantyDetailKey(w.key)}>
+                    <td style={{ fontWeight: 600 }}>{w.customerName || "—"}</td>
+                    <td>
+                      <div className="stk-row">
+                        <Thumb brand={w.label || "?"} size="sm" />
+                        <div>{w.label || "—"}</div>
+                      </div>
+                    </td>
+                    <td><span className="gar-pill">{w.warranty}</span></td>
+                    <td className="mono" style={{ fontWeight: 700, color: "#111827" }}>{w.expiry}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
             <div className="mob-cards">
-              {rows.map((w) => {
-                const daysLeft = w.expiry ? Math.ceil((new Date(w.expiry) - new Date(today())) / 86400000) : null;
-                return (
-                  <div key={w.key} className="mob-row" onClick={() => setWarrantyDetailKey(w.key)}>
-                    <div className="mob-row-top">
-                      <div className="mob-row-main"><span>{w.customerName || "—"}</span></div>
-                      <span className="mob-row-amount" style={{ color: daysLeft != null && daysLeft <= 14 ? "#DC2626" : "#111827" }}>
-                        {w.expiry}{daysLeft != null && ` (${daysLeft} nap)`}
-                      </span>
-                    </div>
-                    <div className="mob-row-sub">
-                      {w.kind === "sale" ? <span className="badge-income">Eladás</span> : <span className="badge-loc">Szerviz</span>}
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><Thumb brand={w.label || "?"} size="sm" />{w.label || "—"}</span>
-                      <span className="gar-pill">{w.warranty}</span>
-                      <span className="badge-loc">{locName(w.locationId)}</span>
-                      <span onClick={(e) => e.stopPropagation()}><CallLink phone={w.customerPhone} /></span>
-                    </div>
+              {rows.map((w) => (
+                <div key={w.key} className="mob-row" onClick={() => setWarrantyDetailKey(w.key)}>
+                  <div className="mob-row-top">
+                    <div className="mob-row-main"><span>{w.customerName || "—"}</span></div>
+                    <span className="mob-row-amount">{w.expiry}</span>
                   </div>
-                );
-              })}
+                  <div className="mob-row-sub">
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><Thumb brand={w.label || "?"} size="sm" />{w.label || "—"}</span>
+                    <span className="gar-pill">{w.warranty}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </>
         )}
@@ -102,16 +82,14 @@ export default function WarrantyTab({
       >
         {(rows) => (
           <table>
-            <thead><tr><th>Típus</th><th>Ügyfél</th><th>Termék / Eszköz</th><th>Garancia</th><th>Lejárt</th><th>Helyszín</th></tr></thead>
+            <thead><tr><th>Ügyfél</th><th>Termék / Eszköz</th><th>Garancia</th><th>Lejárt</th></tr></thead>
             <tbody>
               {rows.map((w) => (
                 <tr key={w.key} style={{ cursor: "pointer" }} onClick={() => setWarrantyDetailKey(w.key)}>
-                  <td>{w.kind === "sale" ? <span className="badge-income">Eladás</span> : <span className="badge-loc">Szerviz</span>}</td>
                   <td style={{ fontWeight: 600 }}>{w.customerName || "—"}</td>
                   <td><div className="stk-row"><Thumb brand={w.label || "?"} size="sm" /><div>{w.label || "—"}</div></div></td>
                   <td><span className="gar-pill">{w.warranty}</span></td>
                   <td className="mono" style={{ color: "#9CA3AF" }}>{w.expiry}</td>
-                  <td><span className="badge-loc">{locName(w.locationId)}</span></td>
                 </tr>
               ))}
             </tbody>
