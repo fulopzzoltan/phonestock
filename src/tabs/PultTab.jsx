@@ -46,145 +46,173 @@ export default function PultTab({
   const doneNotes = notes.filter((n) => n.status === "done");
   const activeWaiting = waitingItems.filter((w) => w.status !== "lezarva");
   const closedWaiting = waitingItems.filter((w) => w.status === "lezarva");
+  const readyWaiting = activeWaiting.filter((w) => w.status === "megerkezett");
+
+  const attentionCount = webOrders.length + promisedToday.length + readyWaiting.length;
 
   return (
     <>
-      <div className="pult-grid">
-        <div className="pult-col">
-          <div className="pult-section">
-            <div className="pult-section-head"><CartIcon width={16} height={16} />Webes rendelések{webOrders.length > 0 && <span className="cnt">{webOrders.length}</span>}</div>
-            {webOrders.length === 0 ? <EmptyState icon={CartIcon}>Nincs függő webes rendelés.</EmptyState> : (
-              <div className="tw">
-                {webOrders.map((o) => (
-                  <div key={o.id} className="dp-row" style={{ padding: "10px 14px", alignItems: "flex-start" }}>
-                    <span className="dp-key">
-                      <span className={`st ${o.status === "fizetve" ? "st-alkatresz" : "st-garancialis"}`} style={{ marginRight: 8 }}>#{o.orderNo}</span>
-                      {o.guestName} · {o.guestPhone}
-                      <span className="badge-loc" style={{ marginLeft: 8 }}>{o.locationName}</span>
-                      <div style={{ fontSize: 11.5, color: "#6B7280", marginTop: 3 }}>
-                        {o.items.map((it) => [it.brand, it.model].filter(Boolean).join(" ")).join(", ")}
-                      </div>
-                    </span>
-                    <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
-                      <span className="mono" style={{ fontWeight: 700 }}>{money(o.totalAmount)}</span>
-                      <span style={{ display: "flex", gap: 6 }}>
-                        {o.status === "fizetve" && <button type="button" className="btn sec sm" onClick={() => confirmWebOrder(o.id)}>Előkészítve</button>}
-                        {o.status === "visszaigazolva" && <button type="button" className="btn sm" onClick={() => completeWebOrder(o.id)}>Átadva</button>}
-                        <button type="button" className="btn sec sm" onClick={() => cancelWebOrder(o.id)}>Lemondás</button>
-                      </span>
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+      <div className="pult-stat-row">
+        <div className="pult-stat hot"><div className="n">{attentionCount}</div><div className="l">Ma figyelendő</div></div>
+        <div className="pult-stat"><div className="n">{webOrders.length}</div><div className="l">Webes rendelés</div></div>
+        <div className="pult-stat"><div className="n">{readyWaiting.length}</div><div className="l">Kész várakozás</div></div>
+        <div className="pult-stat"><div className="n">{leaveSoon.length}</div><div className="l">Szabadság {LEAVE_SOON_DAYS} napon belül</div></div>
+      </div>
 
-          <div className="pult-section">
-            <div className="pult-section-head"><ClockIcon width={16} height={16} />Ma ígért munkák{promisedToday.length > 0 && <span className="cnt">{promisedToday.length}</span>}</div>
-            {promisedToday.length === 0 ? <EmptyState icon={ClockIcon}>Ma nincs konkrétan ígért munka.</EmptyState> : (
-              <div className="stk-grid">
-                {promisedToday.map((t) => <TicketCard key={t.id} ticket={t} locName={locName} onOpen={setDetailId} />)}
-              </div>
-            )}
-          </div>
+      <div className="pult-priority">
+        <div className="pult-priority-head">Ma figyelni kell rá</div>
+        <div className="pult-priority-sub">Függő rendelések, ígért munkák és kész várakozások — amíg ez nem üres, ez a legfontosabb</div>
 
-          <div className="pult-section">
-            <div className="pult-section-head"><NoteIcon width={16} height={16} />Cetlik{openNotes.length > 0 && <span className="cnt">{openNotes.length} nyitott</span>}</div>
-            <NoteComposer users={users} tickets={tickets} stock={stock} parts={parts} customersTable={customersTable} warranties={warranties} locName={locName} onSave={addNote} />
-            {openNotes.length === 0 ? <EmptyState icon={NoteIcon}>Nincs nyitott cetli.</EmptyState> : (
-              <div className="stk-grid">
-                {openNotes.map((n) => (
-                  <NoteCard key={n.id} note={n} users={users} currentUserId={currentUserId} onComplete={() => completeNote(n.id)} onDelete={() => deleteNote(n.id)}
-                    onOpenLink={{ ticket: onOpenTicket, product: onOpenProduct, part: onOpenPart, customer: onOpenCustomer, warranty: onOpenWarranty }} />
-                ))}
-              </div>
-            )}
-            <div style={{ marginTop: 10 }}>
-              <HistorySection icon={NoteIcon} label="Elintézett cetlik" items={doneNotes} searchPlaceholder="Keresés..." filterFn={(n, q) => n.body.toLowerCase().includes(q)}>
-                {(rows) => (
-                  <div className="stk-grid" style={{ padding: 12 }}>
-                    {rows.map((n) => <NoteCard key={n.id} note={n} users={users} currentUserId={currentUserId} done onReopen={() => reopenNote(n.id)} />)}
-                  </div>
-                )}
-              </HistorySection>
+        <div className="pult-priority-group">
+          <div className="pult-section-head sub"><CartIcon width={15} height={15} />Webes rendelések{webOrders.length > 0 && <span className="cnt">{webOrders.length}</span>}</div>
+          {webOrders.length === 0 ? <EmptyState icon={CartIcon}>Nincs függő webes rendelés.</EmptyState> : (
+            <div className="tw">
+              {webOrders.map((o) => (
+                <div key={o.id} className="dp-row" style={{ padding: "10px 14px", alignItems: "flex-start" }}>
+                  <span className="dp-key">
+                    <span className={`st ${o.status === "fizetve" ? "st-alkatresz" : "st-garancialis"}`} style={{ marginRight: 8 }}>#{o.orderNo}</span>
+                    {o.guestName} · {o.guestPhone}
+                    <span className="badge-loc" style={{ marginLeft: 8 }}>{o.locationName}</span>
+                    <div style={{ fontSize: 11.5, color: "#6B7280", marginTop: 3 }}>
+                      {o.items.map((it) => [it.brand, it.model].filter(Boolean).join(" ")).join(", ")}
+                    </div>
+                  </span>
+                  <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+                    <span className="mono" style={{ fontWeight: 700 }}>{money(o.totalAmount)}</span>
+                    <span style={{ display: "flex", gap: 6 }}>
+                      {o.status === "fizetve" && <button type="button" className="btn sec sm" onClick={() => confirmWebOrder(o.id)}>Előkészítve</button>}
+                      {o.status === "visszaigazolva" && <button type="button" className="btn sm" onClick={() => completeWebOrder(o.id)}>Átadva</button>}
+                      <button type="button" className="btn sec sm" onClick={() => cancelWebOrder(o.id)}>Lemondás</button>
+                    </span>
+                  </span>
+                </div>
+              ))}
             </div>
-          </div>
+          )}
         </div>
 
-        <div className="pult-col">
-          <div className="pult-section">
-            <div className="pult-section-head"><PhoneCaseIcon width={16} height={16} />Lefoglalt telefonok{reservedPhones.length > 0 && <span className="cnt">{reservedPhones.length}</span>}</div>
-            {reservedPhones.length === 0 ? <EmptyState icon={PhoneCaseIcon}>Nincs lefoglalt telefon.</EmptyState> : (
-              <div className="tw">
-                {reservedPhones.map((i) => (
-                  <div key={i.id} className="dp-row" style={{ padding: "10px 14px", cursor: "pointer" }} onClick={() => onOpenProduct(i.id)}>
-                    <span className="dp-key">
-                      {displayName(i.brand, i.model)} <span style={{ color: "#9CA3AF" }}>· {phoneCode(i.productNo)}</span>
-                      {effectiveLocFilter === "all" && <span className="badge-loc" style={{ marginLeft: 8 }}>{locName(i.locationId)}</span>}
-                    </span>
-                    <span className="mono" style={{ fontWeight: 700 }}>{money(i.salePrice)}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+        <div className="pult-priority-group">
+          <div className="pult-section-head sub"><ClockIcon width={15} height={15} />Ma ígért munkák{promisedToday.length > 0 && <span className="cnt">{promisedToday.length}</span>}</div>
+          {promisedToday.length === 0 ? <EmptyState icon={ClockIcon}>Ma nincs konkrétan ígért munka.</EmptyState> : (
+            <div className="stk-grid">
+              {promisedToday.map((t) => <TicketCard key={t.id} ticket={t} locName={locName} onOpen={setDetailId} />)}
+            </div>
+          )}
+        </div>
 
-          <div className="pult-section">
-            <div className="pult-section-head"><PartsIcon width={16} height={16} />Várakozik valamire{activeWaiting.length > 0 && <span className="cnt">{activeWaiting.length}</span>}</div>
-            <WaitingList items={activeWaiting} onAdd={addWaitingItem} onAdvance={advanceWaiting} onDelete={deleteWaitingItem} />
-            <HistorySection icon={PartsIcon} label="Lezárt várakozások" items={closedWaiting} searchPlaceholder="Keresés..." filterFn={(w, q) => [w.description, w.customerName].filter(Boolean).join(" ").toLowerCase().includes(q)}>
+        <div className="pult-priority-group">
+          <div className="pult-section-head sub"><PartsIcon width={15} height={15} />Kész várakozások{readyWaiting.length > 0 && <span className="cnt">{readyWaiting.length}</span>}</div>
+          {readyWaiting.length === 0 ? <EmptyState icon={PartsIcon}>Nincs értesítésre váró tétel.</EmptyState> : (
+            <div className="tw">
+              {readyWaiting.map((w) => (
+                <div key={w.id} className="dp-row" style={{ padding: "10px 14px" }}>
+                  <span className="dp-key">
+                    <span className="st st-garancialis" style={{ marginRight: 8 }}>Megérkezett</span>
+                    {w.description}{w.customerName ? ` — ${w.customerName}` : ""}{w.supplier ? ` (${w.supplier})` : ""}
+                  </span>
+                  <button type="button" className="btn sec sm" onClick={() => advanceWaiting(w.id, "ertesitve")}>Értesítettük</button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="pult-lower">
+        <div className="pult-section">
+          <div className="pult-section-head"><PhoneCaseIcon width={16} height={16} />Lefoglalt telefonok{reservedPhones.length > 0 && <span className="cnt">{reservedPhones.length}</span>}</div>
+          {reservedPhones.length === 0 ? <EmptyState icon={PhoneCaseIcon}>Nincs lefoglalt telefon.</EmptyState> : (
+            <div className="tw">
+              {reservedPhones.map((i) => (
+                <div key={i.id} className="dp-row" style={{ padding: "10px 14px", cursor: "pointer" }} onClick={() => onOpenProduct(i.id)}>
+                  <span className="dp-key">
+                    {displayName(i.brand, i.model)} <span style={{ color: "#9CA3AF" }}>· {phoneCode(i.productNo)}</span>
+                    {effectiveLocFilter === "all" && <span className="badge-loc" style={{ marginLeft: 8 }}>{locName(i.locationId)}</span>}
+                  </span>
+                  <span className="mono" style={{ fontWeight: 700 }}>{money(i.salePrice)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="pult-section">
+          <div className="pult-section-head"><CustomersIcon width={16} height={16} />Ügyfél-kérések{customerRequests.length > 0 && <span className="cnt">{customerRequests.length}</span>}</div>
+          {customerRequests.length === 0 ? <EmptyState icon={CustomersIcon}>Nincs nyitott ügyfél-kérés.</EmptyState> : (
+            <div className="tw">
+              {customerRequests.map((r) => (
+                <div key={r.id} className="dp-row" style={{ padding: "10px 14px" }}>
+                  <span className="dp-key">
+                    <span className={`st ${REQUEST_STATUS_CLS[r.status] || "st-alkatresz"}`} style={{ marginRight: 8 }}>{REQUEST_TYPE_LABEL[r.type] || r.type}</span>
+                    {r.customerName}{r.customerPhone ? ` · ${r.customerPhone}` : ""} — {r.description}
+                  </span>
+                  <span style={{ display: "flex", gap: 6 }}>
+                    {REQUEST_NEXT[r.status] && <button type="button" className="btn sec sm" onClick={() => advanceCustomerRequest(r.id, REQUEST_NEXT[r.status])}>{REQUEST_NEXT_LABEL[r.status]}</button>}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="pult-section">
+          <div className="pult-section-head"><LeaveIcon width={16} height={16} />Közelgő szabadság{leaveSoon.length > 0 && <span className="cnt">{leaveSoon.length}</span>}</div>
+          {leaveSoon.length === 0 ? <EmptyState icon={LeaveIcon}>Nincs közelgő szabadság a következő {LEAVE_SOON_DAYS} napban.</EmptyState> : (
+            <div className="tw">
+              {leaveSoon.map((r) => {
+                const reqUser = users.find((u) => u.id === r.userId);
+                const lt = leaveTypes.find((t) => t.id === r.leaveTypeId);
+                return (
+                  <div key={r.id} className="dp-row" style={{ padding: "10px 14px" }}>
+                    <span className="dp-key">
+                      <span style={{ fontWeight: 600 }}>{reqUser?.fullName || "?"}</span>
+                      <span className="badge-loc" style={{ marginLeft: 8 }}>{locName(reqUser?.locationId)}</span>
+                      <span className="leave-type-chip" style={{ marginLeft: 8 }}><span className="leave-type-dot" style={{ background: lt?.color || "#9CA3AF" }} />{lt?.name || "—"}</span>
+                    </span>
+                    <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span className="mono">{r.startDate} – {r.endDate}</span>
+                      <span className={LEAVE_STATUS_CLS[r.status] || "badge-loc"}>{r.status}</span>
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div className="pult-section">
+          <div className="pult-section-head"><NoteIcon width={16} height={16} />Cetlik{openNotes.length > 0 && <span className="cnt">{openNotes.length} nyitott</span>}</div>
+          <NoteComposer users={users} tickets={tickets} stock={stock} parts={parts} customersTable={customersTable} warranties={warranties} locName={locName} onSave={addNote} />
+          {openNotes.length === 0 ? <EmptyState icon={NoteIcon}>Nincs nyitott cetli.</EmptyState> : (
+            <div className="stk-grid">
+              {openNotes.map((n) => (
+                <NoteCard key={n.id} note={n} users={users} currentUserId={currentUserId} onComplete={() => completeNote(n.id)} onDelete={() => deleteNote(n.id)}
+                  onOpenLink={{ ticket: onOpenTicket, product: onOpenProduct, part: onOpenPart, customer: onOpenCustomer, warranty: onOpenWarranty }} />
+              ))}
+            </div>
+          )}
+          <div style={{ marginTop: 10 }}>
+            <HistorySection icon={NoteIcon} label="Elintézett cetlik" items={doneNotes} searchPlaceholder="Keresés..." filterFn={(n, q) => n.body.toLowerCase().includes(q)}>
               {(rows) => (
-                <table>
-                  <thead><tr><th>Tétel</th><th>Kinek</th><th>Forrás</th></tr></thead>
-                  <tbody>{rows.map((w) => <tr key={w.id}><td>{w.description}</td><td>{w.customerName || "—"}</td><td>{w.supplier || "—"}</td></tr>)}</tbody>
-                </table>
+                <div className="stk-grid" style={{ padding: 12 }}>
+                  {rows.map((n) => <NoteCard key={n.id} note={n} users={users} currentUserId={currentUserId} done onReopen={() => reopenNote(n.id)} />)}
+                </div>
               )}
             </HistorySection>
           </div>
+        </div>
 
-          <div className="pult-section">
-            <div className="pult-section-head"><LeaveIcon width={16} height={16} />Közelgő szabadság{leaveSoon.length > 0 && <span className="cnt">{leaveSoon.length}</span>}</div>
-            {leaveSoon.length === 0 ? <EmptyState icon={LeaveIcon}>Nincs közelgő szabadság a következő {LEAVE_SOON_DAYS} napban.</EmptyState> : (
-              <div className="tw">
-                {leaveSoon.map((r) => {
-                  const reqUser = users.find((u) => u.id === r.userId);
-                  const lt = leaveTypes.find((t) => t.id === r.leaveTypeId);
-                  return (
-                    <div key={r.id} className="dp-row" style={{ padding: "10px 14px" }}>
-                      <span className="dp-key">
-                        <span style={{ fontWeight: 600 }}>{reqUser?.fullName || "?"}</span>
-                        <span className="badge-loc" style={{ marginLeft: 8 }}>{locName(reqUser?.locationId)}</span>
-                        <span className="leave-type-chip" style={{ marginLeft: 8 }}><span className="leave-type-dot" style={{ background: lt?.color || "#9CA3AF" }} />{lt?.name || "—"}</span>
-                      </span>
-                      <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span className="mono">{r.startDate} – {r.endDate}</span>
-                        <span className={LEAVE_STATUS_CLS[r.status] || "badge-loc"}>{r.status}</span>
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
+        <div className="pult-section">
+          <div className="pult-section-head"><PartsIcon width={16} height={16} />Várakozik valamire{activeWaiting.length > 0 && <span className="cnt">{activeWaiting.length}</span>}</div>
+          <WaitingList items={activeWaiting} onAdd={addWaitingItem} onAdvance={advanceWaiting} onDelete={deleteWaitingItem} />
+          <HistorySection icon={PartsIcon} label="Lezárt várakozások" items={closedWaiting} searchPlaceholder="Keresés..." filterFn={(w, q) => [w.description, w.customerName].filter(Boolean).join(" ").toLowerCase().includes(q)}>
+            {(rows) => (
+              <table>
+                <thead><tr><th>Tétel</th><th>Kinek</th><th>Forrás</th></tr></thead>
+                <tbody>{rows.map((w) => <tr key={w.id}><td>{w.description}</td><td>{w.customerName || "—"}</td><td>{w.supplier || "—"}</td></tr>)}</tbody>
+              </table>
             )}
-          </div>
-
-          <div className="pult-section">
-            <div className="pult-section-head"><CustomersIcon width={16} height={16} />Ügyfél-kérések{customerRequests.length > 0 && <span className="cnt">{customerRequests.length}</span>}</div>
-            {customerRequests.length === 0 ? <EmptyState icon={CustomersIcon}>Nincs nyitott ügyfél-kérés.</EmptyState> : (
-              <div className="tw">
-                {customerRequests.map((r) => (
-                  <div key={r.id} className="dp-row" style={{ padding: "10px 14px" }}>
-                    <span className="dp-key">
-                      <span className={`st ${REQUEST_STATUS_CLS[r.status] || "st-alkatresz"}`} style={{ marginRight: 8 }}>{REQUEST_TYPE_LABEL[r.type] || r.type}</span>
-                      {r.customerName}{r.customerPhone ? ` · ${r.customerPhone}` : ""} — {r.description}
-                    </span>
-                    <span style={{ display: "flex", gap: 6 }}>
-                      {REQUEST_NEXT[r.status] && <button type="button" className="btn sec sm" onClick={() => advanceCustomerRequest(r.id, REQUEST_NEXT[r.status])}>{REQUEST_NEXT_LABEL[r.status]}</button>}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          </HistorySection>
         </div>
       </div>
     </>
