@@ -3,17 +3,28 @@ import { supabase } from "./lib/supabaseClient";
 import { calculateBuybackPrice } from "./lib/buybackPricing";
 import { BUYBACK_CONDITION_QUESTIONS as CONDITION_QUESTIONS } from "./lib/utils";
 import { recommendNearBudget } from "./lib/tradeEngine";
+import { FAQ_CONTENT } from "./lib/faqContent";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 import PhoneMiniCard from "./components/PhoneMiniCard";
 import BuybackPriceBar from "./components/BuybackPriceBar";
-import { ClockIcon, FinanceIcon, CallIcon, PinIcon, PartsIcon, WarningIcon, BuybackIcon } from "./components/icons";
+import { ClockIcon, FinanceIcon, CallIcon, PinIcon, PartsIcon, WarningIcon, BuybackIcon, WarrantyIcon, ChevronDownIcon, PhoneCaseIcon, TransferIcon } from "./components/icons";
 import { EmptyState, LoadingState } from "./components/EmptyState";
 import { ReviewsBadge } from "./components/PublicReviews";
+
+const EladasFAQ = FAQ_CONTENT.hu.find((c) => c.key === "eladas")?.questions || [];
 
 const COLORS = ["Fekete", "Fehér", "Kék", "Zöld", "Ezüst", "Egyéb"];
 
 const STEP_KEYS = ["brand", "model", "specs", ...CONDITION_QUESTIONS.map((q) => q.key), "imei", "offer", "contact"];
+
+const PAYOUT_MULT = { keszpenz: 1, kredit: 1.1, bizomany: 1.15 };
+const PAYOUT_OPTIONS = [
+  { key: "keszpenz", label: "Készpénz", desc: "Azonnal, helyben, a mai ajánlat szerint." },
+  { key: "kredit", label: "Kredit-egyenleg", desc: "+10% — azonnal jóváírva, nálunk elkölthető." },
+  { key: "bizomany", label: "Bizomány", desc: "+15% — üzletben egyeztetett feltételekkel." },
+];
+const PAYOUT_LABELS = { keszpenz: "Készpénz", kredit: "Kredit-egyenleg (+10%)", bizomany: "Bizomány (+15%)" };
 
 export default function BuybackFlow() {
   const [loading, setLoading] = useState(true);
@@ -31,6 +42,7 @@ export default function BuybackFlow() {
   const [answers, setAnswers] = useState({});
   const [imei, setImei] = useState("");
   const [deliveryMethod, setDeliveryMethod] = useState("Személyes átadás");
+  const [payoutType, setPayoutType] = useState("keszpenz");
   const [locationId, setLocationId] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
@@ -38,6 +50,7 @@ export default function BuybackFlow() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [done, setDone] = useState(null); // { offer_no, price }
+  const [openFaq, setOpenFaq] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -91,6 +104,26 @@ export default function BuybackFlow() {
     [pricing.price, stockPhones]
   );
 
+  // Népszerű modellek gyorslink-sávhoz — modellenként a legmagasabb (legjobb állapotú) árat mutatjuk,
+  // "akár X Lej"-ként, ahogy a márka-választó kártyák is teszik.
+  const popularModels = useMemo(() => {
+    const groups = {};
+    models.forEach((m) => {
+      const key = `${m.brand}|${m.model}`;
+      const price = Number(m.base_price);
+      if (!groups[key] || price > groups[key].maxPrice) groups[key] = { brand: m.brand, model: m.model, maxPrice: price };
+    });
+    return Object.values(groups).sort((a, b) => b.maxPrice - a.maxPrice).slice(0, 6);
+  }, [models]);
+
+  function quickPick(group) {
+    setBrand(group.brand);
+    setModelName(group.model);
+    const opts = models.filter((m) => m.brand === group.brand && m.model === group.model);
+    setVariant(opts.length === 1 ? opts[0] : null);
+    setStepIndex(STEP_KEYS.indexOf("specs"));
+  }
+
   function goNext() { setStepIndex((i) => Math.min(i + 1, STEP_KEYS.length - 1)); }
   function goBack() { setStepIndex((i) => Math.max(i - 1, 0)); }
 
@@ -114,6 +147,7 @@ export default function BuybackFlow() {
     setSubmitError("");
     setSubmitting(true);
     try {
+      const payoutPrice = Math.round(pricing.price * (PAYOUT_MULT[payoutType] || 1));
       const { data, error } = await supabase.rpc("submit_buyback_offer", {
         p_customer_name: customerName.trim(),
         p_customer_phone: customerPhone.trim(),
@@ -123,14 +157,15 @@ export default function BuybackFlow() {
         p_color: color || null,
         p_imei: imei.trim() || null,
         p_answers: answers,
-        p_estimated_price: pricing.price,
+        p_estimated_price: payoutPrice,
         p_delivery_method: deliveryMethod,
         p_location_id: deliveryMethod === "Személyes átadás" ? locationId : null,
         p_marketing_consent: marketingConsent,
+        p_payout_type: payoutType,
       });
       if (error) throw error;
       const row = Array.isArray(data) ? data[0] : data;
-      setDone({ price: pricing.price, shortCode: row?.short_code });
+      setDone({ price: payoutPrice, payoutType, shortCode: row?.short_code });
     } catch (err) {
       setSubmitError(err.message || "Hiba történt a beküldés közben.");
     } finally {
@@ -166,10 +201,17 @@ export default function BuybackFlow() {
           <div className="bb-card bb-done">
             <div className="bb-done-icon">✓</div>
             <h1>Szuper ajánlatot kaptál!</h1>
+            {done.payoutType && done.payoutType !== "keszpenz" && (
+              <div className="bb-label" style={{ marginBottom: 4 }}>{PAYOUT_LABELS[done.payoutType]}</div>
+            )}
             <div className="bb-done-price">{done.price.toLocaleString("hu-HU")} Lei</div>
             <div className="bb-done-promises">
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}><ClockIcon width={14} height={14} /> Feldolgozás <b>1 munkanapon belül</b></div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}><FinanceIcon width={14} height={14} /> Fizetés <b>{deliveryMethod === "Személyes átadás" ? "azonnal, helyben" : "átvétel után"}</b></div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}><FinanceIcon width={14} height={14} /> Fizetés <b>{
+                done.payoutType === "kredit" ? "átvételkor, kredit-egyenlegként"
+                : done.payoutType === "bizomany" ? "üzletben egyeztetve, bizományban"
+                : deliveryMethod === "Személyes átadás" ? "azonnal, helyben" : "átvétel után"
+              }</b></div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}><CallIcon width={13} height={13} /> Hamarosan hívunk, hogy egyeztessük a részleteket</div>
             </div>
             <a href="/" className="pub-ask-btn" style={{ marginTop: 18 }}>Vissza a főoldalra</a>
@@ -194,7 +236,38 @@ export default function BuybackFlow() {
     <div className="pub-shop">
       <PublicHeader activeNav="buyback" />
       <main className="bb-main">
-        <ReviewsBadge style={{ marginBottom: 12 }} />
+        {step !== "brand" && <ReviewsBadge style={{ marginBottom: 12 }} />}
+
+        {step === "brand" && (
+          <div className="bb-hero-band">
+            <h1 className="bb-hero-title">Add be a régi telefonod</h1>
+            <p className="bb-hero-sub">2 perc alatt látod, mennyit ér — a pénzt még aznap a kezedben tarthatod.</p>
+            <ReviewsBadge style={{ color: "var(--pub-accent-ink)", fontWeight: 700 }} />
+          </div>
+        )}
+
+        {step === "brand" && (
+          <div className="bb-trust-row">
+            <div className="bb-trust-item"><ClockIcon width={15} height={15} />Azonnali fizetés, helyben</div>
+            <div className="bb-trust-item"><WarrantyIcon width={15} height={15} />Törött telefont is beveszünk</div>
+            <div className="bb-trust-item"><PinIcon width={15} height={15} />2 fizikai üzletünkben</div>
+          </div>
+        )}
+
+        {step === "brand" && (
+          <div className="bb-payout-teaser">
+            <div className="bb-label">3 módon kérheted a kifizetést</div>
+            <div className="bb-payout-teaser-row">
+              {PAYOUT_OPTIONS.map((o) => (
+                <div key={o.key} className="bb-payout-teaser-item">
+                  <b>{o.label}</b>
+                  <span>{o.key === "keszpenz" ? "a mai ajánlat" : o.key === "kredit" ? "+10%" : "+15%"}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="bb-progress">
           <div className="bb-progress-track"><div className="bb-progress-fill" style={{ width: `${((stepIndex + 1) / totalSteps) * 100}%` }} /></div>
           <span className="bb-progress-label">{stepIndex + 1}/{totalSteps}</span>
@@ -208,6 +281,59 @@ export default function BuybackFlow() {
               {brands.map((b) => (
                 <button key={b} type="button" className="bb-option-card" onClick={() => pickBrand(b)}>{b}</button>
               ))}
+            </div>
+          </div>
+        )}
+
+        {step === "brand" && popularModels.length > 0 && (
+          <div className="bb-popular">
+            <div className="bb-label">Népszerű modellek</div>
+            <div className="bb-popular-row">
+              {popularModels.map((m) => (
+                <button key={`${m.brand}|${m.model}`} type="button" className="bb-popular-chip" onClick={() => quickPick(m)}>
+                  {m.model} <span>akár {Math.round(m.maxPrice).toLocaleString("hu-HU")} Lej</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {step === "brand" && (
+          <div className="bb-steps">
+            <div className="bb-label">Hogyan működik</div>
+            <div className="bb-step-cards">
+              <div className="bb-step-card">
+                <span className="bb-step-ic"><PhoneCaseIcon width={18} height={18} /></span>
+                <div><b>Válaszd ki a modelledet</b><p>2 perc alatt látod az ajánlatot.</p></div>
+              </div>
+              <div className="bb-step-card">
+                <span className="bb-step-ic"><PinIcon width={18} height={18} /></span>
+                <div><b>Hozd be bármelyik üzletünkbe</b><p>Gyimesbe vagy Szentgyörgyre.</p></div>
+              </div>
+              <div className="bb-step-card">
+                <span className="bb-step-ic"><TransferIcon width={18} height={18} /></span>
+                <div><b>Válassz kifizetést</b><p>Készpénz, kredit vagy bizomány — és viheted is.</p></div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {step === "brand" && EladasFAQ.length > 0 && (
+          <div className="bb-faq">
+            <div className="bb-label">Gyakori kérdések</div>
+            <div className="pub-faq-list">
+              {EladasFAQ.map((qa, i) => {
+                const open = openFaq === i;
+                return (
+                  <div key={i} className="pub-faq-item">
+                    <button type="button" className="pub-faq-q" onClick={() => setOpenFaq(open ? null : i)}>
+                      <span>{qa.q}</span>
+                      <ChevronDownIcon style={{ transform: open ? "none" : "rotate(-90deg)", transition: "transform .15s", flexShrink: 0 }} />
+                    </button>
+                    {open && <div className="pub-faq-a">{qa.a}</div>}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -283,10 +409,23 @@ export default function BuybackFlow() {
         {step === "offer" && (
           <div className="bb-card">
             <h1 className="bb-h1">Ajánlatunk erre a készülékre</h1>
-            <div className="bb-offer-price">{pricing.price.toLocaleString("hu-HU")} Lei</div>
-            <div className="bb-done-promises">
+            <div className="bb-label" style={{ marginBottom: 10 }}>Válaszd ki, hogyan kérnéd a kifizetést:</div>
+            <div className="bb-payout-row">
+              {PAYOUT_OPTIONS.map((o) => (
+                <button key={o.key} type="button" className={`bb-payout-card${payoutType === o.key ? " active" : ""}`} onClick={() => setPayoutType(o.key)}>
+                  <div className="bb-payout-label">{o.label}</div>
+                  <div className="bb-payout-price">{Math.round(pricing.price * (PAYOUT_MULT[o.key] || 1)).toLocaleString("hu-HU")} Lei</div>
+                  <div className="bb-payout-desc">{o.desc}</div>
+                </button>
+              ))}
+            </div>
+            <div className="bb-done-promises" style={{ marginTop: 14 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}><ClockIcon width={14} height={14} /> Feldolgozás <b>1 munkanapon belül</b></div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}><FinanceIcon width={14} height={14} /> Fizetés <b>átvételkor</b></div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}><FinanceIcon width={14} height={14} /> Fizetés <b>{
+                payoutType === "kredit" ? "átvételkor, kredit-egyenlegként"
+                : payoutType === "bizomany" ? "üzletben egyeztetve, bizományban"
+                : "átvételkor"
+              }</b></div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}><CallIcon width={13} height={13} /> Utána hívunk egyeztetni</div>
             </div>
             {tradeUpPhones.length > 0 && (

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { t } from "../lib/i18n";
-import { UserIcon, PhoneCaseIcon, ServiceIcon, ClockIcon, BuybackIcon, CartIcon } from "./icons";
+import { UserIcon, PhoneCaseIcon, ServiceIcon, ClockIcon, BuybackIcon, CartIcon, SearchIcon } from "./icons";
 import { useCart } from "../lib/cart";
 import { markLangChosen } from "../lib/langPref";
 
@@ -44,25 +44,30 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
     <header className="pub-header">
       <div className="pub-header-inner">
         <div className="pub-brand-row">
-          <button
-            type="button"
-            className={`pub-menu-toggle${menuOpen ? " open" : ""}`}
-            aria-label={menuOpen ? "Menü bezárása" : "Menü megnyitása"}
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen((v) => !v)}
-          >
-            <span /><span /><span />
-          </button>
+          <div className="pub-mobile-left">
+            <button
+              type="button"
+              className={`pub-menu-toggle${menuOpen ? " open" : ""}`}
+              aria-label={menuOpen ? "Menü bezárása" : "Menü megnyitása"}
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((v) => !v)}
+            >
+              <span /><span /><span />
+            </button>
+            <a className="pub-mobile-icon" href={stockHref} aria-label={s.navSearch} title={s.navSearch}>
+              <SearchIcon width={18} height={18} stroke="currentColor" />
+            </a>
+          </div>
           <a className="pub-wordmark" href={stockHref} aria-label="Telefonos">
             <img src="/logo.png" alt="Telefonos" className="pub-logo-img" />
           </a>
           <div className="pub-mobile-icons">
-            <a className={`pub-nav-link pub-nav-icon${activeNav === "cart" ? " active" : ""}`} href="/kosar" aria-label="Kosár" title="Kosár">
-              <CartIcon width={16} height={16} />
-              {cartCount > 0 && <span className="pub-cart-badge">{cartCount}</span>}
+            <a className={`pub-mobile-icon${activeNav === "login" ? " active" : ""}`} href="/fiok" aria-label={s.navLogin} title={s.navLogin}>
+              <UserIcon width={18} height={18} />
             </a>
-            <a className={`pub-nav-link pub-nav-icon pub-mobile-repair-btn${activeNav === "repair" ? " active" : ""}`} href={repairHref}>
-              <ServiceIcon width={16} height={16} />{s.navRepair}
+            <a className={`pub-mobile-icon${activeNav === "cart" ? " active" : ""}`} href="/kosar" aria-label="Kosár" title="Kosár">
+              <CartIcon width={19} height={19} />
+              {cartCount > 0 && <span className="pub-cart-badge">{cartCount}</span>}
             </a>
           </div>
           <nav className={`pub-nav${menuOpen ? " open" : ""}`}>

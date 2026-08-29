@@ -372,6 +372,7 @@ export const buybackOfferFromApi = (r) => ({
   status: r.status,
   deliveryMethod: r.delivery_method,
   locationId: r.location_id,
+  payoutType: r.payout_type || "keszpenz",
   createdAt: r.created_at,
 });
 

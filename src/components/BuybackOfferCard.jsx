@@ -9,6 +9,8 @@ export default function BuybackOfferCard({ offer, onOpen, onStep, stepPrev, step
       <div className="t-card-top">
         <span className="t-sn">#{offer.offerNo}</span>
         <span className="t-loc">{offer.deliveryMethod || "—"}</span>
+        {offer.payoutType === "kredit" && <span className="t-loc" style={{ background: "var(--pub-accent-soft)", color: "var(--pub-accent-ink)" }}>Kredit</span>}
+        {offer.payoutType === "bizomany" && <span className="t-loc" style={{ background: "var(--pub-ink)", color: "#fff" }}>Bizomány</span>}
         {onStep && (
           <span style={{ display: "flex", gap: 2, marginLeft: "auto" }}>
             {stepPrev && <button type="button" className="t-card-step prev" onClick={(e) => { e.stopPropagation(); onStep(offer.id, "prev"); }} title="Előző státusz"><ChevronLeftIcon width={14} height={14} /></button>}

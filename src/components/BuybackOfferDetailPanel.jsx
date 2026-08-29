@@ -4,6 +4,12 @@ import { CloseIcon } from "./icons";
 import Row from "./DetailRow";
 import CallLink from "./CallLink";
 
+const PAYOUT_TYPE_LABELS = {
+  keszpenz: "Készpénz (azonnal)",
+  kredit: "Kredit-egyenleg (+10%, csak nálunk elkölthető)",
+  bizomany: "Bizomány (+15%, üzletben egyeztetett feltételekkel)",
+};
+
 export default function BuybackOfferDetailPanel({ offer, locName, onClose, onSetStatus, onPayout, onReject, onConvert, busy }) {
   const [finalPrice, setFinalPrice] = useState(offer.finalPrice ?? offer.estimatedPrice ?? "");
   const closed = offer.status === "Kifizetve" || offer.status === "Elutasítva";
@@ -65,6 +71,7 @@ export default function BuybackOfferDetailPanel({ offer, locName, onClose, onSet
           </div>
           <div className="dp-section">
             <div className="dp-section-title">Ár</div>
+            <Row k="Kért kifizetés" v={PAYOUT_TYPE_LABELS[offer.payoutType] || offer.payoutType} />
             <Row k="Becsült ár" v={money(offer.estimatedPrice)} />
             {closed ? (
               <Row k="Végleges ár" v={money(offer.finalPrice)} />

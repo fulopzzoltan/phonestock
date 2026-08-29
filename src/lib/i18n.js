@@ -1,7 +1,7 @@
 export const STRINGS = {
   hu: {
     navStock: "Telefonok", navBuyback: "Eladás", navRepair: "Szerviz",
-    navStatus: "Nyomonkövetés", navLogin: "Bejelentkezés", langSwitch: "RO",
+    navStatus: "Nyomonkövetés", navLogin: "Bejelentkezés", navSearch: "Keresés", langSwitch: "RO",
 
     // Készlet-vitrin
     searchPlaceholder: "Keresés — pl. iPhone 13...", filters: "Szűrők",
@@ -26,7 +26,7 @@ export const STRINGS = {
     trustServiceTitle: "Szerviz is a miénk", trustServiceDesc: "Nem küldjük külső partnerhez.", trustServiceTag: "Helyben, nem alvállalkozó",
 
     // Telefon-választó segítő
-    finderNavTitle: "Melyik telefon illik hozzád?",
+    finderNavTitle: "Milyen telefont keresel?",
     finderNavCta: "Segíts választani →",
     finderPageTitle: "Telefon-választó segítő — Telefonos",
     finderPageDesc: "4 gyors kérdés, és kiválasztjuk a hozzád illő telefonokat a készletünkből.",
@@ -93,7 +93,7 @@ export const STRINGS = {
   },
   ro: {
     navStock: "Telefoane", navBuyback: "Vinde", navRepair: "Service",
-    navStatus: "Urmărire", navLogin: "Autentificare", langSwitch: "HU",
+    navStatus: "Urmărire", navLogin: "Autentificare", navSearch: "Căutare", langSwitch: "HU",
 
     searchPlaceholder: "Căutare — ex. iPhone 13...", filters: "Filtre",
     allBrands: "Toate mărcile", allConditions: "Toate stările", os: "Sistem de operare",
