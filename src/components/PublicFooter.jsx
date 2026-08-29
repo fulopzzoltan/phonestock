@@ -63,25 +63,27 @@ export default function PublicFooter({ lang = "hu" }) {
               <div key={l.id} className="pub-footer-loc"><PinIcon width={12} height={12} />{l.name}</div>
             ))}
           </div>
+
+          <div className="pub-footer-col">
+            <div className="pub-footer-heading">{s.footerPayment}</div>
+            <div className="pub-footer-payment-badges">
+              <a href="https://netopia-payments.com" target="_blank" rel="noopener noreferrer"><img src="/netopiacolor-telefonos.png" alt="Netopia Payments" /></a>
+              <img src="/Mastercard-Logo.png" alt="Mastercard" />
+              <img src="/visacolor-telefonos.png" alt="Visa" />
+            </div>
+          </div>
         </div>
 
         <div className="pub-footer-bottom">
           <div className="pub-footer-bottom-left">
             <span>{s.footerRights(new Date().getFullYear())}</span>
-            <span className="pub-footer-company">Telefonos Keze SRL · CUI 51785064 · Reg. Com. J2025034208000</span>
           </div>
           <span className="pub-footer-legal">
             <a href="/aszf">{s.footerTerms}</a>
             <a href="/visszakuldes">{s.footerReturns}</a>
             <a href="/adatvedelem">{s.footerPrivacy}</a>
           </span>
-        </div>
-
-        <div className="pub-footer-badges">
-          <a href="https://netopia-payments.com" target="_blank" rel="noopener noreferrer"><img src="/netopiacolor-telefonos.png" alt="Netopia Payments" /></a>
-          <img src="/Mastercard-Logo.png" alt="Mastercard" />
-          <img src="/visacolor-telefonos.png" alt="Visa" />
-          <a href="https://anpc.ro/ce-este-sal/" target="_blank" rel="noopener noreferrer"><img src="/anpc_sal.v1787810231.png" alt="ANPC SAL" /></a>
+          <a href="https://anpc.ro/ce-este-sal/" target="_blank" rel="noopener noreferrer" className="pub-footer-anpc"><img src="/anpc_sal.v1787810231.png" alt="ANPC SAL" /></a>
         </div>
       </div>
     </footer>

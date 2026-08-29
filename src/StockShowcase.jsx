@@ -142,12 +142,33 @@ export default function StockShowcase({ lang = "hu" }) {
     return items;
   }, [phones, selectedBrands, selectedConditions, selectedStorages, selectedOS, q, sort]);
 
-  const PAGE_SIZE = 30;
+  const BASE_PAGE_SIZE = 30;
   const [page, setPage] = useState(1);
   useEffect(() => { setPage(1); }, [selectedBrands, selectedConditions, selectedStorages, selectedOS, q, sort]);
+  const resultsTopRef = useRef(null);
+
+  // Az oszlopszámot a rács tényleges (reszponzív) szélességéből számoljuk ki —
+  // ugyanaz a képlet, mint a .pub-grid CSS repeat(auto-fill,minmax(192px,1fr)) szabálya —
+  // hogy az oldalméret mindig teljes sorral záruljon, sose maradjon árva, félig üres sor.
+  const [columns, setColumns] = useState(5);
+  useEffect(() => {
+    const el = resultsTopRef.current;
+    if (!el) return;
+    const GAP = 14, MIN_COL = 192;
+    const compute = () => setColumns(Math.max(1, Math.floor((el.clientWidth + GAP) / (MIN_COL + GAP))));
+    compute();
+    const ro = new ResizeObserver(compute);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  // A reklámkártya 6 telefononként ismétlődik, ezért egy oldal csak akkor zárul
+  // mindig teljes sorral (reklámkártyástól is), ha az oldalméret a 6×oszlopszám
+  // többszöröse — így minden oldalon pontosan `columns` db reklámkártya kerül be,
+  // és a (telefon + reklám) cellák összesen is kiadnak egész sorokat.
+  const PAGE_SIZE = 6 * columns * Math.ceil(BASE_PAGE_SIZE / (6 * columns));
+
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pagedItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-  const resultsTopRef = useRef(null);
   function goToPage(p) {
     setPage(p);
     resultsTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });

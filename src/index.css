@@ -823,7 +823,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 
 .pub-footer{border-top:1px solid var(--pub-line);padding:36px 24px 24px;margin-top:32px;background:var(--pub-paper-raised)}
 .pub-footer-inner{max-width:1180px;margin:0 auto;font-size:12px;color:var(--pub-ink-soft);line-height:1.6}
-.pub-footer-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:28px;padding-bottom:26px}
+.pub-footer-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr 1fr;gap:28px;padding-bottom:26px}
 .pub-footer-col{display:flex;flex-direction:column;gap:9px}
 .pub-footer-col a{color:var(--pub-ink-soft);text-decoration:none;font-size:12.5px}
 .pub-footer-col a:hover{color:var(--pub-accent-ink);text-decoration:underline}
@@ -838,13 +838,14 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-footer-loc{display:flex;align-items:center;gap:6px;font-size:12.5px}
 .pub-footer-bottom{border-top:1px solid var(--pub-line);padding-top:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:11.5px}
 .pub-footer-bottom-left{display:flex;flex-direction:column;gap:3px}
-.pub-footer-company{color:var(--pub-ink-soft);opacity:.75;font-size:11px}
 .pub-footer-legal{display:flex;gap:16px}
 .pub-footer-legal a{color:var(--pub-ink-soft);text-decoration:none}
 .pub-footer-legal a:hover{color:var(--pub-accent-ink);text-decoration:underline}
+.pub-footer-anpc{display:block;flex:none}
+.pub-footer-anpc img{height:26px;width:auto;display:block}
 
-.pub-footer-badges{display:flex;align-items:center;gap:18px;margin-top:16px;padding-top:16px;border-top:1px solid var(--pub-line)}
-.pub-footer-badges img{height:28px;width:auto;display:block}
+.pub-footer-payment-badges{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.pub-footer-payment-badges img{height:22px;width:auto;display:block}
 @media (max-width:760px){
   .pub-footer-grid{grid-template-columns:1fr 1fr;gap:24px 16px}
 }
