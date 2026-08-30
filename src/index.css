@@ -548,6 +548,15 @@ tr:hover td{background:#FAFAFA}
   --pub-new:#A5722A; --pub-new-soft:#F3E6D4;
   background:var(--pub-paper); color:var(--pub-ink); min-height:100vh; min-height:100dvh; font-family:'Inter',sans-serif;
 }
+.pub-announce-bar{background:var(--pub-ink);color:#fff;overflow:hidden}
+.pub-announce-inner{max-width:1180px;margin:0 auto;padding:7px 24px;position:relative;height:16px;display:flex;align-items:center;justify-content:center;text-align:center}
+.pub-announce-msg{position:absolute;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0;transform:translateY(6px);transition:opacity .35s,transform .35s;pointer-events:none}
+.pub-announce-msg.active{opacity:1;transform:translateY(0);pointer-events:auto}
+.pub-announce-cta{color:#fff;text-decoration:underline;font-weight:700;flex-shrink:0}
+@media (max-width:640px){
+  .pub-announce-inner{padding:7px 16px}
+  .pub-announce-msg{font-size:11px}
+}
 .pub-header{position:sticky;top:0;z-index:5;background:var(--pub-paper-raised);border-bottom:1px solid var(--pub-line);box-shadow:0 1px 0 rgba(16,24,40,.02),0 4px 14px rgba(16,24,40,.04)}
 .pub-header-inner{max-width:1180px;margin:0 auto;padding:18px 24px 14px;display:flex;flex-direction:column;gap:14px}
 .pub-brand-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
@@ -572,7 +581,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-nav-link.pub-nav-icon .pub-nav-link-icon{margin-right:0}
 .pub-mobile-left{display:none;align-items:center}
 .pub-mobile-icons{display:none;align-items:center}
-.pub-mobile-icon{display:flex;align-items:center;justify-content:center;color:var(--pub-ink);position:relative;text-decoration:none}
+.pub-mobile-icon{display:flex;align-items:center;justify-content:center;color:var(--pub-ink);position:relative;text-decoration:none;border:none;background:none;padding:0;cursor:pointer;font-family:inherit}
 .pub-mobile-icon.active{color:var(--pub-accent-ink)}
 
 .pub-menu-toggle{display:none;flex-direction:column;justify-content:center;align-items:center;gap:5px;width:24px;height:38px;border:none;background:none;cursor:pointer;flex-shrink:0;padding:0}
@@ -597,7 +606,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
     column-gap:20px;
   }
   .pub-brand-row{grid-area:brand}
-  .pub-search-row{grid-area:search}
+  .pub-header-children{grid-area:search}
   .pub-account-links{grid-area:account;display:flex;align-items:center;gap:10px}
   .pub-account-links .pub-lang-switch{margin:0}
   .pub-header-row2{
@@ -636,7 +645,11 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
   .pub-nav.open .pub-nav-link-icon{display:inline-flex;margin-right:8px;flex-shrink:0}
 }
 .pub-search-row{display:flex;align-items:center;gap:10px}
-@media (max-width:640px){ .pub-search-row{display:none} }
+@media (max-width:640px){
+  .pub-search-row .pub-filters-toggle{display:none}
+  .pub-header-children{display:none;margin-top:10px}
+  .pub-header-children.open{display:block}
+}
 .pub-search-box{display:flex;align-items:center;gap:9px;height:38px;background:var(--pub-paper-raised);border:1px solid var(--pub-line);border-radius:10px;padding:0 14px;max-width:480px;flex:1;box-shadow:var(--shadow-card);transition:border-color .12s}
 .pub-search-box:focus-within{border-color:var(--pub-accent)}
 .pub-search-box input{border:none;background:none;outline:none;color:var(--pub-ink);font-size:14.5px;width:100%;font-family:inherit}
@@ -694,6 +707,16 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
   .pub-sidebar{display:none}
   .pub-sidebar.open{display:flex;width:100%;position:static;margin-bottom:14px}
 }
+
+/* Mobil szűrés+rendezés sáv (bsgmag.ro mintára): két egyenlő szélességű pill gomb */
+.pub-mobile-filterbar{display:none}
+@media (max-width:640px){
+  .pub-mobile-filterbar{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  .pub-sidebar-card-sort{display:none}
+}
+.pub-mfb-btn{width:100%;justify-content:center;min-width:0;box-sizing:border-box}
+.pub-mfb-btn.pub-filters-toggle{display:flex}
+.pub-mfb-btn.pub-sort-field select{text-align:center;padding:11px 26px 11px 32px;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* Telefon-választó segítő belépési sáv a rács fölött */
 @keyframes pubfinder-bob1{0%,100%{transform:translateY(0) rotate(0deg);opacity:.55}50%{transform:translateY(-7px) rotate(12deg);opacity:.9}}

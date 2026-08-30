@@ -1,8 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { t } from "../lib/i18n";
 import { UserIcon, PhoneCaseIcon, ServiceIcon, ClockIcon, BuybackIcon, CartIcon, SearchIcon } from "./icons";
 import { useCart } from "../lib/cart";
 import { markLangChosen } from "../lib/langPref";
+
+// Menü fölötti rotáló ajánlat-sáv — ez az első szöveg, amit minden látogató elolvas,
+// még a hero előtt, ezért csak valós, ellenőrizhető állításokat tartalmaz.
+const ANNOUNCEMENTS = [
+  {
+    hu: "Beszámítjuk a régi telefonod — kredit-egyenleggel akár 10%-kal többet érsz",
+    ro: "Preluăm telefonul vechi — cu credit primești până la 10% în plus",
+    href: { hu: "/eladom", ro: "/eladom" },
+    cta: { hu: "Beszámítás", ro: "Vezi oferta" },
+  },
+  {
+    hu: "Minden használt telefonunkra garanciát vállalunk",
+    ro: "Oferim garanție la toate telefoanele folosite",
+  },
+  {
+    hu: "2 üzletünkben, Gyimesben és Szentgyörgyön azonnal átveheted",
+    ro: "Ridici imediat din oricare din cele 2 magazinele noastre",
+  },
+];
 
 // Alapértelmezett nyelv-váltó célok oldalanként (aktív nav szerint) — a PhoneDetail.jsx ezt felülírja
 // a saját langSwitchHref propjával, mert ott a konkrét telefon id-jét is meg kell tartani.
@@ -18,7 +37,13 @@ const FALLBACK_LANG_TARGET = { hu: "/", ro: "/ro/telefoane" };
 export default function PublicHeader({ children, activeNav = "stock", lang = "hu", langSwitchHref }) {
   const s = t(lang);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const cartCount = useCart().length;
+  const [announceIdx, setAnnounceIdx] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setAnnounceIdx((i) => (i + 1) % ANNOUNCEMENTS.length), 5000);
+    return () => clearInterval(id);
+  }, []);
   const stockHref = lang === "ro" ? "/ro/telefoane" : "/";
   const repairHref = lang === "ro" ? "/ro/estimare" : "/becsles";
   const otherLang = lang === "ro" ? "hu" : "ro";
@@ -41,7 +66,22 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
   );
 
   return (
-    <header className="pub-header">
+    <>
+      <div className="pub-announce-bar">
+        <div className="pub-announce-inner">
+          {ANNOUNCEMENTS.map((a, i) => (
+            <span key={i} className={`pub-announce-msg${i === announceIdx ? " active" : ""}`}>
+              {lang === "ro" ? a.ro : a.hu}
+              {a.href && (
+                <a className="pub-announce-cta" href={lang === "ro" ? a.href.ro : a.href.hu}>
+                  {lang === "ro" ? a.cta.ro : a.cta.hu} →
+                </a>
+              )}
+            </span>
+          ))}
+        </div>
+      </div>
+      <header className="pub-header">
       <div className="pub-header-inner">
         <div className="pub-brand-row">
           <div className="pub-mobile-left">
@@ -54,9 +94,22 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
             >
               <span /><span /><span />
             </button>
-            <a className="pub-mobile-icon" href={stockHref} aria-label={s.navSearch} title={s.navSearch}>
-              <SearchIcon width={18} height={18} stroke="currentColor" />
-            </a>
+            {children ? (
+              <button
+                type="button"
+                className={`pub-mobile-icon${mobileSearchOpen ? " active" : ""}`}
+                aria-label={s.navSearch}
+                title={s.navSearch}
+                aria-expanded={mobileSearchOpen}
+                onClick={() => setMobileSearchOpen((v) => !v)}
+              >
+                <SearchIcon width={18} height={18} stroke="currentColor" />
+              </button>
+            ) : (
+              <a className="pub-mobile-icon" href={stockHref} aria-label={s.navSearch} title={s.navSearch}>
+                <SearchIcon width={18} height={18} stroke="currentColor" />
+              </a>
+            )}
           </div>
           <a className="pub-wordmark" href={stockHref} aria-label="Telefonos">
             <img src="/logo.png" alt="Telefonos" className="pub-logo-img" />
@@ -105,7 +158,7 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
           </nav>
         </div>
 
-        {children}
+        <div className={`pub-header-children${mobileSearchOpen ? " open" : ""}`}>{children}</div>
 
         <div className="pub-account-links">
           {langSwitch}
@@ -125,5 +178,6 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
         </div>
       </div>
     </header>
+    </>
   );
 }

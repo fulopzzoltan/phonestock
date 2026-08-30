@@ -253,9 +253,26 @@ export default function StockShowcase({ lang = "hu" }) {
           </div>
           <span className="pub-finder-banner-cta">{s.finderNavCta}</span>
         </a>
+        <div className="pub-mobile-filterbar">
+          <button type="button" className="pub-mfb-btn pub-filters-toggle" onClick={() => setFiltersOpen((v) => !v)}>
+            <FilterIcon width={16} height={16} />
+            {s.filters}
+            {activeFilterCount > 0 && <span className="pub-filters-count">{activeFilterCount}</span>}
+          </button>
+          <div className="pub-mfb-btn pub-sort-field">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
+            <select value={sort} onChange={(e) => setSort(e.target.value)}>
+              <option value="recommended">{s.sortRecommended}</option>
+              <option value="price-asc">{s.sortPriceAsc}</option>
+              <option value="price-desc">{s.sortPriceDesc}</option>
+              <option value="brand">{s.sortBrand}</option>
+            </select>
+            <ChevronDownIcon />
+          </div>
+        </div>
         <div className="pub-body">
           <aside className={`pub-sidebar${filtersOpen ? " open" : ""}`}>
-            <div className="pub-sidebar-card">
+            <div className="pub-sidebar-card pub-sidebar-card-sort">
               <div className="pub-sort-field">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
                 <select value={sort} onChange={(e) => setSort(e.target.value)}>
