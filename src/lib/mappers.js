@@ -29,7 +29,7 @@ export const pFromApi = (r) => ({
 });
 
 export const pToApi = (p, locId) => ({
-  product_no: p.productNo !== "" && p.productNo != null ? Number(p.productNo) : undefined,
+  ...(p.productNo !== "" && p.productNo != null ? { product_no: Number(p.productNo) } : {}),
   brand: p.brand,
   model: p.model,
   condition: p.condition,
@@ -187,7 +187,7 @@ export const tFromApi = (r) => ({
 });
 
 export const tToApi = (t, locId) => ({
-  ticket_no: t.ticketNo !== "" && t.ticketNo != null ? Number(t.ticketNo) : undefined,
+  ...(t.ticketNo !== "" && t.ticketNo != null ? { ticket_no: Number(t.ticketNo) } : {}),
   customer_name: t.customerName,
   customer_phone: t.customerPhone || null,
   brand: t.brand,
@@ -302,10 +302,17 @@ export const partFromApi = (r) => ({
   category: r.category,
   origin: r.origin,
   supplierSku: r.supplier_sku,
+  status: r.status,
+  usedInTicketId: r.used_in_ticket_id,
+  usedAt: r.used_at,
+  rmaNote: r.rma_note,
 });
 
 export const partToApi = (p) => ({
-  part_no: p.partNo !== "" && p.partNo != null ? Number(p.partNo) : undefined,
+  // `part_no`-t csak akkor küldjük el, ha valóban meg van adva — a mező kulcsának is
+  // hiányoznia kell (nem csak undefined-nak lennie), különben a Supabase bulk-insert a
+  // hiányzó sorszámot NULL-ként küldi tovább a szekvencia-alapértelmezés helyett.
+  ...(p.partNo !== "" && p.partNo != null ? { part_no: Number(p.partNo) } : {}),
   name: p.name,
   brand: p.brand || null,
   model_fit: p.modelFit || null,

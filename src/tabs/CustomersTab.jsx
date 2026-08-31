@@ -42,11 +42,11 @@ export default function CustomersTab({
         {loadingData ? <LoadingState /> : sorted.length === 0 ? <EmptyState icon={CustomersIcon}>Nincs ügyfél.</EmptyState> : (
           <>
             <table>
-              <thead><tr><th className="col-grow">Név</th><th>Telefonszám</th><th>Vásárlások</th><th>Szerviz</th><th>Utolsó aktivitás</th></tr></thead>
+              <thead><tr><th>Név</th><th className="col-grow">Telefonszám</th><th>Vásárlások</th><th>Szerviz</th><th style={{ textAlign: "right" }}>Utolsó aktivitás</th></tr></thead>
               <tbody>
                 {sorted.map((c) => (
                   <tr key={c.key} style={{ cursor: "pointer" }} onClick={() => setCustomerKey(c.key)}>
-                    <td>
+                    <td style={{ whiteSpace: "nowrap" }}>
                       <div className="stk-name" style={{ display: "flex", alignItems: "center", gap: 6 }}>
                         {c.name || "Névtelen"}
                         {c.webshopAccount && <span className="gar-pill" title={`Webshop-fiók: ${c.webshopAccount.email || "—"}`}>Webshop</span>}
@@ -55,7 +55,7 @@ export default function CustomersTab({
                     <td className="mono" style={{ whiteSpace: "nowrap" }}>{formatPhone(c.phone) || "—"}</td>
                     <td style={{ whiteSpace: "nowrap" }}>{c.purchases.length} db · <span className="mono">{money(c.purchaseTotal)}</span></td>
                     <td style={{ whiteSpace: "nowrap" }}>{c.tickets.length} db · <span className="mono">{money(c.ticketTotal)}</span></td>
-                    <td className="mono" style={{ color: "#6B7280", whiteSpace: "nowrap" }}>{c.lastActivity || "—"}</td>
+                    <td className="mono" style={{ color: "#6B7280", whiteSpace: "nowrap", textAlign: "right" }}>{c.lastActivity || "—"}</td>
                   </tr>
                 ))}
               </tbody>

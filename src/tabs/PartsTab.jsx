@@ -97,7 +97,7 @@ export default function PartsTab({
                     <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
                       <button type="button" className="use-btn" disabled={busy || !p.quantity} onClick={() => onUsePart(p)}><UseIcon width={13} height={13} />Felhasználás</button>
                       <button className="iconbtn" disabled={busy} onClick={() => setPartModal(p)}><EditIcon /></button>
-                      <ConfirmDelete disabled={busy} onConfirm={() => deletePart(p.id)} />
+                      <ConfirmDelete disabled={busy} onConfirm={() => deletePart(p)} />
                     </td>
                   </tr>
                 )}
@@ -116,7 +116,7 @@ export default function PartsTab({
                       <span style={{ fontSize: 11 }}>{p.source || "—"}</span>
                       <button type="button" className="use-btn" style={{ marginLeft: "auto" }} disabled={busy || !p.quantity} onClick={() => onUsePart(p)}><UseIcon width={13} height={13} />Felhasználás</button>
                       <button className="iconbtn" disabled={busy} onClick={() => setPartModal(p)}><EditIcon /></button>
-                      <ConfirmDelete disabled={busy} onConfirm={() => deletePart(p.id)} />
+                      <ConfirmDelete disabled={busy} onConfirm={() => deletePart(p)} />
                     </div>
                   </div>
                 )}

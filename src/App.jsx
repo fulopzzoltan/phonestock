@@ -462,7 +462,11 @@ function AppShell() {
       if (photos && photos.length > 0) {
         await supabase.storage.from("product-photos").remove(photos.flatMap((p) => [p.storage_path, thumbPathOf(p.storage_path)])).catch(() => {});
       }
-      unwrap(await supabase.from("products").delete().eq("id", id));
+      const { error } = await supabase.from("products").delete().eq("id", id);
+      if (error) {
+        if (error.code === "23503") throw new Error("Ez a telefon nem törölhető véglegesen, mert egy beszerzési tételhez van kötve.");
+        throw new Error(error.message);
+      }
       setTrash((t) => ({ ...t, products: t.products.filter((p) => p.id !== id) }));
     });
   }
@@ -478,55 +482,70 @@ function AppShell() {
   }
   async function hardDeleteTransaction(id) {
     await withBusy(async () => {
-      unwrap(await supabase.from("transactions").delete().eq("id", id));
+      const { error } = await supabase.from("transactions").delete().eq("id", id);
+      if (error) {
+        if (error.code === "23503") throw new Error("Ez a tétel nem törölhető véglegesen, mert hűségpont-jóváíráshoz van kötve.");
+        throw new Error(error.message);
+      }
       setTrash((t) => ({ ...t, transactions: t.transactions.filter((x) => x.id !== id) }));
     });
   }
   async function hardDeleteTicket(id) {
     await withBusy(async () => {
-      unwrap(await supabase.from("service_tickets").delete().eq("id", id));
+      const { error } = await supabase.from("service_tickets").delete().eq("id", id);
+      if (error) {
+        if (error.code === "23503") throw new Error("Ez a munkalap nem törölhető véglegesen, mert egy ügyfél-megkereséshez van kötve.");
+        throw new Error(error.message);
+      }
       setTrash((t) => ({ ...t, tickets: t.tickets.filter((x) => x.id !== id) }));
     });
   }
 
+  // Egyesével töröl (nem tömbösen "in()"-nel), hogy egy-egy másik rekordhoz kötött
+  // (FK-val blokkolt) tétel ne akassza meg a többi, egyébként törölhető tétel törlését.
   async function hardDeleteAllTrash() {
     await withBusy(async () => {
-      const errors = [];
-      const CHUNK = 100;
-      const chunks = (arr) => { const out = []; for (let i = 0; i < arr.length; i += CHUNK) out.push(arr.slice(i, i + CHUNK)); return out; };
+      const notes = [];
+      const deleteEach = async (items, label, delFn) => {
+        let deleted = 0;
+        for (const item of items) {
+          try { await delFn(item); deleted++; } catch { /* blokkolt tétel, marad a kukában */ }
+        }
+        const blocked = items.length - deleted;
+        if (blocked > 0) notes.push(`${label}: ${deleted} törölve, ${blocked} nem törölhető (más rekordhoz van kötve).`);
+      };
 
-      const productIds = trash.products.map((p) => p.id);
-      if (productIds.length > 0) {
-        try {
-          for (const ids of chunks(productIds)) {
-            const { data: photos } = await supabase.from("product_photos").select("storage_path").in("product_id", ids);
-            if (photos && photos.length > 0) {
-              await supabase.storage.from("product-photos").remove(photos.flatMap((p) => [p.storage_path, thumbPathOf(p.storage_path)])).catch(() => {});
-            }
-            unwrap(await supabase.from("products").delete().in("id", ids));
+      if (trash.products.length > 0) {
+        await deleteEach(trash.products, "Telefonok", async (p) => {
+          const { data: photos } = await supabase.from("product_photos").select("storage_path").eq("product_id", p.id);
+          if (photos && photos.length > 0) {
+            await supabase.storage.from("product-photos").remove(photos.flatMap((ph) => [ph.storage_path, thumbPathOf(ph.storage_path)])).catch(() => {});
           }
-        } catch (e) { errors.push("Telefonok: " + e.message); }
+          const { error } = await supabase.from("products").delete().eq("id", p.id);
+          if (error) throw error;
+        });
       }
       if (trash.transactions.length > 0) {
-        try {
-          for (const ids of chunks(trash.transactions.map((t) => t.id))) unwrap(await supabase.from("transactions").delete().in("id", ids));
-        } catch (e) { errors.push("Tranzakciók: " + e.message); }
+        await deleteEach(trash.transactions, "Tranzakciók", async (t) => {
+          const { error } = await supabase.from("transactions").delete().eq("id", t.id);
+          if (error) throw error;
+        });
       }
       if (trash.tickets.length > 0) {
-        try {
-          for (const ids of chunks(trash.tickets.map((t) => t.id))) unwrap(await supabase.from("service_tickets").delete().in("id", ids));
-        } catch (e) { errors.push("Munkalapok: " + e.message); }
+        await deleteEach(trash.tickets, "Munkalapok", async (t) => {
+          const { error } = await supabase.from("service_tickets").delete().eq("id", t.id);
+          if (error) throw error;
+        });
       }
       if (trash.parts.length > 0) {
-        try {
-          for (const ids of chunks(trash.parts.map((p) => p.id))) {
-            const { error } = await supabase.from("parts").delete().in("id", ids);
-            if (error) throw error;
-          }
-        } catch (e) { errors.push(e.code === "23503" ? "Alkatrészek: néhány tétel nem törölhető, mert szerviz munkalaphoz van kötve." : "Alkatrészek: " + e.message); }
+        await deleteEach(trash.parts, "Alkatrészek", async (p) => {
+          const { error } = await supabase.from("parts").delete().eq("id", p.id);
+          if (error) throw error;
+        });
       }
+
       await loadTrash();
-      if (errors.length > 0) throw new Error(errors.join(" "));
+      if (notes.length > 0) throw new Error(notes.join(" "));
     });
   }
 
@@ -821,17 +840,41 @@ function AppShell() {
   }
 
   // PARTS
-  async function addPart(data) {
+  // Minden fizikai darab a saját sora — N db bevételezésekor N egyedi `parts` sor jön létre,
+  // EGY összesített Kiadás-tranzakcióval (nem darabonként, egy beszállítói számla is egy sor).
+  // Ez az EGYETLEN hely, ahol alkatrész-beszerzés Kiadása keletkezik — a hívók (PDF-import,
+  // gyors-kosár) csak előtöltik ezt a modalt, saját tranzakciót nem hoznak létre.
+  async function addPart(data, locId) {
     await withBusy(async () => {
-      const r = unwrap(await supabase.from("parts").insert(partToApi(data)).select());
-      setParts((prev) => [partFromApi(r[0]), ...prev]);
+      const qty = Math.max(1, Number(data.quantity) || 1);
+      const rows = Array.from({ length: qty }, (_, i) => partToApi({ ...data, partNo: i === 0 ? data.partNo : "", quantity: 1 }));
+      const r = unwrap(await supabase.from("parts").insert(rows).select());
+      setParts((prev) => [...r.map(partFromApi), ...prev]);
       setPartModal(null);
+      const amount = (Number(data.costPrice) || 0) * qty;
+      if (amount > 0) {
+        await addTransaction({
+          type: "expense", category: "Készlet",
+          description: `Alkatrész beszerzés: ${data.name}${qty > 1 ? ` (${qty} db)` : ""}${data.source ? ` — ${data.source}` : ""}`,
+          amount, payment: "Készpénz",
+        }, locId);
+      }
     });
   }
-  async function editPart(id, data) {
+  // Szerkesztés a CSOPORT szintjén dolgozik: a megadott leíró mezők minden, a csoportba
+  // tartozó raktáron-státuszú darabra rákerülnek. A mennyiség és a sorszám itt nem
+  // módosítható — új darab a "+ Új alkatrész" felvitellel jön létre.
+  async function editPart(group, data) {
     await withBusy(async () => {
-      const r = unwrap(await supabase.from("parts").update(partToApi(data)).eq("id", id).select());
-      setParts(parts.map((p) => (p.id === id ? partFromApi(r[0]) : p)));
+      const patch = {
+        name: data.name, brand: data.brand || null, model_fit: data.modelFit || null,
+        cost_price: Number(data.costPrice) || 0, source: data.source || null, category: data.category || null,
+        origin: data.origin || null, supplier_sku: data.supplierSku || null,
+      };
+      const ids = group.units.map((u) => u.id);
+      const r = unwrap(await supabase.from("parts").update(patch).in("id", ids).select());
+      const updated = new Map(r.map(partFromApi).map((p) => [p.id, p]));
+      setParts((prev) => prev.map((p) => (updated.has(p.id) ? updated.get(p.id) : p)));
       setPartModal(null);
     });
   }
@@ -839,6 +882,24 @@ function AppShell() {
     await withBusy(async () => {
       unwrap(await supabase.from("parts").update({ deleted_at: new Date().toISOString() }).eq("id", id));
       setParts(parts.filter((p) => p.id !== id));
+    });
+  }
+  // A raktár-nézet egy csoport-sorát törli — az abban a pillanatban raktáron lévő összes
+  // egyedi darabot egyszerre küldi a Kukába (ez felel meg a régi "egy sor = egy tétel" törlésnek).
+  async function deletePartGroup(group) {
+    await withBusy(async () => {
+      const ids = group.units.map((u) => u.id);
+      unwrap(await supabase.from("parts").update({ deleted_at: new Date().toISOString() }).in("id", ids));
+      setParts((prev) => prev.filter((p) => !ids.includes(p.id)));
+    });
+  }
+  // Egyedi darab státuszának kézi átállítása (hibás / visszaküldve / vissza raktárra),
+  // opcionális megjegyzéssel (pl. RMA részletek).
+  async function updatePartStatus(id, status, rmaNote) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("parts").update({ status, rma_note: rmaNote || null }).eq("id", id).select());
+      const updated = partFromApi(r[0]);
+      setParts((prev) => prev.map((p) => (p.id === id ? updated : p)));
     });
   }
 
@@ -1414,16 +1475,21 @@ function AppShell() {
     const phoneQueue = [];
     for (const row of rows) {
       if (row.kind === "part") {
-        await addPart({ name: row.name, category: row.category, quantity: row.qty, costPrice: row.unitPrice, source: supplier, brand: "", modelFit: "", origin: "", supplierSku: "" });
-      }
-      if (row.kind === "phone") {
+        // addPart maga már létrehozza a Kiadást — itt NEM könyvelünk mégegyszer.
+        await addPart({ name: row.name, category: row.category, quantity: row.qty, costPrice: row.unitPrice, source: supplier, brand: "", modelFit: "", origin: "", supplierSku: "" }, locId);
+      } else if (row.kind === "phone") {
         // A products.source mező itt Konszignáció/Számla besorolást jelent (nem beszállító-nevet,
         // ld. StockModal.jsx SOURCES) — mivel ez egy valódi számláról (Factura) importált tétel, "Számla".
+        // A StockModal mentésekor az addProduct("purchase" acqType) hozza létre a Kiadást —
+        // itt sem könyvelünk mégegyszer, különben duplázódna.
         for (let i = 0; i < row.qty; i++) {
           phoneQueue.push({ model: row.name, costPrice: row.unitPrice, locationId: locId, source: "Számla" });
         }
+      } else {
+        // Ami nem telefon/alkatrész (szállítás, tok stb.) — ezeknek nincs saját beszerzés-modaljuk,
+        // itt marad a közvetlen könyvelés.
+        await addTransaction({ type: "expense", category: "Készlet", description: row.name, amount: row.lineTotal, costPrice: 0, payment, basketId }, locId);
       }
-      await addTransaction({ type: "expense", category: "Készlet", description: row.name, amount: row.lineTotal, costPrice: 0, payment, basketId }, locId);
       if (row.waitingFor) {
         await addWaitingItem({ description: row.name, customerName: row.waitingFor, supplier, locationId: locId }, "megerkezett");
       }
@@ -1450,14 +1516,17 @@ function AppShell() {
   // Csak 2+ tételnél kap közös basket_id-t (egyetlen tétel nem "blokk", marad sima sor).
   async function checkoutBasket(items, payment, locId) {
     const basketId = items.length > 1 ? crypto.randomUUID() : null;
+    const stockItem = items.find((it) => it.stockKind === "Telefon");
+    const partItem = items.find((it) => it.stockKind === "Alkatrész");
     for (const item of items) {
+      // A telefon/alkatrész tételekhez a StockModal/PartModal mentése (addProduct/addPart)
+      // csinálja a Kiadást — itt kihagyjuk őket, különben duplázódna.
+      if (item === stockItem || item === partItem) continue;
       await addTransaction({
         type: item.kind, description: item.label, amount: item.amount,
         costPrice: item.cost || 0, category: item.category, payment, basketId,
       }, locId);
     }
-    const stockItem = items.find((it) => it.stockKind === "Telefon");
-    const partItem = items.find((it) => it.stockKind === "Alkatrész");
     if (stockItem) setStockModal({ costPrice: stockItem.amount, locationId: locId });
     if (partItem) setPartModal({ costPrice: partItem.amount, source: partItem.label });
   }
@@ -1603,40 +1672,53 @@ function AppShell() {
       setDetailId(null);
     });
   }
+  // `part` egy CSOPORT (partGroups eleme, `.units`-szal — FIFO sorrendben, a legrégebb óta
+  // raktáron lévő darab elöl) — innen választjuk ki a felhasznált konkrét egyedi darabokat.
+  // Minden felhasznált darabhoz saját `service_parts` sor jön létre (quantity=1), hogy a
+  // garanciális visszakereséskor pontosan tudni lehessen, melyik fizikai darab hova került.
   async function addPartToTicket(ticketId, part, qty) {
     await withBusy(async () => {
       const ticket = tickets.find((t) => t.id === ticketId);
-      const unitCost = Number(part.costPrice) || 0;
-      const r = unwrap(await supabase.from("service_parts").insert({
-        service_ticket_id: ticketId, part_id: part.id, part_name: part.name, quantity: qty, cost_price: unitCost,
-      }).select());
-      const newQty = (Number(part.quantity) || 0) - qty;
-      unwrap(await supabase.from("parts").update({ quantity: newQty }).eq("id", part.id));
-      const newMatCost = (Number(ticket.matCost) || 0) + unitCost * qty;
+      const units = (part.units || [part]).slice(0, qty);
+      if (units.length < qty) throw new Error(`Csak ${units.length} db van raktáron ebből: ${part.name}.`);
+      const usedAt = new Date().toISOString();
+      const newSp = [];
+      let addedCost = 0;
+      for (const unit of units) {
+        const unitCost = Number(unit.costPrice) || 0;
+        const r = unwrap(await supabase.from("service_parts").insert({
+          service_ticket_id: ticketId, part_id: unit.id, part_name: unit.name, quantity: 1, cost_price: unitCost,
+        }).select());
+        newSp.push(spFromApi(r[0]));
+        unwrap(await supabase.from("parts").update({ status: "felhasznalva", used_in_ticket_id: ticketId, used_at: usedAt }).eq("id", unit.id));
+        addedCost += unitCost;
+      }
+      const newMatCost = (Number(ticket.matCost) || 0) + addedCost;
       unwrap(await supabase.from("service_tickets").update({ mat_cost: newMatCost }).eq("id", ticketId));
 
       if (ticket.ticketKind === "Saját készlet - előkészítés" && ticket.productId) {
         const product = stock.find((p) => p.id === ticket.productId);
         if (product) {
-          const newCostPrice = (Number(product.costPrice) || 0) + unitCost * qty;
+          const newCostPrice = (Number(product.costPrice) || 0) + addedCost;
           unwrap(await supabase.from("products").update({ cost_price: newCostPrice }).eq("id", ticket.productId));
           setStock(stock.map((p) => (p.id === ticket.productId ? { ...p, costPrice: newCostPrice } : p)));
         }
       }
 
-      setParts(parts.map((p) => (p.id === part.id ? { ...p, quantity: newQty } : p)));
-      setTickets(tickets.map((t) => (t.id === ticketId ? { ...t, matCost: newMatCost, usedParts: [...(t.usedParts || []), spFromApi(r[0])] } : t)));
+      const usedIds = new Set(units.map((u) => u.id));
+      setParts((prev) => prev.map((p) => (usedIds.has(p.id) ? { ...p, status: "felhasznalva", usedInTicketId: ticketId, usedAt } : p)));
+      setTickets(tickets.map((t) => (t.id === ticketId ? { ...t, matCost: newMatCost, usedParts: [...(t.usedParts || []), ...newSp] } : t)));
     });
   }
+  // `usedPart` egyetlen `service_parts` sor (mindig quantity=1) — az eltávolítás a pontosan
+  // azt a fizikai darabot állítja vissza raktáron-státuszba, amit felhasználtak.
   async function removePartFromTicket(ticketId, usedPart) {
     await withBusy(async () => {
       const ticket = tickets.find((t) => t.id === ticketId);
-      const part = parts.find((p) => p.id === usedPart.partId);
       unwrap(await supabase.from("service_parts").delete().eq("id", usedPart.id));
-      if (part) {
-        const restoredQty = (Number(part.quantity) || 0) + usedPart.quantity;
-        unwrap(await supabase.from("parts").update({ quantity: restoredQty }).eq("id", part.id));
-        setParts(parts.map((p) => (p.id === part.id ? { ...p, quantity: restoredQty } : p)));
+      if (usedPart.partId) {
+        unwrap(await supabase.from("parts").update({ status: "raktáron", used_in_ticket_id: null, used_at: null }).eq("id", usedPart.partId));
+        setParts((prev) => prev.map((p) => (p.id === usedPart.partId ? { ...p, status: "raktáron", usedInTicketId: null, usedAt: null } : p)));
       }
       const newMatCost = Math.max(0, (Number(ticket.matCost) || 0) - (Number(usedPart.costPrice) || 0) * usedPart.quantity);
       unwrap(await supabase.from("service_tickets").update({ mat_cost: newMatCost }).eq("id", ticketId));
@@ -1775,15 +1857,51 @@ function AppShell() {
     return { dayOfMonth, projected, pct };
   }, [monthlySummaries, currentMonthLive, effectiveLocFilter]);
 
+  // Minden fizikai alkatrész-darab a saját sora a `parts` táblában (státusz-követéssel:
+  // raktáron/felhasznalva/hibás/visszaküldve) — a raktár-nézet ezeket name+category+brand+
+  // modelFit+source szerint csoportosítva mutatja, a régi "quantity-számláló" helyett a
+  // csoportba tartozó raktáron-státuszú darabok száma adja a db-oszlopot. `units` a csoport
+  // FIFO-sorrendbe (part_no szerint) rendezett darabjai — felhasználáskor ebből választunk.
+  const partGroups = useMemo(() => {
+    const groups = new Map();
+    for (const p of parts) {
+      if (p.status !== "raktáron") continue;
+      const key = [p.name, p.category, p.brand, p.modelFit, p.source].join("|");
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(p);
+    }
+    return [...groups.values()].map((units) => {
+      const sorted = [...units].sort((a, b) => (Number(a.partNo) || 0) - (Number(b.partNo) || 0));
+      const latest = sorted.reduce((a, b) => ((b.createdAt || "") > (a.createdAt || "") ? b : a), sorted[0]);
+      const avgCost = sorted.reduce((s, u) => s + (Number(u.costPrice) || 0), 0) / sorted.length;
+      const first = sorted[0];
+      return {
+        id: [first.name, first.category, first.brand, first.modelFit, first.source].join("|"),
+        partNo: first.partNo,
+        name: first.name,
+        category: first.category,
+        brand: first.brand,
+        modelFit: first.modelFit,
+        source: first.source,
+        origin: first.origin,
+        supplierSku: first.supplierSku,
+        costPrice: avgCost,
+        quantity: sorted.length,
+        createdAt: latest.createdAt,
+        units: sorted,
+      };
+    });
+  }, [parts]);
+
   const partsStats = useMemo(() => ({
-    value: parts.reduce((a, p) => a + (Number(p.costPrice) || 0) * (Number(p.quantity) || 0), 0),
-  }), [parts]);
+    value: partGroups.reduce((a, g) => a + (Number(g.costPrice) || 0) * g.quantity, 0),
+  }), [partGroups]);
 
   const filteredParts = useMemo(() => {
     const q = partSearch.trim().toLowerCase();
-    if (!q) return parts;
-    return parts.filter((p) => [p.name, p.brand, p.modelFit, p.category, p.source].join(" ").toLowerCase().includes(q));
-  }, [parts, partSearch]);
+    if (!q) return partGroups;
+    return partGroups.filter((p) => [p.name, p.brand, p.modelFit, p.category, p.source].join(" ").toLowerCase().includes(q));
+  }, [partGroups, partSearch]);
 
   const activeTickets = useMemo(() => filteredTickets.filter((t) => t.subStatus !== "Átadva"), [filteredTickets]);
   const handedOverTickets = useMemo(
@@ -1966,13 +2084,20 @@ function AppShell() {
 
   const detailTicket = detailId ? tickets.find((t) => t.id === detailId) : null;
   const detailProduct = productDetailId ? stock.find((i) => i.id === productDetailId) : null;
-  const detailPart = partDetailId ? parts.find((p) => p.id === partDetailId) : null;
+  const detailPart = partDetailId ? partGroups.find((g) => g.id === partDetailId) : null;
+  // A csoport MINDEN egyedi darabja (nem csak a raktáron lévők) — így a már felhasznált,
+  // hibás vagy visszaküldött egykori darabok is megjelennek a Részletek-panelen.
+  const detailPartAllUnits = useMemo(() => {
+    if (!detailPart) return [];
+    return parts.filter((p) => [p.name, p.category, p.brand, p.modelFit, p.source].join("|") === detailPart.id);
+  }, [parts, detailPart]);
   const partUsage = useMemo(() => {
-    if (!partDetailId) return [];
+    if (!detailPart) return [];
+    const unitIds = new Set(detailPartAllUnits.map((u) => u.id));
     return tickets
-      .flatMap((t) => (t.usedParts || []).filter((sp) => sp.partId === partDetailId).map((sp) => ({ ...sp, ticket: t })))
+      .flatMap((t) => (t.usedParts || []).filter((sp) => unitIds.has(sp.partId)).map((sp) => ({ ...sp, ticket: t })))
       .sort((a, b) => (b.ticket.dateIn || "").localeCompare(a.ticket.dateIn || ""));
-  }, [tickets, partDetailId]);
+  }, [tickets, detailPart, detailPartAllUnits]);
   const allUsedParts = useMemo(() => {
     return tickets
       .flatMap((t) => (t.usedParts || []).map((sp) => ({ ...sp, ticket: t })))
@@ -2141,7 +2266,7 @@ function AppShell() {
         {!noLocationAssigned && tab === "parts" && (
           <PartsTab
             busy={busy} setPartModal={setPartModal} partSearch={partSearch} setPartSearch={setPartSearch}
-            loadingData={loadingData} filteredParts={filteredParts} setPartDetailId={setPartDetailId} deletePart={deletePart}
+            loadingData={loadingData} filteredParts={filteredParts} setPartDetailId={setPartDetailId} deletePart={deletePartGroup}
             partsStats={partsStats} allUsedParts={allUsedParts} locName={locName} setDetailId={setDetailId}
             setPdfImportModal={setPdfImportModal} onUsePart={openPartUsageModal}
           />
@@ -2253,9 +2378,11 @@ function AppShell() {
         <PartModal
           part={typeof partModal === "object" && partModal?.id ? partModal : null}
           prefill={typeof partModal === "object" && !partModal?.id ? partModal : null}
+          locations={stockLocations}
+          defaultLocId={defaultLocId}
           onClose={() => setPartModal(null)}
           busy={busy}
-          onSave={(data) => (typeof partModal === "object" && partModal?.id ? editPart(partModal.id, data) : addPart(data))}
+          onSave={(data, locId) => (typeof partModal === "object" && partModal?.id ? editPart(partModal, data) : addPart(data, locId))}
         />
       )}
       {partUsageModal && (
@@ -2317,7 +2444,7 @@ function AppShell() {
           ticket={detailTicket}
           locName={locName}
           busy={busy}
-          parts={parts}
+          parts={partGroups}
           stock={stock}
           users={users}
           customers={customersTable}
@@ -2340,7 +2467,7 @@ function AppShell() {
           locName={locName}
           busy={busy}
           users={users}
-          parts={parts}
+          parts={partGroups}
           activeServiceTicket={activeServiceTicket}
           onAddPart={addPartToTicket}
           onRemovePart={removePartFromTicket}
@@ -2374,10 +2501,13 @@ function AppShell() {
       {detailPart && (
         <PartDetailPanel
           part={detailPart}
+          allUnits={detailPartAllUnits}
           busy={busy}
           onClose={() => setPartDetailId(null)}
           onEdit={(p) => { setPartDetailId(null); setPartModal(p); }}
-          onDelete={(id) => { deletePart(id); setPartDetailId(null); }}
+          onDelete={(g) => { deletePartGroup(g); setPartDetailId(null); }}
+          onDeleteUnit={deletePart}
+          onUpdateStatus={updatePartStatus}
           partUsage={partUsage}
           onOpenTicket={(id) => { setPartDetailId(null); setDetailId(id); }}
           locName={locName}

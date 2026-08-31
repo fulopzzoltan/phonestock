@@ -111,59 +111,121 @@ async function checkoutBasket(items, payment, locId) {
 
 Ez azt is jelenti, hogy a `PartModal`-nak / az `addPart`-nak tudnia kell a helyszínt (`locId`) is a tranzakcióhoz — jelenleg a `PartModal` nem kér helyszínt, mert az alkatrész-raktár helyszín-független (a `parts` táblán nincs `location_id`, a CLAUDE.md szerint szándékosan "közös raktár mindkét helyszínnek"). Ezt tisztázni kell: **melyik helyszínhez könyveljük a Kiadást**, ha az alkatrész maga nem helyszín-specifikus? Javaslat: a `PartModal`-ban (és a gyors-kosárban) legyen egy helyszín-választó **csak a könyveléshez**, alapértelmezetten az aktuálisan kiválasztott helyszín — ez már ma is megvan mintaként a `StockModal`-ban (`LocationField`).
 
-## 2. Alkatrész-felhasználás nyomonkövethetősége — garanciális visszakereshetőség
+## 2. Alkatrészek egyedi tételként — REVÍZIÓ a visszajelzésed alapján
 
-### 2.1 A jelenlegi állapot — ami már megvan, és ami hiányzik
+> "nalunk az alkatreszek ugyan olyan egyedi termekek mint a telefon, lehet hogy van ket samsung a07 de kulonbozik az imei, az alkatreszekkel az a helyzet hogy egyik lehet elromlik a masik lehet nem"
 
-**Jó hír:** a "Felhasznált alkatrészek" nézet **már létezik** (`PartsTab.jsx` alján, `HistorySection`) — amikor egy alkatrészt felhasználsz egy munkalapon (`addPartToTicket`), az **nem törlődik és nem keveredik a törölt alkatrészekkel**: a `parts.quantity` csökken, de a sor megmarad (a `deletePart` egy teljesen külön, kézi művelet, `deleted_at` soft-delete-tel) — és a felhasználás egy `service_parts` sorként öröklődik, ami megjelenik ebben a külön "Felhasznált alkatrészek" listában (alkatrész neve, munkalap, vevő, mennyiség, ár, dátum).
+Ez fontos pontosítás, és **felülírja** az előző verzió 2.2-es "pillanatkép" javaslatát — az ugyanis még azt feltételezte, hogy a `parts` tábla "egy sor = egy alkatrész-TÍPUS, `quantity` számlálóval" modellje jó marad, csak a felhasználáskor kell egy pillanatkép. De ha **egyik akku elromolhat, a másik nem**, akkor a `quantity`-számláló modell alapból hibás gondolkodás — ugyanúgy kell kezelni az alkatrészt, mint a telefont: **minden fizikai darab a saját sora, saját sorsa**. Ez a rész teljesen újraírva:
 
-**A hiányzó rész:** a `service_parts` tábla ma csak ezt tárolja: `service_ticket_id, part_id, part_name, quantity, cost_price`. **Nincs benne, hogy honnan jött az adott alkatrész** (`source`, `origin`, `supplier_sku`) — ezt csak a `parts` tábla JELENLEGI állapotából lehetne visszanézni a `part_id`-n keresztül. Ez a probléma: **ha az alkatrészt időközben utántöltötték** (pl. a "Akkumulátor iPhone 11" sor mennyiségét megint feltöltötték, most már egy MÁSIK beszállítótól, más áron), a `parts.source`/`costPrice` felülíródik az új beszerzés adataival (`editPart` a meglévő sort módosítja, nem hoz létre új tételt) — és ettől kezdve **nem lehet biztosan visszanézni**, hogy a fél évvel ezelőtt egy adott telefonba beszerelt akku pontosan melyik beszállítói tételből jött.
+### 2.1 A jelenlegi állapot
 
-Pontosan ez az, amit garanciális visszakeresésnél te kérsz: "honnan vettük, tudjuk hova küldjük vissza."
+A `parts` tábla ma "egy sor = egy alkatrész-típus" — pl. "Akkumulátor iPhone 11" egyetlen sor, `quantity: 15`. Ha ebből 15-ből egy meghibásodik, vagy az egyiket visszaküldöd egy garanciás javítás miatt a beszállítónak, a rendszer ezt nem tudja megkülönböztetni — csak azt látja, hogy "15 db van", utána "14 db van", de nem tudja, hogy *melyik* a hiányzó, honnan jött, mi történt vele.
 
-### 2.2 A javítás — pillanatkép (snapshot) a felhasználás pillanatában
+A "Felhasznált alkatrészek" nézet (`PartsTab.jsx` alján, `HistorySection`) már ma is jól elkülöníti a felhasznált tételeket a törölt alkatrészektől (a `deletePart` egy teljesen külön, kézi soft-delete, nem keveredik a `addPartToTicket` felhasználással) — ez a rész jó volt már az első verzióban is, ez nem változik.
 
-A legkisebb, legbiztonságosabb beavatkozás: a `service_parts` sor **ne csak a mai mezőket** tárolja, hanem a felhasználás pillanatában **másolja be** a `parts` tábla akkori `source`/`origin`/`supplier_sku` értékeit is — így ez a sor egy örök, változatlan pillanatkép marad, függetlenül attól, hogy a `parts` szülő-sor később hányszor lesz utántöltve/szerkesztve.
+### 2.2 Az új modell — a `parts` tábla a `products` (Telefonok) mintájára
+
+Ahelyett, hogy a `quantity` mezőt számlálóként használnánk, **minden egyes fizikai alkatrész-darab a saját sora** legyen a `parts` táblában, saját sorszámmal (a `part_no` mező már ma is megvan, csak eddig egy batch-hez tartozott — mostantól egy konkrét darabhoz tartozik, pont úgy, ahogy a telefonoknál az IMEI is az adott fizikai készüléké).
 
 ```sql
-alter table service_parts add column source text;
-alter table service_parts add column origin text;
-alter table service_parts add column supplier_sku text;
+alter table parts add column status text not null default 'raktáron'
+  check (status in ('raktáron', 'felhasznalva', 'hibás', 'visszaküldve'));
+alter table parts add column used_in_ticket_id uuid references service_tickets(id);
+alter table parts add column used_at timestamptz;
+alter table parts add column rma_note text;  -- "2026.09.02, visszaküldve GSMnet-nek, csereszám: ..."
 ```
 
+- **`raktáron`** — készleten van, felhasználható
+- **`felhasznalva`** — beépítve egy telefonba (`used_in_ticket_id` mutatja, melyik munkalapba/telefonba)
+- **`hibás`** — meghibásodott (akár raktáron állva derült ki, akár beépítés után, garanciás visszahozatalkor)
+- **`visszaküldve`** — visszaküldve a beszállítónak (RMA), az `rma_note` tartalmazza a részleteket
+
+A `quantity` mező ezután **mindig 1** lesz egy `parts` soron (vagy törölhető is, ha semmi más nem olvassa — ezt a build közben át kell nézni, hogy hol hivatkozik még rá kód).
+
+### 2.3 Bevételezés — egy űrlap, N egyedi sor, egy összesített Kiadás
+
+A `PartModal`/`addPart` felület **nem** változik a pultos szemszögéből (egy űrlap: név, kategória, db, ár, forrás) — csak a mentés logikája:
+
 ```js
-async function addPartToTicket(ticketId, part, qty) {
+async function addPart(data, locId) {
   await withBusy(async () => {
-    const ticket = tickets.find((t) => t.id === ticketId);
-    const unitCost = Number(part.costPrice) || 0;
-    const r = unwrap(await supabase.from("service_parts").insert({
-      service_ticket_id: ticketId, part_id: part.id, part_name: part.name, quantity: qty, cost_price: unitCost,
-      source: part.source || null, origin: part.origin || null, supplier_sku: part.supplierSku || null, // ÚJ — pillanatkép
-    }).select());
-    // ... a többi (quantity csökkentés, mat_cost növelés) változatlan
+    const qty = Number(data.quantity) || 1;
+    const rows = Array.from({ length: qty }, () => partToApi({ ...data, quantity: 1 }));
+    const r = unwrap(await supabase.from("parts").insert(rows).select());
+    setParts((prev) => [...r.map(partFromApi), ...prev]);
+    setPartModal(null);
+    const amount = (Number(data.costPrice) || 0) * qty;
+    if (amount > 0) {
+      // EGY összesített tranzakció a teljes tételre — nem darabonként, mert egy beszállítói
+      // számla is egy sor, és senki nem akar 15 külön Kiadás-sort ugyanarra a beszerzésre.
+      await addTransaction({
+        type: "expense", category: "Készlet",
+        description: `Alkatrész beszerzés: ${data.name} (${qty} db)${data.source ? ` — ${data.source}` : ""}`,
+        amount, payment: "Készpénz",
+      }, locId);
+    }
   });
 }
 ```
 
-Ezután a "Felhasznált alkatrészek" táblázat (`PartsTab.jsx` `HistorySection`) egy új "Forrás" oszloppal bővül, és a kereső (`filterFn`) is kereshet rá — így ha egy ügyfél garanciával visszahoz egy telefont hibás akkuval, egyszerűen rákeresel a munkalapra vagy a telefonra a "Felhasznált alkatrészek" listában, és azonnal látod: melyik beszállítótól jött az az akku, mikor, milyen cikkszámmal — tudod, hova küldd vissza reklamációra.
+Ugyanez vonatkozik a PDF-importra (1.2 pont) — a `row.qty` most nem egy `quantity` mezőt tölt fel, hanem `row.qty` darab egyedi `parts` sort hoz létre, egy közös Kiadás-tranzakcióval.
 
-### 2.3 Ami ennél tovább menne — de szerintem most nem szükséges
+### 2.4 Raktár-nézet — csoportosítva marad, de alatta egyedi tételek
 
-Egy **valódi batch/lot-rendszer** (minden egyes beérkezés külön tétel-sorral, még ugyanannál az alkatrésznél is, egyedi lot-azonosítóval) pontosabb lenne — pl. ha egyszerre 5 akkut veszel be egy beszállítótól, és csak 3-at használsz fel, a maradék 2 db is pontosan tudná, melyik lot-ból van. Ez viszont egy jóval nagyobb szerkezeti átalakítás (a mai `parts` tábla "egy sor = egy alkatrész-típus, mennyiséggel" modelljét kellene "egy sor = egy beérkezési tétel" modellre váltani, ami a `PartsTab`/`PartModal`/keresés/riportok nagy részét érintené). A 2.2-es "pillanatkép a felhasználáskor" megoldás **99%-ban ugyanazt a garanciális visszakereshetőséget adja**, sokkal kisebb kockázattal — csak akkor nem tökéletes, ha egyszerre TÖBB, különböző beszállítótól származó tétel van készleten UGYANABBÓL az alkatrészből A FELHASZNÁLÁS PILLANATÁBAN (mert akkor a `parts.source` csak az egyik, "aktuális" értéket tudja adni). Ha ez a te boltodban gyakori eset (pl. mindig több beszállítótól egyszerre van készleten ugyanolyan akku), jelezd, és akkor érdemes a batch-rendszert is megtervezni — egyelőre a pillanatkép-megoldással indulnék, mert egyszerűbb és a legtöbb esetben elég.
+A `PartsTab.jsx` mai listája NEM válik 15 egyforma sorrá a felhasználó szemében — a lista továbbra is **csoportosítva** mutatja ("Akkumulátor iPhone 11 — 12 raktáron"), csak a csoportosítás most `GROUP BY name + category + source` a `status='raktáron'` sorokon, `COUNT(*)` a db-oszlopban a mai `quantity` helyett. A csoportra kattintva (vagy egy "Részletek" gombbal) kibontható az egyedi tételek listája — pont úgy, ahogy a Telefonoknál a `ProductDetailPanel` mutatja az egy konkrét darab adatait.
+
+### 2.5 Felhasználás — konkrét darab kiválasztása
+
+Amikor a pultos "Felhasználás"-t nyom egy munkalapon, a rendszer **automatikusan a legrégebb óta raktáron lévő, `status='raktáron'` darabot** választja (FIFO — ez a legtöbb esetben elég, és nem terheli extra döntéssel a pultost), de a Részletek-nézetből kézzel is kiválasztható egy konkrét darab, ha valamiért fontos (pl. tudottan két különböző forrásból van készleten, és az egyiket direkt el akarod kerülni).
+
+```js
+async function addPartToTicket(ticketId, partGroup, qty) {
+  await withBusy(async () => {
+    // partGroup = { name, category, source, ... } — a csoport, amiből a pultos választott.
+    // A konkrét darabokat itt választjuk ki: FIFO, a legrégebbi part_no-jú raktáron lévő sorok.
+    const available = parts
+      .filter((p) => p.status === "raktáron" && p.name === partGroup.name && p.category === partGroup.category)
+      .sort((a, b) => (a.partNo || 0) - (b.partNo || 0))
+      .slice(0, qty);
+    for (const unit of available) {
+      unwrap(await supabase.from("parts").update({
+        status: "felhasznalva", used_in_ticket_id: ticketId, used_at: new Date().toISOString(),
+      }).eq("id", unit.id));
+      unwrap(await supabase.from("service_parts").insert({
+        service_ticket_id: ticketId, part_id: unit.id, part_name: unit.name, quantity: 1, cost_price: unit.costPrice,
+      }));
+    }
+    // mat_cost növelése a kiválasztott darabok költségével — a többi (mai) logika változatlan
+  });
+}
+```
+
+Mivel maga a `parts` sor **soha nem íródik felül más beszerzésből** (minden beérkezés saját sorokat hoz létre, ld. 2.3), a `service_parts`-on **nem is kell** pillanatkép-mező (`source`/`origin`/`supplier_sku`) — a `part_id`-n keresztül a `parts` tábla MINDIG az adott fizikai darab valós, változatlan eredetét adja vissza, örökre. Ez egyszerűbb, mint az előző verzió snapshot-javaslata, és pontosabb is.
+
+### 2.6 Garanciális visszakeresés — a konkrét use case
+
+Ügyfél visszahozza a telefont, hibás az akku, ami 3 hónapja lett beépítve. A "Felhasznált alkatrészek" listában rákeresel a munkalapra vagy a telefonra → látod a pontos `parts` sort → azon rajta van: melyik `source`-ból jött, milyen `supplier_sku`-val, mikor lett beépítve. Az adott `parts` sor státuszát átállítod `hibás`-ra, majd ha visszaküldöd a beszállítónak, `visszaküldve`-re, az `rma_note`-ba beírod a részleteket. Így bármikor lekérdezhető: "melyik beszállítótól jött alkatrészek hibásodtak meg leggyakrabban" — ez már egy hasznos minőség-ellenőrzési riport is lehet hosszabb távon (melyik beszállítót érdemes elkerülni).
+
+### 2.7 Migráció a meglévő adatokra
+
+A ma élő `parts` sorok (amik `quantity > 1`-gyel rendelkeznek) egyszeri migrációval szét lesznek bontva N darab `quantity=1` sorra, mindegyik `status='raktáron'`-nal — ez egy egyszeri SQL-script, amit a build előtt lefuttatunk. A már felhasznált (`service_parts`-ban szereplő) tételekhez **nem** tudunk visszamenőleg egyedi `parts`-sort rendelni (azok már ma is csak számlálóként csökkentek) — ez elfogadható, a rendszer a bevezetés pillanatától kezdve lesz pontos, a régi előzmények a mai (kevésbé részletes) formában maradnak.
 
 ## 3. Amit tisztázni kell, mielőtt építjük
 
-- **Alkatrész-utántöltés (mennyiség-emelés meglévő soron)**: ha valaki a `PartModal` szerkesztő nézetében csak felviszi a mennyiséget (pl. 5 db-ról 15 db-ra, mert újra rendeltetek), ez ma az `editPart()`-on megy át, ami **nem** hoz létre tranzakciót — ez is egy "hiányzó Kiadás" eset, csak nem az 1.1-ben tárgyalt "új alkatrész" úton. Szeretnéd, hogy a szerkesztő nézet is tudjon "csak a mennyiség-növekmény költségét" könyvelni (pl. egy extra mező: "ennyi db-ot vettem be most, ennyiért")? Ez egy kicsit bővíti a `PartModal` felületét, de lezárja ezt a rést is.
-- **Helyszín a `PartModal`-on**: az 1.3 pontban jelzett módon a `PartModal`-nak (ill. a gyors-kosárnak) kapnia kell egy helyszín-választót a könyveléshez — jó lesz ez így, vagy legyen mindig "válassz helyszínt" kötelező mező?
-- **PDF-import "phone" sor helyszíne**: ma a PDF-import a `locId`-t (amit a modal alján választasz) adja át a `phoneQueue`-nak — ez helyes marad, nem változik.
+- **Helyszín a `PartModal`-on**: az 1.3 pontban jelzett módon a `PartModal`-nak (ill. a gyors-kosárnak) kapnia kell egy helyszín-választót a könyveléshez — jó lesz ez így, vagy legyen mindig "válassz helyszínt" kötelező mező? (Az egyedi `parts` sorokon magukon nincs helyszín — a CLAUDE.md szerint szándékosan közös raktár mindkét helyszínnek — csak a Kiadás-tranzakcióhoz kell.)
+- **Raktáron lévő, de hibásnak bizonyuló alkatrész**: ha egy még be sem épített darab bizonyul hibásnak (pl. kicsomagoláskor látszik, hogy sérült), a `Részletek` nézetből egyenként átállítható `hibás`-ra — kell-e ehhez egy gyors, tömeges "ez az egész tétel sérült érkezett" művelet is, vagy a legtöbbször csak 1-1 darabról lesz szó?
+- **`quantity` mező sorsa**: a régi kódban több helyen olvashatják még (`p.quantity`, keresés, rendezés "Készlet: kevés → sok") — ezeket a csoportosított nézetre (2.4) kell átállítani (`COUNT(*) where status='raktáron'`), ez apró, de sok helyen érintő átírás.
+- **Egyedi darab kézi kiválasztása felhasználáskor**: az alap a FIFO automatikus választás (2.5) — szükséges-e MOST már a kézi kiválasztás UI-ja is, vagy elég, ha ez egy második körben kerül rá, ha a FIFO a gyakorlatban nem elég?
 
 ## Ellenőrzőlista implementálás után
 
-- `+ Új alkatrész` gombbal felvitt alkatrész létrehoz egy pontos összegű Kiadás-tranzakciót
+- `+ Új alkatrész` gombbal felvitt N db alkatrész N egyedi `parts` sort hoz létre, EGY összesített Kiadás-tranzakcióval
 - PDF-importból vagy gyors-kosárból felvitt telefon **pontosan egyszer** könyvelődik Kiadásként (nem duplán)
-- PDF-importból felvitt alkatrész **pontosan egyszer** könyvelődik Kiadásként (nem a blanket sor + `addPart` együtt)
-- `service_parts` új sorai tartalmazzák a felhasználás pillanatában érvényes `source`/`origin`/`supplier_sku` pillanatképet
-- "Felhasznált alkatrészek" nézet mutatja és kereshetővé teszi a forrást
-- Régi (meglévő) `service_parts` sorok forrás nélkül maradnak — ez elfogadható, csak az új felhasználásoktól kezdve pontos
+- PDF-importból felvitt alkatrész-tétel egyedi sorokat hoz létre, EGY Kiadás-tranzakcióval (nem a blanket sor + `addPart` együtt duplán)
+- Raktár-nézet csoportosítva mutatja az alkatrészeket (`status='raktáron'` szerinti darabszámmal), kibontható egyedi tételekre
+- Felhasználáskor a rendszer FIFO alapon konkrét egyedi `parts` sort jelöl `felhasznalva`-ra, `used_in_ticket_id`-val
+- Egy adott felhasznált (vagy raktáron hibásnak bizonyuló) darab `hibás`/`visszaküldve` státuszba állítható, `rma_note`-tal
+- "Felhasznált alkatrészek" nézetben/Részletek panelen visszakereshető egy adott darab pontos forrása, beszerzési ára, mikor lett beépítve, melyik munkalapba
+- Meglévő `parts` sorok migrálva egyedi (`quantity=1`, `status='raktáron'`) sorokra
 - `npm run build` hibamentes
 - Nincs `git push`, csak lokális commit
