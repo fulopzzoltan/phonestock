@@ -11,12 +11,18 @@ export default function WaitingList({ items, onAdd, onAdvance, onDelete }) {
   const [open, setOpen] = useState(false);
   const [description, setDescription] = useState("");
   const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
   const [supplier, setSupplier] = useState("");
 
   function submit() {
     if (!description.trim()) return;
-    onAdd({ description: description.trim(), customerName: customerName.trim() || null, supplier: supplier.trim() || null });
-    setDescription(""); setCustomerName(""); setSupplier(""); setOpen(false);
+    onAdd({
+      description: description.trim(),
+      customerName: customerName.trim() || null,
+      customerPhone: customerPhone.trim() || null,
+      supplier: supplier.trim() || null,
+    });
+    setDescription(""); setCustomerName(""); setCustomerPhone(""); setSupplier(""); setOpen(false);
   }
 
   return (
@@ -38,12 +44,22 @@ export default function WaitingList({ items, onAdd, onAdvance, onDelete }) {
         </div>
       )}
       {open ? (
-        <div className="row3" style={{ alignItems: "flex-end" }}>
-          <div className="field" style={{ margin: 0 }}><label>Mit várunk</label><input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Pl. roz tok Xiaomi Poco C65-höz" /></div>
-          <div className="field" style={{ margin: 0 }}><label>Kinek (ha ügyfélnek)</label><input value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Opcionális" /></div>
-          <div className="field" style={{ margin: 0 }}><label>Forrás</label><input value={supplier} onChange={(e) => setSupplier(e.target.value)} placeholder="GSMnet, SEP..." /></div>
-          <button type="button" className="btn sm" onClick={submit}>Felvétel</button>
-          <button type="button" className="btn sec sm" onClick={() => setOpen(false)}>Mégse</button>
+        <div>
+          <div className="field" style={{ margin: "0 0 10px" }}><label>Mit várunk</label><input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Pl. roz tok Xiaomi Poco C65-höz" autoFocus /></div>
+          <div className="row3" style={{ alignItems: "flex-end" }}>
+            <div className="field" style={{ margin: 0 }}><label>Kinek (ha ügyfélnek)</label><input value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Opcionális" /></div>
+            <div className="field" style={{ margin: 0 }}><label>Telefonszám</label><input value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="07xx xxx xxx" /></div>
+            <div className="field" style={{ margin: 0 }}><label>Forrás</label><input value={supplier} onChange={(e) => setSupplier(e.target.value)} placeholder="GSMnet, SEP..." /></div>
+          </div>
+          {customerPhone.trim() && (
+            <div className="login-note" style={{ margin: "8px 0 0", textAlign: "left" }}>
+              Ha ez a telefonszám még nincs a Kliensek közt, felvételre kerül.
+            </div>
+          )}
+          <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+            <button type="button" className="btn sm" onClick={submit}>Felvétel</button>
+            <button type="button" className="btn sec sm" onClick={() => setOpen(false)}>Mégse</button>
+          </div>
         </div>
       ) : (
         <button type="button" className="btn sec sm" onClick={() => setOpen(true)}>+ Várakozás felvétele</button>

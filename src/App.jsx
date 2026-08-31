@@ -1422,8 +1422,14 @@ function AppShell() {
   // PULT: VÁRAKOZIK VALAMIRE
   async function addWaitingItem(data, status = "megrendelve") {
     await withBusy(async () => {
+      let customerId = null;
+      if (data.customerPhone) {
+        const { data: cid } = await supabase.rpc("upsert_customer", { p_name: data.customerName, p_phone: data.customerPhone });
+        customerId = cid || null;
+      }
       const r = unwrap(await supabase.from("waiting_items").insert({
-        description: data.description, customer_name: data.customerName, supplier: data.supplier,
+        description: data.description, customer_name: data.customerName, customer_phone: data.customerPhone,
+        customer_id: customerId, supplier: data.supplier,
         status, location_id: data.locationId || defaultLocId, created_by: user.id,
       }).select());
       setWaitingItems((prev) => [waitingFromApi(r[0]), ...prev]);

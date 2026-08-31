@@ -484,6 +484,7 @@ export const waitingFromApi = (r) => ({
   description: r.description,
   customerName: r.customer_name,
   customerPhone: r.customer_phone,
+  customerId: r.customer_id || null,
   supplier: r.supplier,
   status: r.status,
   locationId: r.location_id,

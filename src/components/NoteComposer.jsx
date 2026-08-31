@@ -5,6 +5,7 @@ import { ServiceIcon, PhoneCaseIcon, PartsIcon, CustomersIcon, WarrantyIcon, Clo
 const TYPE_ICON = { ticket: ServiceIcon, product: PhoneCaseIcon, part: PartsIcon, customer: CustomersIcon, warranty: WarrantyIcon };
 
 export default function NoteComposer({ users, tickets, stock, parts, customersTable, warranties, locName, onSave }) {
+  const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [assignedTo, setAssignedTo] = useState("");
   const [dueScope, setDueScope] = useState("today");
@@ -20,13 +21,18 @@ export default function NoteComposer({ users, tickets, stock, parts, customersTa
   function submit() {
     if (!text.trim()) return;
     onSave(text.trim(), { assignedTo: assignedTo || null, dueScope: dueScope || null, link });
-    setText(""); setAssignedTo(""); setDueScope("today"); setLink(null);
+    setText(""); setAssignedTo(""); setDueScope("today"); setLink(null); setOpen(false);
+  }
+
+  if (!open) {
+    return <button type="button" className="btn sec sm" style={{ marginBottom: 14 }} onClick={() => setOpen(true)}>+ Új cetli</button>;
   }
 
   return (
     <div style={{ background: "#fff", border: "1px solid #EEF0F2", borderRadius: 14, padding: 12, marginBottom: 14 }}>
       <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="Pl. hozz át 2 kijelzőt Szentgyörgyről... (# a munkalap/telefon/alkatrész/ügyfél/garancia hivatkozáshoz)"
-        style={{ width: "100%", minHeight: 48, resize: "vertical", border: "none", outline: "none", fontFamily: "inherit", fontSize: 13 }} />
+        style={{ width: "100%", minHeight: 48, resize: "vertical", border: "none", outline: "none", fontFamily: "inherit", fontSize: 13 }}
+        autoFocus />
       {link && (() => { const LinkIcon = TYPE_ICON[link.type]; return (
         <div className="chat-link-preview"><LinkIcon width={12} height={12} /> {link.label}<button type="button" onClick={() => setLink(null)}><CloseIcon width={12} height={12} /></button></div>
       ); })()}
@@ -49,7 +55,10 @@ export default function NoteComposer({ users, tickets, stock, parts, customersTa
           <button type="button" className={dueScope === "week" ? "active" : ""} onClick={() => setDueScope("week")}>E héten</button>
           <button type="button" className={dueScope === "" ? "active" : ""} onClick={() => setDueScope("")}>Nincs határidő</button>
         </div>
-        <button type="button" className="btn sm" style={{ marginLeft: "auto" }} onClick={submit}>Felírás</button>
+        <span style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+          <button type="button" className="btn sec sm" onClick={() => setOpen(false)}>Mégse</button>
+          <button type="button" className="btn sm" onClick={submit}>Felírás</button>
+        </span>
       </div>
     </div>
   );
