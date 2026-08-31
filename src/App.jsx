@@ -60,6 +60,7 @@ import { CloseIcon, ChatIcon } from "./components/icons";
 import Sidebar from "./components/Sidebar";
 import BottomNav from "./components/BottomNav";
 import TeamChatPanel from "./components/TeamChatPanel";
+import ContentTopbar from "./components/ContentTopbar";
 import InviteEmployeeModal from "./components/InviteEmployeeModal";
 import ChangePasswordModal from "./components/ChangePasswordModal";
 import { useInternalChat } from "./lib/useInternalChat";
@@ -2180,9 +2181,8 @@ function AppShell() {
   return (
     <div className="shell">
       <Sidebar
-        tab={tab} setTab={setTab} setTicketModal={setTicketModal} isAdmin={isAdmin} locFilter={locFilter} setLocFilter={setLocFilter}
-        allowedLocations={allowedLocations} myLocationId={myLocationId} locName={locName} profile={profile} user={user}
-        signOut={signOut} lastActiveLocationId={lastActiveLocationId} pultPendingCounts={pultPendingCounts}
+        tab={tab} setTab={setTab} setTicketModal={setTicketModal} isAdmin={isAdmin}
+        lastActiveLocationId={lastActiveLocationId} pultPendingCounts={pultPendingCounts}
       />
       <BottomNav
         tab={tab} setTab={setTab} isAdmin={isAdmin} locFilter={locFilter} setLocFilter={setLocFilter}
@@ -2190,6 +2190,12 @@ function AppShell() {
         signOut={signOut} pultPendingCounts={pultPendingCounts}
       />
 
+      <div className="content-col">
+      <ContentTopbar
+        tab={tab} setTab={setTab} isAdmin={isAdmin} locFilter={locFilter} setLocFilter={setLocFilter}
+        allowedLocations={allowedLocations} myLocationId={myLocationId} locName={locName} profile={profile} user={user}
+        signOut={signOut} chatOpen={chatOpen} setChatOpen={setChatOpen} chatUnread={chatUnread} markChatRead={markChatRead}
+      />
       <div className="main">
         {error && <div className="errbar">{error}</div>}
         {info && <div className="banner ok">{info} <button type="button" className="banner-close" onClick={() => setInfo("")}><CloseIcon width={12} height={12} /></button></div>}
@@ -2372,6 +2378,7 @@ function AppShell() {
             loyaltyRewards={loyaltyRewards} addLoyaltyReward={addLoyaltyReward} editLoyaltyReward={editLoyaltyReward}
           />
         )}
+      </div>
       </div>
 
       {stockModal && (
