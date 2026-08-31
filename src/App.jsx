@@ -2299,6 +2299,7 @@ function AppShell() {
             dayCloses={dayCloses}
             closeDay={closeDay} reopenDay={reopenDay}
             isAdmin={isAdmin}
+            setPdfImportModal={setPdfImportModal}
           />
         )}
 
@@ -2335,7 +2336,7 @@ function AppShell() {
             busy={busy} setPartModal={setPartModal} partSearch={partSearch} setPartSearch={setPartSearch}
             loadingData={loadingData} filteredParts={filteredParts} setPartDetailId={setPartDetailId} deletePart={deletePartGroup}
             partsStats={partsStats} allUsedParts={allUsedParts} locName={locName} setDetailId={setDetailId}
-            setPdfImportModal={setPdfImportModal} onUsePart={openPartUsageModal}
+            onUsePart={openPartUsageModal}
           />
         )}
 

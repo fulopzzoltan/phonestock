@@ -33,7 +33,7 @@ const UseIcon = (props) => (
 
 export default function PartsTab({
   busy, setPartModal, partSearch, setPartSearch, loadingData, filteredParts, setPartDetailId, deletePart,
-  allUsedParts = [], locName, setDetailId, setPdfImportModal, onUsePart,
+  allUsedParts = [], locName, setDetailId, onUsePart,
 }) {
   const [catFilter, setCatFilter] = useState("all");
   const [sortBy, setSortBy] = useState("recent");
@@ -48,10 +48,7 @@ export default function PartsTab({
     <>
       <div className="topbar">
         <div><div className="page-title">Alkatrész raktár</div></div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn sec" disabled={busy} onClick={() => setPdfImportModal(true)}>+ Rendelés PDF-ből</button>
-          <button className="btn" disabled={busy} onClick={() => setPartModal("add")}>+ Új alkatrész</button>
-        </div>
+        <button className="btn" disabled={busy} onClick={() => setPartModal("add")}>+ Új alkatrész</button>
       </div>
 
       <div className="filter-row">
@@ -81,23 +78,21 @@ export default function PartsTab({
                 </div>
               </div>
               <ResponsiveTable
-                columns={[{ key: "p", label: "Alkatrész", className: "col-grow" }, { key: "c", label: "Beérk. ár" }, { key: "s", label: "Forrás" }, { key: "x", label: "" }]}
+                columns={[{ key: "n", label: "Sorszám", className: "col-serial" }, { key: "p", label: "Alkatrész", className: "col-grow" }, { key: "s", label: "Forrás" }, { key: "c", label: "Beérk. ár" }, { key: "x", label: "" }]}
                 rows={items}
                 rowKey={(p) => p.id}
                 renderRow={(p) => (
                   <tr key={p.id} style={{ cursor: "pointer" }} onClick={() => setPartDetailId(p.id)}>
+                    <td className="mono col-serial" style={{ color: "#9CA3AF", whiteSpace: "nowrap" }}>{partCode(p.partNo) || "—"}</td>
                     <td>
                       <div className="stk-name" style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                        <span className="stk-sub" style={{ marginTop: 0 }}>{partCode(p.partNo) || "—"}</span>
                         {p.name}{[p.brand, p.modelFit].filter(Boolean).length > 0 ? ` — ${[p.brand, p.modelFit].filter(Boolean).join(", ")}` : ""}
                       </div>
                     </td>
-                    <td className="mono" style={{ color: "#6B7280", whiteSpace: "nowrap" }}>{money(p.costPrice)}</td>
                     <td style={{ color: "#6B7280", fontSize: 12, whiteSpace: "nowrap" }}>{p.source || "—"}</td>
+                    <td className="row-price">{money(p.costPrice)}</td>
                     <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
                       <button type="button" className="use-btn" disabled={busy || !p.quantity} onClick={() => onUsePart(p)}><UseIcon width={13} height={13} />Felhasználás</button>
-                      <button className="iconbtn" disabled={busy} onClick={() => setPartModal(p)}><EditIcon /></button>
-                      <ConfirmDelete disabled={busy} onConfirm={() => deletePart(p)} />
                     </td>
                   </tr>
                 )}
@@ -115,8 +110,6 @@ export default function PartsTab({
                     <div className="mob-row-sub" style={{ marginTop: 8, gap: 6 }} onClick={(e) => e.stopPropagation()}>
                       <span style={{ fontSize: 11 }}>{p.source || "—"}</span>
                       <button type="button" className="use-btn" style={{ marginLeft: "auto" }} disabled={busy || !p.quantity} onClick={() => onUsePart(p)}><UseIcon width={13} height={13} />Felhasználás</button>
-                      <button className="iconbtn" disabled={busy} onClick={() => setPartModal(p)}><EditIcon /></button>
-                      <ConfirmDelete disabled={busy} onConfirm={() => deletePart(p)} />
                     </div>
                   </div>
                 )}

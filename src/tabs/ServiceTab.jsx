@@ -66,16 +66,16 @@ export default function ServiceTab({
           return (
             <ResponsiveTable
               columns={[
-                { key: "d", label: "Eszköz", className: "col-device" }, { key: "c", label: "Kliens" }, { key: "i", label: "Bejött" },
+                { key: "n", label: "Sorszám", className: "col-serial" }, { key: "d", label: "Eszköz", className: "col-device" }, { key: "c", label: "Kliens" }, { key: "i", label: "Bejött" },
                 { key: "p", label: "Probléma", className: "col-grow" }, { key: "s", label: "Státusz" }, { key: "a", label: "Ár" },
               ]}
               rows={items}
               rowKey={(t) => t.id}
               renderRow={(t) => (
                 <tr key={t.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
+                  <td className="mono col-serial" style={{ color: "#9CA3AF", whiteSpace: "nowrap" }}>{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</td>
                   <td style={{ whiteSpace: "nowrap" }}>
                     <div className="stk-name" style={{ flexWrap: "nowrap" }}>
-                      <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</span>
                       {displayName(t.brand, t.model) || "—"}
                       {urgencyOf(t) && (
                         <span className={`sla-badge sla-${urgencyOf(t).level}`} style={{ marginLeft: 6 }} title={urgencyOf(t).label}>
@@ -97,7 +97,7 @@ export default function ServiceTab({
                     </div>
                   </td>
                   <td style={{ whiteSpace: "nowrap" }}>{statusPill(t)}</td>
-                  <td><span className="svc-price">{money(t.price)}</span></td>
+                  <td className="row-price">{money(t.price)}</td>
                 </tr>
               )}
               renderMobileRow={(t) => (
@@ -144,13 +144,13 @@ export default function ServiceTab({
       >
         {(rows) => (
           <table>
-            <thead><tr><th>Eszköz</th><th>Helyszín</th><th>Bejött</th><th>Átadva</th><th>Vevő</th><th>Díj</th></tr></thead>
+            <thead><tr><th className="col-serial">Sorszám</th><th>Eszköz</th><th>Helyszín</th><th>Bejött</th><th>Átadva</th><th>Vevő</th><th>Díj</th></tr></thead>
             <tbody>
               {rows.map((t) => (
                 <tr key={t.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
+                  <td className="mono col-serial" style={{ color: "#9CA3AF", whiteSpace: "nowrap" }}>{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</td>
                   <td>
                     <div className="stk-name">
-                      <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</span>
                       {displayName(t.brand, t.model) || "—"}
                     </div>
                   </td>
