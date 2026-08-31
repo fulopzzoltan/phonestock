@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { TransactionRowsTable } from "./TransactionsPeriodList";
-import { money, today } from "../lib/utils";
+import { money, today, cashPortion, cardPortion } from "../lib/utils";
 import { EmptyState } from "./EmptyState";
 import { FinanceIcon, ChevronLeftIcon, ChevronRightIcon } from "./icons";
 
@@ -17,9 +17,9 @@ function addMonths(y, m, delta) {
 function monthLabel(y, m) { return `${y}. ${MONTH_NAMES[m]}`; }
 
 function dayStats(rows) {
-  const incomeCash = rows.filter((t) => t.type === "income" && t.payment === "Készpénz").reduce((s, t) => s + (Number(t.amount) || 0), 0);
-  const incomeCard = rows.filter((t) => t.type === "income" && t.payment === "Kártya").reduce((s, t) => s + (Number(t.amount) || 0), 0);
-  const expenseCash = rows.filter((t) => t.type === "expense" && t.payment === "Készpénz").reduce((s, t) => s + (Number(t.amount) || 0), 0);
+  const incomeCash = rows.filter((t) => t.type === "income").reduce((s, t) => s + cashPortion(t), 0);
+  const incomeCard = rows.filter((t) => t.type === "income").reduce((s, t) => s + cardPortion(t), 0);
+  const expenseCash = rows.filter((t) => t.type === "expense").reduce((s, t) => s + cashPortion(t), 0);
   const expense = rows.filter((t) => t.type === "expense" && t.payment).reduce((s, t) => s + (Number(t.amount) || 0), 0);
   const margin = rows.filter((t) => t.type === "income").reduce((s, t) => s + ((Number(t.amount) || 0) - (Number(t.costPrice) || 0)), 0)
     - rows.filter((t) => t.type === "expense" && !t.payment).reduce((s, t) => s + (Number(t.amount) || 0), 0);

@@ -30,7 +30,9 @@ export default function PrintReceiptSlip({ tx, location }) {
           {row("Termék", tx.description)}
           {row("Vásárlás dátuma", tx.date)}
           {row("Ár", money(tx.amount))}
-          {row("Fizetés", tx.payment || "—")}
+          {row("Fizetés", tx.payment === "Vegyes"
+            ? `Vegyes (készpénz: ${money(tx.paymentCashAmount)}, kártya: ${money(tx.paymentCardAmount)})`
+            : tx.payment || "—")}
           {row("Garancia", tx.warranty ? `${tx.warranty} (${active ? "érvényes" : "lejárt"} ${expiry}-ig)` : "Nincs")}
         </tbody>
       </table>

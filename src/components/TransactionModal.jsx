@@ -10,6 +10,8 @@ export default function TransactionModal({ tx, locations, defaultLocId, onClose,
     amount: tx.amount ?? "",
     category: tx.category || "Egyéb",
     payment: tx.payment || "Készpénz",
+    paymentCashAmount: tx.paymentCashAmount ?? "",
+    paymentCardAmount: tx.paymentCardAmount ?? "",
     customerName: tx.customerName || "",
     customerPhone: tx.customerPhone || "",
     costPrice: tx.costPrice ?? "",
@@ -17,7 +19,9 @@ export default function TransactionModal({ tx, locations, defaultLocId, onClose,
   });
   const [locId, setLocId] = useState(tx.locationId || defaultLocId || (locations.length === 1 ? locations[0]?.id : ""));
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
-  const valid = f.description.trim() && f.amount !== "" && locId;
+  const splitSum = (Number(f.paymentCashAmount) || 0) + (Number(f.paymentCardAmount) || 0);
+  const splitValid = f.payment !== "Vegyes" || (f.paymentCashAmount !== "" && f.paymentCardAmount !== "" && splitSum === (Number(f.amount) || 0));
+  const valid = f.description.trim() && f.amount !== "" && locId && splitValid;
   return (
     <div className="overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -45,6 +49,29 @@ export default function TransactionModal({ tx, locations, defaultLocId, onClose,
           </div>
           <div className="field"><label>Dátum</label><input type="date" value={f.date} onChange={set("date")} /></div>
         </div>
+        {f.payment === "Vegyes" && (
+          <div className="row2">
+            <div className="field">
+              <label>ebből készpénz (Lei)</label>
+              <input
+                type="number" value={f.paymentCashAmount} onChange={set("paymentCashAmount")}
+                style={!splitValid ? { borderColor: "#FCA5A5" } : undefined}
+              />
+            </div>
+            <div className="field">
+              <label>ebből kártya (Lei)</label>
+              <input
+                type="number" value={f.paymentCardAmount} onChange={set("paymentCardAmount")}
+                style={!splitValid ? { borderColor: "#FCA5A5" } : undefined}
+              />
+            </div>
+          </div>
+        )}
+        {f.payment === "Vegyes" && !splitValid && (
+          <div className="login-note" style={{ margin: "-6px 0 12px", color: "#B91C1C" }}>
+            A készpénz + kártya résznek ki kell adnia az összeget ({splitSum} / {f.amount || 0} Lei).
+          </div>
+        )}
         {f.type === "income" && (
           <div className="field"><label>Beszerzési ár (Lei)</label><input type="number" value={f.costPrice} onChange={set("costPrice")} placeholder="0" /></div>
         )}

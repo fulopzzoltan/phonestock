@@ -169,8 +169,25 @@ export const PART_CATEGORIES = ["Kijelző", "Akkumulátor", "Hátlap", "Csatlako
 export const PART_ORIGINS = ["OEM", "Utángyártott"];
 export const WARRANTIES = ["1 hó", "3 hó", "6 hó", "1 év", "2 év"];
 export const SOURCES = ["Konszignáció", "Számla"];
-export const PAYMENTS = ["Készpénz", "Kártya", "Átutalás"];
+export const PAYMENTS = ["Készpénz", "Kártya", "Átutalás", "Vegyes"];
 export const CATEGORIES = ["Fix", "Készlet", "Marketing", "Eszköz", "Szerviz", "Egyéb"];
+
+// "Vegyes" fizetésnél a tétel összege készpénz+kártya részre oszlik
+// (paymentCashAmount/paymentCardAmount) — ez a két helper adja vissza egy
+// tranzakció készpénz ill. kártya részét, hogy a napi/időszaki
+// összesítések (elszámolás, pénztárgép-egyeztetés) helyesen számoljanak.
+export function cashPortion(t) {
+  if (!t) return 0;
+  if (t.payment === "Készpénz") return Number(t.amount) || 0;
+  if (t.payment === "Vegyes") return Number(t.paymentCashAmount) || 0;
+  return 0;
+}
+export function cardPortion(t) {
+  if (!t) return 0;
+  if (t.payment === "Kártya") return Number(t.amount) || 0;
+  if (t.payment === "Vegyes") return Number(t.paymentCardAmount) || 0;
+  return 0;
+}
 
 export const STOCK_STATUSES = [
   { key: "polcon", label: "Polcon" },

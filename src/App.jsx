@@ -3,7 +3,7 @@ import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
 import { thumbPathOf } from "./lib/imageResize";
 import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi, buybackOfferFromApi, loyaltyLedgerFromApi, loyaltyRewardFromApi, loyaltyRewardToApi, customerProfileFromApi, reviewFromApi, reviewToApi } from "./lib/mappers";
-import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, normalizeImei, money, ticketCode } from "./lib/utils";
+import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, normalizeImei, money, ticketCode, cashPortion, cardPortion } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
 import PublicHeader from "./components/PublicHeader";
@@ -753,7 +753,7 @@ function AppShell() {
     await withBusy(async () => {
       const todayStr = today();
       const candidates = transactions.filter((t) =>
-        t.date === todayStr && t.type === "income" && ["Készpénz", "Kártya"].includes(t.payment) && t.smartbillDoc?.status !== "issued"
+        t.date === todayStr && t.type === "income" && ["Készpénz", "Kártya", "Vegyes"].includes(t.payment) && t.smartbillDoc?.status !== "issued"
       );
       for (const t of candidates) {
         const { data } = await supabase.functions.invoke("smartbill-issue-document", {
@@ -1064,8 +1064,8 @@ function AppShell() {
     await withBusy(async () => {
       const dayTx = transactions.filter((t) => t.date === date && t.locationId === locId);
       const snapshot = {
-        snapshot_income_cash: dayTx.filter((t) => t.type === "income" && t.payment === "Készpénz").reduce((s, t) => s + (Number(t.amount) || 0), 0),
-        snapshot_income_card: dayTx.filter((t) => t.type === "income" && t.payment === "Kártya").reduce((s, t) => s + (Number(t.amount) || 0), 0),
+        snapshot_income_cash: dayTx.filter((t) => t.type === "income").reduce((s, t) => s + cashPortion(t), 0),
+        snapshot_income_card: dayTx.filter((t) => t.type === "income").reduce((s, t) => s + cardPortion(t), 0),
         snapshot_expense_cash: dayTx.filter((t) => t.type === "expense" && t.payment).reduce((s, t) => s + (Number(t.amount) || 0), 0),
         snapshot_margin: dayTx.filter((t) => t.type === "income").reduce((s, t) => s + ((Number(t.amount) || 0) - (Number(t.costPrice) || 0)), 0)
           - dayTx.filter((t) => t.type === "expense" && !t.payment).reduce((s, t) => s + (Number(t.amount) || 0), 0),

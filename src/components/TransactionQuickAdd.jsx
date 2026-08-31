@@ -9,14 +9,24 @@ export default function TransactionQuickAdd({ locations, defaultLocId, onAdd, bu
   const [costPrice, setCostPrice] = useState("");
   const [category, setCategory] = useState("Készlet");
   const [payment, setPayment] = useState("Készpénz");
+  const [cashAmount, setCashAmount] = useState("");
+  const [cardAmount, setCardAmount] = useState("");
   const [locId, setLocId] = useState(defaultLocId || locations[0]?.id || "");
   const [stockKind, setStockKind] = useState("Egyéb"); // "Telefon" | "Alkatrész" | "Egyéb"
   const [err, setErr] = useState("");
 
+  const splitSum = (Number(cashAmount) || 0) + (Number(cardAmount) || 0);
+  const splitValid = payment !== "Vegyes" || (cashAmount !== "" && cardAmount !== "" && splitSum === (Number(amount) || 0));
+
   function submit() {
     if (!description.trim() || !amount) { setErr("Leírás és összeg kötelező!"); return; }
+    if (payment === "Vegyes" && !splitValid) { setErr(`A készpénz + kártya résznek ki kell adnia az összeget (jelenleg ${splitSum} / ${amount} Lei).`); return; }
     setErr("");
-    onAdd({ type, description: description.trim(), amount, costPrice: type === "income" ? (costPrice || 0) : 0, category, payment, locationId: locId }, locId);
+    onAdd({
+      type, description: description.trim(), amount, costPrice: type === "income" ? (costPrice || 0) : 0, category, payment, locationId: locId,
+      paymentCashAmount: payment === "Vegyes" ? cashAmount : null,
+      paymentCardAmount: payment === "Vegyes" ? cardAmount : null,
+    }, locId);
 
     if (type === "expense" && category === "Készlet") {
       if (stockKind === "Telefon") openStockModal({ costPrice: Number(amount) || 0, locationId: locId });
@@ -27,6 +37,8 @@ export default function TransactionQuickAdd({ locations, defaultLocId, onAdd, bu
     setAmount("");
     setCostPrice("");
     setStockKind("Egyéb");
+    setCashAmount("");
+    setCardAmount("");
   }
 
   return (
@@ -76,6 +88,18 @@ export default function TransactionQuickAdd({ locations, defaultLocId, onAdd, bu
         ) : <div />}
         <button className="btn" disabled={busy} onClick={submit} style={{ whiteSpace: "nowrap" }}>Rögzít</button>
       </div>
+      {payment === "Vegyes" && (
+        <div className="row2" style={{ margin: "10px 0 0" }}>
+          <div className="field" style={{ margin: 0 }}>
+            <label>ebből készpénz (Lei)</label>
+            <input type="number" value={cashAmount} onChange={(e) => setCashAmount(e.target.value)} placeholder="0" />
+          </div>
+          <div className="field" style={{ margin: 0 }}>
+            <label>ebből kártya (Lei)</label>
+            <input type="number" value={cardAmount} onChange={(e) => setCardAmount(e.target.value)} placeholder="0" />
+          </div>
+        </div>
+      )}
       {type === "expense" && category === "Készlet" && (
         <div className="field" style={{ margin: "10px 0 0" }}>
           <label>Mi érkezett?</label>

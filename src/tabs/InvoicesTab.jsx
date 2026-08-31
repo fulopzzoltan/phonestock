@@ -72,7 +72,7 @@ export default function InvoicesTab({ transactions, locName, isAdmin, setIssueIn
   const pendingBonCount = useMemo(() => {
     const todayStr = today();
     return transactions.filter((t) =>
-      t.date === todayStr && t.type === "income" && ["Készpénz", "Kártya"].includes(t.payment)
+      t.date === todayStr && t.type === "income" && ["Készpénz", "Kártya", "Vegyes"].includes(t.payment)
       && t.locationId === defaultLocId && t.smartbillDoc?.status !== "issued"
     ).length;
   }, [transactions, defaultLocId]);

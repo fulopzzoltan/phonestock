@@ -1,18 +1,30 @@
 import { useState } from "react";
-import { money, adaptivePeriodBucket, periodLabel, today } from "../lib/utils";
+import { money, adaptivePeriodBucket, periodLabel, today, cashPortion, cardPortion } from "../lib/utils";
 import { EditIcon, FinanceIcon, CashIcon, CardIcon, TransferIcon } from "./icons";
 import ConfirmDelete from "./ConfirmDelete";
 import { EmptyState } from "./EmptyState";
 
 const num = (n) => Math.round(Number(n) || 0).toLocaleString("hu-HU");
 
-function PaymentIcon({ payment }) {
+function PaymentIcon({ payment, t }) {
   const common = { width: 15, height: 15 };
   const wrap = (title, icon) => <span title={title} style={{ color: "#6B7280", display: "inline-flex" }}>{icon}</span>;
   if (payment === "Készpénz") return wrap("Készpénz", <CashIcon {...common} />);
   if (payment === "Kártya") return wrap("Kártya", <CardIcon {...common} />);
   if (payment === "Átutalás") return wrap("Átutalás", <TransferIcon {...common} />);
+  if (payment === "Vegyes") {
+    return wrap(`Vegyes — készpénz: ${num(cashPortion(t))} Lei, kártya: ${num(cardPortion(t))} Lei`, <CardIcon {...common} />);
+  }
   return <span title="Nincs megadva" style={{ color: "#D1D5DB" }}>—</span>;
+}
+
+function PaymentSplitLabel({ t }) {
+  if (t.payment !== "Vegyes") return null;
+  return (
+    <span style={{ display: "block", fontSize: 11, color: "#9CA3AF" }}>
+      {num(cashPortion(t))} Lei készpénz + {num(cardPortion(t))} Lei kártya
+    </span>
+  );
 }
 
 export function SmartBillBadge({ doc }) {
@@ -91,11 +103,12 @@ export function TransactionRowsTable({ rows, locName, onEdit, onDelete, onOpenRe
               <tr key={t.id} className={entry.inBasket ? "basket-item-tr" : undefined} style={isSale ? { cursor: "pointer" } : undefined} onClick={isSale ? () => onOpenReceipt(t.id) : undefined}>
                 <td style={{ fontWeight: 500, color: "#111827" }}>
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                    <PaymentIcon payment={t.payment} />
+                    <PaymentIcon payment={t.payment} t={t} />
                     {t.description}
                     <KindBadge t={t} productConditionById={productConditionById} />
                     {t.smartbillDoc && <SmartBillBadge doc={t.smartbillDoc} />}
                   </span>
+                  <PaymentSplitLabel t={t} />
                 </td>
                 {showLocation && <td style={{ color: "#6B7280" }}>{locName(t.locationId)}</td>}
                 <td className="num-col" style={{ fontWeight: 700, color: t.type === "income" ? "#15803D" : "#B91C1C" }}>
@@ -121,12 +134,13 @@ export function TransactionRowsTable({ rows, locName, onEdit, onDelete, onOpenRe
           return (
             <div key={t.id} className={`mob-row${entry.inBasket ? " basket-item-mob" : ""}`} onClick={isSale ? () => onOpenReceipt(t.id) : undefined} style={isSale ? undefined : { cursor: "default" }}>
               <div className="mob-row-top">
-                <div className="mob-row-main"><PaymentIcon payment={t.payment} /><span>{t.description}</span><KindBadge t={t} productConditionById={productConditionById} />{t.smartbillDoc && <SmartBillBadge doc={t.smartbillDoc} />}</div>
+                <div className="mob-row-main"><PaymentIcon payment={t.payment} t={t} /><span>{t.description}</span><KindBadge t={t} productConditionById={productConditionById} />{t.smartbillDoc && <SmartBillBadge doc={t.smartbillDoc} />}</div>
                 <span className="mob-row-amount" style={{ color: t.type === "income" ? "#15803D" : "#B91C1C" }}>
                   {t.type === "income" ? "+" : "-"}{num(t.amount)}
                 </span>
               </div>
               <div className="mob-row-sub">
+                {t.payment === "Vegyes" && <span style={{ color: "#9CA3AF" }}>{num(cashPortion(t))} kp + {num(cardPortion(t))} kártya</span>}
                 {showLocation && <span style={{ color: "#6B7280" }}>{locName(t.locationId)}</span>}
                 <span onClick={(e) => e.stopPropagation()} style={{ display: "inline-flex", gap: 5, marginLeft: "auto" }}>
                   <button className="iconbtn" disabled={busy} onClick={() => onEdit(t)}><EditIcon /></button>
@@ -142,9 +156,9 @@ export function TransactionRowsTable({ rows, locName, onEdit, onDelete, onOpenRe
 }
 
 function dayStats(rows) {
-  const incomeCash = rows.filter((t) => t.type === "income" && t.payment === "Készpénz").reduce((s, t) => s + (Number(t.amount) || 0), 0);
-  const incomeCard = rows.filter((t) => t.type === "income" && t.payment === "Kártya").reduce((s, t) => s + (Number(t.amount) || 0), 0);
-  const expenseCash = rows.filter((t) => t.type === "expense" && t.payment === "Készpénz").reduce((s, t) => s + (Number(t.amount) || 0), 0);
+  const incomeCash = rows.filter((t) => t.type === "income").reduce((s, t) => s + cashPortion(t), 0);
+  const incomeCard = rows.filter((t) => t.type === "income").reduce((s, t) => s + cardPortion(t), 0);
+  const expenseCash = rows.filter((t) => t.type === "expense").reduce((s, t) => s + cashPortion(t), 0);
   const expenseReal = rows.filter((t) => t.type === "expense" && t.payment).reduce((s, t) => s + (Number(t.amount) || 0), 0);
   const margin = rows.filter((t) => t.type === "income").reduce((s, t) => s + ((Number(t.amount) || 0) - (Number(t.costPrice) || 0)), 0)
     - rows.filter((t) => t.type === "expense" && !t.payment).reduce((s, t) => s + (Number(t.amount) || 0), 0);

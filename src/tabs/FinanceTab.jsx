@@ -4,11 +4,11 @@ import { TransactionRowsTable } from "../components/TransactionsPeriodList";
 import TransactionsCalendar from "../components/TransactionsCalendar";
 import { EmptyState } from "../components/EmptyState";
 import { FinanceIcon } from "../components/icons";
-import { money, today } from "../lib/utils";
+import { money, today, cashPortion, cardPortion } from "../lib/utils";
 
 function dayStats(tx) {
-  const incomeCash = tx.filter((t) => t.type === "income" && t.payment === "Készpénz").reduce((s, t) => s + (Number(t.amount) || 0), 0);
-  const incomeCard = tx.filter((t) => t.type === "income" && t.payment === "Kártya").reduce((s, t) => s + (Number(t.amount) || 0), 0);
+  const incomeCash = tx.filter((t) => t.type === "income").reduce((s, t) => s + cashPortion(t), 0);
+  const incomeCard = tx.filter((t) => t.type === "income").reduce((s, t) => s + cardPortion(t), 0);
   const expenseReal = tx.filter((t) => t.type === "expense" && t.payment).reduce((s, t) => s + (Number(t.amount) || 0), 0);
   const margin = tx.filter((t) => t.type === "income").reduce((s, t) => s + ((Number(t.amount) || 0) - (Number(t.costPrice) || 0)), 0)
     - tx.filter((t) => t.type === "expense" && !t.payment).reduce((s, t) => s + (Number(t.amount) || 0), 0);
@@ -127,8 +127,8 @@ export default function FinanceTab({
 
   const cashByLocation = allowedLocations.map((l) => {
     const locTx = transactions.filter((t) => t.locationId === l.id && t.date === todayStr);
-    const income = locTx.filter((t) => t.type === "income" && t.payment === "Készpénz").reduce((s, t) => s + (Number(t.amount) || 0), 0);
-    const expense = locTx.filter((t) => t.type === "expense" && t.payment === "Készpénz").reduce((s, t) => s + (Number(t.amount) || 0), 0);
+    const income = locTx.filter((t) => t.type === "income").reduce((s, t) => s + cashPortion(t), 0);
+    const expense = locTx.filter((t) => t.type === "expense").reduce((s, t) => s + cashPortion(t), 0);
     return { id: l.id, name: l.name, expected: income - expense };
   });
 

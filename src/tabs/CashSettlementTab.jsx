@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { money } from "../lib/utils";
+import { money, cashPortion, cardPortion } from "../lib/utils";
 import { EmptyState } from "../components/EmptyState";
 import { FinanceIcon, EditIcon } from "../components/icons";
 import TransactionsPeriodList from "../components/TransactionsPeriodList";
@@ -103,8 +103,8 @@ export default function CashSettlementTab({
 
   const perLoc = useMemo(() => allowedLocations.map((loc) => {
     const locTx = periodTx.filter((t) => t.locationId === loc.id);
-    const cashIncome = locTx.filter((t) => t.type === "income" && t.payment === "Készpénz").reduce((s, t) => s + (Number(t.amount) || 0), 0);
-    const cashExpense = locTx.filter((t) => t.type === "expense" && t.payment === "Készpénz").reduce((s, t) => s + (Number(t.amount) || 0), 0);
+    const cashIncome = locTx.filter((t) => t.type === "income").reduce((s, t) => s + cashPortion(t), 0);
+    const cashExpense = locTx.filter((t) => t.type === "expense").reduce((s, t) => s + cashPortion(t), 0);
     return { id: loc.id, name: loc.name, net: cashIncome - cashExpense };
   }), [allowedLocations, periodTx]);
 
@@ -114,7 +114,7 @@ export default function CashSettlementTab({
   const transfers = useMemo(() => computeTransfers(withBalance), [withBalance]);
   const allSettled = withBalance.length > 0 && transfers.length === 0;
 
-  const cardIncome = periodTx.filter((t) => t.type === "income" && t.payment === "Kártya").reduce((s, t) => s + (Number(t.amount) || 0), 0);
+  const cardIncome = periodTx.filter((t) => t.type === "income").reduce((s, t) => s + cardPortion(t), 0);
   const transferIncome = periodTx.filter((t) => t.type === "income" && t.payment === "Átutalás").reduce((s, t) => s + (Number(t.amount) || 0), 0);
 
   function holderNameFor(locId) {
