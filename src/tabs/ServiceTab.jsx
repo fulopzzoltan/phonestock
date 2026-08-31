@@ -65,7 +65,7 @@ export default function ServiceTab({
           return (
             <ResponsiveTable
               columns={[
-                { key: "d", label: "Eszköz" }, { key: "c", label: "Kliens" }, { key: "i", label: "Bejött" },
+                { key: "d", label: "Eszköz", className: "col-device" }, { key: "c", label: "Kliens" }, { key: "i", label: "Bejött" },
                 { key: "p", label: "Probléma", className: "col-grow" }, { key: "s", label: "Státusz" }, { key: "a", label: "Ár" },
               ]}
               rows={items}
@@ -73,7 +73,7 @@ export default function ServiceTab({
               renderRow={(t) => (
                 <tr key={t.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
                   <td style={{ whiteSpace: "nowrap" }}>
-                    <div className="stk-name">
+                    <div className="stk-name" style={{ flexWrap: "nowrap" }}>
                       <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</span>
                       {displayName(t.brand, t.model) || "—"}
                       {urgencyOf(t) && (

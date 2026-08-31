@@ -335,6 +335,7 @@ tr:hover td{background:#FAFAFA}
 .stk-card-actions .btn{height:36px}
 .stk-actions{display:flex;gap:6px;align-items:center}
 .col-grow{width:100%}
+.col-device{min-width:230px}
 .stk-actions .iconbtn{padding:6px;border-radius:9px}
 .stk-actions .iconbtn svg{width:15px;height:15px}
 
