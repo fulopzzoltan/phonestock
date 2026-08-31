@@ -170,7 +170,7 @@ export const PROBLEM_TAGS = [
   "Hátlapi kamera", "Előlapi kamera", "Kamera lencse", "Face ID / Touch ID hiba",
   "Hátlap csere", "Készülékház", "Bekapcsoló gomb", "Hangerő gombok",
   "Beázás", "Nem kapcsol be", "Alaplapi hiba", "Bootloop", "Adatmentés",
-  "Bevizsgálás", "FRP zárolás",
+  "Bevizsgálás", "FRP zárolás", "Egyéb",
 ];
 export const PART_CATEGORIES = ["Kijelző", "Akkumulátor", "Hátlap", "Csatlakozó", "Fólia"];
 export const PART_ORIGINS = ["OEM", "Utángyártott"];

@@ -46,6 +46,7 @@ export const PROBLEM_LABELS = {
   "Nem kapcsol be": "Nem kapcsol be", "Alaplapi hiba": "Alaplapi hiba",
   "Bootloop": "Újraindulási hurok (bootloop)", "Adatmentés": "Adatmentés",
   "Bevizsgálás": "Csak bevizsgálás", "FRP zárolás": "Fiók / FRP zárolás",
+  "Egyéb": "Egyéb probléma",
 };
 // Publikus (ügyfél felé mutatott) feliratok, nyelv szerint — a RepairEstimator.jsx ezt használja.
 const PROBLEM_LABELS_BY_LANG = {
@@ -63,6 +64,7 @@ const PROBLEM_LABELS_BY_LANG = {
     "Nem kapcsol be": "Nu pornește", "Alaplapi hiba": "Problemă placă de bază",
     "Bootloop": "Repornire în buclă (bootloop)", "Adatmentés": "Recuperare date",
     "Bevizsgálás": "Doar diagnosticare", "FRP zárolás": "Blocare cont / FRP",
+    "Egyéb": "Altă problemă",
   },
 };
 export const problemLabel = (tag, lang = "hu") => (PROBLEM_LABELS_BY_LANG[lang] || PROBLEM_LABELS)[tag] || tag;
