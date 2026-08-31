@@ -1045,6 +1045,20 @@ function AppShell() {
       setCashSettlements([cashSettlementFromApi(r[0]), ...cashSettlements]);
     });
   }
+  async function editCashSettlement(id, data) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("cash_settlements").update({
+        period_start: data.periodStart, period_end: data.periodEnd, note: data.note || null,
+      }).eq("id", id).select());
+      setCashSettlements(cashSettlements.map((s) => (s.id === id ? cashSettlementFromApi(r[0]) : s)));
+    });
+  }
+  async function deleteCashSettlement(id) {
+    await withBusy(async () => {
+      unwrap(await supabase.from("cash_settlements").delete().eq("id", id));
+      setCashSettlements(cashSettlements.filter((s) => s.id !== id));
+    });
+  }
   async function closeDay(date, locId) {
     await withBusy(async () => {
       const dayTx = transactions.filter((t) => t.date === date && t.locationId === locId);
@@ -2247,7 +2261,8 @@ function AppShell() {
         {isAdmin && tab === "cash-settlement" && (
           <CashSettlementTab
             busy={busy} transactions={transactions} cashSettlements={cashSettlements}
-            saveCashSettlement={saveCashSettlement} users={users}
+            saveCashSettlement={saveCashSettlement} editCashSettlement={editCashSettlement}
+            deleteCashSettlement={deleteCashSettlement} users={users}
             setTxModal={setTxModal} deleteTransaction={deleteTransaction} setReceiptTxId={setReceiptTxId}
             allowedLocations={allowedLocations} locName={locName}
           />

@@ -1,8 +1,39 @@
 import { useMemo, useState } from "react";
 import { money } from "../lib/utils";
 import { EmptyState } from "../components/EmptyState";
-import { FinanceIcon } from "../components/icons";
+import { FinanceIcon, EditIcon } from "../components/icons";
 import TransactionsPeriodList from "../components/TransactionsPeriodList";
+import ConfirmDelete from "../components/ConfirmDelete";
+
+function EditSettlementRow({ settlement, busy, onSave, onCancel }) {
+  const [periodStart, setPeriodStart] = useState(settlement.periodStart);
+  const [periodEnd, setPeriodEnd] = useState(settlement.periodEnd);
+  const [note, setNote] = useState(settlement.note || "");
+  const valid = periodStart <= periodEnd;
+  return (
+    <tr>
+      <td colSpan={5}>
+        <div style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap", padding: "8px 0" }}>
+          <div className="field" style={{ margin: 0 }}>
+            <label>Kezdete</label>
+            <input type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} />
+          </div>
+          <div className="field" style={{ margin: 0 }}>
+            <label>Vége</label>
+            <input type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} />
+          </div>
+          <div className="field" style={{ margin: 0, flex: 1, minWidth: 160 }}>
+            <label>Megjegyzés</label>
+            <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Opcionális" />
+          </div>
+          <button type="button" className="btn sm" disabled={!valid || busy} onClick={() => onSave({ periodStart, periodEnd, note })}>Mentés</button>
+          <button type="button" className="btn sec sm" onClick={onCancel}>Mégse</button>
+        </div>
+        {!valid && <div style={{ fontSize: 12, color: "#B91C1C", paddingBottom: 8 }}>A kezdő dátum nem lehet később, mint a záró dátum.</div>}
+      </td>
+    </tr>
+  );
+}
 
 function dayAfter(dateStr) {
   const d = new Date(dateStr + "T00:00:00Z");
@@ -42,7 +73,7 @@ function computeTransfers(locs) {
 }
 
 export default function CashSettlementTab({
-  busy, transactions, cashSettlements, saveCashSettlement, users,
+  busy, transactions, cashSettlements, saveCashSettlement, editCashSettlement, deleteCashSettlement, users,
   setTxModal, deleteTransaction, setReceiptTxId, allowedLocations, locName,
 }) {
   const [customStart, setCustomStart] = useState("");
@@ -50,6 +81,8 @@ export default function CashSettlementTab({
   const [countedByLoc, setCountedByLoc] = useState({});
   const [note, setNote] = useState("");
   const [showList, setShowList] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
   const lastSettlement = cashSettlements[0] || null;
   // Alapértelmezett kezdet: az utolsó elszámolás utáni nap (vagy tegnap, ha még nem volt
@@ -57,8 +90,13 @@ export default function CashSettlementTab({
   // a benne lévő készpénz-mozgás még változhat, ezért ne kerüljön automatikusan bele.
   // Mindkettő szabadon módosítható a dátumválasztókkal.
   const defaultStart = lastSettlement ? dayAfter(lastSettlement.periodEnd) : yesterday();
+  // Ha a legutóbbi elszámolás már tegnapig (vagy tovább) zárt, a "tegnap" alapértelmezett
+  // vég korábbra esne, mint a most induló időszak kezdete — ez érvénytelen tartományt adna
+  // rögtön egy sikeres rögzítés után. Ilyenkor a vég is a kezdő napra esik (a mai napra),
+  // ami helyes: nincs más teljes, még el nem számolt nap, csak a mai.
+  const defaultEnd = defaultStart > yesterday() ? defaultStart : yesterday();
   const periodStart = customStart || defaultStart;
-  const periodEnd = customEnd || yesterday();
+  const periodEnd = customEnd || defaultEnd;
   const periodValid = periodStart <= periodEnd;
 
   const periodTx = useMemo(() => transactions.filter((t) => t.date >= periodStart && t.date <= periodEnd), [transactions, periodStart, periodEnd]);
@@ -83,9 +121,9 @@ export default function CashSettlementTab({
     return locName(locId);
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    if (!periodValid) return;
+    if (!periodValid || busy) return;
     const locationBreakdown = withBalance.map((l) => ({
       location_id: l.id,
       location_name: l.name,
@@ -98,7 +136,10 @@ export default function CashSettlementTab({
       ? "Nincs teendő, egyenlőek."
       : transfers.map((tr) => `${tr.fromName} ad át ${tr.toName}-nak ${money(tr.amount)}-t`).join("; ");
     if (!confirm(`Elszámolás rögzítése (${periodStart} – ${periodEnd}): ${summaryLine} Rögzíted?`)) return;
-    saveCashSettlement({
+    // Megvárjuk a mentést, mielőtt bármit visszaállítanánk — enélkül a mezők a mentés
+    // BEFEJEZŐDÉSE ELŐTT nullázódtak, ami korábban megtévesztő, érvénytelen dátum-
+    // tartományt (és ezzel látszólagos hibát) eredményezett egy amúgy sikeres mentés után.
+    await saveCashSettlement({
       periodStart, periodEnd, locationBreakdown, cardIncome, transferIncome,
       payerLocationId: transfers[0]?.fromId ?? null,
       payeeLocationId: transfers[0]?.toId ?? null,
@@ -109,6 +150,7 @@ export default function CashSettlementTab({
     setNote("");
     setCustomStart("");
     setCustomEnd("");
+    setJustSaved(true);
   }
 
   return (
@@ -117,14 +159,19 @@ export default function CashSettlementTab({
         <div><div className="page-title">Elszámolás</div></div>
       </div>
 
+      {justSaved && (
+        <div style={{ fontSize: 13, color: "#15803D", background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: "var(--radius-md)", padding: "10px 14px", marginBottom: 16 }}>
+          Az elszámolás rögzítve. Az alábbi új időszak a következő elszámoláshoz készült elő — csak akkor nyomd meg újra a "Rögzítés" gombot, ha ehhez is van elszámolnivaló.
+        </div>
+      )}
       <div className="row2" style={{ maxWidth: 420, marginBottom: 16 }}>
         <div className="field" style={{ margin: 0 }}>
           <label>Időszak kezdete</label>
-          <input type="date" value={periodStart} onChange={(e) => setCustomStart(e.target.value)} />
+          <input type="date" value={periodStart} onChange={(e) => { setCustomStart(e.target.value); setJustSaved(false); }} />
         </div>
         <div className="field" style={{ margin: 0 }}>
           <label>Időszak vége</label>
-          <input type="date" value={periodEnd} onChange={(e) => setCustomEnd(e.target.value)} />
+          <input type="date" value={periodEnd} onChange={(e) => { setCustomEnd(e.target.value); setJustSaved(false); }} />
         </div>
       </div>
       {!periodValid && (
@@ -231,11 +278,23 @@ export default function CashSettlementTab({
                 <th>Helyszínenként (nettó)</th>
                 <th>Ki fizetett kinek</th>
                 <th>Rögzítette</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
               {cashSettlements.map((s) => {
                 const closer = users.find((u) => u.id === s.settledBy);
+                if (editingId === s.id) {
+                  return (
+                    <EditSettlementRow
+                      key={s.id}
+                      settlement={s}
+                      busy={busy}
+                      onCancel={() => setEditingId(null)}
+                      onSave={async (data) => { await editCashSettlement(s.id, data); setEditingId(null); }}
+                    />
+                  );
+                }
                 return (
                   <tr key={s.id}>
                     <td className="mono">{s.periodStart} – {s.periodEnd}</td>
@@ -248,6 +307,10 @@ export default function CashSettlementTab({
                       ) : <span style={{ color: "#9CA3AF" }}>Egyenlő volt</span>}
                     </td>
                     <td>{closer?.fullName || "—"}</td>
+                    <td className="stk-actions" style={{ whiteSpace: "nowrap" }}>
+                      <button type="button" className="iconbtn" disabled={busy} onClick={() => setEditingId(s.id)}><EditIcon /></button>
+                      <ConfirmDelete disabled={busy} onConfirm={() => deleteCashSettlement(s.id)} />
+                    </td>
                   </tr>
                 );
               })}
