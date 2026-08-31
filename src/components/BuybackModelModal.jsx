@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { CloseIcon } from "./icons";
+import BrandField from "./BrandField";
 
 export default function BuybackModelModal({ model, onClose, onSave, busy }) {
   const isEdit = !!model;
@@ -17,7 +18,7 @@ export default function BuybackModelModal({ model, onClose, onSave, busy }) {
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2>{isEdit ? "Modell szerkesztése" : "Új felvásárlási modell"} <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
         <div className="row2">
-          <div className="field"><label>Márka</label><input value={f.brand} onChange={set("brand")} placeholder="Apple" /></div>
+          <BrandField value={f.brand} onChange={(v) => setF({ ...f, brand: v })} />
           <div className="field"><label>Modell</label><input value={f.model} onChange={set("model")} placeholder="iPhone 12" /></div>
         </div>
         <div className="row2">

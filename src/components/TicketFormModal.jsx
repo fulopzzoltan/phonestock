@@ -4,6 +4,7 @@ import { CloseIcon } from "./icons";
 import { PROBLEM_TAGS, WARRANTIES, STATUSES, SUB_STATUSES, statusLabel, normalizeImei, money, ticketCode } from "../lib/utils";
 import CustomerAutocomplete from "./CustomerAutocomplete";
 import { ChipField, DropdownField } from "./FormPickers";
+import BrandField from "./BrandField";
 
 function parseIssue(issue) {
   const parts = (issue || "").split(",").map((p) => p.trim()).filter(Boolean);
@@ -165,7 +166,7 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
         <div className="wf-sec">
           <SectionHead n={3} title="Készülék" sub="Márka, modell, azonosítók" />
           <div className="row2">
-            <div className="field"><label>Márka</label><input value={f.brand} onChange={set("brand")} placeholder="Samsung, Apple..." /></div>
+            <BrandField value={f.brand} onChange={(v) => setF({ ...f, brand: v })} />
             <div className="field"><label>Modell</label><input value={f.model} onChange={set("model")} placeholder="S22, iPhone 12..." /></div>
           </div>
           <div className="row2">

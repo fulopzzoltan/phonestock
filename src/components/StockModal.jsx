@@ -3,6 +3,7 @@ import LocationField from "./LocationField";
 import { CloseIcon } from "./icons";
 import { WARRANTIES, SOURCES, STOCK_STATUSES, CONDITION_GRADES, conditionGradeKey } from "../lib/utils";
 import { ChipField, DropdownField } from "./FormPickers";
+import BrandField from "./BrandField";
 
 function SectionHead({ n, title, sub }) {
   return (
@@ -103,7 +104,7 @@ export default function StockModal({ product, prefill, locations, onClose, onSav
           <SectionHead n={isEdit ? 1 : 2} title="Alapadatok" sub="Helyszín, márka, modell" />
           <LocationField locations={locations} value={locId} onChange={setLocId} />
           <div className="row2">
-            <div className="field"><label>Márka</label><input value={f.brand} onChange={set("brand")} placeholder="Samsung" /></div>
+            <BrandField value={f.brand} onChange={(v) => setF({ ...f, brand: v })} />
             <div className="field"><label>Modell</label><input value={f.model} onChange={set("model")} placeholder="Galaxy S23" /></div>
           </div>
           <div className="field">

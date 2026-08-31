@@ -2,6 +2,7 @@ import { useState } from "react";
 import { CloseIcon } from "./icons";
 import { PART_CATEGORIES, PART_ORIGINS } from "../lib/utils";
 import LocationField from "./LocationField";
+import BrandField from "./BrandField";
 
 export default function PartModal({ part, prefill, locations = [], defaultLocId, onClose, onSave, busy }) {
   const isEdit = !!part;
@@ -33,7 +34,7 @@ export default function PartModal({ part, prefill, locations = [], defaultLocId,
         </div>
         <div className="field"><label>Megnevezés</label><input value={f.name} onChange={set("name")} placeholder="Kijelző, akku..." /></div>
         <div className="row2">
-          <div className="field"><label>Márka</label><input value={f.brand} onChange={set("brand")} placeholder="Apple" /></div>
+          <BrandField value={f.brand} onChange={(v) => setF({ ...f, brand: v })} />
           <div className="field"><label>Mire illik</label><input value={f.modelFit} onChange={set("modelFit")} placeholder="iPhone 12, 13" /></div>
         </div>
         <div className="row3">

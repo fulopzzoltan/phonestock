@@ -2,6 +2,7 @@ import { useState } from "react";
 import { CloseIcon } from "./icons";
 import { PAYMENTS } from "../lib/utils";
 import CustomerAutocomplete from "./CustomerAutocomplete";
+import BrandField from "./BrandField";
 
 export default function SellModal({ item, locName, customers = [], rewards = [], onClose, onSave, busy }) {
   const [f, setF] = useState({ price: item.salePrice || "", customerName: "", customerPhone: "", customerId: null, payment: "Készpénz", marketingConsent: false, smartbillInvoice: false });
@@ -18,6 +19,7 @@ export default function SellModal({ item, locName, customers = [], rewards = [],
   const emptyTradeIn = () => ({ brand: "", model: "", condition: "Refurbished", value: "" });
   const [tradeIns, setTradeIns] = useState([emptyTradeIn()]);
   const setTI = (idx, k) => (e) => setTradeIns(tradeIns.map((t, i) => (i === idx ? { ...t, [k]: e.target.value } : t)));
+  const setTIVal = (idx, k) => (v) => setTradeIns(tradeIns.map((t, i) => (i === idx ? { ...t, [k]: v } : t)));
   const addTradeIn = () => setTradeIns([...tradeIns, emptyTradeIn()]);
   const removeTradeIn = (idx) => setTradeIns(tradeIns.filter((_, i) => i !== idx));
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value, ...(k === "customerName" ? { customerId: null } : {}) });
@@ -121,7 +123,7 @@ export default function SellModal({ item, locName, customers = [], rewards = [],
                   </div>
                 )}
                 <div className="row2">
-                  <div className="field"><label>Beszámított márka</label><input value={tradeIn.brand} onChange={setTI(idx, "brand")} placeholder="Samsung" /></div>
+                  <BrandField label="Beszámított márka" value={tradeIn.brand} onChange={setTIVal(idx, "brand")} />
                   <div className="field"><label>Beszámított modell</label><input value={tradeIn.model} onChange={setTI(idx, "model")} placeholder="Galaxy A54" /></div>
                 </div>
                 <div className="row2">

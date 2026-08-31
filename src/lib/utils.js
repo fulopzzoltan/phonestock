@@ -176,6 +176,19 @@ export const PROBLEM_TAGS = [
 export const PART_CATEGORIES = ["Kijelző", "Akkumulátor", "Hátlap", "Csatlakozó", "Fólia"];
 export const PART_ORIGINS = ["OEM", "Utángyártott"];
 export const WARRANTIES = ["1 hó", "3 hó", "6 hó", "1 év", "2 év"];
+
+// Választólista a márka mezőhöz — élő adatban feltárt elírás/szóródás ellen (pl. "Samsung"
+// 7 alakban, "Apple"/"iPhone" külön márkaként). "Egyéb" választásra egy szabad szöveges
+// mező bukkan fel, így ritka márka sem esik ki. Az "iPhone" szándékosan NEM külön tétel —
+// az Apple-telefonok márkája marad "Apple", a modell mezőben szerepel az "iPhone" szó
+// (ld. displayName()).
+export const PHONE_BRANDS = [
+  "Samsung", "Apple", "Xiaomi", "Redmi", "Poco", "Huawei", "Honor", "Nokia",
+  "Motorola", "OnePlus", "Oppo", "Realme", "Vivo", "Google", "LG", "Asus",
+  "iHunt", "Allview", "Myria", "Maxcom", "Doro", "Alcatel", "Blackview",
+  "Doogee", "Oukitel", "Ulefone", "Oscal", "TCL", "ZTE", "Lenovo", "Philips",
+  "Crosscall", "MobilWire", "Vodafone", "Orange", "Egyéb",
+];
 export const SOURCES = ["Konszignáció", "Számla"];
 export const PAYMENTS = ["Készpénz", "Kártya", "Átutalás", "Vegyes"];
 export const CATEGORIES = ["Fix", "Készlet", "Marketing", "Eszköz", "Szerviz", "Egyéb"];
