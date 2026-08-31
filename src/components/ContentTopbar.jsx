@@ -7,7 +7,7 @@ import { SITE_URL } from "../lib/utils";
 // ezek az elemek a tartalom-hasáb tetején, oldal-fejléc fölött legyenek elérhetők.
 export default function ContentTopbar({
   tab, setTab, isAdmin, locFilter, setLocFilter, allowedLocations, myLocationId, locName,
-  profile, user, signOut, chatOpen, setChatOpen, chatUnread, markChatRead,
+  profile, user, signOut, chatOpen, setChatOpen, chatUnread, markChatRead, pageHeader,
 }) {
   const [locMenuOpen, setLocMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -29,6 +29,7 @@ export default function ContentTopbar({
 
   return (
     <div className="content-topbar">
+      {pageHeader}
       <div className="ctb-spacer" />
 
       {isAdmin ? (

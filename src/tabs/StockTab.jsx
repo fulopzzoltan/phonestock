@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { money, displayName, phoneCode, daysOnShelf, isSlowMoving, stockStatusLabel, conditionGradeLabel } from "../lib/utils";
-import { SearchIcon, EditIcon, ListViewIcon, GridViewIcon, PhoneCaseIcon, ChevronDownIcon, CalendarIcon, WarrantyIcon } from "../components/icons";
-import Thumb from "../components/Thumb";
+import { SearchIcon, EditIcon, PhoneCaseIcon, ChevronDownIcon, WarrantyIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import HistorySection from "../components/HistorySection";
 import ResponsiveTable from "../components/ResponsiveTable";
@@ -37,7 +36,6 @@ export default function StockTab({
   const [condFilter, setCondFilter] = useState("all"); // all | New | Refurbished
   const [acqFilter, setAcqFilter] = useState("all"); // all | purchase | consignment
   const [sortBy, setSortBy] = useState("recent");
-  const [view, setView] = useState("list"); // list | grid
   const [collapsedOverride, setCollapsedOverride] = useState({}); // loc.id -> bool
   const isCollapsed = (loc) => collapsedOverride[loc.id] ?? loc.name === "Tartalék";
   const toggleCollapse = (loc) => setCollapsedOverride((c) => ({ ...c, [loc.id]: !isCollapsed(loc) }));
@@ -75,10 +73,6 @@ export default function StockTab({
         <select className="filter-sel" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
           {SORTS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
         </select>
-        <div className="seg" style={{ marginLeft: "auto" }}>
-          <button className={view === "list" ? "active" : ""} title="Lista nézet" onClick={() => setView("list")}><ListViewIcon /></button>
-          <button className={view === "grid" ? "active" : ""} title="Rács nézet" onClick={() => setView("grid")}><GridViewIcon /></button>
-        </div>
       </div>
 
       {loadingData ? <LoadingState /> : condFiltered.length === 0 ? <EmptyState icon={PhoneCaseIcon}>Nincs termék raktáron.</EmptyState> : (
@@ -103,7 +97,7 @@ export default function StockTab({
                 </div>
               )}
 
-              {collapsed ? null : view === "list" ? (
+              {collapsed ? null : (
                 <ResponsiveTable
                   columns={[{ key: "p", label: "Termék" }, { key: "s", label: "Állapot" }, { key: "a", label: "Ár" }, { key: "x", label: "" }]}
                   rows={items}
@@ -165,40 +159,6 @@ export default function StockTab({
                     </div>
                   )}
                 />
-              ) : (
-                <div className="stk-grid">
-                  {items.map((i) => {
-                    const slow = isSlowMoving(i, reserveLocId);
-                    return (
-                      <div key={i.id} className="stk-card" onClick={() => setProductDetailId(i.id)}>
-                        <div className="stk-card-top">
-                          <Thumb brand={i.brand} size="lg" />
-                          <span className="stk-card-code">{phoneCode(i.productNo)}</span>
-                        </div>
-                        <div className="stk-card-name">
-                          {displayName(i.brand, i.model)}
-                          {i.acquisition?.acquisitionType === "consignment" && <span className="badge-loc" style={{ marginLeft: 6 }}>Bizomány</span>}
-                          {i.stockStatus === "javitando" && <span className="tag" style={{ marginLeft: 6, background: "var(--danger-soft)", color: "var(--danger-ink)", fontWeight: 700 }}>Javítandó</span>}
-                          {i.stockStatus === "lefoglalt" && <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }}>{stockStatusLabel(i.stockStatus)}</span>}
-                        </div>
-                        <div className="stk-card-meta">
-                          {[conditionGradeLabel(i.condition, i.grade), i.storage].filter(Boolean).join(" · ")}
-                          {i.warranty && <span className="stk-card-warranty">{(i.condition || i.storage) && " · "}{i.warranty}<WarrantyIcon width={11} height={11} /></span>}
-                        </div>
-                        <div className="stk-card-price-row" title={`Beszerzési ár: ${money(i.costPrice)}`}>
-                          <div className="stk-card-price">{money(i.salePrice)}</div>
-                          <div className={`stk-card-days${slow ? " warn" : ""}`}><CalendarIcon width={13} height={13} />{daysOnShelf(i.dateAdded)}</div>
-                        </div>
-                        {canAct(i) && (
-                          <div className="stk-card-actions">
-                            <button className="iconbtn stk-card-iconbtn edit" disabled={busy} onClick={(e) => { e.stopPropagation(); setStockModal(i); }}><EditIcon /></button>
-                            <button className="btn sm" disabled={busy} onClick={(e) => { e.stopPropagation(); setSellModal(i); }}>Eladás</button>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
               )}
             </div>
           );

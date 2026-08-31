@@ -184,7 +184,6 @@ function AppShell() {
   const { messages: chatMessages, unreadCount: chatUnread, send: sendChatMessage, markRead: markChatRead } = useInternalChat(profile);
   const [search, setSearch] = useState("");
   const [svcSearch, setSvcSearch] = useState("");
-  const [svcKindFilter, setSvcKindFilter] = useState("all"); // all | customer | own
   const [partSearch, setPartSearch] = useState("");
   const [custSearch, setCustSearch] = useState("");
 
@@ -1837,10 +1836,8 @@ function AppShell() {
     let t = effectiveLocFilter === "all" ? tickets : tickets.filter((x) => x.locationId === effectiveLocFilter);
     const q = svcSearch.trim().toLowerCase();
     if (q) t = t.filter((x) => [x.customerName, x.brand, x.model].join(" ").toLowerCase().includes(q));
-    if (svcKindFilter === "customer") t = t.filter((x) => x.ticketKind === "Ügyfél");
-    if (svcKindFilter === "own") t = t.filter((x) => x.ticketKind !== "Ügyfél");
     return t;
-  }, [tickets, effectiveLocFilter, svcSearch, svcKindFilter]);
+  }, [tickets, effectiveLocFilter, svcSearch]);
 
   const stockStats = useMemo(() => ({
     count: filteredStock.length,
@@ -2216,6 +2213,12 @@ function AppShell() {
         tab={tab} setTab={setTab} isAdmin={isAdmin} locFilter={locFilter} setLocFilter={setLocFilter}
         allowedLocations={allowedLocations} myLocationId={myLocationId} locName={locName} profile={profile} user={user}
         signOut={signOut} chatOpen={chatOpen} setChatOpen={setChatOpen} chatUnread={chatUnread} markChatRead={markChatRead}
+        pageHeader={tab === "service" ? (
+          <>
+            <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Szerviz</div>
+            <button className="btn" style={{ padding: "8px 14px" }} disabled={busy} onClick={() => setTicketModal("add")}>+ Új munkalap</button>
+          </>
+        ) : null}
       />
       <div className="main">
         {error && <div className="errbar">{error}</div>}
@@ -2298,10 +2301,9 @@ function AppShell() {
         {!noLocationAssigned && tab === "service" && (
           <ServiceTab
             effectiveLocFilter={effectiveLocFilter} locName={locName} busy={busy} setTicketModal={setTicketModal}
-            svcSearch={svcSearch} setSvcSearch={setSvcSearch} svcKindFilter={svcKindFilter} setSvcKindFilter={setSvcKindFilter}
+            svcSearch={svcSearch} setSvcSearch={setSvcSearch}
             loadingData={loadingData} activeTickets={activeTickets} setDetailId={setDetailId}
             handedOverTickets={handedOverTickets}
-            setTicketStatus={setTicketStatus}
           />
         )}
 
