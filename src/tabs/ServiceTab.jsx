@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { DndContext, useDraggable, useDroppable, useSensor, useSensors, PointerSensor } from "@dnd-kit/core";
-import { money, STATUSES, statusLabel, displayName, ticketCode } from "../lib/utils";
-import { SearchIcon, ChevronDownIcon, ServiceIcon } from "../components/icons";
+import { money, STATUSES, statusLabel, statusCls, subStatusCls, subStatusLabel, displayName, ticketCode } from "../lib/utils";
+import { SearchIcon, ChevronDownIcon, ServiceIcon, ListViewIcon, GridViewIcon } from "../components/icons";
 import TicketCard from "../components/TicketCard";
 import Thumb from "../components/Thumb";
-import { LoadingState } from "../components/EmptyState";
+import { EmptyState, LoadingState } from "../components/EmptyState";
 import HistorySection from "../components/HistorySection";
+import ResponsiveTable from "../components/ResponsiveTable";
 
 function DroppableCol({ id, children }) {
   const { setNodeRef, isOver } = useDroppable({ id });
@@ -27,6 +28,13 @@ export default function ServiceTab({
   loadingData, activeTickets, setDetailId, handedOverTickets, setTicketStatus,
 }) {
   const [showFailedInCol, setShowFailedInCol] = useState(false);
+  const [view, setView] = useState("board"); // board | list
+  const [activeStatuses, setActiveStatuses] = useState(() => new Set(STATUSES.map((s) => s.key)));
+  const toggleStatus = (key) => setActiveStatuses((prev) => {
+    const next = new Set(prev);
+    if (next.has(key)) next.delete(key); else next.add(key);
+    return next;
+  });
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
   function handleDragEnd(event) {
@@ -61,8 +69,87 @@ export default function ServiceTab({
           <button type="button" className={svcKindFilter === "customer" ? "active" : ""} onClick={() => setSvcKindFilter("customer")}>Ügyfél</button>
           <button type="button" className={svcKindFilter === "own" ? "active" : ""} onClick={() => setSvcKindFilter("own")}>Saját</button>
         </div>
+        <div className="seg" style={{ marginLeft: "auto" }}>
+          <button type="button" className={view === "board" ? "active" : ""} title="Tábla nézet" onClick={() => setView("board")}><GridViewIcon /></button>
+          <button type="button" className={view === "list" ? "active" : ""} title="Lista nézet" onClick={() => setView("list")}><ListViewIcon /></button>
+        </div>
       </div>
-      {loadingData ? <LoadingState /> : (
+
+      {view === "list" && (
+        <div className="seg" style={{ marginBottom: 14 }}>
+          {STATUSES.map((col) => (
+            <button key={col.key} type="button" className={activeStatuses.has(col.key) ? "active" : ""} onClick={() => toggleStatus(col.key)}>
+              {statusLabel(col.key)}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {loadingData ? <LoadingState /> : view === "list" ? (
+        <>
+          {STATUSES.filter((col) => activeStatuses.has(col.key)).map((col) => {
+            const items = activeTickets.filter((t) => t.status === col.key);
+            if (items.length === 0) return null;
+            return (
+              <div key={col.key} style={{ marginBottom: 18 }}>
+                <div className="loc-group-head">
+                  <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", display: "flex", alignItems: "center", gap: 6 }}>
+                    <span className="k-dot" style={{ background: col.color }} />
+                    {statusLabel(col.key)} <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({items.length} db)</span>
+                  </div>
+                </div>
+                <ResponsiveTable
+                  columns={[{ key: "d", label: "Eszköz", className: "col-grow" }, { key: "c", label: "Vevő" }, { key: "i", label: "Bejött" }, { key: "s", label: "Státusz" }]}
+                  rows={items}
+                  rowKey={(t) => t.id}
+                  renderRow={(t) => (
+                    <tr key={t.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
+                      <td>
+                        <div className="stk-row">
+                          <Thumb brand={t.brand} />
+                          <div>
+                            <div className="stk-name">{displayName(t.brand, t.model) || "—"}</div>
+                            <div className="stk-sub">{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>{t.customerName || "—"}</td>
+                      <td className="mono" style={{ whiteSpace: "nowrap" }}>{t.dateIn}</td>
+                      <td style={{ whiteSpace: "nowrap" }}>
+                        {t.subStatus ? (
+                          <span className={`st ${subStatusCls(t.status, t.subStatus)}`}>{subStatusLabel(t.status, t.subStatus)}</span>
+                        ) : (
+                          <span className={`st ${statusCls(t.status)}`}>{statusLabel(t.status)}</span>
+                        )}
+                      </td>
+                    </tr>
+                  )}
+                  renderMobileRow={(t) => (
+                    <div className="mob-row" onClick={() => setDetailId(t.id)}>
+                      <div className="mob-row-top">
+                        <div className="mob-row-main"><span>{displayName(t.brand, t.model) || "—"}</span></div>
+                        <div className="mob-row-amount">{money(t.price)}</div>
+                      </div>
+                      <div className="mob-row-sub">
+                        <span>{t.customerName || "—"}</span>
+                        <span>{t.dateIn}</span>
+                        {t.subStatus ? (
+                          <span className={`st ${subStatusCls(t.status, t.subStatus)}`}>{subStatusLabel(t.status, t.subStatus)}</span>
+                        ) : (
+                          <span className={`st ${statusCls(t.status)}`}>{statusLabel(t.status)}</span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                />
+              </div>
+            );
+          })}
+          {activeTickets.filter((t) => activeStatuses.has(t.status)).length === 0 && (
+            <EmptyState icon={ServiceIcon}>Nincs a szűrésnek megfelelő munkalap.</EmptyState>
+          )}
+        </>
+      ) : (
         <div className="kanban-wrap">
           <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
             <div className="kanban">
