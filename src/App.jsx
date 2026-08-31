@@ -2214,7 +2214,12 @@ function AppShell() {
         tab={tab} setTab={setTab} isAdmin={isAdmin} locFilter={locFilter} setLocFilter={setLocFilter}
         allowedLocations={allowedLocations} myLocationId={myLocationId} locName={locName} profile={profile} user={user}
         signOut={signOut} chatOpen={chatOpen} setChatOpen={setChatOpen} chatUnread={chatUnread} markChatRead={markChatRead}
-        pageHeader={tab === "service" ? (
+        pageHeader={tab === "stock" ? (
+          <>
+            <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Telefonok</div>
+            <button className="btn" style={{ padding: "8px 14px" }} disabled={busy} onClick={() => setStockModal("add")}>+ Új termék</button>
+          </>
+        ) : tab === "service" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Szerviz</div>
             <button

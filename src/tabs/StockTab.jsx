@@ -53,11 +53,6 @@ export default function StockTab({
 
   return (
     <>
-      <div className="topbar">
-        <div><div className="page-title">Telefonok</div></div>
-        <button className="btn" disabled={busy} onClick={() => setStockModal("add")}>+ Új termék</button>
-      </div>
-
       <div className="filter-row">
         <div className="searchbar"><SearchIcon /><input placeholder="Keresés márka, modell, IMEI..." value={search} onChange={(e) => setSearch(e.target.value)} /></div>
         <div className="seg">
@@ -99,13 +94,13 @@ export default function StockTab({
 
               {collapsed ? null : (
                 <ResponsiveTable
-                  columns={[{ key: "p", label: "Termék" }, { key: "s", label: "Állapot" }, { key: "a", label: "Ár" }, { key: "x", label: "" }]}
+                  columns={[{ key: "p", label: "Termék", className: "col-device" }, { key: "s", label: "Állapot" }, { key: "a", label: "Ár" }, { key: "x", label: "" }]}
                   rows={items}
                   rowKey={(i) => i.id}
                   renderRow={(i) => (
                     <tr key={i.id} style={{ cursor: "pointer" }} onClick={() => setProductDetailId(i.id)}>
-                      <td>
-                        <div className="stk-name">
+                      <td style={{ whiteSpace: "nowrap" }}>
+                        <div className="stk-name" style={{ flexWrap: "nowrap" }}>
                           <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{phoneCode(i.productNo) || "—"}</span>
                           {displayName(i.brand, i.model)}
                           {i.acquisition?.acquisitionType === "consignment" && <span className="badge-loc">Bizomány</span>}
