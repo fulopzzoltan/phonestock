@@ -249,23 +249,41 @@ tr:hover td{background:#FAFAFA}
 .stk-card{background:#fff;border-radius:20px;border:1px solid #EEF0F2;box-shadow:var(--shadow-card);padding:19px;cursor:pointer;transition:transform .12s,box-shadow .12s,border-color .12s;display:flex;flex-direction:column;height:100%}
 .stk-card:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(16,24,40,.09);border-color:#E5E7EB}
 
-.pult-stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-.pult-stat{background:#fff;border:1px solid #EEF0F2;border-radius:var(--radius-lg);box-shadow:var(--shadow-card);padding:14px 16px}
-.pult-stat .n{font-size:24px;font-weight:800;line-height:1;color:#111827}
-.pult-stat .l{font-size:11.5px;font-weight:600;color:#9CA3AF;margin-top:6px}
-.pult-stat.hot{background:var(--sidebar-bg);border-color:var(--sidebar-bg)}
-.pult-stat.hot .n{color:#fff}
-.pult-stat.hot .l{color:var(--sidebar-text-dim)}
-@media (max-width:900px){.pult-stat-row{grid-template-columns:repeat(2,1fr)}}
+/* PULT — "Elsőbbségi sáv" elrendezés: bal oldalt egy összevont, sürgősség
+   szerinti "ma" lista (webes rendelés + ígért munka + kész várakozás egy
+   sávban), jobb oldalt egyenletes kis kártyák a ritkább infóknak — a cél,
+   hogy minden egy képernyőn, görgetés nélkül átlátható legyen. */
+.pb-wrap{display:grid;grid-template-columns:330px 1fr;gap:16px;align-items:start;margin-bottom:20px}
+@media (max-width:1100px){.pb-wrap{grid-template-columns:1fr}}
 
-.pult-priority{background:#fff;border:1px solid #EEF0F2;border-radius:var(--radius-lg);box-shadow:var(--shadow-card);padding:20px;margin-bottom:20px}
-.pult-priority-head{font-size:16px;font-weight:800;color:#111827;margin-bottom:2px}
-.pult-priority-sub{font-size:12px;color:#9CA3AF;margin-bottom:16px}
-.pult-priority-group{margin-top:18px}
-.pult-priority-group:first-of-type{margin-top:0}
+.pb-rail{background:var(--sidebar-bg);border-radius:var(--radius-lg);padding:20px;color:#fff;display:flex;flex-direction:column}
+.pb-rail-hero{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
+.pb-rail-hero .n{font-size:40px;font-weight:800;line-height:1}
+.pb-rail-hero .l{font-size:13px;font-weight:600;color:var(--sidebar-text-dim)}
+.pb-rail-sub{font-size:11.5px;color:var(--sidebar-text-dim);margin-bottom:18px}
+.pb-rail-list{display:flex;flex-direction:column;gap:8px;max-height:calc(100vh - 220px);overflow-y:auto}
+.pb-rail-row{display:flex;flex-direction:column;gap:5px;padding:11px 12px;border-radius:11px;background:#17171b;border-left:3px solid var(--info)}
+.pb-rail-row.job{border-left-color:var(--primary);cursor:pointer}
+.pb-rail-row.ready{border-left-color:#7C3AED}
+.pb-rail-row .top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pb-rail-row .name{font-size:12.5px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pb-rail-row .amt{font-size:11.5px;color:var(--sidebar-text-dim);font-family:'Roboto Mono',monospace;flex-shrink:0}
+.pb-rail-row .sub{font-size:11px;color:var(--sidebar-text-dim)}
+.pb-rail-row .actions{display:flex;gap:6px;margin-top:2px;flex-wrap:wrap}
+.pb-rail-btn{font-size:10.5px;font-weight:700;color:var(--sidebar-bg);background:#fff;border:none;border-radius:7px;padding:4px 9px;cursor:pointer;font-family:inherit}
+.pb-rail-btn:hover{background:var(--primary-soft)}
+.pb-rail-empty{color:var(--sidebar-text-dim);font-size:12px;padding:24px 4px;text-align:center}
 
-.pult-lower{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
-@media (max-width:900px){.pult-lower{grid-template-columns:1fr}}
+.pb-side{display:flex;flex-direction:column;gap:16px;min-width:0}
+.pb-mini-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media (max-width:1100px){.pb-mini-grid{grid-template-columns:repeat(2,1fr)}}
+.pb-mini-stats{display:flex;flex-direction:column;gap:10px;justify-content:center;height:100%}
+.pb-mini-stat{display:flex;align-items:baseline;gap:8px}
+.pb-mini-stat .n{font-size:20px;font-weight:800;color:#111827}
+.pb-mini-stat .l{font-size:10.5px;color:#9CA3AF;font-weight:600}
+
+.pb-notes-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+@media (max-width:900px){.pb-notes-row{grid-template-columns:1fr}}
 
 .pult-grid{display:grid;grid-template-columns:2fr 1fr;gap:20px;align-items:start}
 .pult-col{display:flex;flex-direction:column;gap:20px;min-width:0}
