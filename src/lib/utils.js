@@ -70,10 +70,10 @@ export function isStaleReady(t) {
 // T = Telefon, GY/SGY+S = Szerviz munkalap (helyszín szerint, pl. 2199GYS), A = Alkatrész.
 // A bizonylatszámhoz (receipt_no) szándékosan nem nyúlunk — az pénzügyi/könyvelési sorszám.
 export function phoneCode(productNo) {
-  return productNo == null ? null : `${productNo}T`;
+  return productNo == null ? null : `${productNo}-T`;
 }
 export function partCode(partNo) {
-  return partNo == null ? null : `${partNo}A`;
+  return partNo == null ? null : `${partNo}-A`;
 }
 export function normalizeImei(imei) {
   return (imei || "").replace(/\D/g, "");
@@ -101,7 +101,7 @@ const TICKET_LOCATION_LETTERS = { "Gyimes": "GY", "Szentgyörgy": "CS" };
 export function ticketCode(ticketNo, locationName) {
   if (ticketNo == null) return null;
   const letter = TICKET_LOCATION_LETTERS[locationName] || "";
-  return `${ticketNo}${letter}S`;
+  return `${ticketNo}-${letter}S`;
 }
 
 // "key" = adatbázisban tárolt érték (ne változtasd, meglévő sorok erre hivatkoznak),
