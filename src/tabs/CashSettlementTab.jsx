@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { money, today } from "../lib/utils";
+import { money } from "../lib/utils";
 import { EmptyState } from "../components/EmptyState";
 import { FinanceIcon } from "../components/icons";
 import TransactionsPeriodList from "../components/TransactionsPeriodList";
@@ -46,13 +46,19 @@ export default function CashSettlementTab({
   setTxModal, deleteTransaction, setReceiptTxId, allowedLocations, locName,
 }) {
   const [customStart, setCustomStart] = useState("");
+  const [customEnd, setCustomEnd] = useState("");
   const [countedByLoc, setCountedByLoc] = useState({});
   const [note, setNote] = useState("");
   const [showList, setShowList] = useState(false);
 
   const lastSettlement = cashSettlements[0] || null;
-  const periodStart = lastSettlement ? dayAfter(lastSettlement.periodEnd) : (customStart || yesterday());
-  const periodEnd = today();
+  // Alapértelmezett kezdet: az utolsó elszámolás utáni nap (vagy tegnap, ha még nem volt
+  // elszámolás). Alapértelmezett vég: TEGNAP, nem a mai nap — a mai nap még nincs vége,
+  // a benne lévő készpénz-mozgás még változhat, ezért ne kerüljön automatikusan bele.
+  // Mindkettő szabadon módosítható a dátumválasztókkal.
+  const defaultStart = lastSettlement ? dayAfter(lastSettlement.periodEnd) : yesterday();
+  const periodStart = customStart || defaultStart;
+  const periodEnd = customEnd || yesterday();
   const periodValid = periodStart <= periodEnd;
 
   const periodTx = useMemo(() => transactions.filter((t) => t.date >= periodStart && t.date <= periodEnd), [transactions, periodStart, periodEnd]);
@@ -102,6 +108,7 @@ export default function CashSettlementTab({
     setCountedByLoc({});
     setNote("");
     setCustomStart("");
+    setCustomEnd("");
   }
 
   return (
@@ -110,12 +117,16 @@ export default function CashSettlementTab({
         <div><div className="page-title">Elszámolás</div></div>
       </div>
 
-      {!lastSettlement && (
-        <div className="field" style={{ maxWidth: 260, marginBottom: 16 }}>
-          <label>Időszak kezdete (első elszámolás)</label>
-          <input type="date" value={customStart || yesterday()} onChange={(e) => setCustomStart(e.target.value)} />
+      <div className="row2" style={{ maxWidth: 420, marginBottom: 16 }}>
+        <div className="field" style={{ margin: 0 }}>
+          <label>Időszak kezdete</label>
+          <input type="date" value={periodStart} onChange={(e) => setCustomStart(e.target.value)} />
         </div>
-      )}
+        <div className="field" style={{ margin: 0 }}>
+          <label>Időszak vége</label>
+          <input type="date" value={periodEnd} onChange={(e) => setCustomEnd(e.target.value)} />
+        </div>
+      </div>
       <div style={{ fontSize: 13, color: "#6B7280", marginBottom: 16 }}>
         Időszak: <b style={{ color: "#111827" }}>{periodStart} – {periodEnd}</b>
         {periodValid && ` (${daysBetweenInclusive(periodStart, periodEnd)} nap)`}
