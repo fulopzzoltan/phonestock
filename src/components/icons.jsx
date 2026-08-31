@@ -52,8 +52,7 @@ export const DashboardIcon = (props) => (
 
 export const ServiceIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <circle cx="12" cy="12" r="3.2" />
-    <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1" />
+    <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.4-3.4a6 6 0 01-7.9 7.9L6.4 20.6a2.1 2.1 0 01-3-3L10.2 10.8a6 6 0 017.9-7.9z" />
   </svg>
 );
 
@@ -65,7 +64,8 @@ export const PhoneCaseIcon = (props) => (
 
 export const PartsIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <rect x="3" y="7" width="18" height="12" rx="2" /><path d="M8 7V5.5A1.5 1.5 0 019.5 4h5A1.5 1.5 0 0116 5.5V7M3 13h18" />
+    <rect x="7" y="7" width="10" height="10" rx="1.5" />
+    <path d="M9 7V3.5M12 7V3.5M15 7V3.5M9 21v-3.5M12 21v-3.5M15 21v-3.5M7 9H3.5M7 12H3.5M7 15H3.5M17 9h3.5M17 12h3.5M17 15h3.5" />
   </svg>
 );
 
@@ -135,7 +135,8 @@ export const ClockIcon = (props) => (
 
 export const BoardIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <rect x="3" y="4" width="18" height="16" rx="2" /><path d="M8 4v4M16 4v4M3 11h18" />
+    <path d="M3.5 11.5L12 4l8.5 7.5" />
+    <path d="M5.5 10v9a1 1 0 001 1H9v-5.5a1 1 0 011-1h4a1 1 0 011 1V20h2.5a1 1 0 001-1v-9" />
   </svg>
 );
 
@@ -153,7 +154,8 @@ export const CalendarIcon = (props) => (
 
 export const BuybackIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <circle cx="8" cy="12" r="5" /><path d="M13 7.5a5 5 0 010 9M16 9.3l2-1.8-2-1.8M18 15.5l2 1.8-2 1.8" opacity=".55" />
+    <path d="M3.5 7h14.5M18 7l-3-3M18 7l-3 3" />
+    <path d="M20.5 17H6M6 17l3-3M6 17l3 3" />
   </svg>
 );
 
