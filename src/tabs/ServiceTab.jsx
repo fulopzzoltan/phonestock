@@ -28,7 +28,7 @@ export default function ServiceTab({
   loadingData, activeTickets, setDetailId, handedOverTickets, setTicketStatus,
 }) {
   const [showFailedInCol, setShowFailedInCol] = useState(false);
-  const [view, setView] = useState("board"); // board | list
+  const [view, setView] = useState("list"); // board | list
   const [activeStatuses, setActiveStatuses] = useState(() => new Set(STATUSES.map((s) => s.key)));
   const toggleStatus = (key) => setActiveStatuses((prev) => {
     const next = new Set(prev);
