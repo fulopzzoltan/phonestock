@@ -15,7 +15,7 @@ export default function ServiceTab({
     <>
       <div className="filter-row">
         <div className="searchbar"><SearchIcon /><input value={svcSearch} onChange={(e) => setSvcSearch(e.target.value)} /></div>
-        <div className="status-seg" style={{ marginLeft: "auto" }}>
+        <div className="status-seg">
           {STATUSES.map((col) => {
             const count = activeTickets.filter((t) => t.status === col.key).length;
             return (
@@ -65,8 +65,8 @@ export default function ServiceTab({
           return (
             <ResponsiveTable
               columns={[
-                { key: "d", label: "Eszköz", className: "col-grow" }, { key: "c", label: "Kliens" }, { key: "i", label: "Bejött" },
-                { key: "p", label: "Probléma" }, { key: "s", label: "Státusz" }, { key: "a", label: "Ár" },
+                { key: "d", label: "Eszköz" }, { key: "c", label: "Kliens" }, { key: "i", label: "Bejött" },
+                { key: "p", label: "Probléma", className: "col-grow" }, { key: "s", label: "Státusz" }, { key: "a", label: "Ár" },
               ]}
               rows={items}
               rowKey={(t) => t.id}
