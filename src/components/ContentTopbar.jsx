@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { SettingsIcon, LogoutIcon, PinIcon, ChevronDownIcon, ExternalLinkIcon, ChatIcon } from "./icons";
+import { SettingsIcon, LogoutIcon, PinIcon, ChevronDownIcon, ExternalLinkIcon, ChatIcon, BoardIcon } from "./icons";
 import { SITE_URL } from "../lib/utils";
 
 // A korábban a Sidebar tetején/alján lévő helyszín-választó, webshop-link, chat-nyitó
@@ -47,6 +47,16 @@ export default function ContentTopbar({
       ) : (
         <div className="loc-drop static"><span className="loc-drop-left"><PinIcon width={12} height={12} />{currentLocLabel}</span></div>
       )}
+
+      <button
+        type="button"
+        className={`util-icon-btn ctb-pult-btn${tab === "pult" ? " active" : ""}`}
+        title="Pult"
+        onClick={() => setTab("pult")}
+      >
+        <BoardIcon width={14} height={14} />
+        <span>Pult</span>
+      </button>
 
       <div className="ctb-spacer" />
 
