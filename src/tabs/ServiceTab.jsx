@@ -141,6 +141,11 @@ export default function ServiceTab({
                           <ClockIcon width={11} height={11} />
                         </span>
                       )}
+                      {t.isWarranty && (
+                        <span className="t-kind-pill" style={{ background: "#EDE9FE", color: "#6D28D9", marginLeft: 6, marginBottom: 0 }} title={t.warrantyKind === "termék" ? "Garanciális — termék" : "Garanciális — szerviz"}>
+                          <WarrantyIcon width={11} height={11} />
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td style={{ whiteSpace: "nowrap" }}>{kliensOf(t)}</td>
@@ -163,6 +168,11 @@ export default function ServiceTab({
                       {urgencyOf(t) && (
                         <span className={`sla-badge sla-${urgencyOf(t).level}`} style={{ marginLeft: 6 }} title={urgencyOf(t).label}>
                           <ClockIcon width={11} height={11} />
+                        </span>
+                      )}
+                      {t.isWarranty && (
+                        <span className="t-kind-pill" style={{ background: "#EDE9FE", color: "#6D28D9", marginLeft: 6, marginBottom: 0 }} title={t.warrantyKind === "termék" ? "Garanciális — termék" : "Garanciális — szerviz"}>
+                          <WarrantyIcon width={11} height={11} />
                         </span>
                       )}
                     </div>

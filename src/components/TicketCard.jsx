@@ -27,6 +27,12 @@ export default function TicketCard({ ticket, locName, onOpen, onStep, stepPrev, 
           {ticket.ticketKind === "Saját készlet - előkészítés" ? "Saját — előkészítés" : "Saját — garanciális"}
         </span>
       )}
+      {ticket.isWarranty && (
+        <span className="t-kind-pill" style={{ background: "#EDE9FE", color: "#6D28D9" }}>
+          <WarrantyIcon width={11} height={11} />
+          Garanciális{ticket.warrantyKind === "termék" ? " — termék" : " — szerviz"}
+        </span>
+      )}
       {sla && (sla.level === "warn" || sla.level === "overdue") && (
         <div style={{ marginBottom: 4 }}>
           <span className={`sla-badge sla-${sla.level}`}><ClockIcon width={11} height={11} />{sla.label}</span>

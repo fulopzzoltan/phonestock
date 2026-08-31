@@ -71,10 +71,17 @@ export default function DashboardTab({
         )}
       </div>
 
-      <div className="statrow c4" style={{ marginBottom: 10 }}>
+      <div className="statrow c5" style={{ marginBottom: 26 }}>
         <div className="statcard">
           <div className="lbl">Sikertelenek %</div>
           <div className="val" style={{ color: "#9D174D" }}>{svcStats.sikertelenPct != null ? `${svcStats.sikertelenPct}%` : "—"}</div>
+        </div>
+        <div className="statcard">
+          <div className="lbl">Garanciálisok %</div>
+          <div className="val" style={{ color: "#6D28D9" }}>{svcStats.warrantyPct != null ? `${svcStats.warrantyPct}%` : "—"}</div>
+          {svcStats.warrantyCount > 0 && (
+            <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 2 }}>{svcStats.warrantyCount} munkalap</div>
+          )}
         </div>
         <div className="statcard">
           <div className="lbl">Átlagos rés (kiadott)</div>
@@ -91,9 +98,6 @@ export default function DashboardTab({
             <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 2 }}>{svcStats.foliaRequestedCount} / {svcStats.foliaShown} megrendelte</div>
           )}
         </div>
-      </div>
-      <div style={{ fontSize: 11.5, color: "#9CA3AF", margin: "0 0 20px 2px", lineHeight: 1.5 }}>
-        Garanciálisok % egyelőre nem mérhető megbízhatóan: a "Garanciális" jelölés státuszváltáskor törlődik, nem marad meg a munkalapon végig. Szólj, ha ezt szeretnéd, hogy tényleg kövesse a rendszer — ehhez egy külön, tartós mezőt kellene bevezetni.
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginBottom: 26 }}>
         <div className="statcard">

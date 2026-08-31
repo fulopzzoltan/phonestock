@@ -1979,6 +1979,9 @@ function AppShell() {
     const foliaRequestedCount = customerTickets.filter((t) => t.foliaUpsellShownAt && t.foliaUpsellRequested).length;
     const foliaConversionPct = foliaShown ? Math.round((foliaRequestedCount / foliaShown) * 1000) / 10 : null;
 
+    const warrantyCount = customerTickets.filter((t) => t.isWarranty).length;
+    const warrantyPct = customerTickets.length ? Math.round((warrantyCount / customerTickets.length) * 1000) / 10 : null;
+
     return {
       total: filteredTickets.length,
       active: customerTickets.filter((t) => t.status !== "Átadásra").length,
@@ -2000,6 +2003,8 @@ function AppShell() {
       foliaShown,
       foliaRequestedCount,
       foliaConversionPct,
+      warrantyCount,
+      warrantyPct,
     };
   }, [filteredTickets, handedOverTickets]);
 

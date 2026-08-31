@@ -110,7 +110,7 @@ export function ticketCode(ticketNo, locationName) {
 // a "Szerelés alatt"/"Tesztelés" státuszban kevés ideig van egy telefon, ritkán
 // gyűlik fel bennük annyi kártya, hogy a 2 oszlop indokolt legyen
 export const STATUSES = [
-  { key: "Átvett", label: "Beérkezett", color: "#F59E0B", cls: "st-beveve" },
+  { key: "Átvett", label: "Rögzítve", color: "#F59E0B", cls: "st-beveve" },
   { key: "Javítás alatt", label: "Szerelés alatt", color: "#F97316", cls: "st-javitas", narrow: true },
   { key: "Minőségellenőrzés", label: "Tesztelés", color: "#0EA5E9", cls: "st-qc", narrow: true },
   { key: "Átadásra", label: "Átvehető", color: "#22C55E", cls: "st-kesz" },
@@ -134,9 +134,10 @@ export const buybackStatusCls = (s) => BUYBACK_STATUSES.find((c) => c.key === s)
 // sub_status options available within each main status ("null" entry = plain/no tag)
 export const SUB_STATUSES = {
   "Átvett": [
-    { key: null, label: "Egyszerű átvétel", cls: "st-beveve" },
-    { key: "Garanciális", label: "Garanciális", cls: "st-garancialis" },
+    { key: null, label: "Átvett", cls: "st-beveve" },
     { key: "Alkatrészre vár", label: "Alkatrészre vár", cls: "st-alkatresz" },
+    { key: "Készülékre vár", label: "Készülékre vár", cls: "st-alkatresz" },
+    { key: "Alkatrészre és készülékre vár", label: "Alkatrészre és készülékre vár", cls: "st-alkatresz" },
   ],
   "Javítás alatt": [
     { key: null, label: "Javítás alatt", cls: "st-javitas" },

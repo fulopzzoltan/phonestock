@@ -45,6 +45,8 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
     folia: ticket?.folia || false,
     status: ticket?.status || "Átvett",
     subStatus: ticket?.subStatus ?? null,
+    isWarranty: !!ticket?.isWarranty,
+    warrantyKind: ticket?.warrantyKind || "szerviz",
     assignedTo: ticket?.assignedTo || "",
     consentGiven: !!ticket?.consentAt,
     marketingConsent: false,
@@ -99,6 +101,19 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
               value={f.subStatus ?? null}
               onChange={(key) => setF({ ...f, subStatus: key })}
               options={SUB_STATUSES[f.status].map((s) => ({ key: s.key ?? null, label: s.label }))}
+            />
+          )}
+          <div className="field">
+            <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#374151", fontWeight: 500, textTransform: "none", letterSpacing: 0, cursor: "pointer" }}>
+              <input type="checkbox" className="chk" checked={f.isWarranty} onChange={(e) => setF({ ...f, isWarranty: e.target.checked })} /> Garanciális ügy
+            </label>
+          </div>
+          {f.isWarranty && (
+            <ChipField
+              label="Garancia típusa"
+              value={f.warrantyKind}
+              onChange={(key) => setF({ ...f, warrantyKind: key })}
+              options={[{ key: "szerviz", label: "Szerviz (korábbi javításunk reklamációja)" }, { key: "termék", label: "Értékesített telefon" }]}
             />
           )}
         </div>
