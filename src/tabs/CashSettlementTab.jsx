@@ -127,6 +127,11 @@ export default function CashSettlementTab({
           <input type="date" value={periodEnd} onChange={(e) => setCustomEnd(e.target.value)} />
         </div>
       </div>
+      {!periodValid && (
+        <div style={{ fontSize: 13, color: "#B91C1C", background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: "var(--radius-md)", padding: "10px 14px", marginBottom: 16 }}>
+          A kezdő dátum ({periodStart}) nem lehet később, mint a záró dátum ({periodEnd}) — emiatt a rögzítés gomb ki van kapcsolva.
+        </div>
+      )}
       <div style={{ fontSize: 13, color: "#6B7280", marginBottom: 16 }}>
         Időszak: <b style={{ color: "#111827" }}>{periodStart} – {periodEnd}</b>
         {periodValid && ` (${daysBetweenInclusive(periodStart, periodEnd)} nap)`}
