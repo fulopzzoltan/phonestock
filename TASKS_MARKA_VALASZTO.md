@@ -30,17 +30,21 @@ export const PHONE_BRANDS = [
 
 A mezőt mindenhol (ld. 3. pont) egy **pill-választóra** cserélem (ugyanaz a `ChipField`/hasonló minta, ami már ma is megvan pl. a `StockModal`-ban más mezőknél) — kattintással választasz, nincs begépelés. Ha a márka nincs a listában, az **"Egyéb"** választásra egy kis szövegmező bukkan fel, ahova be lehet írni a ritka márkát kézzel — így semmilyen valódi eset nem esik ki, csak a leggyakoribb ~30 márkánál tűnik el a begépelés-elírás lehetősége.
 
-## 2. A legfontosabb nyitott kérdés — Apple vs iPhone
+## 2. Apple vs iPhone — ez már el is dőlt, csak a mai adat nem követi
 
-Ez a legnagyobb tétel (454 db összesen), és **nem egyszerű elírás-javítás**, hanem valódi döntés kell hozzá:
+Ez a legnagyobb tétel (454 db összesen), de jó hír: a kódban **már létezik a helyes megoldás**, csak a mai adat egy része nem ezt a konvenciót követi. `src/lib/utils.js` `displayName()`:
 
-- **A) A márka legyen "Apple"**, a modell mezőben marad a "iPhone 13", "iPhone 12 Pro" stb. — ez a technikailag "helyes" gyártó-alapú besorolás, de a kijelzett név (`displayName(brand, model)`) "Apple iPhone 13"-at adna, ami furcsán duplikált.
-- **B) A márka legyen "iPhone"** — így marad, ahogy ma a többség már van (`iPhone` 158 db) — a modell mező csak "13", "12 Pro" stb. — a kijelzett név "iPhone 13" lesz, ami a hétköznapi szóhasználatnak jobban megfelel, de technikailag "iPhone" nem gyártó, hanem terméksorozat.
-- **C) A márka legyen "Apple"**, DE a `displayName()` függvény kapjon egy kivételt: ha `brand==="Apple"` és a modell "iPhone"-nal kezdődik, ne ismételje meg — így "Apple" marad a tiszta adat, a megjelenítés viszont "iPhone 13" lesz.
+```js
+// "Apple iPhone 11" helyett elég csak "iPhone 11" — a brand adat marad "Apple", ez csak megjelenítés.
+export function displayName(brand, model) {
+  if (brand === "Apple" && (model || "").toLowerCase().startsWith("iphone")) return model;
+  return [brand, model].filter(Boolean).join(" ");
+}
+```
 
-**C) opciót javaslom** — ez adja a legpontosabb adatot (Apple mint gyártó, egyetlen márka-bucket) ÉS a megszokott megjelenítést egyszerre, de ez a te döntésed, mert ez érinti majd az összes riportot/szűrést, ami márka szerint csoportosít.
+Vagyis a **szándékolt, már megépített** konvenció: `brand = "Apple"`, `model = "iPhone 13"` (a modell mezőben van benne az "iPhone" szó) — a megjelenítés emiatt helyesen "iPhone 13"-at mutat, a márka mégis egységesen "Apple" marad a statisztikákhoz. A `PHONE_BRANDS` listában emiatt **nincs is önálló "iPhone" tétel** — csak "Apple". A migráció feladata: a ma `brand='iPhone'`/`'Iphone'`/`'iphone '`/`'Iphone '` sorokat át kell tenni `brand='Apple'`-re, és ha a `model` mező még nem tartalmazza az "iPhone" szót elöl, azt is ki kell egészíteni (pl. ha ma `brand='iPhone', model='13 Pro'`, az új sor `brand='Apple', model='iPhone 13 Pro'` legyen).
 
-Ugyanez a kérdés az `iPad` (1 db) esetén is — az is Apple lenne, "iPad" a modell-részben.
+Ugyanez vonatkozik az `iPad` (1 db) tételre is — az is Apple lesz, "iPad ..." a modell-részben.
 
 ## 3. Hol kell lecserélni a mezőt
 
@@ -82,7 +86,6 @@ update products set brand = 'Motorola' where brand = 'Moto';
 
 ## 5. Amit tisztázni kell
 
-- **Apple/iPhone döntés** (2. pont) — ez a legfontosabb, mielőtt bármit futtatunk.
 - **`sadas`/`Cutoc`** — szeretnéd, hogy megnézzem pontosan melyik tétel ez, mielőtt döntünk?
 - **`Redmi`/`Poco` Xiaomi alá vonása** — marad külön, vagy összevonjuk?
 - **`PartModal.jsx` márka mezője** — marad szabad szöveg, vagy azt is át szeretnéd rakni választólistára?

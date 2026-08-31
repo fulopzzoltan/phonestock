@@ -179,6 +179,21 @@ tr:hover td{background:#FAFAFA}
 .seg button{border:none;background:none;color:#6B7280;font-family:inherit;font-size:12px;font-weight:600;padding:7px 13px;border-radius:8px;cursor:pointer}
 .seg button.active{background:#fff;color:var(--accent-dark);box-shadow:0 1px 3px rgba(0,0,0,.1)}
 .toggle-link{color:#6B7280;font-size:12px;cursor:pointer;text-decoration:underline;margin-top:14px;display:inline-block}
+
+.svc-stat-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.svc-stat-tab{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #EEF0F2;border-radius:12px;padding:9px 14px;cursor:pointer;box-shadow:var(--shadow-card);font-family:inherit}
+.svc-stat-tab .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.svc-stat-tab .lbl{font-size:12.5px;font-weight:600;color:#6B7280}
+.svc-stat-tab .cnt{font-size:11px;font-weight:700;color:#9CA3AF;background:#F3F4F6;padding:1px 8px;border-radius:999px}
+.svc-stat-tab.active{border-color:#111827;background:#111827}
+.svc-stat-tab.active .lbl{color:#fff}
+.svc-stat-tab.active .cnt{background:rgba(255,255,255,.18);color:#fff}
+
+.svc-days{font-weight:600;color:#111827;white-space:nowrap}
+.svc-days.today{color:var(--primary-ink)}
+.svc-days-lbl{color:#9CA3AF;font-weight:400;margin-left:3px}
+.svc-probs{display:flex;flex-wrap:nowrap;gap:4px;overflow:hidden}
+.svc-price{font-family:'Roboto Mono',monospace;font-weight:700;color:#111827;white-space:nowrap}
 .toggle-link:hover{color:var(--accent-dark)}
 .history-toggle{display:flex;align-items:center;gap:8px;width:100%;background:#fff;border:1px solid #EEF0F2;border-radius:14px;padding:12px 16px;font-family:inherit;font-size:13px;font-weight:600;color:#374151;cursor:pointer;box-shadow:var(--shadow-card)}
 .history-toggle:hover{border-color:#D1D5DB}

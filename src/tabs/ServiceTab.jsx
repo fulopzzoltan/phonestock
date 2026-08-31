@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { DndContext, useDraggable, useDroppable, useSensor, useSensors, PointerSensor } from "@dnd-kit/core";
-import { money, STATUSES, statusLabel, statusCls, subStatusCls, subStatusLabel, displayName, ticketCode } from "../lib/utils";
-import { SearchIcon, ChevronDownIcon, ServiceIcon, ListViewIcon, GridViewIcon } from "../components/icons";
+import { money, STATUSES, statusLabel, statusCls, subStatusCls, subStatusLabel, displayName, ticketCode, daysOnShelf, slaInfo, isStaleReady } from "../lib/utils";
+import { SearchIcon, ChevronDownIcon, ServiceIcon, ListViewIcon, GridViewIcon, ClockIcon } from "../components/icons";
 import TicketCard from "../components/TicketCard";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import HistorySection from "../components/HistorySection";
@@ -70,12 +70,18 @@ export default function ServiceTab({
       </div>
 
       {view === "list" && (
-        <div className="seg" style={{ marginBottom: 14 }}>
+        <div className="svc-stat-tabs">
           {STATUSES.map((col) => {
             const count = activeTickets.filter((t) => t.status === col.key).length;
             return (
-              <button key={col.key} type="button" className={listStatus === col.key ? "active" : ""} onClick={() => setListStatus(col.key)}>
-                {statusLabel(col.key)} <span className="k-count">{count}</span>
+              <button
+                key={col.key} type="button"
+                className={`svc-stat-tab${listStatus === col.key ? " active" : ""}`}
+                onClick={() => setListStatus(col.key)}
+              >
+                <span className="dot" style={{ background: col.color }} />
+                <span className="lbl">{statusLabel(col.key)}</span>
+                <span className="cnt">{count}</span>
               </button>
             );
           })}
@@ -86,34 +92,68 @@ export default function ServiceTab({
         (() => {
           const items = activeTickets.filter((t) => t.status === listStatus);
           if (items.length === 0) return <EmptyState icon={ServiceIcon}>Nincs munkalap ebben az állapotban.</EmptyState>;
+          const probsOf = (t) => (t.issue || "").split(",").map((p) => p.trim()).filter(Boolean);
+          // Sürgősség: csak akkor jelezzük, ha VAN vállalt határidő (dueDate) — ha nincs ígéret,
+          // nincs mihez képest "sürgős" legyen. A 90+ napja átvehető, de el nem vitt munkalapokat
+          // is ide soroljuk, mert azok is azonnali odafigyelést igényelnek.
+          const urgencyOf = (t) => {
+            const sla = slaInfo(t);
+            if (sla && (sla.level === "warn" || sla.level === "overdue")) return sla;
+            if (isStaleReady(t)) return { level: "overdue", label: "90+ napja várja az átvételt" };
+            return null;
+          };
+          const daysOf = (t) => {
+            const n = daysOnShelf(t.dateIn);
+            if (n == null) return <span className="svc-days">—</span>;
+            if (n <= 0) return <span className="svc-days today">Ma</span>;
+            return <span className="svc-days">{n}<span className="svc-days-lbl">napja</span></span>;
+          };
+          const statusPill = (t) => (t.subStatus ? (
+            <span className={`st ${subStatusCls(t.status, t.subStatus)}`}>{subStatusLabel(t.status, t.subStatus)}</span>
+          ) : (
+            <span className={`st ${statusCls(t.status)}`}>{statusLabel(t.status)}</span>
+          ));
           return (
             <ResponsiveTable
-              columns={[{ key: "d", label: "Eszköz", className: "col-grow" }, { key: "c", label: "Vevő" }, { key: "i", label: "Bejött" }, { key: "s", label: "Státusz" }]}
+              columns={[
+                { key: "d", label: "Eszköz", className: "col-grow" }, { key: "c", label: "Kliens" }, { key: "i", label: "Bejött" },
+                { key: "p", label: "Probléma" }, { key: "s", label: "Státusz" }, { key: "a", label: "Ár" },
+              ]}
               rows={items}
               rowKey={(t) => t.id}
               renderRow={(t) => (
                 <tr key={t.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
-                  <td>
+                  <td style={{ whiteSpace: "nowrap" }}>
                     <div className="stk-name">
+                      {urgencyOf(t) && (
+                        <span className={`sla-badge sla-${urgencyOf(t).level}`} style={{ marginRight: 6 }} title={urgencyOf(t).label}>
+                          <ClockIcon width={11} height={11} />
+                        </span>
+                      )}
                       <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</span>
                       {displayName(t.brand, t.model) || "—"}
                     </div>
                   </td>
-                  <td>{t.customerName || "—"}</td>
-                  <td className="mono" style={{ whiteSpace: "nowrap" }}>{t.dateIn}</td>
-                  <td style={{ whiteSpace: "nowrap" }}>
-                    {t.subStatus ? (
-                      <span className={`st ${subStatusCls(t.status, t.subStatus)}`}>{subStatusLabel(t.status, t.subStatus)}</span>
-                    ) : (
-                      <span className={`st ${statusCls(t.status)}`}>{statusLabel(t.status)}</span>
-                    )}
+                  <td style={{ whiteSpace: "nowrap" }}>{t.customerName || "—"}</td>
+                  <td>{daysOf(t)}</td>
+                  <td>
+                    <div className="svc-probs">
+                      {probsOf(t).length > 0 ? probsOf(t).map((p, i) => <span key={i} className="prob-pill">{p}</span>) : "—"}
+                    </div>
                   </td>
+                  <td style={{ whiteSpace: "nowrap" }}>{statusPill(t)}</td>
+                  <td><span className="svc-price">{money(t.price)}</span></td>
                 </tr>
               )}
               renderMobileRow={(t) => (
                 <div className="mob-row" onClick={() => setDetailId(t.id)}>
                   <div className="mob-row-top">
                     <div className="mob-row-main">
+                      {urgencyOf(t) && (
+                        <span className={`sla-badge sla-${urgencyOf(t).level}`} style={{ marginRight: 6 }} title={urgencyOf(t).label}>
+                          <ClockIcon width={11} height={11} />
+                        </span>
+                      )}
                       <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</span>
                       <span>{displayName(t.brand, t.model) || "—"}</span>
                     </div>
@@ -121,13 +161,14 @@ export default function ServiceTab({
                   </div>
                   <div className="mob-row-sub">
                     <span>{t.customerName || "—"}</span>
-                    <span>{t.dateIn}</span>
-                    {t.subStatus ? (
-                      <span className={`st ${subStatusCls(t.status, t.subStatus)}`}>{subStatusLabel(t.status, t.subStatus)}</span>
-                    ) : (
-                      <span className={`st ${statusCls(t.status)}`}>{statusLabel(t.status)}</span>
-                    )}
+                    {daysOf(t)}
+                    {statusPill(t)}
                   </div>
+                  {probsOf(t).length > 0 && (
+                    <div className="svc-probs" style={{ marginTop: 6, flexWrap: "wrap" }}>
+                      {probsOf(t).map((p, i) => <span key={i} className="prob-pill">{p}</span>)}
+                    </div>
+                  )}
                 </div>
               )}
             />
