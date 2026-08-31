@@ -2228,8 +2228,10 @@ function AppShell() {
               }}
             >
               <span className="svc-add-icon"><ServiceIcon width={14} height={14} /></span>
-              <span className="svc-add-plus">+</span>
-              <span className="svc-add-label">Új munkalap</span>
+              <span className="svc-add-label-wrap">
+                <span className="svc-add-label-idle">Új munkalap</span>
+                <span className="svc-add-label-hover">Javíts meg, te állat!</span>
+              </span>
               <span className="svc-spark s1" /><span className="svc-spark s2" /><span className="svc-spark s3" />
               <span className="svc-spark s4" /><span className="svc-spark s5" /><span className="svc-spark s6" />
             </button>

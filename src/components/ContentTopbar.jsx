@@ -23,6 +23,13 @@ export default function ContentTopbar({
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
 
+  const roleLabel = (() => {
+    const name = profile?.fullName || "";
+    if (name === "Fulop Zoltan") return "Patron";
+    if (name === "Gercui Kinga") return "Legjobb Értékesítő";
+    return isAdmin ? "Admin" : "Alkalmazott";
+  })();
+
   const currentLocLabel = isAdmin
     ? (locFilter === "all" ? "Mind" : (allowedLocations.find((l) => l.id === locFilter)?.name || "Mind"))
     : (myLocationId ? locName(myLocationId) : "Nincs helyszín");
@@ -70,7 +77,7 @@ export default function ContentTopbar({
           <div className="user-avatar">{(profile?.fullName || user?.email || "?").slice(0, 1).toUpperCase()}</div>
           <div className="user-meta">
             <div className="user-name">{profile?.fullName || user?.email}</div>
-            <div className="user-role">{isAdmin ? "Admin" : "Alkalmazott"}</div>
+            <div className="user-role">{roleLabel}</div>
           </div>
           <ChevronDownIcon width={10} height={10} />
         </button>

@@ -130,10 +130,14 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
 .svc-add-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 22px rgba(29,185,84,.38)}
 .svc-add-btn.firing{animation:svc-squish .5s ease}
 .svc-add-icon{display:flex;transform-origin:60% 55%}
-.svc-add-btn:hover:not(:disabled) .svc-add-icon,.svc-add-btn:hover:not(:disabled) .svc-add-plus{animation:svc-tighten .6s ease-in-out}
-.svc-add-btn.firing .svc-add-icon,.svc-add-btn.firing .svc-add-plus{animation:svc-spin-fast .5s ease}
-.svc-add-plus{display:inline-block;font-weight:800;font-size:15px;transform-origin:center}
-.svc-add-btn.firing .svc-add-label{animation:svc-jitter .5s ease}
+.svc-add-btn:hover:not(:disabled) .svc-add-icon{animation:svc-tighten .6s ease-in-out}
+.svc-add-btn.firing .svc-add-icon{animation:svc-spin-fast .5s ease}
+.svc-add-label-wrap{display:inline-grid}
+.svc-add-label-wrap>span{grid-area:1/1;white-space:nowrap;transition:opacity .22s ease}
+.svc-add-label-hover{opacity:0}
+.svc-add-btn:hover:not(:disabled) .svc-add-label-idle{opacity:0}
+.svc-add-btn:hover:not(:disabled) .svc-add-label-hover{opacity:1}
+.svc-add-btn.firing .svc-add-label-wrap{animation:svc-jitter .5s ease}
 .svc-spark{position:absolute;left:19px;top:50%;width:5px;height:5px;border-radius:50%;opacity:0;pointer-events:none}
 .svc-add-btn.firing .svc-spark{animation:svc-spark-fly .6s ease-out forwards}
 .svc-spark.s1{--dx:-22px;--dy:-16px;background:#FDE68A}
@@ -208,7 +212,7 @@ tr:hover td{background:#FAFAFA}
 .status-seg button.active .cnt{color:#111827}
 
 .svc-days{font-weight:600;color:#111827;white-space:nowrap}
-.svc-days.today{color:var(--primary-ink)}
+.svc-days.today{color:#111827}
 .svc-days-lbl{color:#9CA3AF;font-weight:400;margin-left:3px}
 .svc-probs{display:flex;flex-wrap:nowrap;gap:4px;overflow:hidden}
 .svc-price{font-family:'Roboto Mono',monospace;font-weight:700;color:#111827;white-space:nowrap}
@@ -246,7 +250,7 @@ tr:hover td{background:#FAFAFA}
    sla-badge) — mindegyik ugyanazt a pill-formát kövesse, a szín a módosító. */
 .tag{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:var(--radius-pill);font-size:10.5px;font-weight:600}
 .st{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:600}
-.st-beveve{background:#FEF9C3;color:#854D0E}
+.st-beveve{background:#F3F4F6;color:#6B7280}
 .st-alkatresz{background:var(--info-soft);color:var(--info-ink)}
 .st-javitas{background:var(--warning-soft);color:var(--warning-ink)}
 .st-kesz{background:#DCFCE7;color:#15803D}
