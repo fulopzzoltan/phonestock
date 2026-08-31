@@ -1,13 +1,26 @@
 import { useState } from "react";
-import { money, STATUSES, statusLabel, statusCls, subStatusCls, subStatusLabel, displayName, ticketCode, daysOnShelf, slaInfo, isStaleReady } from "../lib/utils";
-import { SearchIcon, ServiceIcon, ClockIcon, WarrantyIcon } from "../components/icons";
+import { money, STATUSES, SUB_STATUSES, statusLabel, statusCls, subStatusCls, subStatusLabel, displayName, ticketCode, daysOnShelf, slaInfo, isStaleReady } from "../lib/utils";
+import { SearchIcon, ServiceIcon, ClockIcon, WarrantyIcon, ChevronRightIcon, CheckIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import HistorySection from "../components/HistorySection";
 import ResponsiveTable from "../components/ResponsiveTable";
 
+const STATUS_KEYS = STATUSES.map((s) => s.key);
+function nextActionOf(t) {
+  const idx = STATUS_KEYS.indexOf(t.status);
+  if (idx !== -1 && idx < STATUS_KEYS.length - 1) {
+    const nk = STATUS_KEYS[idx + 1];
+    return { status: nk, subStatus: SUB_STATUSES[nk]?.[0]?.key ?? null, icon: ChevronRightIcon, label: "Következő", title: `Következő státusz: ${statusLabel(nk)}` };
+  }
+  if (idx === STATUS_KEYS.length - 1 && t.subStatus !== "Átadva" && t.subStatus !== "Sikertelen") {
+    return { status: t.status, subStatus: "Átadva", icon: CheckIcon, label: "Átadás", title: "Munkalap átadása a vevőnek" };
+  }
+  return null;
+}
+
 export default function ServiceTab({
   effectiveLocFilter, locName, busy, setTicketModal, svcSearch, setSvcSearch,
-  loadingData, activeTickets, setDetailId, handedOverTickets,
+  loadingData, activeTickets, setDetailId, handedOverTickets, onStatusChange,
 }) {
   const [listStatus, setListStatus] = useState(STATUSES[0].key);
 
@@ -67,7 +80,7 @@ export default function ServiceTab({
             <ResponsiveTable
               columns={[
                 { key: "n", label: "Sorszám", className: "col-serial" }, { key: "d", label: "Eszköz", className: "col-device" }, { key: "c", label: "Kliens" }, { key: "i", label: "Bejött" },
-                { key: "p", label: "Probléma", className: "col-grow" }, { key: "s", label: "Státusz" }, { key: "a", label: "Ár" },
+                { key: "p", label: "Probléma", className: "col-grow" }, { key: "s", label: "Státusz" }, { key: "a", label: "Ár" }, { key: "x", label: "" },
               ]}
               rows={items}
               rowKey={(t) => t.id}
@@ -98,6 +111,16 @@ export default function ServiceTab({
                   </td>
                   <td style={{ whiteSpace: "nowrap" }}>{statusPill(t)}</td>
                   <td className="row-price">{money(t.price)}</td>
+                  <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
+                    {nextActionOf(t) && (() => {
+                      const na = nextActionOf(t);
+                      return (
+                        <button className="btn sec sm" disabled={busy} title={na.title} onClick={() => onStatusChange(t.id, na.status, na.subStatus)}>
+                          <na.icon width={13} height={13} />{na.label}
+                        </button>
+                      );
+                    })()}
+                  </td>
                 </tr>
               )}
               renderMobileRow={(t) => (
@@ -129,6 +152,16 @@ export default function ServiceTab({
                       {probsOf(t).map((p, i) => <span key={i} className="prob-pill">{p}</span>)}
                     </div>
                   )}
+                  {nextActionOf(t) && (() => {
+                    const na = nextActionOf(t);
+                    return (
+                      <div className="mob-row-sub" style={{ marginTop: 8 }} onClick={(e) => e.stopPropagation()}>
+                        <button className="btn sec sm" disabled={busy} title={na.title} onClick={() => onStatusChange(t.id, na.status, na.subStatus)}>
+                          <na.icon width={13} height={13} />{na.label}
+                        </button>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
             />

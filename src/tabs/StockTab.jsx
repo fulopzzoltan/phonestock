@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { money, displayName, phoneCode, daysOnShelf, isSlowMoving, stockStatusLabel, conditionGradeLabel } from "../lib/utils";
-import { SearchIcon, PhoneCaseIcon, ChevronDownIcon, WarrantyIcon, ServiceIcon } from "../components/icons";
+import { SearchIcon, PhoneCaseIcon, ChevronDownIcon, WarrantyIcon, ServiceIcon, CartIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import HistorySection from "../components/HistorySection";
 import ResponsiveTable from "../components/ResponsiveTable";
@@ -103,7 +103,7 @@ export default function StockTab({
                       <td className="row-price" title={`Beszerzési ár: ${money(i.costPrice)}`}>{money(i.salePrice)}</td>
                       <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
                         {canAct(i) && (
-                          <button className="btn sec sm" disabled={busy} onClick={() => setSellModal(i)}>Eladás</button>
+                          <button className="btn sec sm" disabled={busy} onClick={() => setSellModal(i)}><CartIcon width={13} height={13} />Eladás</button>
                         )}
                       </td>
                     </tr>
@@ -128,7 +128,7 @@ export default function StockTab({
                       </div>
                       {canAct(i) && (
                         <div className="mob-row-sub" style={{ marginTop: 8 }} onClick={(e) => e.stopPropagation()}>
-                          <button className="btn sec sm" disabled={busy} onClick={() => setSellModal(i)}>Eladás</button>
+                          <button className="btn sec sm" disabled={busy} onClick={() => setSellModal(i)}><CartIcon width={13} height={13} />Eladás</button>
                         </div>
                       )}
                     </div>

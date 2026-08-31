@@ -2327,7 +2327,7 @@ function AppShell() {
             effectiveLocFilter={effectiveLocFilter} locName={locName} busy={busy} setTicketModal={setTicketModal}
             svcSearch={svcSearch} setSvcSearch={setSvcSearch}
             loadingData={loadingData} activeTickets={activeTickets} setDetailId={setDetailId}
-            handedOverTickets={handedOverTickets}
+            handedOverTickets={handedOverTickets} onStatusChange={setTicketStatus}
           />
         )}
 
