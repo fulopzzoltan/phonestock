@@ -7,7 +7,7 @@ import {
 // navigáció szerepét (alsó sáv + "Több" bottom sheet), hogy applikáció-szerű legyen a felület.
 // A helyszín-választó, webshop-link, chat és felhasználói menü a ContentTopbar-ban van.
 export default function Sidebar({
-  tab, setTab, setTicketModal, isAdmin, lastActiveLocationId, pultPendingCounts,
+  tab, setTab, isAdmin, lastActiveLocationId, pultPendingCounts,
 }) {
   function go(nextTab) {
     setTab(nextTab);
@@ -32,10 +32,7 @@ export default function Sidebar({
             </span>
           )}
         </button>
-        <div className="navrow">
-          <button className={`navbtn ${tab === "service" ? "active" : ""}`} onClick={() => go("service")}><ServiceIcon className="nav-ic" />Szerviz</button>
-          <button type="button" className="nav-quick-add" title="Új munkalap" onClick={() => { go("service"); setTicketModal("add"); }}>+</button>
-        </div>
+        <button className={`navbtn ${tab === "service" ? "active" : ""}`} onClick={() => go("service")}><ServiceIcon className="nav-ic" />Szerviz</button>
         <button className={`navbtn ${tab === "stock" ? "active" : ""}`} onClick={() => go("stock")}><PhoneCaseIcon className="nav-ic" />Telefonok</button>
         <button className={`navbtn ${tab === "parts" ? "active" : ""}`} onClick={() => go("parts")}><PartsIcon className="nav-ic" />Alkatrészek</button>
         <button className={`navbtn ${tab === "customers" ? "active" : ""}`} onClick={() => go("customers")}><CustomersIcon className="nav-ic" />Kliensek</button>
