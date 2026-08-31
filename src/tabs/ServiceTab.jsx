@@ -29,12 +29,7 @@ export default function ServiceTab({
 }) {
   const [showFailedInCol, setShowFailedInCol] = useState(false);
   const [view, setView] = useState("list"); // board | list
-  const [activeStatuses, setActiveStatuses] = useState(() => new Set(STATUSES.map((s) => s.key)));
-  const toggleStatus = (key) => setActiveStatuses((prev) => {
-    const next = new Set(prev);
-    if (next.has(key)) next.delete(key); else next.add(key);
-    return next;
-  });
+  const [listStatus, setListStatus] = useState(STATUSES[0].key);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
   function handleDragEnd(event) {
@@ -77,78 +72,68 @@ export default function ServiceTab({
 
       {view === "list" && (
         <div className="seg" style={{ marginBottom: 14 }}>
-          {STATUSES.map((col) => (
-            <button key={col.key} type="button" className={activeStatuses.has(col.key) ? "active" : ""} onClick={() => toggleStatus(col.key)}>
-              {statusLabel(col.key)}
-            </button>
-          ))}
+          {STATUSES.map((col) => {
+            const count = activeTickets.filter((t) => t.status === col.key).length;
+            return (
+              <button key={col.key} type="button" className={listStatus === col.key ? "active" : ""} onClick={() => setListStatus(col.key)}>
+                {statusLabel(col.key)} <span className="k-count">{count}</span>
+              </button>
+            );
+          })}
         </div>
       )}
 
       {loadingData ? <LoadingState /> : view === "list" ? (
-        <>
-          {STATUSES.filter((col) => activeStatuses.has(col.key)).map((col) => {
-            const items = activeTickets.filter((t) => t.status === col.key);
-            if (items.length === 0) return null;
-            return (
-              <div key={col.key} style={{ marginBottom: 18 }}>
-                <div className="loc-group-head">
-                  <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", display: "flex", alignItems: "center", gap: 6 }}>
-                    <span className="k-dot" style={{ background: col.color }} />
-                    {statusLabel(col.key)} <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({items.length} db)</span>
-                  </div>
-                </div>
-                <ResponsiveTable
-                  columns={[{ key: "d", label: "Eszköz", className: "col-grow" }, { key: "c", label: "Vevő" }, { key: "i", label: "Bejött" }, { key: "s", label: "Státusz" }]}
-                  rows={items}
-                  rowKey={(t) => t.id}
-                  renderRow={(t) => (
-                    <tr key={t.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
-                      <td>
-                        <div className="stk-row">
-                          <Thumb brand={t.brand} />
-                          <div>
-                            <div className="stk-name">{displayName(t.brand, t.model) || "—"}</div>
-                            <div className="stk-sub">{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td>{t.customerName || "—"}</td>
-                      <td className="mono" style={{ whiteSpace: "nowrap" }}>{t.dateIn}</td>
-                      <td style={{ whiteSpace: "nowrap" }}>
-                        {t.subStatus ? (
-                          <span className={`st ${subStatusCls(t.status, t.subStatus)}`}>{subStatusLabel(t.status, t.subStatus)}</span>
-                        ) : (
-                          <span className={`st ${statusCls(t.status)}`}>{statusLabel(t.status)}</span>
-                        )}
-                      </td>
-                    </tr>
-                  )}
-                  renderMobileRow={(t) => (
-                    <div className="mob-row" onClick={() => setDetailId(t.id)}>
-                      <div className="mob-row-top">
-                        <div className="mob-row-main"><span>{displayName(t.brand, t.model) || "—"}</span></div>
-                        <div className="mob-row-amount">{money(t.price)}</div>
-                      </div>
-                      <div className="mob-row-sub">
-                        <span>{t.customerName || "—"}</span>
-                        <span>{t.dateIn}</span>
-                        {t.subStatus ? (
-                          <span className={`st ${subStatusCls(t.status, t.subStatus)}`}>{subStatusLabel(t.status, t.subStatus)}</span>
-                        ) : (
-                          <span className={`st ${statusCls(t.status)}`}>{statusLabel(t.status)}</span>
-                        )}
+        (() => {
+          const items = activeTickets.filter((t) => t.status === listStatus);
+          if (items.length === 0) return <EmptyState icon={ServiceIcon}>Nincs munkalap ebben az állapotban.</EmptyState>;
+          return (
+            <ResponsiveTable
+              columns={[{ key: "d", label: "Eszköz", className: "col-grow" }, { key: "c", label: "Vevő" }, { key: "i", label: "Bejött" }, { key: "s", label: "Státusz" }]}
+              rows={items}
+              rowKey={(t) => t.id}
+              renderRow={(t) => (
+                <tr key={t.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
+                  <td>
+                    <div className="stk-row">
+                      <Thumb brand={t.brand} />
+                      <div>
+                        <div className="stk-name">{displayName(t.brand, t.model) || "—"}</div>
+                        <div className="stk-sub">{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</div>
                       </div>
                     </div>
-                  )}
-                />
-              </div>
-            );
-          })}
-          {activeTickets.filter((t) => activeStatuses.has(t.status)).length === 0 && (
-            <EmptyState icon={ServiceIcon}>Nincs a szűrésnek megfelelő munkalap.</EmptyState>
-          )}
-        </>
+                  </td>
+                  <td>{t.customerName || "—"}</td>
+                  <td className="mono" style={{ whiteSpace: "nowrap" }}>{t.dateIn}</td>
+                  <td style={{ whiteSpace: "nowrap" }}>
+                    {t.subStatus ? (
+                      <span className={`st ${subStatusCls(t.status, t.subStatus)}`}>{subStatusLabel(t.status, t.subStatus)}</span>
+                    ) : (
+                      <span className={`st ${statusCls(t.status)}`}>{statusLabel(t.status)}</span>
+                    )}
+                  </td>
+                </tr>
+              )}
+              renderMobileRow={(t) => (
+                <div className="mob-row" onClick={() => setDetailId(t.id)}>
+                  <div className="mob-row-top">
+                    <div className="mob-row-main"><span>{displayName(t.brand, t.model) || "—"}</span></div>
+                    <div className="mob-row-amount">{money(t.price)}</div>
+                  </div>
+                  <div className="mob-row-sub">
+                    <span>{t.customerName || "—"}</span>
+                    <span>{t.dateIn}</span>
+                    {t.subStatus ? (
+                      <span className={`st ${subStatusCls(t.status, t.subStatus)}`}>{subStatusLabel(t.status, t.subStatus)}</span>
+                    ) : (
+                      <span className={`st ${statusCls(t.status)}`}>{statusLabel(t.status)}</span>
+                    )}
+                  </div>
+                </div>
+              )}
+            />
+          );
+        })()
       ) : (
         <div className="kanban-wrap">
           <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
