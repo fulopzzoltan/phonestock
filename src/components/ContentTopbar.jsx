@@ -48,11 +48,11 @@ export default function ContentTopbar({
         <div className="loc-drop static"><span className="loc-drop-left"><PinIcon width={12} height={12} />{currentLocLabel}</span></div>
       )}
 
+      <div className="ctb-spacer" />
+
       <a className="util-icon-btn" href={SITE_URL} target="_blank" rel="noopener noreferrer" title="Webshop megtekintése">
         <ExternalLinkIcon width={14} height={14} />
       </a>
-
-      <div className="ctb-spacer" />
 
       <button
         type="button"
