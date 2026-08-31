@@ -17,6 +17,7 @@ export default function CustomerDetailPanel({ customer, locName, ledger, rewards
   const events = [
     ...customer.purchases.map((p) => ({ kind: "purchase", date: p.date, record: p })),
     ...customer.tickets.map((t) => ({ kind: "ticket", date: t.dateIn, record: t })),
+    ...(customer.manualWarranties || []).map((w) => ({ kind: "warranty", date: w.fromDate, record: w })),
   ].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
 
   const balance = customer.loyaltyPointsBalance || 0;
@@ -87,8 +88,9 @@ export default function CustomerDetailPanel({ customer, locName, ledger, rewards
                 if (e.kind === "ticket") onOpenTicket?.(e.record.id);
                 else if (e.record.productId) onOpenProduct?.(e.record.productId);
               };
-              const expiry = e.kind === "purchase" && e.record.warranty ? warrantyExpiry(e.record.date, e.record.warranty) : null;
-              const active = e.kind === "purchase" && e.record.warranty ? isWarrantyActive(e.record.date, e.record.warranty) : null;
+              const warrantyDate = e.kind === "purchase" ? e.record.date : e.kind === "ticket" ? e.record.dateOut : e.record.fromDate;
+              const expiry = e.record.warranty ? warrantyExpiry(warrantyDate, e.record.warranty) : null;
+              const active = e.record.warranty ? isWarrantyActive(warrantyDate, e.record.warranty) : null;
               return (
                 <div
                   key={i} className="dp-row"
@@ -106,10 +108,25 @@ export default function CustomerDetailPanel({ customer, locName, ledger, rewards
                         </span>
                       )}
                     </>
-                  ) : (
+                  ) : e.kind === "ticket" ? (
                     <>
                       <span className="dp-key">{e.date} · <span className={`st ${statusCls(e.record.status)}`} style={{ marginLeft: 4 }}>#{e.record.ticketNo}{e.record.subStatus ? ` · ${subStatusLabel(e.record.status, e.record.subStatus)}` : ""}</span></span>
                       <span className="dp-val">{[e.record.brand, e.record.model].filter(Boolean).join(" ")} — {money(e.record.price)}</span>
+                      {expiry && (
+                        <span style={{ width: "100%", fontSize: 11, color: active ? "#15803D" : "#B91C1C", textAlign: "right" }}>
+                          Garancia: {active ? `${expiry}-ig érvényes` : `lejárt (${expiry})`}
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <span className="dp-key">{e.date} · <span className="gar-pill" style={{ marginLeft: 4 }}>Kézzel rögzített garancia</span></span>
+                      <span className="dp-val">{e.record.label}</span>
+                      {expiry && (
+                        <span style={{ width: "100%", fontSize: 11, color: active ? "#15803D" : "#B91C1C", textAlign: "right" }}>
+                          Garancia: {active ? `${expiry}-ig érvényes` : `lejárt (${expiry})`}
+                        </span>
+                      )}
                     </>
                   )}
                 </div>

@@ -496,11 +496,13 @@ export const waitingFromApi = (r) => ({
 
 export const warrantyFromApi = (r) => ({
   id: r.id, kind: r.kind, customerName: r.customer_name, customerPhone: r.customer_phone || "",
+  customerId: r.customer_id || null,
   label: r.label, warranty: r.warranty, fromDate: r.from_date, locationId: r.location_id,
   note: r.note || "", createdAt: r.created_at,
 });
 export const warrantyToApi = (w, locId) => ({
   kind: w.kind, customer_name: w.customerName, customer_phone: w.customerPhone || null,
+  customer_id: w.customerId || null,
   label: w.label, warranty: w.warranty, from_date: w.fromDate, location_id: locId, note: w.note || null,
 });
 

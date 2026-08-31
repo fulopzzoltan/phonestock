@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { CloseIcon } from "./icons";
 import { WARRANTIES, today } from "../lib/utils";
+import CustomerAutocomplete from "./CustomerAutocomplete";
 
-export default function WarrantyModal({ initial, locations, onClose, onSubmit, busy }) {
+export default function WarrantyModal({ initial, locations, customers = [], onClose, onSubmit, busy }) {
   const isEdit = !!initial;
   const [f, setF] = useState({
     kind: initial?.kind || "sale",
     customerName: initial?.customerName || "",
     customerPhone: initial?.customerPhone || "",
+    customerId: initial?.customerId || null,
     label: initial?.label || "",
     warranty: initial?.warranty || WARRANTIES[0],
     fromDate: initial?.fromDate || today(),
@@ -35,8 +37,15 @@ export default function WarrantyModal({ initial, locations, onClose, onSubmit, b
           </div>
         </div>
         <div className="row2">
-          <div className="field"><label>Ügyfél neve</label><input value={f.customerName} onChange={set("customerName")} placeholder="Kovács János" /></div>
-          <div className="field"><label>Telefonszám</label><input value={f.customerPhone} onChange={set("customerPhone")} placeholder="07xx xxx xxx" /></div>
+          <div className="field"><label>Ügyfél neve</label>
+            <CustomerAutocomplete
+              customers={customers}
+              name={f.customerName}
+              onChangeName={(name) => setF({ ...f, customerName: name, customerId: null })}
+              onSelect={(c) => setF({ ...f, customerName: c.name, customerPhone: c.phone || f.customerPhone, customerId: c.id })}
+            />
+          </div>
+          <div className="field"><label>Telefonszám</label><input value={f.customerPhone} onChange={(e) => setF({ ...f, customerPhone: e.target.value, customerId: null })} placeholder="07xx xxx xxx" /></div>
         </div>
         <div className="field"><label>Termék / Eszköz</label><input value={f.label} onChange={set("label")} placeholder="iPhone 12 128GB / Kijelzőcsere" /></div>
         <div className="row2">

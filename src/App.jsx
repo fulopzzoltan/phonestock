@@ -1207,16 +1207,24 @@ function AppShell() {
   }
 
   // WARRANTIES
+  async function linkedWarrantyCustomerId(data) {
+    if (data.customerId) return data.customerId;
+    if (!data.customerPhone) return null;
+    const { data: cid } = await supabase.rpc("upsert_customer", { p_name: data.customerName, p_phone: data.customerPhone });
+    return cid || null;
+  }
   async function addWarranty(data, locId) {
     await withBusy(async () => {
-      const r = unwrap(await supabase.from("warranties").insert(warrantyToApi(data, locId)).select());
+      const customerId = await linkedWarrantyCustomerId(data);
+      const r = unwrap(await supabase.from("warranties").insert(warrantyToApi({ ...data, customerId }, locId)).select());
       setWarranties([...warranties, warrantyFromApi(r[0])]);
       setWarrantyModal(null);
     });
   }
   async function editWarranty(id, data, locId) {
     await withBusy(async () => {
-      const r = unwrap(await supabase.from("warranties").update(warrantyToApi(data, locId)).eq("id", id).select());
+      const customerId = await linkedWarrantyCustomerId(data);
+      const r = unwrap(await supabase.from("warranties").update(warrantyToApi({ ...data, customerId }, locId)).eq("id", id).select());
       setWarranties(warranties.map((w) => (w.id === id ? warrantyFromApi(r[0]) : w)));
       setWarrantyModal(null);
     });
@@ -1993,11 +2001,13 @@ function AppShell() {
     return customersTable.map((c) => {
       const purchases = filteredTransactions.filter((t) => t.type === "income" && t.customerId === c.id);
       const tickets = filteredTickets.filter((t) => t.customerId === c.id);
+      const manualWarranties = warranties.filter((w) => w.customerId === c.id);
       return {
         ...c,
         key: c.id,
         purchases,
         tickets,
+        manualWarranties,
         purchaseTotal: purchases.reduce((s, p) => s + (Number(p.amount) || 0), 0),
         ticketTotal: tickets.reduce((s, t) => s + (Number(t.price) || 0), 0),
         lastActivity: [...purchases.map((p) => p.date), ...tickets.map((t) => t.dateIn)].filter(Boolean).sort().reverse()[0] || "",
@@ -2007,7 +2017,7 @@ function AppShell() {
       const q = custSearch.trim().toLowerCase();
       return !q || [c.name, c.phone].join(" ").toLowerCase().includes(q);
     }).sort((a, b) => b.lastActivity.localeCompare(a.lastActivity));
-  }, [customersTable, filteredTransactions, filteredTickets, custSearch, customerProfiles]);
+  }, [customersTable, filteredTransactions, filteredTickets, custSearch, customerProfiles, warranties]);
 
   const customerStats = useMemo(() => ({
     count: customers.length,
@@ -2580,7 +2590,7 @@ function AppShell() {
       {warrantyModal && (
         <WarrantyModal
           initial={warrantyModal === "add" ? null : warrantyModal}
-          locations={allowedLocations} busy={busy}
+          locations={allowedLocations} customers={customersTable} busy={busy}
           onClose={() => setWarrantyModal(null)}
           onSubmit={(data, locId) => (warrantyModal === "add" ? addWarranty(data, locId) : editWarranty(warrantyModal.id, data, locId))}
         />
