@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { DndContext, useDraggable, useDroppable, useSensor, useSensors, PointerSensor } from "@dnd-kit/core";
 import { money, STATUSES, statusLabel, statusCls, subStatusCls, subStatusLabel, displayName, ticketCode, daysOnShelf, slaInfo, isStaleReady } from "../lib/utils";
-import { SearchIcon, ChevronDownIcon, ServiceIcon, ListViewIcon, GridViewIcon, ClockIcon } from "../components/icons";
+import { SearchIcon, ChevronDownIcon, ServiceIcon, ListViewIcon, GridViewIcon, ClockIcon, WarrantyIcon } from "../components/icons";
 import TicketCard from "../components/TicketCard";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import HistorySection from "../components/HistorySection";
@@ -108,6 +108,15 @@ export default function ServiceTab({
             if (n <= 0) return <span className="svc-days today">Ma</span>;
             return <span className="svc-days">{n}<span className="svc-days-lbl">napja</span></span>;
           };
+          const kliensOf = (t) => {
+            if (t.ticketKind === "Saját készlet - előkészítés") {
+              return <span className="t-kind-pill" style={{ background: "#F1F5F9", color: "#475569" }}><ServiceIcon width={11} height={11} />Saját — előkészítés</span>;
+            }
+            if (t.ticketKind === "Saját készlet - garanciális") {
+              return <span className="t-kind-pill" style={{ background: "#FCE7F3", color: "#BE185D" }}><WarrantyIcon width={11} height={11} />Saját — garanciális</span>;
+            }
+            return t.customerName || "—";
+          };
           const statusPill = (t) => (t.subStatus ? (
             <span className={`st ${subStatusCls(t.status, t.subStatus)}`}>{subStatusLabel(t.status, t.subStatus)}</span>
           ) : (
@@ -125,16 +134,16 @@ export default function ServiceTab({
                 <tr key={t.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
                   <td style={{ whiteSpace: "nowrap" }}>
                     <div className="stk-name">
+                      <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</span>
+                      {displayName(t.brand, t.model) || "—"}
                       {urgencyOf(t) && (
-                        <span className={`sla-badge sla-${urgencyOf(t).level}`} style={{ marginRight: 6 }} title={urgencyOf(t).label}>
+                        <span className={`sla-badge sla-${urgencyOf(t).level}`} style={{ marginLeft: 6 }} title={urgencyOf(t).label}>
                           <ClockIcon width={11} height={11} />
                         </span>
                       )}
-                      <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</span>
-                      {displayName(t.brand, t.model) || "—"}
                     </div>
                   </td>
-                  <td style={{ whiteSpace: "nowrap" }}>{t.customerName || "—"}</td>
+                  <td style={{ whiteSpace: "nowrap" }}>{kliensOf(t)}</td>
                   <td>{daysOf(t)}</td>
                   <td>
                     <div className="svc-probs">
@@ -149,18 +158,18 @@ export default function ServiceTab({
                 <div className="mob-row" onClick={() => setDetailId(t.id)}>
                   <div className="mob-row-top">
                     <div className="mob-row-main">
+                      <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</span>
+                      <span>{displayName(t.brand, t.model) || "—"}</span>
                       {urgencyOf(t) && (
-                        <span className={`sla-badge sla-${urgencyOf(t).level}`} style={{ marginRight: 6 }} title={urgencyOf(t).label}>
+                        <span className={`sla-badge sla-${urgencyOf(t).level}`} style={{ marginLeft: 6 }} title={urgencyOf(t).label}>
                           <ClockIcon width={11} height={11} />
                         </span>
                       )}
-                      <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</span>
-                      <span>{displayName(t.brand, t.model) || "—"}</span>
                     </div>
                     <div className="mob-row-amount">{money(t.price)}</div>
                   </div>
                   <div className="mob-row-sub">
-                    <span>{t.customerName || "—"}</span>
+                    <span>{kliensOf(t)}</span>
                     {daysOf(t)}
                     {statusPill(t)}
                   </div>
