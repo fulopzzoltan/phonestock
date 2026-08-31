@@ -28,21 +28,41 @@ export const REPAIR_MODELS = [
 ];
 
 // Melyik PROBLEM_TAGS-érték kap fix mátrix-árat vs. csak diagnózis-lead-et.
-export const PRICED_PROBLEMS = ["LCD", "Akku", "Csatlakozó", "Kamera"];
+// A többinél (pl. "Nem tölt", "Alaplapi hiba", "Beázás") túl nagy a szórás ahhoz, hogy egy
+// modellcsaládra egyetlen fix ár legyen adható — azok a nyilvános oldalon "kérj árajánlatot" leadet adnak.
+export const PRICED_PROBLEMS = ["Kijelző csere", "Akku csere", "Töltőcsatlakozó", "Hátlapi kamera", "Előlapi kamera"];
 
 // Admin (belső) feliratok — ez marad magyar, ld. TASKS_SEO_GEO.md 9. pont ("belső admin nincs lefordítva").
 export const PROBLEM_LABELS = {
-  LCD: "Törött / hibás kijelző", Akku: "Lemerülő / cserélendő akku",
-  Csatlakozó: "Nem tölt / töltőcsatlakozó hibás", Kamera: "Kamera nem működik",
-  FRP: "Fiók/FRP zárolás", Szoftver: "Szoftverhiba", Egyéb: "Egyéb probléma",
+  "Kijelző csere": "Kijelző csere", "Akku csere": "Akku csere",
+  "Nem tölt": "Nem tölt", "Töltőcsatlakozó": "Töltőcsatlakozó hibás",
+  "Gyorsan merül": "Gyorsan merül az akku", "Beszédhangszóró": "Beszédhangszóró hibás",
+  "Főhangszóró": "Főhangszóró hibás", "Mikrofon": "Mikrofon hibás",
+  "Hálózat hiba": "Hálózat / térerő hiba", "Hátlapi kamera": "Hátlapi kamera hibás",
+  "Előlapi kamera": "Előlapi kamera hibás", "Kamera lencse": "Kamera lencse törött",
+  "Face ID / Touch ID hiba": "Face ID / Touch ID hiba", "Hátlap csere": "Hátlap csere",
+  "Készülékház": "Készülékház sérült", "Bekapcsoló gomb": "Bekapcsoló gomb hibás",
+  "Hangerő gombok": "Hangerő gombok hibásak", "Beázás": "Beázott",
+  "Nem kapcsol be": "Nem kapcsol be", "Alaplapi hiba": "Alaplapi hiba",
+  "Bootloop": "Újraindulási hurok (bootloop)", "Adatmentés": "Adatmentés",
+  "Bevizsgálás": "Csak bevizsgálás", "FRP zárolás": "Fiók / FRP zárolás",
 };
 // Publikus (ügyfél felé mutatott) feliratok, nyelv szerint — a RepairEstimator.jsx ezt használja.
 const PROBLEM_LABELS_BY_LANG = {
   hu: PROBLEM_LABELS,
   ro: {
-    LCD: "Ecran spart / defect", Akku: "Baterie descărcată / de schimbat",
-    Csatlakozó: "Nu se încarcă / conector defect", Kamera: "Camera nu funcționează",
-    FRP: "Blocare cont/FRP", Szoftver: "Eroare software", Egyéb: "Altă problemă",
+    "Kijelző csere": "Înlocuire display", "Akku csere": "Înlocuire baterie",
+    "Nem tölt": "Nu se încarcă", "Töltőcsatlakozó": "Conector de încărcare defect",
+    "Gyorsan merül": "Bateria se descarcă rapid", "Beszédhangszóró": "Difuzor convorbire defect",
+    "Főhangszóró": "Difuzor principal defect", "Mikrofon": "Microfon defect",
+    "Hálózat hiba": "Problemă rețea / semnal", "Hátlapi kamera": "Cameră spate defectă",
+    "Előlapi kamera": "Cameră față defectă", "Kamera lencse": "Geam cameră spart",
+    "Face ID / Touch ID hiba": "Problemă Face ID / Touch ID", "Hátlap csere": "Înlocuire capac spate",
+    "Készülékház": "Carcasă deteriorată", "Bekapcsoló gomb": "Buton pornire defect",
+    "Hangerő gombok": "Butoane volum defecte", "Beázás": "Deteriorare cu lichid",
+    "Nem kapcsol be": "Nu pornește", "Alaplapi hiba": "Problemă placă de bază",
+    "Bootloop": "Repornire în buclă (bootloop)", "Adatmentés": "Recuperare date",
+    "Bevizsgálás": "Doar diagnosticare", "FRP zárolás": "Blocare cont / FRP",
   },
 };
 export const problemLabel = (tag, lang = "hu") => (PROBLEM_LABELS_BY_LANG[lang] || PROBLEM_LABELS)[tag] || tag;

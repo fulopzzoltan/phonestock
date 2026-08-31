@@ -164,7 +164,14 @@ export function slaInfo(ticket) {
   return { level: "ok", days, label: `${days} nap van hátra` };
 }
 
-export const PROBLEM_TAGS = ["LCD", "FRP", "Csatlakozó", "Akku", "Kamera", "Szoftver", "Egyéb"];
+export const PROBLEM_TAGS = [
+  "Kijelző csere", "Akku csere", "Nem tölt", "Töltőcsatlakozó", "Gyorsan merül",
+  "Beszédhangszóró", "Főhangszóró", "Mikrofon", "Hálózat hiba",
+  "Hátlapi kamera", "Előlapi kamera", "Kamera lencse", "Face ID / Touch ID hiba",
+  "Hátlap csere", "Készülékház", "Bekapcsoló gomb", "Hangerő gombok",
+  "Beázás", "Nem kapcsol be", "Alaplapi hiba", "Bootloop", "Adatmentés",
+  "Bevizsgálás", "FRP zárolás",
+];
 export const PART_CATEGORIES = ["Kijelző", "Akkumulátor", "Hátlap", "Csatlakozó", "Fólia"];
 export const PART_ORIGINS = ["OEM", "Utángyártott"];
 export const WARRANTIES = ["1 hó", "3 hó", "6 hó", "1 év", "2 év"];
