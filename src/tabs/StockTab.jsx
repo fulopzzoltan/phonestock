@@ -111,19 +111,15 @@ export default function StockTab({
                   renderRow={(i) => (
                     <tr key={i.id} style={{ cursor: "pointer" }} onClick={() => setProductDetailId(i.id)}>
                       <td>
-                        <div className="stk-row">
-                          <Thumb brand={i.brand} />
-                          <div>
-                            <div className="stk-name">
-                              {displayName(i.brand, i.model)}
-                              {i.acquisition?.acquisitionType === "consignment" && <span className="badge-loc">Bizomány</span>}
-                              {i.stockStatus === "javitando" && <span className="tag" style={{ background: "var(--danger-soft)", color: "var(--danger-ink)", fontWeight: 700 }} title="Nem látszik a webshopban">Javítandó</span>}
-                              {i.stockStatus === "lefoglalt" && <span style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }} title="Nem látszik a webshopban">{stockStatusLabel(i.stockStatus)}</span>}
-                              {isSlowMoving(i, reserveLocId) && <span className="tag" style={{ background: "var(--warning-soft)", color: "var(--warning-ink)", fontWeight: 700 }}>{daysOnShelf(i.dateAdded)} napja a polcon</span>}
-                            </div>
-                            <div className="stk-sub">{[phoneCode(i.productNo), i.storage].filter(Boolean).join(" · ") || "—"}</div>
-                          </div>
+                        <div className="stk-name">
+                          <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{phoneCode(i.productNo) || "—"}</span>
+                          {displayName(i.brand, i.model)}
+                          {i.acquisition?.acquisitionType === "consignment" && <span className="badge-loc">Bizomány</span>}
+                          {i.stockStatus === "javitando" && <span className="tag" style={{ background: "var(--danger-soft)", color: "var(--danger-ink)", fontWeight: 700 }} title="Nem látszik a webshopban">Javítandó</span>}
+                          {i.stockStatus === "lefoglalt" && <span style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }} title="Nem látszik a webshopban">{stockStatusLabel(i.stockStatus)}</span>}
+                          {isSlowMoving(i, reserveLocId) && <span className="tag" style={{ background: "var(--warning-soft)", color: "var(--warning-ink)", fontWeight: 700 }}>{daysOnShelf(i.dateAdded)} napja a polcon</span>}
                         </div>
+                        {i.storage && <div className="stk-sub">{i.storage}</div>}
                       </td>
                       <td>
                         <div className="stk-badges">
@@ -146,13 +142,13 @@ export default function StockTab({
                     <div className="mob-row" onClick={() => setProductDetailId(i.id)}>
                       <div className="mob-row-top">
                         <div className="mob-row-main">
-                          <Thumb brand={i.brand} />
+                          <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{phoneCode(i.productNo) || "—"}</span>
                           <span>{displayName(i.brand, i.model)}</span>
                         </div>
                         <div className="mob-row-amount">{money(i.salePrice)}</div>
                       </div>
                       <div className="mob-row-sub">
-                        <span>{[phoneCode(i.productNo), i.storage].filter(Boolean).join(" · ") || "—"}</span>
+                        {i.storage && <span>{i.storage}</span>}
                         <span className={`st ${i.condition === "New" ? "st-kesz" : "st-beveve"}`}>{conditionGradeLabel(i.condition, i.grade)}</span>
                         {i.warranty && <span className="gar-pill"><WarrantyIcon width={10} height={10} />{i.warranty}</span>}
                         {i.acquisition?.acquisitionType === "consignment" && <span className="badge-loc">Bizomány</span>}
@@ -225,13 +221,11 @@ export default function StockTab({
             renderRow={(i) => (
               <tr key={i.id} style={{ cursor: "pointer" }} onClick={() => setProductDetailId(i.id)}>
                 <td>
-                  <div className="stk-row">
-                    <Thumb brand={i.brand} />
-                    <div>
-                      <div className="stk-name">{displayName(i.brand, i.model)}</div>
-                      <div className="stk-sub">{[phoneCode(i.productNo), i.imei].filter(Boolean).join(" · ") || "—"}</div>
-                    </div>
+                  <div className="stk-name">
+                    <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{phoneCode(i.productNo) || "—"}</span>
+                    {displayName(i.brand, i.model)}
                   </div>
+                  {i.imei && <div className="stk-sub">{i.imei}</div>}
                 </td>
                 <td><span className="badge-loc">{locName(i.locationId)}</span></td>
                 <td className="mono">{i.saleTx?.date || "—"}</td>
@@ -243,13 +237,14 @@ export default function StockTab({
               <div className="mob-row" onClick={() => setProductDetailId(i.id)}>
                 <div className="mob-row-top">
                   <div className="mob-row-main">
-                    <Thumb brand={i.brand} />
+                    <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{phoneCode(i.productNo) || "—"}</span>
                     <span>{displayName(i.brand, i.model)}</span>
                   </div>
                   <div className="mob-row-amount">{money(i.salePrice)}</div>
                 </div>
                 <div className="mob-row-sub">
                   <span className="badge-loc">{locName(i.locationId)}</span>
+                  {i.imei && <span>{i.imei}</span>}
                   <span>{i.saleTx?.date || "—"}</span>
                   <span>{i.saleTx?.customerName || "—"}</span>
                 </div>

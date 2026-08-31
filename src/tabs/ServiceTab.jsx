@@ -3,7 +3,6 @@ import { DndContext, useDraggable, useDroppable, useSensor, useSensors, PointerS
 import { money, STATUSES, statusLabel, statusCls, subStatusCls, subStatusLabel, displayName, ticketCode } from "../lib/utils";
 import { SearchIcon, ChevronDownIcon, ServiceIcon, ListViewIcon, GridViewIcon } from "../components/icons";
 import TicketCard from "../components/TicketCard";
-import Thumb from "../components/Thumb";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import HistorySection from "../components/HistorySection";
 import ResponsiveTable from "../components/ResponsiveTable";
@@ -95,12 +94,9 @@ export default function ServiceTab({
               renderRow={(t) => (
                 <tr key={t.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
                   <td>
-                    <div className="stk-row">
-                      <Thumb brand={t.brand} />
-                      <div>
-                        <div className="stk-name">{displayName(t.brand, t.model) || "—"}</div>
-                        <div className="stk-sub">{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</div>
-                      </div>
+                    <div className="stk-name">
+                      <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</span>
+                      {displayName(t.brand, t.model) || "—"}
                     </div>
                   </td>
                   <td>{t.customerName || "—"}</td>
@@ -117,7 +113,10 @@ export default function ServiceTab({
               renderMobileRow={(t) => (
                 <div className="mob-row" onClick={() => setDetailId(t.id)}>
                   <div className="mob-row-top">
-                    <div className="mob-row-main"><span>{displayName(t.brand, t.model) || "—"}</span></div>
+                    <div className="mob-row-main">
+                      <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</span>
+                      <span>{displayName(t.brand, t.model) || "—"}</span>
+                    </div>
                     <div className="mob-row-amount">{money(t.price)}</div>
                   </div>
                   <div className="mob-row-sub">
@@ -193,12 +192,9 @@ export default function ServiceTab({
               {rows.map((t) => (
                 <tr key={t.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
                   <td>
-                    <div className="stk-row">
-                      <Thumb brand={t.brand} />
-                      <div>
-                        <div className="stk-name">{displayName(t.brand, t.model) || "—"}</div>
-                        <div className="stk-sub">{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</div>
-                      </div>
+                    <div className="stk-name">
+                      <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</span>
+                      {displayName(t.brand, t.model) || "—"}
                     </div>
                   </td>
                   <td><span className="badge-loc">{locName(t.locationId)}</span></td>
