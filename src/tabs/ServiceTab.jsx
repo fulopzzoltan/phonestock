@@ -31,7 +31,7 @@ export default function ServiceTab({
       {loadingData ? <LoadingState /> : (
         (() => {
           const items = activeTickets.filter((t) => t.status === listStatus);
-          if (listStatus === "Átadásra") items.sort((a, b) => (daysOnShelf(b.dateIn) ?? -1) - (daysOnShelf(a.dateIn) ?? -1));
+          if (listStatus === "Átadásra") items.sort((a, b) => (daysOnShelf(a.dateIn) ?? -1) - (daysOnShelf(b.dateIn) ?? -1));
           if (items.length === 0) return <EmptyState icon={ServiceIcon}>Nincs munkalap ebben az állapotban.</EmptyState>;
           const probsOf = (t) => (t.issue || "").split(",").map((p) => p.trim()).filter(Boolean);
           // Sürgősség: csak akkor jelezzük, ha VAN vállalt határidő (dueDate) — ha nincs ígéret,
