@@ -125,6 +125,30 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
 .btn.danger{background:#EF4444;box-shadow:0 4px 12px rgba(239,68,68,.25)}
 .btn.danger:hover{background:#DC2626}
 
+/* "Új munkalap" gomb — csavarkulcs meghúz hoverre, kattintásra szikrázva pörög */
+.svc-add-btn{position:relative;overflow:visible;transition:transform .18s ease,box-shadow .18s ease,background .15s}
+.svc-add-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 22px rgba(29,185,84,.38)}
+.svc-add-btn.firing{animation:svc-squish .5s ease}
+.svc-add-icon{display:flex;transform-origin:60% 55%}
+.svc-add-btn:hover:not(:disabled) .svc-add-icon,.svc-add-btn:hover:not(:disabled) .svc-add-plus{animation:svc-tighten .6s ease-in-out}
+.svc-add-btn.firing .svc-add-icon,.svc-add-btn.firing .svc-add-plus{animation:svc-spin-fast .5s ease}
+.svc-add-plus{display:inline-block;font-weight:800;font-size:15px;transform-origin:center}
+.svc-add-btn.firing .svc-add-label{animation:svc-jitter .5s ease}
+.svc-spark{position:absolute;left:19px;top:50%;width:5px;height:5px;border-radius:50%;opacity:0;pointer-events:none}
+.svc-add-btn.firing .svc-spark{animation:svc-spark-fly .6s ease-out forwards}
+.svc-spark.s1{--dx:-22px;--dy:-16px;background:#FDE68A}
+.svc-spark.s2{--dx:2px;--dy:-26px;background:#FCA5A5}
+.svc-spark.s3{--dx:22px;--dy:-14px;background:#FDE68A}
+.svc-spark.s4{--dx:-18px;--dy:14px;background:#FCA5A5}
+.svc-spark.s5{--dx:0px;--dy:24px;background:#FDE68A}
+.svc-spark.s6{--dx:20px;--dy:16px;background:#FCA5A5}
+
+@keyframes svc-tighten{0%{transform:rotate(0deg)}30%{transform:rotate(-22deg)}60%{transform:rotate(14deg)}100%{transform:rotate(0deg)}}
+@keyframes svc-spin-fast{0%{transform:rotate(0deg) scale(1)}60%{transform:rotate(380deg) scale(1.15)}100%{transform:rotate(360deg) scale(1)}}
+@keyframes svc-squish{0%{transform:scale(1)}30%{transform:scale(.94)}60%{transform:scale(1.05)}100%{transform:scale(1)}}
+@keyframes svc-spark-fly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
+@keyframes svc-jitter{0%,100%{transform:translateX(0)}20%{transform:translateX(-1.5px)}40%{transform:translateX(1.5px)}60%{transform:translateX(-1px)}80%{transform:translateX(1px)}}
+
 /* STAT ROW */
 .statrow{display:grid;gap:14px;margin-bottom:22px}
 .statrow.c1{grid-template-columns:minmax(0,260px)}

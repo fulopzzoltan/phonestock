@@ -56,7 +56,7 @@ import BuybackRuleModal from "./components/BuybackRuleModal";
 import LeaveRequestModal from "./components/LeaveRequestModal";
 import LeaveBalanceModal from "./components/LeaveBalanceModal";
 import RepairPriceModal from "./components/RepairPriceModal";
-import { CloseIcon, ChatIcon } from "./components/icons";
+import { CloseIcon, ChatIcon, ServiceIcon } from "./components/icons";
 import Sidebar from "./components/Sidebar";
 import BottomNav from "./components/BottomNav";
 import TeamChatPanel from "./components/TeamChatPanel";
@@ -184,6 +184,7 @@ function AppShell() {
   const { messages: chatMessages, unreadCount: chatUnread, send: sendChatMessage, markRead: markChatRead } = useInternalChat(profile);
   const [search, setSearch] = useState("");
   const [svcSearch, setSvcSearch] = useState("");
+  const [svcAddFiring, setSvcAddFiring] = useState(false);
   const [partSearch, setPartSearch] = useState("");
   const [custSearch, setCustSearch] = useState("");
 
@@ -2216,7 +2217,22 @@ function AppShell() {
         pageHeader={tab === "service" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Szerviz</div>
-            <button className="btn" style={{ padding: "8px 14px" }} disabled={busy} onClick={() => setTicketModal("add")}>+ Új munkalap</button>
+            <button
+              className={`btn svc-add-btn${svcAddFiring ? " firing" : ""}`}
+              style={{ padding: "8px 14px" }}
+              disabled={busy}
+              onClick={() => {
+                setSvcAddFiring(true);
+                setTimeout(() => setSvcAddFiring(false), 650);
+                setTicketModal("add");
+              }}
+            >
+              <span className="svc-add-icon"><ServiceIcon width={14} height={14} /></span>
+              <span className="svc-add-plus">+</span>
+              <span className="svc-add-label">Új munkalap</span>
+              <span className="svc-spark s1" /><span className="svc-spark s2" /><span className="svc-spark s3" />
+              <span className="svc-spark s4" /><span className="svc-spark s5" /><span className="svc-spark s6" />
+            </button>
           </>
         ) : null}
       />
