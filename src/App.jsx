@@ -2073,6 +2073,9 @@ function AppShell() {
     const nonFeature = sold.filter((i) => !i.isFeaturePhone);
     const newPrices = nonFeature.filter((i) => i.condition === "New").map((i) => Number(i.salePrice) || 0).filter((n) => n > 0);
     const usedPrices = nonFeature.filter((i) => i.condition !== "New").map((i) => Number(i.salePrice) || 0).filter((n) => n > 0);
+    const withCost = nonFeature.filter((i) => (Number(i.salePrice) || 0) > 0 && (Number(i.costPrice) || 0) > 0);
+    const newMargins = withCost.filter((i) => i.condition === "New").map((i) => Number(i.salePrice) - Number(i.costPrice));
+    const usedMargins = withCost.filter((i) => i.condition !== "New").map((i) => Number(i.salePrice) - Number(i.costPrice));
 
     return {
       total: brandTotal,
@@ -2081,6 +2084,10 @@ function AppShell() {
       avgPriceUsed: avg(usedPrices),
       countNew: newPrices.length,
       countUsed: usedPrices.length,
+      avgMarginNew: avg(newMargins),
+      avgMarginUsed: avg(usedMargins),
+      countMarginNew: newMargins.length,
+      countMarginUsed: usedMargins.length,
     };
   }, [stock, effectiveLocFilter, reserveLocId]);
 
