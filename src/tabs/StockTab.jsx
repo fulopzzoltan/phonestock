@@ -78,7 +78,7 @@ export default function StockTab({
 
               {collapsed ? null : (
                 <ResponsiveTable
-                  columns={[{ key: "n", label: "Sorszám", className: "col-serial" },{ key: "p", label: "Termék", className: "col-device" }, { key: "s", label: "Specifikáció" }, { key: "a", label: "Ár" }, { key: "x", label: "" }]}
+                  columns={[{ key: "n", label: "Sorszám", className: "col-serial" },{ key: "p", label: "Termék", className: "col-device" }, { key: "s", label: "Specifikáció", className: "col-grow" }, { key: "a", label: "Ár" }, { key: "x", label: "" }]}
                   rows={items}
                   rowKey={(i) => i.id}
                   renderRow={(i) => (
