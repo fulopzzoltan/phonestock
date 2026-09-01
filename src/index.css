@@ -364,7 +364,7 @@ tr:hover td{background:#FAFAFA}
 .stk-actions{display:flex;gap:6px;align-items:center}
 .col-grow{width:100%}
 .col-device{min-width:230px}
-.col-serial{padding-right:6px}
+.col-serial{padding-right:6px;text-align:right}
 .stk-repair-badge{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:999px;background:var(--danger);color:#fff;flex-shrink:0}
 .stk-day-pill{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:var(--warning-soft);color:var(--warning-ink);font-size:11px;font-weight:800;flex-shrink:0}
 .stk-actions .iconbtn{padding:6px;border-radius:9px}

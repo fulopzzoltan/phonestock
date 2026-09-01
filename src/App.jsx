@@ -2219,6 +2219,11 @@ function AppShell() {
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Telefonok</div>
             <button className="btn" style={{ padding: "8px 14px" }} disabled={busy} onClick={() => setStockModal("add")}>+ Új termék</button>
           </>
+        ) : tab === "parts" ? (
+          <>
+            <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Alkatrész raktár</div>
+            <button className="btn" style={{ padding: "8px 14px" }} disabled={busy} onClick={() => setPartModal("add")}>+ Új alkatrész</button>
+          </>
         ) : tab === "service" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Szerviz</div>
@@ -2333,7 +2338,7 @@ function AppShell() {
 
         {!noLocationAssigned && tab === "parts" && (
           <PartsTab
-            busy={busy} setPartModal={setPartModal} partSearch={partSearch} setPartSearch={setPartSearch}
+            busy={busy} partSearch={partSearch} setPartSearch={setPartSearch}
             loadingData={loadingData} filteredParts={filteredParts} setPartDetailId={setPartDetailId} deletePart={deletePartGroup}
             partsStats={partsStats} allUsedParts={allUsedParts} locName={locName} setDetailId={setDetailId}
             onUsePart={openPartUsageModal}

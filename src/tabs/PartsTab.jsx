@@ -32,7 +32,7 @@ const UseIcon = (props) => (
 );
 
 export default function PartsTab({
-  busy, setPartModal, partSearch, setPartSearch, loadingData, filteredParts, setPartDetailId, deletePart,
+  busy, partSearch, setPartSearch, loadingData, filteredParts, setPartDetailId, deletePart,
   allUsedParts = [], locName, setDetailId, onUsePart,
 }) {
   const [catFilter, setCatFilter] = useState("all");
@@ -46,10 +46,6 @@ export default function PartsTab({
 
   return (
     <>
-      <div className="topbar">
-        <div><div className="page-title">Alkatrész raktár</div></div>
-        <button className="btn" disabled={busy} onClick={() => setPartModal("add")}>+ Új alkatrész</button>
-      </div>
 
       <div className="filter-row">
         <div className="searchbar"><SearchIcon /><input placeholder="Keresés név, márka, kategória, forrás szerint..." value={partSearch} onChange={(e) => setPartSearch(e.target.value)} /></div>
