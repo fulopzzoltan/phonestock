@@ -6,7 +6,7 @@ import FinanceTrendChart from "../components/FinanceTrendChart";
 import CategorySplitChart from "../components/CategorySplitChart";
 import ExpenseCategoryStats from "../components/ExpenseCategoryStats";
 import Sparkline from "../components/Sparkline";
-import { WarningIcon, FinanceIcon } from "../components/icons";
+import { WarningIcon, FinanceIcon, LockIcon } from "../components/icons";
 
 // Egységes, kicsit vastagabb szekció-cím az egész Áttekintés oldalon.
 const SectionHead = ({ icon: Icon, children }) => (
@@ -78,11 +78,14 @@ const TABS = [
   { key: "service", label: "Szerviz" },
 ];
 
+const FINANCE_UNLOCK_KEY = "phonestock_finance_unlocked";
+
 export default function DashboardTab({
   effectiveLocFilter, locName, stockStats, stockHistory, svcStats, soldPhoneStats,
   monthlyTrendSummary, currentMonthLive, monthlySummaries, locations,
   transactions, todoItems, setDetailId,
   stockSparkline, dailyIncomeTrend,
+  canSeeFinance, userEmail, signIn,
 }) {
   const todoCount = todoItems?.slaTickets.length || 0;
   const [showAllBrands, setShowAllBrands] = useState(false);
@@ -95,9 +98,37 @@ export default function DashboardTab({
   const hiddenSoldBrandCount = soldPhoneStats.brandConditionBreakdown.length - SOLD_BRAND_TOP_N;
 
   const [filter, setFilter] = useState("all");
-  const showFinance = filter === "all" || filter === "finance";
+  const showFinance = canSeeFinance && (filter === "all" || filter === "finance");
   const showPhones = filter === "all" || filter === "phones";
   const showService = filter === "all" || filter === "service";
+  const visibleTabs = canSeeFinance ? TABS : TABS.filter((t) => t.key !== "finance");
+
+  // A Bevétel & Kiadás tartalom külön jelszó-megerősítést kér a munkamenetben — akkor is,
+  // ha a felhasználó egyébként jogosult rá (canSeeFinance) — hogy egy nyitva hagyott gépnél
+  // ne látszódjon rögtön. A feloldás a saját fiók jelszavával, munkamenetenként egyszer.
+  const [financeUnlocked, setFinanceUnlocked] = useState(() => {
+    try { return sessionStorage.getItem(FINANCE_UNLOCK_KEY) === "1"; } catch { return false; }
+  });
+  const [lockPw, setLockPw] = useState("");
+  const [lockBusy, setLockBusy] = useState(false);
+  const [lockError, setLockError] = useState("");
+
+  async function unlockFinance(e) {
+    e.preventDefault();
+    setLockError("");
+    if (!lockPw) { setLockError("Add meg a jelszavad."); return; }
+    setLockBusy(true);
+    try {
+      await signIn(userEmail, lockPw);
+      setFinanceUnlocked(true);
+      try { sessionStorage.setItem(FINANCE_UNLOCK_KEY, "1"); } catch { /* noop */ }
+      setLockPw("");
+    } catch {
+      setLockError("Hibás jelszó.");
+    } finally {
+      setLockBusy(false);
+    }
+  }
 
   // Periódus-választó a fenti két trend-grafikonhoz (Bevétel/helyszín oszlopok + Bevétel-Kiadás-Profit vonal) —
   // "Utolsó 12 hónap" a mostani (görgő) alapértelmezett, de kiválasztható egy konkrét év vagy a teljes eddigi adat is.
@@ -159,7 +190,7 @@ export default function DashboardTab({
           itt csak a Mind / Bevétel & Kiadás / Telefonok / Szerviz szűrő, bal oldalt, saját sorban,
           ugyanazzal a "status-seg" pill-stílussal, mint pl. a Szerviz fülön a státusz-választó. */}
       <div className="status-seg" style={{ marginBottom: 22, display: "inline-flex" }}>
-        {TABS.map((t) => (
+        {visibleTabs.map((t) => (
           <button
             key={t.key}
             type="button"
@@ -186,7 +217,26 @@ export default function DashboardTab({
         </>
       )}
 
-      {showFinance && (
+      {showFinance && !financeUnlocked && (
+        <div className="statcard" style={{ marginBottom: 22, textAlign: "center", padding: "36px 24px" }}>
+          <LockIcon width={22} height={22} style={{ color: "#9CA3AF", marginBottom: 10 }} />
+          <div style={{ fontSize: 13.5, fontWeight: 700, marginBottom: 4 }}>Bevétel & Kiadás zárolva</div>
+          <div style={{ fontSize: 12, color: "#6B7280", marginBottom: 16 }}>Érzékeny adat — add meg újra a jelszavad a megtekintéshez.</div>
+          <form onSubmit={unlockFinance} style={{ maxWidth: 260, margin: "0 auto" }}>
+            {lockError && <div className="errbar" style={{ marginBottom: 10 }}>{lockError}</div>}
+            <input
+              type="password" autoComplete="current-password" placeholder="Jelszó" value={lockPw}
+              onChange={(e) => setLockPw(e.target.value)}
+              style={{ width: "100%", background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 11, padding: "10px 12px", fontFamily: "inherit", fontSize: 13, marginBottom: 10, color: "#111827" }}
+            />
+            <button className="btn" type="submit" disabled={lockBusy} style={{ width: "100%", justifyContent: "center" }}>
+              {lockBusy ? "Ellenőrzés..." : "Feloldás"}
+            </button>
+          </form>
+        </div>
+      )}
+
+      {showFinance && financeUnlocked && (
       <div style={{ marginBottom: 22 }}>
       {/* Bevételek & Kiadások — mindig legelöl, kiemelt sávban, ha látszik. */}
       <div style={{ background: "#0A0A0C", borderRadius: 20, padding: "26px 28px", marginBottom: 18, color: "#fff" }}>

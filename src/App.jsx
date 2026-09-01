@@ -146,9 +146,14 @@ export default function App() {
   return <AppShell />;
 }
 
+// A Bevétel & Kiadás adatokat (Áttekintés) csak ők láthatják — mindegy, ki milyen
+// admin/employee role-lal rendelkezik amúgy, ez egy explicit, névre szóló lista.
+const FINANCE_ALLOWED_EMAILS = ["fulopzzoltan@gmail.com", "h.endre404@gmail.com"];
+
 function AppShell() {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, signIn } = useAuth();
   const isAdmin = profile?.role === "admin";
+  const canSeeFinance = FINANCE_ALLOWED_EMAILS.includes(user?.email);
   const myLocationId = profile?.locationId || null;
 
   const [tab, setTab] = useState("pult");
@@ -2588,6 +2593,7 @@ function AppShell() {
             monthlySummaries={monthlySummaries} locations={locations} transactions={filteredTransactions} partsStats={partsStats} customerStats={customerStats}
             todoItems={todoItems} setDetailId={setDetailId}
             stockSparkline={stockHistory.slice(-14).map((h) => h.value)} dailyIncomeTrend={dailyIncomeTrend}
+            canSeeFinance={canSeeFinance} userEmail={user?.email} signIn={signIn}
           />
         )}
 
@@ -2757,6 +2763,8 @@ function AppShell() {
           product={typeof stockModal === "object" && stockModal?.id ? stockModal : null}
           prefill={typeof stockModal === "object" && !stockModal?.id ? stockModal : null}
           locations={stockLocations}
+          stock={stock}
+          tickets={tickets}
           onClose={() => setStockModal(null)}
           busy={busy}
           defaultLocId={defaultStockLocId}
