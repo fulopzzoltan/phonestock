@@ -97,6 +97,7 @@ export default function StockTab({
                         <div className="stk-badges" style={{ flexWrap: "nowrap" }}>
                           <span className={`st ${i.condition === "New" ? "st-kesz" : "st-beveve"}`}>{conditionGradeLabel(i.condition, i.grade)}</span>
                           {i.storage && <span className="stk-sub" style={{ marginTop: 0 }}>{i.storage}</span>}
+                          {i.ram && <span className="stk-sub" style={{ marginTop: 0 }}>{i.ram} RAM</span>}
                           {i.warranty && <span className="gar-pill"><WarrantyIcon width={10} height={10} />{i.warranty}</span>}
                         </div>
                       </td>
@@ -119,6 +120,7 @@ export default function StockTab({
                       </div>
                       <div className="mob-row-sub">
                         {i.storage && <span>{i.storage}</span>}
+                        {i.ram && <span>{i.ram} RAM</span>}
                         <span className={`st ${i.condition === "New" ? "st-kesz" : "st-beveve"}`}>{conditionGradeLabel(i.condition, i.grade)}</span>
                         {i.warranty && <span className="gar-pill"><WarrantyIcon width={10} height={10} />{i.warranty}</span>}
                         {i.acquisition?.acquisitionType === "consignment" && <span className="badge-loc">Bizomány</span>}

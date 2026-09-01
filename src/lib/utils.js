@@ -189,6 +189,12 @@ export const PHONE_BRANDS = [
   "Doogee", "Oukitel", "Ulefone", "Oscal", "TCL", "ZTE", "Lenovo", "Philips",
   "Crosscall", "MobilWire", "Vodafone", "Orange", "Egyéb",
 ];
+export const STORAGE_OPTIONS = ["32 GB", "64 GB", "128 GB", "256 GB", "512 GB", "1 TB", "Egyéb"];
+export const RAM_OPTIONS = ["2 GB", "3 GB", "4 GB", "6 GB", "8 GB", "12 GB", "16 GB", "Egyéb"];
+export const PHONE_COLORS = [
+  "Fekete", "Fehér", "Szürke", "Ezüst", "Titán", "Kék", "Sötét kék", "Zöld",
+  "Menta", "Világoszöld", "Arany", "Rózsaarany", "Rózsaszín", "Piros", "Narancs", "Lila", "Egyéb",
+];
 export const SOURCES = ["Konszignáció", "Számla"];
 export const PAYMENTS = ["Készpénz", "Kártya", "Átutalás", "Vegyes"];
 export const CATEGORIES = ["Fix", "Készlet", "Marketing", "Eszköz", "Szerviz", "Egyéb"];

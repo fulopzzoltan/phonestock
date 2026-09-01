@@ -1,9 +1,10 @@
 import { useState } from "react";
 import LocationField from "./LocationField";
 import { CloseIcon } from "./icons";
-import { WARRANTIES, SOURCES, STOCK_STATUSES, CONDITION_GRADES, conditionGradeKey } from "../lib/utils";
+import { WARRANTIES, SOURCES, STOCK_STATUSES, CONDITION_GRADES, conditionGradeKey, STORAGE_OPTIONS, RAM_OPTIONS, PHONE_COLORS } from "../lib/utils";
 import { ChipField, DropdownField } from "./FormPickers";
 import BrandField from "./BrandField";
+import PicklistField from "./PicklistField";
 
 function SectionHead({ n, title, sub }) {
   return (
@@ -25,6 +26,7 @@ export default function StockModal({ product, prefill, locations, onClose, onSav
     condition: product?.condition || "New",
     grade: product?.grade || "A",
     storage: product?.storage || prefill?.storage || "",
+    ram: product?.ram || prefill?.ram || "",
     color: product?.color || prefill?.color || "",
     imei: product?.imei || prefill?.imei || "",
     costPrice: product?.costPrice ?? prefill?.costPrice ?? "",
@@ -122,9 +124,10 @@ export default function StockModal({ product, prefill, locations, onClose, onSav
             options={CONDITION_GRADES.map((g) => ({ key: g.key, label: g.label }))}
           />
           <div className="row2">
-            <div className="field"><label>Tárhely</label><input value={f.storage} onChange={set("storage")} placeholder="128GB" /></div>
-            <div className="field"><label>Szín</label><input value={f.color} onChange={set("color")} placeholder="Fekete" /></div>
+            <PicklistField label="Tárhely" value={f.storage} onChange={(v) => setF({ ...f, storage: v })} options={STORAGE_OPTIONS} placeholder="Válassz tárhelyet..." />
+            <PicklistField label="RAM" value={f.ram} onChange={(v) => setF({ ...f, ram: v })} options={RAM_OPTIONS} placeholder="Válassz RAM-ot..." />
           </div>
+          <PicklistField label="Szín" value={f.color} onChange={(v) => setF({ ...f, color: v })} options={PHONE_COLORS} placeholder="Válassz színt..." />
           <div className="field"><label>IMEI</label><input value={f.imei} onChange={set("imei")} placeholder="35xxxxxxxxxxxxx" /></div>
           {f.condition === "Refurbished" && (
             <div className="field"><label>Akkuállapot (%)</label><input type="number" min="0" max="100" value={f.batteryHealth} onChange={set("batteryHealth")} placeholder="100" /></div>
