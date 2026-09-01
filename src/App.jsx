@@ -1623,7 +1623,7 @@ function AppShell() {
       setTicketModal(null);
     });
   }
-  async function setTicketStatus(id, status, subStatus = null, payment = "Készpénz") {
+  async function setTicketStatus(id, status, subStatus = null, payment = "Készpénz", paymentCashAmount = null, paymentCardAmount = null) {
     await withBusy(async () => {
       const ticket = tickets.find((t) => t.id === id);
       const becameReady = status === "Átadásra" && !(ticket && ticket.status === "Átadásra");
@@ -1663,6 +1663,8 @@ function AppShell() {
             description: `Szerviz: ${ticket.customerName} — ${[ticket.brand, ticket.model].filter(Boolean).join(" ")}`,
             amount: ticket.price,
             payment,
+            paymentCashAmount: payment === "Vegyes" ? paymentCashAmount : null,
+            paymentCardAmount: payment === "Vegyes" ? paymentCardAmount : null,
             costPrice: ticket.matCost,
             customerName: ticket.customerName,
             customerPhone: ticket.customerPhone,

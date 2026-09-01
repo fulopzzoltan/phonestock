@@ -4,6 +4,7 @@ import { SearchIcon, ServiceIcon, ClockIcon, WarrantyIcon, ChevronRightIcon, Che
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import HistorySection from "../components/HistorySection";
 import ResponsiveTable from "../components/ResponsiveTable";
+import HandoverPaymentModal from "../components/HandoverPaymentModal";
 
 const STATUS_KEYS = STATUSES.map((s) => s.key);
 function nextActionOf(t) {
@@ -12,7 +13,7 @@ function nextActionOf(t) {
     const nk = STATUS_KEYS[idx + 1];
     return { status: nk, subStatus: SUB_STATUSES[nk]?.[0]?.key ?? null, icon: ChevronRightIcon, label: "Következő", title: `Következő státusz: ${statusLabel(nk)}` };
   }
-  if (idx === STATUS_KEYS.length - 1 && t.subStatus !== "Átadva" && t.subStatus !== "Sikertelen") {
+  if (idx === STATUS_KEYS.length - 1 && t.subStatus !== "Átadva") {
     return { status: t.status, subStatus: "Átadva", icon: CheckIcon, label: "Átadás", title: "Munkalap átadása a vevőnek" };
   }
   return null;
@@ -23,6 +24,15 @@ export default function ServiceTab({
   loadingData, activeTickets, setDetailId, handedOverTickets, onStatusChange,
 }) {
   const [listStatus, setListStatus] = useState(STATUSES[0].key);
+  const [handoverPrompt, setHandoverPrompt] = useState(null);
+
+  function runAction(t, na) {
+    if (na.subStatus === "Átadva" && (Number(t.price) || 0) > 0) {
+      setHandoverPrompt(t);
+    } else {
+      onStatusChange(t.id, na.status, na.subStatus);
+    }
+  }
 
   return (
     <>
@@ -115,7 +125,7 @@ export default function ServiceTab({
                     {nextActionOf(t) && (() => {
                       const na = nextActionOf(t);
                       return (
-                        <button className="btn sec sm icon-only" disabled={busy} title={na.title} onClick={() => onStatusChange(t.id, na.status, na.subStatus)}>
+                        <button className="btn sec sm icon-only" disabled={busy} title={na.title} onClick={() => runAction(t, na)}>
                           <na.icon width={13} height={13} />
                         </button>
                       );
@@ -156,7 +166,7 @@ export default function ServiceTab({
                     const na = nextActionOf(t);
                     return (
                       <div className="mob-row-sub" style={{ marginTop: 8 }} onClick={(e) => e.stopPropagation()}>
-                        <button className="btn sec sm icon-only" disabled={busy} title={na.title} onClick={() => onStatusChange(t.id, na.status, na.subStatus)}>
+                        <button className="btn sec sm icon-only" disabled={busy} title={na.title} onClick={() => runAction(t, na)}>
                           <na.icon width={13} height={13} />
                         </button>
                       </div>
@@ -198,6 +208,17 @@ export default function ServiceTab({
           </table>
         )}
       </HistorySection>
+      {handoverPrompt && (
+        <HandoverPaymentModal
+          ticket={handoverPrompt}
+          busy={busy}
+          onClose={() => setHandoverPrompt(null)}
+          onConfirm={(payment, cash, card) => {
+            onStatusChange(handoverPrompt.id, handoverPrompt.status, "Átadva", payment, cash, card);
+            setHandoverPrompt(null);
+          }}
+        />
+      )}
     </>
   );
 }
