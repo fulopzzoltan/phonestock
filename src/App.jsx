@@ -2077,6 +2077,12 @@ function AppShell() {
     const newMargins = withCost.filter((i) => i.condition === "New").map((i) => Number(i.salePrice) - Number(i.costPrice));
     const usedMargins = withCost.filter((i) => i.condition !== "New").map((i) => Number(i.salePrice) - Number(i.costPrice));
 
+    const iphoneUsed = nonFeature.filter((i) => i.brand === "Apple" && i.condition !== "New");
+    const iphoneUsedPrices = iphoneUsed.map((i) => Number(i.salePrice) || 0).filter((n) => n > 0);
+    const iphoneUsedMargins = iphoneUsed
+      .filter((i) => (Number(i.salePrice) || 0) > 0 && (Number(i.costPrice) || 0) > 0)
+      .map((i) => Number(i.salePrice) - Number(i.costPrice));
+
     return {
       total: brandTotal,
       brandConditionBreakdown,
@@ -2088,6 +2094,10 @@ function AppShell() {
       avgMarginUsed: avg(usedMargins),
       countMarginNew: newMargins.length,
       countMarginUsed: usedMargins.length,
+      avgPriceUsedIPhone: avg(iphoneUsedPrices),
+      avgMarginUsedIPhone: avg(iphoneUsedMargins),
+      countUsedIPhone: iphoneUsedPrices.length,
+      countMarginUsedIPhone: iphoneUsedMargins.length,
     };
   }, [stock, effectiveLocFilter, reserveLocId]);
 
