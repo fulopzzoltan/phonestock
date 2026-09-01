@@ -2151,6 +2151,18 @@ function AppShell() {
     });
     const topModels = Object.entries(modelCounts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([name, count]) => ({ name, count }));
 
+    // Márka-megoszlás az ÖSSZES átadott (lezárt) munkalapon — nem csak az aktívakon —,
+    // hogy lássuk, hosszabb távon milyen arányban dolgozunk az egyes márkákkal.
+    const brandCounts = {};
+    handedOverTickets.forEach((t) => {
+      const key = (t.brand || "").trim() || "Ismeretlen";
+      brandCounts[key] = (brandCounts[key] || 0) + 1;
+    });
+    const brandTotal = handedOverTickets.length;
+    const brandBreakdown = Object.entries(brandCounts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, count]) => ({ name, count, pct: brandTotal ? Math.round((count / brandTotal) * 1000) / 10 : 0 }));
+
     const problemCounts = {};
     let problemsSample = 0;
     customerTickets.forEach((t) => {
@@ -2185,6 +2197,8 @@ function AppShell() {
       avgMargin,
       avgTAT,
       topModels,
+      brandBreakdown,
+      brandTotal,
       topProblems,
       problemsSample,
       problemsTotal: customerTickets.length,

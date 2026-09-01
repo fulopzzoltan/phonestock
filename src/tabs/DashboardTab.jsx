@@ -119,6 +119,26 @@ export default function DashboardTab({
         </div>
       </div>
 
+      <div className="statcard" style={{ marginBottom: 26 }}>
+        <div className="dp-section-title">Márkák megoszlása (átadott munkák)</div>
+        {svcStats.brandBreakdown.length ? svcStats.brandBreakdown.map((b) => (
+          <div key={b.name} style={{ marginBottom: 10 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 4 }}>
+              <span style={{ fontWeight: 600, color: "#374151" }}>{b.name}</span>
+              <span style={{ color: "#6B7280" }}>{b.pct}% <span style={{ color: "#9CA3AF" }}>({b.count} db)</span></span>
+            </div>
+            <div style={{ height: 7, background: "#F1F2F6", borderRadius: 999, overflow: "hidden" }}>
+              <div style={{ width: `${b.pct}%`, height: "100%", background: "var(--primary)", borderRadius: 999 }} />
+            </div>
+          </div>
+        )) : <div style={{ fontSize: 12.5, color: "#9CA3AF" }}>Nincs adat</div>}
+        {svcStats.brandTotal > 0 && (
+          <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 4 }}>
+            Összesen {svcStats.brandTotal} átadott munkalap alapján
+          </div>
+        )}
+      </div>
+
       <SectionHead icon={FinanceIcon}>Bevételek &amp; Kiadások</SectionHead>
       {monthlyTrendSummary && (
         <div style={{ fontSize: 13, color: "#374151", margin: "0 0 10px 2px", lineHeight: 1.6 }}>
