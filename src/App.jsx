@@ -2155,7 +2155,8 @@ function AppShell() {
     // hogy lássuk, hosszabb távon milyen arányban dolgozunk az egyes márkákkal.
     const brandCounts = {};
     handedOverTickets.forEach((t) => {
-      const key = (t.brand || "").trim() || "Ismeretlen";
+      let key = (t.brand || "").trim() || "Ismeretlen";
+      if (key === "Apple") key = "iPhone"; // csak a statisztikán — a valós brand mező marad "Apple"
       brandCounts[key] = (brandCounts[key] || 0) + 1;
     });
     const brandTotal = handedOverTickets.length;
