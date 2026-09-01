@@ -480,6 +480,13 @@ export const monthlySummaryFromApi = (r) => ({
   expenseAccounting: r.expense_accounting != null ? Number(r.expense_accounting) : null,
   expenseLoan: r.expense_loan != null ? Number(r.expense_loan) : null,
   expenseOther: r.expense_other != null ? Number(r.expense_other) : null,
+  // Valódi (nem becsült) tétel-szintű Rés-kategória bontás — csak azoknál a
+  // hónapoknál van, ahol a forrás-CSV tételenként is tartalmazta a Rés oszlopot
+  // (2026-tól Szentgyörgynél). Ahol nincs, a UI a revenue/expense-ből becsül.
+  marginPhone: r.margin_phone != null ? Number(r.margin_phone) : null,
+  marginService: r.margin_service != null ? Number(r.margin_service) : null,
+  marginAccessory: r.margin_accessory != null ? Number(r.margin_accessory) : null,
+  marginOther: r.margin_other != null ? Number(r.margin_other) : null,
 });
 
 export const internalMessageFromApi = (r) => ({

@@ -42,6 +42,22 @@ export default function CategorySplitChart({ months, summaries, locFilter, mode 
 
       // mode === "margin"
       const margin = sum((r) => r.margin);
+
+      // Ahol a forrás-CSV tételszinten is tartalmazta a Rés-t (nem csak napi
+      // összesítőben), ott ez a VALÓDI kategória-bontás, nem becslés.
+      const hasRealMargin = matching.every((r) => r.marginPhone != null);
+      if (hasRealMargin) {
+        const marginPhone = sum((r) => r.marginPhone);
+        const marginServiceReal = sum((r) => r.marginService);
+        const marginAccessory = sum((r) => r.marginAccessory);
+        const marginOther = sum((r) => r.marginOther);
+        return {
+          year, month, isLive, hasData: true, total: margin, isEstimate: false,
+          phone: marginPhone, service: marginServiceReal + marginOther, accessory: marginAccessory,
+        };
+      }
+
+      // Egyébként BECSLÉS: revenue_x mínusz a hozzá tartozó beszerzési kiadás.
       const expPhoneStock = sum((r) => r.expensePhoneStock);
       const expAccessoryStock = sum((r) => r.expenseAccessoryStock);
       const hasExpBreakdown = matching.every((r) => r.expensePhoneStock != null);
@@ -52,7 +68,7 @@ export default function CategorySplitChart({ months, summaries, locFilter, mode 
       // Szerviz = minden más — a maradék rés a telefon és a tartozék levonása után.
       const marginService = margin - marginPhone - marginAccessory;
       return {
-        year, month, isLive, hasData: true, total: margin,
+        year, month, isLive, hasData: true, total: margin, isEstimate: true,
         phone: marginPhone, service: marginService, accessory: marginAccessory,
       };
     });
@@ -85,8 +101,9 @@ export default function CategorySplitChart({ months, summaries, locFilter, mode 
           );
         }
         const total = Math.max(1, r.phone + r.service + r.accessory, r.total || 0);
+        const estimateNote = mode === "margin" && r.isEstimate ? " (becslés — nincs tétel-szintű rés-adat ehhez a hónaphoz)" : "";
         return (
-          <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 7 }} title={`${MONTH_NAMES[r.month - 1]} ${r.year} — Telefon: ${money(r.phone)} · Szerviz: ${money(r.service)} · Tartozék: ${money(r.accessory)}`}>
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 7 }} title={`${MONTH_NAMES[r.month - 1]} ${r.year} — Telefon: ${money(r.phone)} · Szerviz: ${money(r.service)} · Tartozék: ${money(r.accessory)}${estimateNote}`}>
             <div style={{ width: 34, fontSize: 10.5, color: r.isLive ? "#111827" : "#6B7280", fontWeight: r.isLive ? 700 : 400 }}>{MONTH_NAMES[r.month - 1]}</div>
             <div style={{ flex: 1, height: 16, borderRadius: 4, overflow: "hidden", display: "flex", background: "#F1F2F6" }}>
               {CATS.map((c) => {
