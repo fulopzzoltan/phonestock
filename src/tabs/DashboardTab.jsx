@@ -161,6 +161,18 @@ export default function DashboardTab({
           {soldPhoneStats.countMarginUsedIPhone > 0 && <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 2 }}>{soldPhoneStats.countMarginUsedIPhone} eladott iPhone alapján</div>}
         </div>
       </div>
+      <div className="statrow c2" style={{ marginBottom: 26 }}>
+        <div className="statcard">
+          <div className="lbl">Átlagos eladási ár — Samsung (Felújított)</div>
+          <div className="val" style={{ color: USED_COLOR }}>{soldPhoneStats.avgPriceUsedSamsung != null ? money(soldPhoneStats.avgPriceUsedSamsung) : "—"}</div>
+          {soldPhoneStats.countUsedSamsung > 0 && <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 2 }}>{soldPhoneStats.countUsedSamsung} eladott Samsung alapján</div>}
+        </div>
+        <div className="statcard">
+          <div className="lbl">Átlagos rés — Samsung (Felújított)</div>
+          <div className="val" style={{ color: USED_COLOR }}>{soldPhoneStats.avgMarginUsedSamsung != null ? money(soldPhoneStats.avgMarginUsedSamsung) : "—"}</div>
+          {soldPhoneStats.countMarginUsedSamsung > 0 && <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 2 }}>{soldPhoneStats.countMarginUsedSamsung} eladott Samsung alapján</div>}
+        </div>
+      </div>
 
       <SectionHead icon={ServiceIcon}>Szerviz</SectionHead>
       <div className={`statrow ${svcStats.ownStock > 0 ? "c6" : "c5"}`} style={{ marginBottom: 26 }}>

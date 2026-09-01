@@ -2077,11 +2077,16 @@ function AppShell() {
     const newMargins = withCost.filter((i) => i.condition === "New").map((i) => Number(i.salePrice) - Number(i.costPrice));
     const usedMargins = withCost.filter((i) => i.condition !== "New").map((i) => Number(i.salePrice) - Number(i.costPrice));
 
-    const iphoneUsed = nonFeature.filter((i) => i.brand === "Apple" && i.condition !== "New");
-    const iphoneUsedPrices = iphoneUsed.map((i) => Number(i.salePrice) || 0).filter((n) => n > 0);
-    const iphoneUsedMargins = iphoneUsed
-      .filter((i) => (Number(i.salePrice) || 0) > 0 && (Number(i.costPrice) || 0) > 0)
-      .map((i) => Number(i.salePrice) - Number(i.costPrice));
+    const usedStatsForBrand = (brand) => {
+      const items = nonFeature.filter((i) => i.brand === brand && i.condition !== "New");
+      const prices = items.map((i) => Number(i.salePrice) || 0).filter((n) => n > 0);
+      const margins = items
+        .filter((i) => (Number(i.salePrice) || 0) > 0 && (Number(i.costPrice) || 0) > 0)
+        .map((i) => Number(i.salePrice) - Number(i.costPrice));
+      return { avgPrice: avg(prices), avgMargin: avg(margins), countPrice: prices.length, countMargin: margins.length };
+    };
+    const iphoneUsed = usedStatsForBrand("Apple");
+    const samsungUsed = usedStatsForBrand("Samsung");
 
     return {
       total: brandTotal,
@@ -2094,10 +2099,14 @@ function AppShell() {
       avgMarginUsed: avg(usedMargins),
       countMarginNew: newMargins.length,
       countMarginUsed: usedMargins.length,
-      avgPriceUsedIPhone: avg(iphoneUsedPrices),
-      avgMarginUsedIPhone: avg(iphoneUsedMargins),
-      countUsedIPhone: iphoneUsedPrices.length,
-      countMarginUsedIPhone: iphoneUsedMargins.length,
+      avgPriceUsedIPhone: iphoneUsed.avgPrice,
+      avgMarginUsedIPhone: iphoneUsed.avgMargin,
+      countUsedIPhone: iphoneUsed.countPrice,
+      countMarginUsedIPhone: iphoneUsed.countMargin,
+      avgPriceUsedSamsung: samsungUsed.avgPrice,
+      avgMarginUsedSamsung: samsungUsed.avgMargin,
+      countUsedSamsung: samsungUsed.countPrice,
+      countMarginUsedSamsung: samsungUsed.countMargin,
     };
   }, [stock, effectiveLocFilter, reserveLocId]);
 
