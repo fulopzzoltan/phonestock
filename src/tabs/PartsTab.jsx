@@ -6,19 +6,9 @@ import { EmptyState, LoadingState } from "../components/EmptyState";
 import HistorySection from "../components/HistorySection";
 import ResponsiveTable from "../components/ResponsiveTable";
 
-const SORTS = [
-  { key: "recent", label: "Legújabb elöl" },
-  { key: "qty-asc", label: "Készlet: kevés → sok" },
-  { key: "qty-desc", label: "Készlet: sok → kevés" },
-  { key: "name", label: "Név A–Z" },
-];
-
-function sortItems(items, sortBy) {
+function sortItems(items) {
   const arr = [...items];
-  if (sortBy === "recent") arr.sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || "") || (Number(b.partNo) || 0) - (Number(a.partNo) || 0));
-  else if (sortBy === "qty-asc") arr.sort((a, b) => (Number(a.quantity) || 0) - (Number(b.quantity) || 0));
-  else if (sortBy === "qty-desc") arr.sort((a, b) => (Number(b.quantity) || 0) - (Number(a.quantity) || 0));
-  else if (sortBy === "name") arr.sort((a, b) => a.name.localeCompare(b.name));
+  arr.sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || "") || (Number(b.partNo) || 0) - (Number(a.partNo) || 0));
   return arr;
 }
 
@@ -36,7 +26,6 @@ export default function PartsTab({
   allUsedParts = [], locName, setDetailId, onUsePart,
 }) {
   const [catFilter, setCatFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("recent");
 
   const catFiltered = useMemo(() => {
     if (catFilter === "all") return filteredParts;
@@ -48,23 +37,29 @@ export default function PartsTab({
     <>
 
       <div className="filter-row">
-        <div className="searchbar"><SearchIcon /><input placeholder="Keresés név, márka, kategória, forrás szerint..." value={partSearch} onChange={(e) => setPartSearch(e.target.value)} /></div>
-        <div className="seg">
-          <button className={catFilter === "all" ? "active" : ""} onClick={() => setCatFilter("all")}>Mind</button>
-          {CATS.map((cat) => (
-            <button key={cat} className={catFilter === cat ? "active" : ""} onClick={() => setCatFilter(cat)}>{cat}</button>
-          ))}
+        <div className="searchbar"><SearchIcon /><input value={partSearch} onChange={(e) => setPartSearch(e.target.value)} /></div>
+        <div className="status-seg">
+          <button className={catFilter === "all" ? "active" : ""} onClick={() => setCatFilter("all")}>
+            <span className="dot" style={{ background: "#9CA3AF" }} />Mind <span className="cnt">{filteredParts.length}</span>
+          </button>
+          {CATS.map((cat) => {
+            const count = cat === "Egyéb"
+              ? filteredParts.filter((p) => !PART_CATEGORIES.includes(p.category)).length
+              : filteredParts.filter((p) => p.category === cat).length;
+            return (
+              <button key={cat} className={catFilter === cat ? "active" : ""} onClick={() => setCatFilter(cat)}>
+                <span className="dot" style={{ background: "#9CA3AF" }} />{cat} <span className="cnt">{count}</span>
+              </button>
+            );
+          })}
         </div>
-        <select className="filter-sel" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-          {SORTS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
-        </select>
       </div>
 
       {loadingData ? <div className="tw"><LoadingState /></div> : catFiltered.length === 0 ? <div className="tw"><EmptyState icon={PartsIcon}>Nincs találat.</EmptyState></div> : (
         CATS.map((cat) => {
           const items = sortItems(cat === "Egyéb"
             ? catFiltered.filter((p) => !PART_CATEGORIES.includes(p.category))
-            : catFiltered.filter((p) => p.category === cat), sortBy);
+            : catFiltered.filter((p) => p.category === cat));
           if (items.length === 0) return null;
           return (
             <div key={cat} style={{ marginBottom: 18 }}>
