@@ -1,18 +1,18 @@
 import { useMemo } from "react";
 import { money } from "../lib/utils";
 
-// Bevétel- vagy rés-szintű (mode="revenue" | "margin") megoszlás telefon/szerviz/
-// tartozék/egyéb között, havi bontásban, az utolsó 12 hónapra. A rés-szintű bontás
-// BECSLÉS: revenue_x - a hozzá tartozó beszerzési kiadás (pl. telefon rés ≈
-// telefon-bevétel - telefon-beszerzési kiadás UGYANABBAN a hónapban) — ez nem
-// veszi figyelembe, hogy egy adott hónapban eladott telefon beszerzése lehet
-// egy korábbi hónap kiadása volt, úgyhogy havi szinten pontatlan lehet, de
-// negyedéves/éves átlagban jó közelítés.
+// Bevétel- vagy rés-szintű (mode="revenue" | "margin") megoszlás 3 forrás között,
+// havi bontásban: Telefon (azonosíthatóan telefon), Tartozék (azonosíthatóan sem
+// nem telefon, sem nem szerviz), Szerviz (minden egyéb — a maradék/gyűjtő kategória,
+// a korábbi "Egyéb" is ide olvad bele). A rés-szintű bontás BECSLÉS: revenue_x - a
+// hozzá tartozó beszerzési kiadás (pl. telefon rés ≈ telefon-bevétel -
+// telefon-beszerzési kiadás UGYANABBAN a hónapban) — ez nem veszi figyelembe, hogy
+// egy adott hónapban eladott telefon beszerzése lehet egy korábbi hónap kiadása
+// volt, úgyhogy havi szinten pontatlan lehet, de negyedéves/éves átlagban jó közelítés.
 const CATS = [
   { key: "phone", label: "Telefon", color: "#22C55E" },
   { key: "service", label: "Szerviz", color: "#0EA5E9" },
   { key: "accessory", label: "Tartozék", color: "#F59E0B" },
-  { key: "other", label: "Egyéb", color: "#C4B5FD" },
 ];
 const MONTH_NAMES = ["jan.", "febr.", "márc.", "ápr.", "máj.", "jún.", "júl.", "aug.", "szept.", "okt.", "nov.", "dec."];
 
@@ -36,25 +36,24 @@ export default function CategorySplitChart({ months, summaries, locFilter, mode 
         const total = revPhone + revService + revAccessory + revOther;
         return {
           year, month, isLive, hasData: true, total,
-          phone: revPhone, service: revService, accessory: revAccessory, other: revOther,
+          phone: revPhone, service: revService + revOther, accessory: revAccessory,
         };
       }
 
       // mode === "margin"
       const margin = sum((r) => r.margin);
       const expPhoneStock = sum((r) => r.expensePhoneStock);
-      const expServiceParts = sum((r) => r.expenseServiceParts);
       const expAccessoryStock = sum((r) => r.expenseAccessoryStock);
       const hasExpBreakdown = matching.every((r) => r.expensePhoneStock != null);
       if (!hasExpBreakdown) return { year, month, isLive, hasData: false };
 
       const marginPhone = revPhone - expPhoneStock;
-      const marginService = revService - expServiceParts;
       const marginAccessory = revAccessory - expAccessoryStock;
-      const marginOther = margin - marginPhone - marginService - marginAccessory;
+      // Szerviz = minden más — a maradék rés a telefon és a tartozék levonása után.
+      const marginService = margin - marginPhone - marginAccessory;
       return {
         year, month, isLive, hasData: true, total: margin,
-        phone: marginPhone, service: marginService, accessory: marginAccessory, other: marginOther,
+        phone: marginPhone, service: marginService, accessory: marginAccessory,
       };
     });
   }, [months, summaries, locFilter, mode]);
@@ -85,9 +84,9 @@ export default function CategorySplitChart({ months, summaries, locFilter, mode 
             </div>
           );
         }
-        const total = Math.max(1, r.phone + r.service + r.accessory + r.other, r.total || 0);
+        const total = Math.max(1, r.phone + r.service + r.accessory, r.total || 0);
         return (
-          <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 7 }} title={`${MONTH_NAMES[r.month - 1]} ${r.year} — Telefon: ${money(r.phone)} · Szerviz: ${money(r.service)} · Tartozék: ${money(r.accessory)} · Egyéb: ${money(r.other)}`}>
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 7 }} title={`${MONTH_NAMES[r.month - 1]} ${r.year} — Telefon: ${money(r.phone)} · Szerviz: ${money(r.service)} · Tartozék: ${money(r.accessory)}`}>
             <div style={{ width: 34, fontSize: 10.5, color: r.isLive ? "#111827" : "#6B7280", fontWeight: r.isLive ? 700 : 400 }}>{MONTH_NAMES[r.month - 1]}</div>
             <div style={{ flex: 1, height: 16, borderRadius: 4, overflow: "hidden", display: "flex", background: "#F1F2F6" }}>
               {CATS.map((c) => {
