@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { money, displayName, ticketCode } from "../lib/utils";
 import StockValueChart from "../components/StockValueChart";
 import MonthlyTrendChart from "../components/MonthlyTrendChart";
@@ -17,6 +18,10 @@ export default function DashboardTab({
   stockSparkline, dailyIncomeTrend,
 }) {
   const todoCount = todoItems?.slaTickets.length || 0;
+  const [showAllBrands, setShowAllBrands] = useState(false);
+  const BRAND_TOP_N = 8;
+  const shownBrands = showAllBrands ? svcStats.brandBreakdown : svcStats.brandBreakdown.slice(0, BRAND_TOP_N);
+  const hiddenBrandCount = svcStats.brandBreakdown.length - BRAND_TOP_N;
 
   return (
     <>
@@ -121,7 +126,7 @@ export default function DashboardTab({
 
       <div className="statcard" style={{ marginBottom: 26 }}>
         <div className="dp-section-title">Márkák megoszlása (átadott munkák)</div>
-        {svcStats.brandBreakdown.length ? svcStats.brandBreakdown.map((b) => (
+        {shownBrands.length ? shownBrands.map((b) => (
           <div key={b.name} style={{ marginBottom: 10 }}>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 4 }}>
               <span style={{ fontWeight: 600, color: "#374151" }}>{b.name}</span>
@@ -132,6 +137,16 @@ export default function DashboardTab({
             </div>
           </div>
         )) : <div style={{ fontSize: 12.5, color: "#9CA3AF" }}>Nincs adat</div>}
+        {hiddenBrandCount > 0 && (
+          <button
+            type="button"
+            className="toggle-link"
+            style={{ background: "none", border: "none", padding: 0, fontWeight: 600, marginTop: 6 }}
+            onClick={() => setShowAllBrands((v) => !v)}
+          >
+            {showAllBrands ? "Kevesebb mutatása" : `+ ${hiddenBrandCount} további márka mutatása`}
+          </button>
+        )}
         {svcStats.brandTotal > 0 && (
           <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 4 }}>
             Összesen {svcStats.brandTotal} átadott munkalap alapján

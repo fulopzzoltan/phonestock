@@ -2153,13 +2153,17 @@ function AppShell() {
 
     // Márka-megoszlás az ÖSSZES átadott (lezárt) munkalapon — nem csak az aktívakon —,
     // hogy lássuk, hosszabb távon milyen arányban dolgozunk az egyes márkákkal.
+    // A meg nem határozott ("Egyéb") márkájú munkalapokat kihagyjuk, mert nem
+    // mondanak semmit a tényleges márka-megoszlásról.
     const brandCounts = {};
+    let brandTotal = 0;
     handedOverTickets.forEach((t) => {
       let key = (t.brand || "").trim() || "Ismeretlen";
+      if (key === "Egyéb") return;
       if (key === "Apple") key = "iPhone"; // csak a statisztikán — a valós brand mező marad "Apple"
       brandCounts[key] = (brandCounts[key] || 0) + 1;
+      brandTotal++;
     });
-    const brandTotal = handedOverTickets.length;
     const brandBreakdown = Object.entries(brandCounts)
       .sort((a, b) => b[1] - a[1])
       .map(([name, count]) => ({ name, count, pct: brandTotal ? Math.round((count / brandTotal) * 1000) / 10 : 0 }));
