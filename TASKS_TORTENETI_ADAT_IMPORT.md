@@ -1,3 +1,5 @@
+> **FONTOS KORREKCIÓ (lásd 8. szakasz):** a lenti táblázatokban a telefon/szerviz bevétel-bontás egy ideig hibás volt, mert az "lcd" szó (pl. "redmi 9a lcd" = kijelző-csere) nem szerepelt a szerviz-felismerő kulcsszavak közt, így ezek tévesen telefon-eladásként lettek számolva. Ez 2026-09-01-én javítva lett, és a `monthly_summaries` teljes Gyimes-történelme (2025 jan – 2026 aug) újra lett számolva/frissítve. A lenti táblázatok szövege NEM lett visszamenőleg átírva (történeti feljegyzés), de a DB-ben már a javított számok vannak — az aktuális, helyes bontásért nézd az admin Áttekintés oldalt, ne ezt a fájlt.
+
 # Történeti adat import — Gyimes, 2025 Q1 + Q2 (feljegyzés, nem terv)
 
 > "van ez a csv beszeretnem taplalni az elozo evi adatokat, egyenlore kezdjuk gyimessel 2025 elso negyedevvel... a bevetelnel es lehetoleg tobb adat, mibol kb milyen %-ban jott... a kiadasoknal kb milyen %-ban mire ment..."
@@ -194,6 +196,59 @@ A screenshot alapján ("itt van az utolsó időszak is Gyimesből, ezzel össze�
 2. **`transactions`** tábla — ez táplálja a Bevételek és Kiadások fül "Korábbi hónapok" archívumát (a `TransactionsCalendar.jsx`-ben lévő `archiveMonths` logika, ami a tranzakciókat hónap szerint csoportosítja). Ide **havi összesítő sorként** (nem napi/tételes, ahogy 2024 november-december mintájára eddig ment) került be 1-1 income + 1-1 expense sor hónaponként, április-augusztus, `category='Készlet'`/`'Egyéb'`, `payment='Készpénz'`, `cost_price` = bevétel−rés (hogy az "Árrés" oszlop is stimmeljen az archívum táblában). Az augusztusi sor a részleges (24-ig tartó) CSV-ből számolt saját összeg — ez a hónap majd az élő rendszerben folytatódik szeptembertől, ott már nem lesz szükség történeti importra.
 
 **Ezzel a Gyimes-i történeti import lezárult**: 2024 november – 2026 augusztus 24. folyamatosan megvan a `monthly_summaries`-ben (kategória-bontással 2025 januártól), és a `transactions` archívum is összeér az élő rendszerrel. Szeptembertől már csak az élő, napi rögzítés megy tovább.
+
+## 8. "lcd" bug — szerviz-bevétel alulszámolva volt mindenhol, javítva + Gyimes teljes újraszámolás
+
+A Szentgyörgy-import közben a tulaj rámutatott: "amikor egy telefon és utána lcd vagy szervizes megnevezések vannak, akkor azok általában szervizek" — és tényleg, a kulcsszó-lista sosem tartalmazta az "lcd" szót (csak "kijelző"-t), pedig mindkét helyszínen rendszeresen "lcd" jelöli a kijelző-cserét (pl. "redmi 9a lcd", "samsung a12 lcd"). Emiatt ezek a tételek tévesen **telefon-eladásként** lettek beszámolva szerviz helyett — méghozzá nem kis mennyiségben (Gyimesen negyedévenként 5-70 előfordulás).
+
+Javítás: "lcd" felvéve a szerviz-kulcsszavak közé minden klasszifikátor scriptben, és **a teljes Gyimes-történelem (2025 január – 2026 augusztus, 20 hónap) újraszámolva és frissítve** a `monthly_summaries`-ben (csak a `revenue_phone`/`revenue_service` oszlopok változtak, a `revenue`/`margin`/`expenses`/`profit` fő számok nem — azok maradtak, amik voltak). A szerviz-bevétel aránya jellemzően 3-8 százalékponttal nőtt, a telefon-eladás aránya ugyanennyivel csökkent havonta.
+
+## 9. Szentgyörgy történeti import — 2025 szeptember – 2026 augusztus (teljes negyedik, immár mindkét helyszín összeér az élő rendszerrel)
+
+A tulaj megerősítette: Szentgyörgy 2025 szeptemberben indult ebben a rendszerben. A `monthly_summaries`-ben Szept-Dec 2025-re már volt alap `revenue`/`margin` adat (feltehetően a másik session vagy korábbi kézi bevitel), de kategória-bontás és — november/decemberre — `expenses`/`profit` sem volt.
+
+### Formátum-változatok Szentgyörgynél (megint mások, mint Gyimesen)
+
+- **2025 Q3** (`,Bevetel,Res,Kiadas,Endre,Zolti,Arulas,Kartyas Vasarlas`): a "Kartyas Vasarlas" oszlop itt VEGYESEN tartalmazott kártyás-fizetés jelölőt ÉS valódi kiadást is (pl. "konyvelo szeptember" -300 ide került) — ezt kézzel különválasztottam.
+- **2025 Q4** (`Bevetel,Res,Kartyas Bevetel,Kiadas,Arulas,Res,Kartyas Kiadas,Endre,Zolti`): megegyezik a Gyimes Q4/Q1-2026 formátumával.
+- **2026 Q1+Q2** (`,Bevetel,Res,Kartyas Bevetel,Kiadas,Arulas,Res,Kartyas Kiadas`): **új, jobb formátum** — itt már **tételszinten is szerepel a Rés** (margin) minden egyes eladott tételnél, nem csak napi összesítőként! Ez sokkal pontosabb rés-kategória-bontást tenne lehetővé (telefon/szerviz/tartozék szerinti valódi haszonkulcs), de a jelenlegi `monthly_summaries` séma csak `revenue_phone/service/accessory/other` oszlopokat ismer, `margin_phone/service/...`-t nem — ha ez érdekel, szólj, és bővítem a táblát, hogy ezt az adatot is el tudjuk tárolni és megjeleníteni (most csak a `revenue`-bontáshoz használtam fel).
+
+### Kártyás-fizetés könyvelési műtermék (a tulaj megerősítése)
+
+A korábbi negyedeknél talált jelenség — amikor egy sorban a Bevétel ÉS egy azzal (közel) megegyező negatív Kiadás/Kartyás-oszlop is szerepel — a tulaj szerint **kártyás fizetésnél keletkező könyvelési duplikáció**, nem valódi kiadás. Ezeket kihagytam a kiadás-összegzésből (2025 Q3-nál volt jelentős, ~4300 Lej/hónap; Q4-től és 2026-tól már elhanyagolható, ahogy a tulaj is jelezte: "q4 tól már jó").
+
+### Szeptemberi (2025) kiadás-eltérés — rendszerbevezetés kezdeti hónapja
+
+A rendszerben már ott lévő szeptemberi `expenses` (7800 Lej) jelentősen elmaradt a CSV tétel-szintű összegétől (kb. 15 870 Lej kártyás-műtermék nélkül) — több ezer Lejes egyedi telefon-nagykereskedelmi tétel (pl. "csomag, két iphone 13 pro" -4080) hiányzott a hivatalos számból. A tulaj megerősítette: ez azért van, mert szeptember volt a rendszer bevezetésének első hónapja, "a sheets is alakult" — tehát a CSV a pontosabb forrás. A `expenses`/`profit` mezőt frissítettem a CSV-alapú, pontosabb értékre (15 870 / 7 636).
+
+### "ber" tétel = bérleti díj (megerősítve)
+
+Havonta megjelenő "ber" / "oktoberi ber" / "mamának bér" (~300 Lej) tétel — a tulaj megerősítette: **bérleti díj**, a helyiséget "mamától" (családtag) bérlik. `rezsi` kategóriába soroltam.
+
+### Eredmény — Szentgyörgy, havi bontásban (revenue / expenses / profit)
+
+| Hónap | Bevétel | Kiadás | Profit |
+|---|---|---|---|
+| 2025 szept. | 23 506 | 15 870 | 7 636 |
+| 2025 okt. | 30 119 | 25 651 | 4 468 |
+| 2025 nov. | 30 863 | 12 803 | 18 060 |
+| 2025 dec. | 49 963 | 30 463 | 19 500 |
+| 2026 jan. | 25 030 | 21 813 | 3 217 |
+| 2026 febr. | 18 566 | 16 339 | 2 227 |
+| 2026 márc. | 18 001 | 15 566 | 2 435 |
+| 2026 ápr. | 16 914 | 15 384 | 1 530 |
+| 2026 máj. | 19 106 | 15 794 | 3 312 |
+| 2026 jún. | 25 291 | 12 985 | 12 306 |
+| 2026 júl. | 27 506 | 15 722 | 11 784 |
+| 2026 aug. (21-ig) | 11 313 | 9 204 | 2 109 |
+
+Mind a `monthly_summaries` (kategória-bontással), mind a `transactions` archívum (havi összesítő sorokként, a Gyimes-mintát követve) fel van töltve — **Szentgyörgy is összeért az élő rendszerrel**, augusztus 21-től már csak élő adat megy.
+
+### Nyitott, tisztázatlan tételek (kis összegek, nem befolyásolják érdemben a számokat, de érdemes tudni róluk)
+
+- **"Csabi" / "Csabinak" / "Csabinak frkre"** — rendszeresen visszatérő, 30-260 Lej közti kifizetések egy Csabi nevű személynek. Lehet alkalmi segítő/beszállító, de nem tudom biztosan — jelenleg "egyéb" kategóriában van.
+- **"eco csik" / "Eco csik"** — havonta 65-317 Lej, ismétlődő tétel, nem tudom mi ez.
+- **"computertrade"** (-450, június), **"valto penz"** (-1000, augusztus — lehet, hogy ez csak pénztári váltópénz-mozgatás, nem valódi kiadás), **"Fitomag"**, **"Sanyinak"** — egyedi, kis összegű tételek, "egyéb"-ben hagyva.
 
 ## 7. Nyitott, a következő negyedéveknél / Szentgyörgynél
 
