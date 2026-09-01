@@ -1,4 +1,30 @@
 export const money = (n) => Math.round(Number(n) || 0).toLocaleString("hu-HU") + " Lei";
+
+// Kliens-oldali CSV export — a már betöltött listákból (Készlet, Ügyfelek,
+// Tranzakciók stb.) generál letölthető CSV-t, szerver-oldali munka nélkül.
+// columns: [{ key, label }], rows: a lista, amiből a `key` mezőket olvassuk ki
+// (vagy egy (row) => value függvényt, ha a mező számítás eredménye).
+export function exportToCsv(filename, columns, rows) {
+  const escapeCell = (v) => {
+    const s = v == null ? "" : String(v);
+    return /[";\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const getValue = (row, col) => (typeof col.key === "function" ? col.key(row) : row[col.key]);
+  const lines = [
+    columns.map((c) => escapeCell(c.label)).join(";"),
+    ...rows.map((row) => columns.map((c) => escapeCell(getValue(row, c))).join(";")),
+  ];
+  // BOM, hogy az Excel/LibreOffice UTF-8-ként (ékezetesen) nyissa meg a magyar szöveget.
+  const blob = new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename.endsWith(".csv") ? filename : `${filename}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 // mindig az éles domaint tegyük ügyfélnek küldött linkekbe (SMS, garanciajegy-link),
 // sose window.location.origin-t — az localhost lenne, ha valaki fejlesztés közben
 // (npm run dev) hoz létre/módosít egy valós tételt, az ügyfél meg nem tudná megnyitni

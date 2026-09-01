@@ -46,6 +46,7 @@ import TransactionsPeriodList from "./components/TransactionsPeriodList";
 import TransactionModal from "./components/TransactionModal";
 import CustomerDetailPanel from "./components/CustomerDetailPanel";
 import CustomerModal from "./components/CustomerModal";
+import CustomerMergeModal from "./components/CustomerMergeModal";
 import PrintSlip from "./components/PrintSlip";
 import SaleReceiptPanel from "./components/SaleReceiptPanel";
 import PrintReceiptSlip from "./components/PrintReceiptSlip";
@@ -211,6 +212,7 @@ function AppShell() {
   const [deviceHistoryImei, setDeviceHistoryImei] = useState(null);
   const [customerKey, setCustomerKey] = useState(null);
   const [customerModal, setCustomerModal] = useState(null);
+  const [customerMergeModal, setCustomerMergeModal] = useState(null); // null | primary customer object
   const [printTicket, setPrintTicket] = useState(null);
   const [receiptTxId, setReceiptTxId] = useState(null);
   const [printReceipt, setPrintReceipt] = useState(null);
@@ -1401,6 +1403,29 @@ function AppShell() {
       setCustomerModal(null);
     });
   }
+  // Két ügyfélkártya összevonása — a tényleges FK-átmozgatást és a duplikátum puha
+  // törlését a `merge_customers` SQL-függvény végzi el egy tranzakcióban (ld. migráció),
+  // itt csak meghívjuk, majd az érintett kliens-oldali listákat frissítjük, hogy az UI
+  // azonnal a végleges állapotot mutassa, refresh nélkül.
+  async function mergeCustomers(primaryId, duplicateId) {
+    await withBusy(async () => {
+      unwrap(await supabase.rpc("merge_customers", { p_primary_id: primaryId, p_duplicate_id: duplicateId }));
+      const rows = unwrap(await supabase.from("customers").select("*").eq("id", primaryId));
+      const primary = rows?.[0] ? customerFromApi(rows[0]) : null;
+      const repoint = (c) => (c.customerId === duplicateId ? { ...c, customerId: primaryId } : c);
+      setCustomersTable((prev) => prev.filter((c) => c.id !== duplicateId).map((c) => (c.id === primaryId && primary ? primary : c)));
+      setTransactions((prev) => prev.map(repoint));
+      setTickets((prev) => prev.map(repoint));
+      setWarranties((prev) => prev.map(repoint));
+      setCustomerProfiles((prev) => prev.map(repoint));
+      setLoyaltyLedger((prev) => prev.map(repoint));
+      setWaitingItems((prev) => prev.map(repoint));
+      setBuybackOffers((prev) => prev.map(repoint));
+      setCustomerMergeModal(null);
+      setCustomerKey(primaryId);
+      setInfo("Ügyfélkártyák összevonva.");
+    });
+  }
 
   // LOYALTY (hűségpont + ajánlói program)
   async function refreshCustomerLoyalty(customerId) {
@@ -1485,20 +1510,23 @@ function AppShell() {
   }
 
   // TRANSACTIONS
+  // A tényleges mentési logika — nem nyeli el a hibát, hanem feldobja, hogy a hívó
+  // (pl. checkoutBasket) el tudja dönteni, mi történjen sikertelen mentéskor (ld. lent).
+  async function addTransactionRaw(data, locId) {
+    let customerId = data.customerId || null;
+    if (!customerId && data.customerPhone) {
+      const { data: cid } = await supabase.rpc("upsert_customer", { p_name: data.customerName, p_phone: data.customerPhone });
+      customerId = cid;
+    }
+    if (data.marketingConsent && customerId) {
+      await supabase.from("customers").update({ marketing_consent: true, marketing_consent_at: new Date().toISOString() }).eq("id", customerId);
+    }
+    const r = unwrap(await supabase.from("transactions").insert({ ...txToApi(data, locId), customer_id: customerId }).select());
+    setTransactions((prev) => [txFromApi(r[0]), ...prev]);
+    if (customerId && data.type === "income" && ["Készlet", "Szerviz"].includes(data.category)) await refreshCustomerLoyalty(customerId);
+  }
   async function addTransaction(data, locId) {
-    await withBusy(async () => {
-      let customerId = data.customerId || null;
-      if (!customerId && data.customerPhone) {
-        const { data: cid } = await supabase.rpc("upsert_customer", { p_name: data.customerName, p_phone: data.customerPhone });
-        customerId = cid;
-      }
-      if (data.marketingConsent && customerId) {
-        await supabase.from("customers").update({ marketing_consent: true, marketing_consent_at: new Date().toISOString() }).eq("id", customerId);
-      }
-      const r = unwrap(await supabase.from("transactions").insert({ ...txToApi(data, locId), customer_id: customerId }).select());
-      setTransactions((prev) => [txFromApi(r[0]), ...prev]);
-      if (customerId && data.type === "income" && ["Készlet", "Szerviz"].includes(data.category)) await refreshCustomerLoyalty(customerId);
-    });
+    await withBusy(() => addTransactionRaw(data, locId));
   }
   async function editTransaction(id, data, locId) {
     await withBusy(async () => {
@@ -1671,21 +1699,43 @@ function AppShell() {
 
   // BasketBar checkout — items: [{label, amount, cost, category, kind, stockKind?}]
   // Csak 2+ tételnél kap közös basket_id-t (egyetlen tétel nem "blokk", marad sima sor).
+  // Ez a kassza gyors-rögzítőjének (BasketBar) mentése — szándékosan NEM a közös withBusy-t
+  // használja, mert az elnyeli a hibát (csak egy banner-t mutat), a BasketBar viszont a
+  // kosarat AZONNAL, a mentés eredményétől függetlenül ürítette ki. Ha éppen akkor esik ki
+  // a net, amikor valaki fizet, ez korábban nyomtalanul eltüntette a beütött tételeket.
+  // Most: sikertelen mentésnél a hívó (BasketBar) explicit `false`-t kap vissza, ezért nem
+  // üríti a kosarat — a felhasználó újra megnyomhatja a gombot, amint helyreállt a net.
+  // Emellett egy helyi (localStorage) másolat is készül a sikertelen kosárról, hogy egy
+  // véletlen frissítés/lap-bezárás után se vesszen el nyomtalanul.
   async function checkoutBasket(items, payment, locId) {
-    const basketId = items.length > 1 ? crypto.randomUUID() : null;
-    const stockItem = items.find((it) => it.stockKind === "Telefon");
-    const partItem = items.find((it) => it.stockKind === "Alkatrész");
-    for (const item of items) {
-      // A telefon/alkatrész tételekhez a StockModal/PartModal mentése (addProduct/addPart)
-      // csinálja a Kiadást — itt kihagyjuk őket, különben duplázódna.
-      if (item === stockItem || item === partItem) continue;
-      await addTransaction({
-        type: item.kind, description: item.label, amount: item.amount,
-        costPrice: item.cost || 0, category: item.category, payment, basketId,
-      }, locId);
+    setBusy(true);
+    try {
+      const basketId = items.length > 1 ? crypto.randomUUID() : null;
+      const stockItem = items.find((it) => it.stockKind === "Telefon");
+      const partItem = items.find((it) => it.stockKind === "Alkatrész");
+      for (const item of items) {
+        // A telefon/alkatrész tételekhez a StockModal/PartModal mentése (addProduct/addPart)
+        // csinálja a Kiadást — itt kihagyjuk őket, különben duplázódna.
+        if (item === stockItem || item === partItem) continue;
+        await addTransactionRaw({
+          type: item.kind, description: item.label, amount: item.amount,
+          costPrice: item.cost || 0, category: item.category, payment, basketId,
+        }, locId);
+      }
+      if (stockItem) setStockModal({ costPrice: stockItem.amount, locationId: locId });
+      if (partItem) setPartModal({ costPrice: partItem.amount, source: partItem.label });
+      setError("");
+      try { localStorage.removeItem("phonestock_pending_basket"); } catch { /* noop */ }
+      return true;
+    } catch (e) {
+      try {
+        localStorage.setItem("phonestock_pending_basket", JSON.stringify({ items, payment, locId, savedAt: new Date().toISOString() }));
+      } catch { /* noop — ha a localStorage sem elérhető, legalább a banner jelez */ }
+      setError((e.message || "Hiba történt a mentés közben.") + " — a kosár tartalma megmaradt, próbáld újra.");
+      return false;
+    } finally {
+      setBusy(false);
     }
-    if (stockItem) setStockModal({ costPrice: stockItem.amount, locationId: locId });
-    if (partItem) setPartModal({ costPrice: partItem.amount, source: partItem.label });
   }
 
   // SERVICE
@@ -2523,6 +2573,12 @@ function AppShell() {
         tab={tab} setTab={setTab} isAdmin={isAdmin} locFilter={locFilter} setLocFilter={setLocFilter}
         allowedLocations={allowedLocations} myLocationId={myLocationId} locName={locName} profile={profile} user={user}
         signOut={signOut} chatOpen={chatOpen} setChatOpen={setChatOpen} chatUnread={chatUnread} markChatRead={markChatRead}
+        stock={stock} tickets={tickets} customersTable={customersTable} parts={parts} warranties={activeWarranties}
+        onOpenProduct={(id) => setProductDetailId(id)}
+        onOpenTicket={(id) => setDetailId(id)}
+        onOpenCustomer={(id) => setCustomerKey(id)}
+        onOpenPart={(id) => setPartDetailId(id)}
+        onOpenWarranty={(key) => { setTab("warranty"); setWarrantyDetailKey(key); }}
         pageHeader={tab === "stock" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Telefonok</div>
@@ -2936,6 +2992,8 @@ function AppShell() {
           onEdit={(c) => { setCustomerKey(null); setCustomerModal(c); }}
           onOpenTicket={(id) => { setCustomerKey(null); setDetailId(id); }}
           onOpenProduct={(id) => { setCustomerKey(null); setProductDetailId(id); }}
+          isAdmin={isAdmin}
+          onMerge={(c) => setCustomerMergeModal(c)}
         />
       )}
       {customerModal && (
@@ -2945,6 +3003,15 @@ function AppShell() {
           busy={busy}
           onClose={() => setCustomerModal(null)}
           onSave={(data) => (customerModal === "add" ? createCustomer(data) : updateCustomer(customerModal.id, data))}
+        />
+      )}
+      {customerMergeModal && (
+        <CustomerMergeModal
+          primaryCustomer={customerMergeModal}
+          customers={customersTable}
+          busy={busy}
+          onClose={() => setCustomerMergeModal(null)}
+          onMerge={(duplicateId) => mergeCustomers(customerMergeModal.id, duplicateId)}
         />
       )}
       {receiptTx && (

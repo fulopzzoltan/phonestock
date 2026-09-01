@@ -1,7 +1,7 @@
 import { useState } from "react";
 import LocationField from "./LocationField";
 import { CloseIcon } from "./icons";
-import { WARRANTIES, SOURCES, STOCK_STATUSES, CONDITION_GRADES, conditionGradeKey, STORAGE_OPTIONS, RAM_OPTIONS, PHONE_COLORS } from "../lib/utils";
+import { WARRANTIES, SOURCES, STOCK_STATUSES, CONDITION_GRADES, conditionGradeKey, STORAGE_OPTIONS, RAM_OPTIONS, PHONE_COLORS, normalizeImei } from "../lib/utils";
 import { ChipField, DropdownField } from "./FormPickers";
 import BrandField from "./BrandField";
 import PicklistField from "./PicklistField";
@@ -18,7 +18,7 @@ function SectionHead({ n, title, sub }) {
   );
 }
 
-export default function StockModal({ product, prefill, locations, onClose, onSave, busy, defaultLocId }) {
+export default function StockModal({ product, prefill, locations, onClose, onSave, busy, defaultLocId, stock = [], tickets = [] }) {
   const isEdit = !!product;
   const [f, setF] = useState({
     brand: product?.brand || prefill?.brand || "",
@@ -46,6 +46,15 @@ export default function StockModal({ product, prefill, locations, onClose, onSav
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const setSellerField = (k) => (e) => setSeller({ ...seller, [k]: e.target.value });
   const isConsignment = !isEdit && acqType === "consignment";
+  // Duplikált IMEI figyelmeztetés — ugyanaz a minta, mint a TicketFormModal-ban:
+  // ha ez az IMEI már szerepel egy másik raktári tételen vagy egy szerviz munkalapon,
+  // jelezzük (nem tiltjuk le a mentést, csak felhívjuk rá a figyelmet).
+  const imeiKey = normalizeImei(f.imei);
+  const imeiMatch = imeiKey.length >= 6 ? {
+    products: stock.filter((p) => normalizeImei(p.imei) === imeiKey && p.id !== product?.id),
+    tickets: tickets.filter((t) => normalizeImei(t.imei) === imeiKey),
+  } : null;
+  const hasImeiMatch = imeiMatch && (imeiMatch.products.length > 0 || imeiMatch.tickets.length > 0);
   const valid = f.brand.trim() && f.model.trim() && f.salePrice !== "" && locId
     && (!isConsignment || (seller.name.trim() && seller.phone.trim() && payoutAmount !== ""));
   function save() {
@@ -129,6 +138,17 @@ export default function StockModal({ product, prefill, locations, onClose, onSav
           </div>
           <PicklistField label="Szín" value={f.color} onChange={(v) => setF({ ...f, color: v })} options={PHONE_COLORS} placeholder="Válassz színt..." />
           <div className="field"><label>IMEI</label><input value={f.imei} onChange={set("imei")} placeholder="35xxxxxxxxxxxxx" /></div>
+          {hasImeiMatch && (
+            <div style={{ padding: "10px 12px", background: "var(--warning-soft, #FEF3C7)", border: "1px solid var(--warning, #F59E0B)", borderRadius: 10, fontSize: 12.5, marginBottom: 12 }}>
+              <div style={{ fontWeight: 700, marginBottom: 4, color: "var(--warning-ink, #92400E)" }}>Ez az IMEI már szerepel a rendszerben:</div>
+              {imeiMatch.products.map((p) => (
+                <div key={p.id}>— raktári tétel: {p.brand} {p.model} ({p.condition === "New" ? "új" : "felújított"}, {p.status === "sold" ? "eladva" : "raktáron"})</div>
+              ))}
+              {imeiMatch.tickets.map((t) => (
+                <div key={t.id}>— szerviz munkalap: {t.dateIn} · {(t.issue || "").split(",").filter(Boolean).join(", ") || "—"}</div>
+              ))}
+            </div>
+          )}
           {f.condition === "Refurbished" && (
             <div className="field"><label>Akkuállapot (%)</label><input type="number" min="0" max="100" value={f.batteryHealth} onChange={set("batteryHealth")} placeholder="100" /></div>
           )}

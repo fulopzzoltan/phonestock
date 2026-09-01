@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { money, displayName, phoneCode, daysOnShelf, isSlowMoving, stockStatusLabel, conditionGradeLabel } from "../lib/utils";
+import { money, displayName, phoneCode, daysOnShelf, isSlowMoving, stockStatusLabel, conditionGradeLabel, exportToCsv, today } from "../lib/utils";
 import { SearchIcon, PhoneCaseIcon, ChevronDownIcon, WarrantyIcon, ServiceIcon, CartIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import HistorySection from "../components/HistorySection";
@@ -37,6 +37,18 @@ export default function StockTab({
 
   const visibleLocations = effectiveLocFilter === "all" ? locations : locations.filter((l) => l.id === effectiveLocFilter || l.id === reserveLocId);
 
+  function exportStock() {
+    exportToCsv(`keszlet-${today()}`, [
+      { key: "n", label: "Sorszám" }, { key: (i) => i.brand, label: "Márka" }, { key: (i) => i.model, label: "Modell" },
+      { key: (i) => (i.condition === "New" ? "Új" : "Felújított"), label: "Állapot" }, { key: (i) => i.grade || "", label: "Grade" },
+      { key: (i) => i.storage || "", label: "Tárhely" }, { key: (i) => i.ram || "", label: "RAM" }, { key: (i) => i.color || "", label: "Szín" },
+      { key: (i) => i.imei || "", label: "IMEI" }, { key: (i) => locName(i.locationId), label: "Helyszín" },
+      { key: (i) => i.costPrice ?? "", label: "Beszerzési ár" }, { key: (i) => i.salePrice ?? "", label: "Eladási ár" },
+      { key: (i) => i.warranty || "", label: "Garancia" }, { key: (i) => stockStatusLabel(i.stockStatus), label: "Raktár állapot" },
+      { key: (i) => i.source || "", label: "Forrás" }, { key: (i) => i.dateAdded || "", label: "Felvéve" },
+    ], condFiltered.map((i) => ({ ...i, n: phoneCode(i.productNo) || "" })));
+  }
+
   return (
     <>
       <div className="filter-row">
@@ -52,6 +64,7 @@ export default function StockTab({
             <span className="dot" style={{ background: "#F59E0B" }} />Felújított <span className="cnt">{filteredStock.filter((i) => i.condition === "Refurbished").length}</span>
           </button>
         </div>
+        <button type="button" className="btn sec sm" onClick={exportStock} disabled={condFiltered.length === 0} title="A jelenleg szűrt lista letöltése CSV-ként">Exportálás CSV-be</button>
       </div>
 
       {loadingData ? <LoadingState /> : condFiltered.length === 0 ? <EmptyState icon={PhoneCaseIcon}>Nincs termék raktáron.</EmptyState> : (

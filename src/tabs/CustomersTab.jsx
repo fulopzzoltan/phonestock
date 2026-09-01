@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { money, formatPhone } from "../lib/utils";
+import { money, formatPhone, exportToCsv, today } from "../lib/utils";
 import { SearchIcon, CustomersIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 
@@ -24,11 +24,23 @@ export default function CustomersTab({
 
   const sorted = useMemo(() => sortCustomers(customers, sortBy), [customers, sortBy]);
 
+  function exportCustomers() {
+    exportToCsv(`ugyfelek-${today()}`, [
+      { key: (c) => c.name || "Névtelen", label: "Név" }, { key: (c) => formatPhone(c.phone) || "", label: "Telefonszám" },
+      { key: (c) => c.purchases.length, label: "Vásárlások db" }, { key: (c) => c.purchaseTotal, label: "Vásárlások összege" },
+      { key: (c) => c.tickets.length, label: "Szerviz db" }, { key: (c) => c.ticketTotal, label: "Szerviz összege" },
+      { key: (c) => c.lastActivity || "", label: "Utolsó aktivitás" },
+    ], sorted);
+  }
+
   return (
     <>
       <div className="topbar">
         <div><div className="page-title">Kliensek</div></div>
-        <button className="btn" disabled={busy} onClick={() => setCustomerModal("add")}>+ Új ügyfél</button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button className="btn sec" disabled={busy || sorted.length === 0} onClick={exportCustomers}>Exportálás CSV-be</button>
+          <button className="btn" disabled={busy} onClick={() => setCustomerModal("add")}>+ Új ügyfél</button>
+        </div>
       </div>
 
       <div className="filter-row">

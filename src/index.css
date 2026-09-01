@@ -100,6 +100,16 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
 .content-topbar .loc-drop{width:auto}
 .content-topbar .loc-drop.static{border:1px solid #E8EAEF;background:#F8FAFB;border-radius:9px;padding:7px 9px}
 .ctb-spacer{flex:1}
+.ctb-search-wrap{position:relative;flex:0 1 320px;min-width:160px}
+.ctb-search{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #EEF0F2;border-radius:12px;padding:8px 13px;box-shadow:var(--shadow-card);color:#9CA3AF}
+.ctb-search input{background:none;border:none;outline:none;font-family:inherit;font-size:13px;color:#111827;width:100%}
+.ctb-search input::placeholder{color:#9CA3AF}
+.ctb-search-menu{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid #E8EAEF;border-radius:10px;box-shadow:0 8px 24px rgba(16,24,40,.12);padding:4px;z-index:30;max-height:360px;overflow:auto}
+.ctb-search-item{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border-radius:7px;cursor:pointer}
+.ctb-search-item:hover{background:#F8FAFB}
+.ctb-search-title{font-size:12.5px;font-weight:600;color:#111827}
+.ctb-search-sub{font-size:11px;color:#9CA3AF}
+.ctb-search-empty{padding:12px 10px;font-size:12.5px;color:#9CA3AF}
 .ctb-chat-btn{position:relative}
 .ctb-chat-badge{position:absolute;top:-5px;right:-5px;background:#DC2626;color:#fff;font-size:9.5px;font-weight:700;min-width:15px;height:15px;border-radius:999px;display:flex;align-items:center;justify-content:center;padding:0 3px;box-shadow:0 0 0 2px #fff}
 .user-chip-wrap{position:relative}

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { money, cashPortion, cardPortion } from "../lib/utils";
+import { money, cashPortion, cardPortion, exportToCsv } from "../lib/utils";
 import { EmptyState } from "../components/EmptyState";
 import { FinanceIcon, EditIcon } from "../components/icons";
 import TransactionsPeriodList from "../components/TransactionsPeriodList";
@@ -119,6 +119,15 @@ export default function CashSettlementTab({
 
   function holderNameFor(locId) {
     return locName(locId);
+  }
+
+  function exportPeriodTx() {
+    exportToCsv(`tranzakciok-${periodStart}_${periodEnd}`, [
+      { key: (t) => t.date, label: "Dátum" }, { key: (t) => (t.type === "income" ? "Bevétel" : "Kiadás"), label: "Típus" },
+      { key: (t) => t.category || "", label: "Kategória" }, { key: (t) => t.description || "", label: "Leírás" },
+      { key: (t) => t.amount ?? "", label: "Összeg" }, { key: (t) => t.payment || "", label: "Fizetés" },
+      { key: (t) => locName(t.locationId), label: "Helyszín" }, { key: (t) => t.customerName || "", label: "Ügyfél" },
+    ], periodTx);
   }
 
   async function handleSubmit(e) {
@@ -255,10 +264,15 @@ export default function CashSettlementTab({
         </div>
       </form>
 
-      <div style={{ marginTop: 18 }}>
+      <div style={{ marginTop: 18, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
         <span className="toggle-link" onClick={() => setShowList((v) => !v)}>
           {showList ? "Időszak tételeinek elrejtése" : `Időszak tételei megtekintése (${periodTx.length})`}
         </span>
+        {periodTx.length > 0 && (
+          <button type="button" className="btn sec sm" onClick={exportPeriodTx}>Időszak exportálása CSV-be</button>
+        )}
+      </div>
+      <div>
         {showList && (
           <div style={{ marginTop: 10 }}>
             <TransactionsPeriodList transactions={periodTx} locName={locName} onEdit={setTxModal} onDelete={deleteTransaction} onOpenReceipt={setReceiptTxId} busy={busy} />

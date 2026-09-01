@@ -13,7 +13,7 @@ const LEDGER_LABELS = {
   reversal: "Visszavonás",
 };
 
-export default function CustomerDetailPanel({ customer, locName, ledger, rewards, onRedeem, redeemBusy, onClose, onEdit, onOpenTicket, onOpenProduct }) {
+export default function CustomerDetailPanel({ customer, locName, ledger, rewards, onRedeem, redeemBusy, onClose, onEdit, onOpenTicket, onOpenProduct, isAdmin, onMerge }) {
   const events = [
     ...customer.purchases.map((p) => ({ kind: "purchase", date: p.date, record: p })),
     ...customer.tickets.map((t) => ({ kind: "ticket", date: t.dateIn, record: t })),
@@ -37,6 +37,7 @@ export default function CustomerDetailPanel({ customer, locName, ledger, rewards
             <div className="dp-name">{customer.name || "Névtelen"}</div>
           </div>
           <div style={{ display: "flex", gap: 6 }}>
+            {isAdmin && onMerge && <button className="btn sec sm" onClick={() => onMerge(customer)}>Összevonás</button>}
             <button className="iconbtn" onClick={() => onEdit(customer)}><EditIcon /></button>
             <button className="iconbtn" onClick={onClose}><CloseIcon /></button>
           </div>

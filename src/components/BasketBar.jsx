@@ -58,20 +58,26 @@ export default function BasketBar({ defaultLocId, busy, smartQuickItems, onCheck
     setBasketItems((items) => items.filter((_, i) => i !== idx));
   }
 
-  function handleCheckout() {
+  // Fontos: a kosarat/mezőket CSAK sikeres mentés után ürítjük ki. Ha a mentés hálózati
+  // (vagy egyéb) hiba miatt elszáll, onCheckout `false`-t ad vissza — ilyenkor minden
+  // beütött tétel a helyén marad, csak egy hibaüzenet jelzi, hogy próbáld újra.
+  async function handleCheckout() {
     if (basketItems.length === 0 || !defaultLocId) return;
-    onCheckout(basketItems, basketPayment, defaultLocId);
-    setBasketItems([]);
+    setErr("");
+    const ok = await onCheckout(basketItems, basketPayment, defaultLocId);
+    if (ok) setBasketItems([]);
+    else setErr("Nem sikerült rögzíteni (lehet, hogy elakadt a net) — a kosár tartalma megmaradt, próbáld újra.");
   }
 
-  function handleDirectExpense() {
+  async function handleDirectExpense() {
     if (!description.trim() || !amount || !defaultLocId) { setErr(!defaultLocId ? "Válassz helyszínt a bal oldali sávban!" : "Leírás és összeg kötelező!"); return; }
     setErr("");
-    onCheckout([{
+    const ok = await onCheckout([{
       label: description.trim(), amount: Number(amount) || 0, cost: 0, category, kind: "expense",
       stockKind: category === "Készlet" ? stockKind : undefined,
     }], basketPayment, defaultLocId);
-    resetFree();
+    if (ok) resetFree();
+    else setErr("Nem sikerült rögzíteni (lehet, hogy elakadt a net) — az adatok megmaradtak, próbáld újra.");
   }
 
   const total = basketItems.reduce((s, it) => s + (it.kind === "income" ? it.amount : -it.amount), 0);
