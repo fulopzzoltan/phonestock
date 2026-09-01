@@ -16,6 +16,10 @@ export default function PublicFooter({ lang = "hu" }) {
   const stockHref = lang === "ro" ? "/ro/telefoane" : "/";
   const repairHref = lang === "ro" ? "/ro/estimare" : "/becsles";
   const faqHref = lang === "ro" ? "/ro/intrebari-frecvente" : "/gyik";
+  // Az ÁSZF/Visszaküldés/Adatvédelem szövege egyelőre csak magyarul létezik — nincs külön RO
+  // route rájuk, de a ?lang=ro jelzéssel legalább a fejléc/lábléc (és a nyelvváltó) a
+  // látogató nyelvén marad, ahelyett hogy a teljes oldal csendben visszaváltana magyarra.
+  const legalLangQuery = lang === "ro" ? "?lang=ro" : "";
 
   useEffect(() => {
     (async () => {
@@ -81,9 +85,9 @@ export default function PublicFooter({ lang = "hu" }) {
             <span>{s.footerRights(new Date().getFullYear())}</span>
           </div>
           <span className="pub-footer-legal">
-            <a href="/aszf">{s.footerTerms}</a>
-            <a href="/visszakuldes">{s.footerReturns}</a>
-            <a href="/adatvedelem">{s.footerPrivacy}</a>
+            <a href={`/aszf${legalLangQuery}`}>{s.footerTerms}</a>
+            <a href={`/visszakuldes${legalLangQuery}`}>{s.footerReturns}</a>
+            <a href={`/adatvedelem${legalLangQuery}`}>{s.footerPrivacy}</a>
           </span>
           <a href="https://anpc.ro/ce-este-sal/" target="_blank" rel="noopener noreferrer" className="pub-footer-anpc"><img src="/anpc_sal.v1787810231.png" alt="ANPC SAL" /></a>
         </div>

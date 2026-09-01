@@ -51,6 +51,10 @@ const paymentMockMatch = window.location.pathname.match(/^\/fizetes\/([0-9a-f-]{
 const termsMatch = window.location.pathname.match(/^\/aszf\/?$/i);
 const privacyMatch = window.location.pathname.match(/^\/adatvedelem\/?$/i);
 const returnsMatch = window.location.pathname.match(/^\/visszakuldes\/?$/i);
+// Az ÁSZF/Adatvédelem/Visszaküldés szövege csak magyarul létezik, nincs saját RO route-ja —
+// a ?lang=ro jelzést a PublicFooter teszi rá a linkre, hogy legalább a fejléc/lábléc/nyelvváltó
+// megmaradjon román nézetben, ne váltson csendben egészben magyarra.
+const legalLang = new URLSearchParams(window.location.search).get("lang") === "ro" ? "ro" : "hu";
 const faqMatch = window.location.pathname.match(/^\/gyik\/?$/i);
 // "/" és "/keszlet" is a nyilvános készletoldalt mutatja — ez az, amit valaki
 // a Netlify domain-re érkezve először lát, nem a bejelentkezés.
@@ -77,9 +81,9 @@ function Root() {
   if (checkoutMatch) return <Checkout />;
   if (orderStatusMatch) return <OrderStatus token={orderStatusMatch[1]} />;
   if (paymentMockMatch) return <PaymentMock token={paymentMockMatch[1]} />;
-  if (termsMatch) return <LegalPage title="Általános Szerződési Feltételek" variant="terms" />;
-  if (privacyMatch) return <LegalPage title="Adatvédelmi tájékoztató" variant="privacy" />;
-  if (returnsMatch) return <LegalPage title="Visszaküldési és Visszatérítési Szabályzat" variant="returns" />;
+  if (termsMatch) return <LegalPage title={legalLang === "ro" ? "Termeni și condiții generale" : "Általános Szerződési Feltételek"} variant="terms" lang={legalLang} />;
+  if (privacyMatch) return <LegalPage title={legalLang === "ro" ? "Politica de confidențialitate" : "Adatvédelmi tájékoztató"} variant="privacy" lang={legalLang} />;
+  if (returnsMatch) return <LegalPage title={legalLang === "ro" ? "Politica de retur" : "Visszaküldési és Visszatérítési Szabályzat"} variant="returns" lang={legalLang} />;
   if (roFaqMatch) return <GyikPage lang="ro" />;
   if (faqMatch) return <GyikPage lang="hu" />;
   if (roPhoneDetailMatch) return <PhoneDetail id={roPhoneDetailMatch[1]} lang="ro" />;

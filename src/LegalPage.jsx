@@ -255,13 +255,18 @@ const RETURNS_CONTENT = (
 
 const CONTENT_BY_VARIANT = { terms: TERMS_CONTENT, privacy: PRIVACY_CONTENT, returns: RETURNS_CONTENT };
 
-export default function LegalPage({ title, variant }) {
+export default function LegalPage({ title, variant, lang = "hu" }) {
   const content = CONTENT_BY_VARIANT[variant];
   return (
     <div className="pub-shop">
-      <PublicHeader activeNav="stock" />
+      <PublicHeader activeNav="stock" lang={lang} />
       <main className="pub-legal-main">
         <h1 className="pub-legal-title">{title}</h1>
+        {lang === "ro" && (
+          <p className="login-note" style={{ marginBottom: 16 }}>
+            Acest document este disponibil momentan doar în limba maghiară.
+          </p>
+        )}
         {content ? (
           <div className="pub-legal-body">{content}</div>
         ) : (
@@ -273,7 +278,7 @@ export default function LegalPage({ title, variant }) {
           </div>
         )}
       </main>
-      <PublicFooter />
+      <PublicFooter lang={lang} />
     </div>
   );
 }
