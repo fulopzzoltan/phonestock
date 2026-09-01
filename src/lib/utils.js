@@ -173,7 +173,7 @@ export const PROBLEM_TAGS = [
   "Beázás", "Nem kapcsol be", "Alaplapi hiba", "Bootloop", "Adatmentés",
   "Bevizsgálás", "FRP zárolás", "Egyéb",
 ];
-export const PART_CATEGORIES = ["Kijelző", "Akkumulátor", "Hátlap", "Csatlakozó", "Fólia"];
+export const PART_CATEGORIES = ["Kijelző", "Akkumulátor", "Hátlap"];
 export const PART_ORIGINS = ["OEM", "Utángyártott"];
 export const WARRANTIES = ["1 hó", "3 hó", "6 hó", "1 év", "2 év"];
 
