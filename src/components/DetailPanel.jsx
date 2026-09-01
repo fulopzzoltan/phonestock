@@ -12,7 +12,7 @@ function signatureUrl(path) {
   return supabase.storage.from("signatures").getPublicUrl(path).data.publicUrl;
 }
 
-export default function DetailPanel({ ticket, locName, parts, stock, users = [], customers = [], rewards = [], onClose, onStatusChange, onCompleteQc, onEdit, onDelete, busy, onAddPart, onRemovePart, onPrint, onShowHistory }) {
+export default function DetailPanel({ ticket, locName, parts, stock, users = [], customers = [], rewards = [], onClose, onStatusChange, onCompleteQc, onEdit, onDelete, busy, onAddPart, onRemovePart, onPrint, onShowHistory, onAddDeposit }) {
   const [copied, setCopied] = useState(false);
   const [showAddPart, setShowAddPart] = useState(false);
   const [selPartId, setSelPartId] = useState("");
@@ -215,6 +215,15 @@ export default function DetailPanel({ ticket, locName, parts, stock, users = [],
             <Row k="Profit" v={<span style={{ color: "#22C55E", fontWeight: 700 }}>{money(profit)}</span>} />
             {ticket.ticketKind === "Saját készlet - előkészítés" && ticket.productId && (
               <Row k="Telefon beszerzési ára most" v={<span style={{ fontWeight: 700 }}>{money(stock?.find((p) => p.id === ticket.productId)?.costPrice)}</span>} />
+            )}
+            {(Number(ticket.depositPaid) || 0) > 0 && (
+              <>
+                <Row k="Előleg" v={<span style={{ fontWeight: 700 }}>{money(ticket.depositPaid)}</span>} />
+                <Row k="Hátralévő" v={<span style={{ fontWeight: 700 }}>{money(Math.max(0, (Number(ticket.price) || 0) - (Number(ticket.depositPaid) || 0)))}</span>} />
+              </>
+            )}
+            {ticket.subStatus !== "Átadva" && onAddDeposit && (
+              <button type="button" className="btn sec sm" style={{ marginTop: 8 }} disabled={busy} onClick={() => onAddDeposit(ticket)}>+ Előleg felvétele</button>
             )}
           </div>
           <TicketPhotos ticketId={ticket.id} />

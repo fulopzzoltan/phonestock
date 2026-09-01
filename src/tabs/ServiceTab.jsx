@@ -90,7 +90,7 @@ export default function ServiceTab({
             <ResponsiveTable
               columns={[
                 { key: "n", label: "Sorszám", className: "col-serial" }, { key: "d", label: "Eszköz", className: "col-device" }, { key: "c", label: "Kliens" }, { key: "i", label: "Bejött" },
-                { key: "p", label: "Probléma", className: "col-grow" }, { key: "s", label: "Státusz" }, { key: "a", label: "Ár" }, { key: "x", label: "" },
+                { key: "p", label: "Probléma", className: "col-grow" }, { key: "s", label: "Státusz", className: "col-status" }, { key: "a", label: "Ár" }, { key: "x", label: "" },
               ]}
               rows={items}
               rowKey={(t) => t.id}
@@ -119,8 +119,15 @@ export default function ServiceTab({
                       {probsOf(t).length > 0 ? probsOf(t).map((p, i) => <span key={i} className="prob-pill">{p}</span>) : "—"}
                     </div>
                   </td>
-                  <td style={{ whiteSpace: "nowrap" }}>{statusPill(t)}</td>
-                  <td className="row-price">{money(t.price)}</td>
+                  <td className="col-status" style={{ whiteSpace: "nowrap" }}>{statusPill(t)}</td>
+                  <td className="row-price">
+                    {(Number(t.depositPaid) || 0) > 0 ? (
+                      <>
+                        {money(t.price - t.depositPaid)}
+                        <div className="row-price-sub">-{money(t.depositPaid)} előleg</div>
+                      </>
+                    ) : money(t.price)}
+                  </td>
                   <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
                     {nextActionOf(t) && (() => {
                       const na = nextActionOf(t);
@@ -150,7 +157,9 @@ export default function ServiceTab({
                         </span>
                       )}
                     </div>
-                    <div className="mob-row-amount">{money(t.price)}</div>
+                    <div className="mob-row-amount">
+                      {(Number(t.depositPaid) || 0) > 0 ? money(t.price - t.depositPaid) : money(t.price)}
+                    </div>
                   </div>
                   <div className="mob-row-sub">
                     <span>{kliensOf(t)}</span>

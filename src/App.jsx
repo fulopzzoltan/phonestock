@@ -15,6 +15,7 @@ import PartModal from "./components/PartModal";
 import PartUsageModal from "./components/PartUsageModal";
 import PdfOrderImportModal from "./components/PdfOrderImportModal";
 import DetailPanel from "./components/DetailPanel";
+import TicketDepositModal from "./components/TicketDepositModal";
 import ProductDetailPanel from "./components/ProductDetailPanel";
 import DeviceHistoryPanel from "./components/DeviceHistoryPanel";
 import PartDetailPanel from "./components/PartDetailPanel";
@@ -195,6 +196,7 @@ function AppShell() {
   const [partModal, setPartModal] = useState(null); // null | "add" | part obj (edit)
   const [txModal, setTxModal] = useState(null); // null | tx obj (edit)
   const [ticketModal, setTicketModal] = useState(null); // null | "add" | ticket obj (edit)
+  const [depositModal, setDepositModal] = useState(null); // null | ticket obj
   const [ownServiceModal, setOwnServiceModal] = useState(null); // { product, kind } | null
   const [partUsageModal, setPartUsageModal] = useState(null); // { part } | null
   const [pendingPartUsage, setPendingPartUsage] = useState(null); // { part, qty } | null — az Alkatrészek fülről indított "Felhasználás" vár egy most létrejövő saját-készlet munkalapra
@@ -1757,37 +1759,46 @@ function AppShell() {
     await withBusy(async () => {
       const ticket = tickets.find((t) => t.id === id);
       const becameReady = status === "Átadásra" && !(ticket && ticket.status === "Átadásra");
+      // Ha korábban vettünk fel előleget erre a munkalapra, az átadáskor csak a fennmaradó
+      // összeget könyveljük — az előleg tranzakciója már külön, a felvételekor bekerült.
+      const remainingAtHandover = Math.max(0, (Number(ticket?.price) || 0) - (Number(ticket?.depositPaid) || 0));
       // A bevétel/anyagköltség tételt csak EGYSZER, a munkalap életében először hozzuk létre —
       // ha valaki visszaállítja a státuszt, majd újra "Átadva"-ra teszi, ez ne írja fel duplán
       // a Bevétel/Kiadás-t (és ne szaporítsa a hűségpontot, ami a tranzakció-insert triggerére épül).
-      const shouldRecordIncome = subStatus === "Átadva" && ticket && !ticket.handoverIncomeRecorded && (Number(ticket.price) || 0) > 0;
+      const shouldRecordIncome = subStatus === "Átadva" && ticket && !ticket.handoverIncomeRecorded && remainingAtHandover > 0;
       const shouldRecordMaterial = subStatus === "Átadva" && ticket && !ticket.handoverMaterialRecorded && ticket.ticketKind === "Saját készlet - garanciális" && (Number(ticket.matCost) || 0) > 0;
       // Ha egy már átadott munkalapot valaki visszaállít egy korábbi státuszra (pl. tévedésből
       // lett átadva, vagy a vevő visszahozta), a korábban felírt Bevétel/Kiadás tételeket is
-      // vissza kell vonni — különben az Árulásban egy olyan tétel marad, ami már nem valós.
+      // vissza kell vonni — de csak az átadáskor keletkezetteket, a korábban felvett előleget
+      // (ami külön, ettől függetlenül valós) NEM töröljük.
       const shouldReverseHandover = ticket && ticket.subStatus === "Átadva" && subStatus !== "Átadva";
       const patch = { status, sub_status: subStatus };
       if (subStatus === "Átadva") patch.date_out = today();
       if (shouldReverseHandover) patch.date_out = null;
       if (becameReady) patch.ready_at = new Date().toISOString();
-      if (shouldRecordIncome) patch.handover_income_recorded = true;
       if (shouldRecordMaterial) patch.handover_material_recorded = true;
-      if (shouldReverseHandover) { patch.handover_income_recorded = false; patch.handover_material_recorded = false; }
+      if (shouldReverseHandover) {
+        patch.handover_income_recorded = false;
+        patch.handover_material_recorded = false;
+        patch.handover_transaction_id = null;
+        patch.handover_material_transaction_id = null;
+      }
       unwrap(await supabase.from("service_tickets").update(patch).eq("id", id));
       setTickets(tickets.map((t) => (t.id === id ? {
         ...t, status, subStatus,
         dateOut: subStatus === "Átadva" ? today() : (shouldReverseHandover ? null : t.dateOut),
         readyAt: becameReady ? patch.ready_at : t.readyAt,
-        handoverIncomeRecorded: shouldReverseHandover ? false : (shouldRecordIncome ? true : t.handoverIncomeRecorded),
+        handoverIncomeRecorded: shouldReverseHandover ? false : t.handoverIncomeRecorded,
         handoverMaterialRecorded: shouldReverseHandover ? false : (shouldRecordMaterial ? true : t.handoverMaterialRecorded),
+        handoverTransactionId: shouldReverseHandover ? null : t.handoverTransactionId,
+        handoverMaterialTransactionId: shouldReverseHandover ? null : t.handoverMaterialTransactionId,
       } : t)));
 
       if (shouldReverseHandover) {
-        const linked = unwrap(await supabase.from("transactions").select("id").eq("service_ticket_id", id).is("deleted_at", null));
-        if (linked.length > 0) {
-          const ids = linked.map((r) => r.id);
-          unwrap(await supabase.from("transactions").update({ deleted_at: new Date().toISOString() }).in("id", ids));
-          setTransactions((prev) => prev.filter((t) => !ids.includes(t.id)));
+        const idsToDelete = [ticket.handoverTransactionId, ticket.handoverMaterialTransactionId].filter(Boolean);
+        if (idsToDelete.length > 0) {
+          unwrap(await supabase.from("transactions").update({ deleted_at: new Date().toISOString() }).in("id", idsToDelete));
+          setTransactions((prev) => prev.filter((t) => !idsToDelete.includes(t.id)));
           if (ticket.customerId) await refreshCustomerLoyalty(ticket.customerId);
         }
       }
@@ -1802,12 +1813,13 @@ function AppShell() {
       }
 
       if (shouldRecordIncome) {
+        const depositNote = (Number(ticket.depositPaid) || 0) > 0 ? ` (előleg levonva: ${money(ticket.depositPaid)})` : "";
         const r = unwrap(await supabase.from("transactions").insert({
           ...txToApi({
             type: "income",
             category: "Szerviz",
-            description: `Szerviz: ${ticket.customerName} — ${[ticket.brand, ticket.model].filter(Boolean).join(" ")}`,
-            amount: ticket.price,
+            description: `Szerviz: ${ticket.customerName} — ${[ticket.brand, ticket.model].filter(Boolean).join(" ")}${depositNote}`,
+            amount: remainingAtHandover,
             payment,
             paymentCashAmount: payment === "Vegyes" ? paymentCashAmount : null,
             paymentCardAmount: payment === "Vegyes" ? paymentCardAmount : null,
@@ -1819,6 +1831,8 @@ function AppShell() {
           customer_id: ticket.customerId || null,
         }).select());
         setTransactions((prev) => [txFromApi(r[0]), ...prev]);
+        unwrap(await supabase.from("service_tickets").update({ handover_income_recorded: true, handover_transaction_id: r[0].id }).eq("id", id));
+        setTickets((prev) => prev.map((t) => (t.id === id ? { ...t, handoverIncomeRecorded: true, handoverTransactionId: r[0].id } : t)));
         if (ticket.customerId) await refreshCustomerLoyalty(ticket.customerId);
       }
 
@@ -1833,7 +1847,33 @@ function AppShell() {
           serviceTicketId: id,
         }, ticket.locationId)).select());
         setTransactions((prev) => [txFromApi(r2[0]), ...prev]);
+        unwrap(await supabase.from("service_tickets").update({ handover_material_transaction_id: r2[0].id }).eq("id", id));
+        setTickets((prev) => prev.map((t) => (t.id === id ? { ...t, handoverMaterialTransactionId: r2[0].id } : t)));
       }
+    });
+  }
+  async function addTicketDeposit(id, amount, payment) {
+    await withBusy(async () => {
+      const ticket = tickets.find((t) => t.id === id);
+      if (!ticket || !(Number(amount) > 0)) return;
+      const r = unwrap(await supabase.from("transactions").insert({
+        ...txToApi({
+          type: "income",
+          category: "Szerviz",
+          description: `Előleg — ${ticket.customerName} — ${[ticket.brand, ticket.model].filter(Boolean).join(" ")}`,
+          amount,
+          payment,
+          customerName: ticket.customerName,
+          customerPhone: ticket.customerPhone,
+          serviceTicketId: id,
+        }, ticket.locationId),
+        customer_id: ticket.customerId || null,
+      }).select());
+      setTransactions((prev) => [txFromApi(r[0]), ...prev]);
+      const newDeposit = (Number(ticket.depositPaid) || 0) + Number(amount);
+      unwrap(await supabase.from("service_tickets").update({ deposit_paid: newDeposit }).eq("id", id));
+      setTickets((prev) => prev.map((t) => (t.id === id ? { ...t, depositPaid: newDeposit } : t)));
+      if (ticket.customerId) await refreshCustomerLoyalty(ticket.customerId);
     });
   }
   async function completeQc(id, qcByUserId) {
@@ -2694,6 +2734,15 @@ function AppShell() {
           onRemovePart={removePartFromTicket}
           onPrint={printTicketSlip}
           onShowHistory={(imei) => setDeviceHistoryImei(imei)}
+          onAddDeposit={setDepositModal}
+        />
+      )}
+      {depositModal && (
+        <TicketDepositModal
+          ticket={depositModal}
+          busy={busy}
+          onClose={() => setDepositModal(null)}
+          onConfirm={(amount, payment) => { addTicketDeposit(depositModal.id, amount, payment); setDepositModal(null); }}
         />
       )}
       {detailProduct && (

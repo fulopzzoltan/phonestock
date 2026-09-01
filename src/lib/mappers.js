@@ -198,6 +198,9 @@ export const tFromApi = (r) => ({
   intakeLocationId: r.intake_location_id,
   handoverIncomeRecorded: !!r.handover_income_recorded,
   handoverMaterialRecorded: !!r.handover_material_recorded,
+  depositPaid: r.deposit_paid != null ? Number(r.deposit_paid) : 0,
+  handoverTransactionId: r.handover_transaction_id,
+  handoverMaterialTransactionId: r.handover_material_transaction_id,
 });
 
 export const tToApi = (t, locId) => ({
