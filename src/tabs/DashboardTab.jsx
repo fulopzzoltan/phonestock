@@ -32,9 +32,10 @@ const KpiStrip = ({ items }) => (
   </div>
 );
 
-// Új/Felújított jelölés a tulajdonos Sheets-es rendszerét követi: lila = új, narancssárga = felújított.
-const NEW_COLOR = "#7C3AED";
-const USED_COLOR = "#F59E0B";
+// A lila/narancs (a tulajdonos Sheets-es jelölése) itt ütött a lap többi színével
+// (Tartozék, Szerviz stb.) — helyette a meglévő zöld/szürke tónust használjuk.
+const NEW_COLOR = "var(--primary)";
+const USED_COLOR = "#6B7280";
 
 const SplitBars = ({ items }) => (
   items.length ? items.map((b) => (
