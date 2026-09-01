@@ -33,7 +33,7 @@ export default function DashboardTab({
 }) {
   const todoCount = todoItems?.slaTickets.length || 0;
   const [showAllBrands, setShowAllBrands] = useState(false);
-  const BRAND_TOP_N = 8;
+  const BRAND_TOP_N = 6;
   const shownBrands = showAllBrands ? svcStats.brandBreakdown : svcStats.brandBreakdown.slice(0, BRAND_TOP_N);
   const hiddenBrandCount = svcStats.brandBreakdown.length - BRAND_TOP_N;
 
