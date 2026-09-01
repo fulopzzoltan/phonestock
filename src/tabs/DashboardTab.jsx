@@ -57,9 +57,8 @@ const SplitBars = ({ items }) => (
   )) : <div style={{ fontSize: 12.5, color: "#9CA3AF" }}>Nincs adat</div>
 );
 
-const BreakdownBars = ({ items, twoCol }) => {
-  if (!items.length) return <div style={{ fontSize: 12.5, color: "#9CA3AF" }}>Nincs adat</div>;
-  const row = (b) => (
+const BreakdownBars = ({ items }) => (
+  items.length ? items.map((b) => (
     <div key={b.name} style={{ marginBottom: 10 }}>
       <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 4 }}>
         <span style={{ fontWeight: 600, color: "#374151" }}>{b.name}</span>
@@ -69,14 +68,8 @@ const BreakdownBars = ({ items, twoCol }) => {
         <div style={{ width: `${b.pct}%`, height: "100%", background: "var(--primary)", borderRadius: 999 }} />
       </div>
     </div>
-  );
-  if (!twoCol) return items.map(row);
-  return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 28px" }}>
-      {items.map(row)}
-    </div>
-  );
-};
+  )) : <div style={{ fontSize: 12.5, color: "#9CA3AF" }}>Nincs adat</div>
+);
 
 const TABS = [
   { key: "all", label: "Mind" },
@@ -348,34 +341,36 @@ export default function DashboardTab({
             { label: "Fólia-ajánlat konverzió", value: svcStats.foliaConversionPct != null ? `${svcStats.foliaConversionPct}%` : "—", color: "#22C55E", sub: svcStats.foliaShown > 0 ? `${svcStats.foliaRequestedCount} / ${svcStats.foliaShown} megrendelte` : null },
           ]} />
 
-          <div className="statcard" style={{ marginBottom: 14 }}>
-            <div className="dp-section-title">Leggyakoribb probléma</div>
-            <BreakdownBars items={svcStats.topProblems} twoCol />
-            {svcStats.problemsTotal > 0 && (
-              <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 8 }}>
-                {svcStats.problemsSample} / {svcStats.problemsTotal} munkalapon van rögzítve probléma-típus
-              </div>
-            )}
-          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
+            <div className="statcard">
+              <div className="dp-section-title">Leggyakoribb probléma</div>
+              <BreakdownBars items={svcStats.topProblems} />
+              {svcStats.problemsTotal > 0 && (
+                <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 8 }}>
+                  {svcStats.problemsSample} / {svcStats.problemsTotal} munkalapon van rögzítve probléma-típus
+                </div>
+              )}
+            </div>
 
-          <div className="statcard" style={{ marginBottom: 14 }}>
-            <div className="dp-section-title">Márkák megoszlása (átadott munkák)</div>
-            <BreakdownBars items={shownBrands} twoCol />
-            {hiddenBrandCount > 0 && (
-              <button
-                type="button"
-                className="toggle-link"
-                style={{ background: "none", border: "none", padding: 0, fontWeight: 600, marginTop: 6 }}
-                onClick={() => setShowAllBrands((v) => !v)}
-              >
-                {showAllBrands ? "Kevesebb mutatása" : `+ ${hiddenBrandCount} további márka mutatása`}
-              </button>
-            )}
-            {svcStats.brandTotal > 0 && (
-              <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 4 }}>
-                Összesen {svcStats.brandTotal} átadott munkalap alapján
-              </div>
-            )}
+            <div className="statcard">
+              <div className="dp-section-title">Márkák megoszlása (átadott munkák)</div>
+              <BreakdownBars items={shownBrands} />
+              {hiddenBrandCount > 0 && (
+                <button
+                  type="button"
+                  className="toggle-link"
+                  style={{ background: "none", border: "none", padding: 0, fontWeight: 600, marginTop: 6 }}
+                  onClick={() => setShowAllBrands((v) => !v)}
+                >
+                  {showAllBrands ? "Kevesebb mutatása" : `+ ${hiddenBrandCount} további márka mutatása`}
+                </button>
+              )}
+              {svcStats.brandTotal > 0 && (
+                <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 4 }}>
+                  Összesen {svcStats.brandTotal} átadott munkalap alapján
+                </div>
+              )}
+            </div>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
