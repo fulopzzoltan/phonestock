@@ -1689,6 +1689,22 @@ function AppShell() {
       const newTicket = tFromApi(r[0]);
       setTickets([newTicket, ...tickets]);
       setTicketModal(null);
+
+      if (data.reserve) {
+        const { reserveProductId, depositAmount, depositPayment } = data.reserve;
+        unwrap(await supabase.from("products").update({ stock_status: "lefoglalt" }).eq("id", reserveProductId));
+        setStock((prev) => prev.map((p) => (p.id === reserveProductId ? { ...p, stockStatus: "lefoglalt" } : p)));
+        const reserved = stock.find((p) => p.id === reserveProductId);
+        const rTx = unwrap(await supabase.from("transactions").insert({
+          ...txToApi({
+            type: "income", category: "Készlet",
+            description: `Foglaló — ${[reserved?.brand, reserved?.model].filter(Boolean).join(" ")} — ${newTicket.customerName}`,
+            amount: depositAmount, payment: depositPayment, productId: reserveProductId,
+          }, locId),
+          customer_id: customerId,
+        }).select());
+        setTransactions((prev) => [txFromApi(rTx[0]), ...prev]);
+      }
       if (repairLeadConvert) {
         await convertRepairLead(repairLeadConvert.id, newTicket.id);
         setRepairLeadConvert(null);

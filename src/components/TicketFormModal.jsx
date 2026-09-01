@@ -29,6 +29,11 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
   const isEdit = !!ticket;
   const parsed = parseIssue(ticket?.issue);
   const [productQuery, setProductQuery] = useState("");
+  const [reserveOn, setReserveOn] = useState(false);
+  const [reserveProductId, setReserveProductId] = useState(null);
+  const [reserveQuery, setReserveQuery] = useState("");
+  const [depositAmount, setDepositAmount] = useState("");
+  const [depositPayment, setDepositPayment] = useState("Készpénz");
   const [f, setF] = useState({
     ticketKind: ticket?.ticketKind || "Ügyfél",
     productId: ticket?.productId || null,
@@ -60,7 +65,8 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
   const toggleTag = (tag) => setTags((t) => (t.includes(tag) ? t.filter((x) => x !== tag) : [...t, tag]));
   const isOwnStock = f.ticketKind !== "Ügyfél";
   const hasIssue = tags.length > 0 || f.extra.trim();
-  const valid = (isOwnStock ? !!f.productId : f.customerName.trim()) && f.brand.trim() && locId && hasIssue;
+  const valid = (isOwnStock ? !!f.productId : f.customerName.trim()) && f.brand.trim() && locId && hasIssue
+    && (!reserveOn || (!!reserveProductId && Number(depositAmount) > 0));
   const productMatches = isOwnStock && productQuery.trim()
     ? stock.filter((p) => {
         const q = productQuery.trim().toLowerCase();
@@ -68,6 +74,15 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
         return hay.includes(q);
       }).slice(0, 8)
     : [];
+  const reserveMatches = reserveOn && reserveQuery.trim()
+    ? stock.filter((p) => {
+        if (p.stockStatus !== "polcon") return false;
+        const q = reserveQuery.trim().toLowerCase();
+        const hay = [p.imei, p.brand, p.model].filter(Boolean).join(" ").toLowerCase();
+        return hay.includes(q);
+      }).slice(0, 8)
+    : [];
+  const reserveProduct = stock.find((p) => p.id === reserveProductId);
   const imeiKey = normalizeImei(f.imei);
   const imeiMatch = imeiKey.length >= 6 ? {
     product: stock.find((p) => normalizeImei(p.imei) === imeiKey),
@@ -79,7 +94,10 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
     if (!valid) return;
     const issue = [tags.join(","), f.extra.trim()].filter(Boolean).join(",");
     const consentAt = f.consentGiven ? (ticket?.consentAt || new Date().toISOString()) : null;
-    onSave({ ...f, issue, assignedTo: f.assignedTo || null, consentAt }, locId);
+    const reserve = reserveOn && reserveProductId ? {
+      reserveProductId, depositAmount: Number(depositAmount) || 0, depositPayment,
+    } : null;
+    onSave({ ...f, issue, assignedTo: f.assignedTo || null, consentAt, reserve }, locId);
   }
 
   return (
@@ -159,6 +177,53 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
                 />
               </div>
               <div className="field"><label>Telefonszám</label><input value={f.customerPhone} onChange={set("customerPhone")} placeholder="07xx xxx xxx" /></div>
+            </div>
+          )}
+          {!isOwnStock && !isEdit && (
+            <div style={{ marginTop: 10 }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#374151", fontWeight: 500, cursor: "pointer" }}>
+                <input type="checkbox" className="chk" checked={reserveOn} onChange={(e) => { setReserveOn(e.target.checked); if (!e.target.checked) { setReserveProductId(null); setDepositAmount(""); } }} />
+                A kliens telefont is lefoglal, előleget ad
+              </label>
+              {reserveOn && (
+                <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 10 }}>
+                  <div className="field">
+                    <label>Lefoglalt telefon</label>
+                    {reserveProduct ? (
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", border: "1px solid #E5E7EB", borderRadius: 8 }}>
+                        <span style={{ flex: 1 }}>{reserveProduct.brand} {reserveProduct.model}{reserveProduct.imei ? ` — IMEI ${reserveProduct.imei}` : ""}</span>
+                        <button type="button" className="btn sec" onClick={() => { setReserveProductId(null); setReserveQuery(""); }}>Csere</button>
+                      </div>
+                    ) : (
+                      <>
+                        <input value={reserveQuery} onChange={(e) => setReserveQuery(e.target.value)} placeholder="Keresés IMEI / márka / modell szerint..." />
+                        {reserveMatches.length > 0 && (
+                          <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 4 }}>
+                            {reserveMatches.map((p) => (
+                              <div
+                                key={p.id}
+                                onClick={() => { setReserveProductId(p.id); setReserveQuery(""); }}
+                                style={{ padding: "8px 10px", border: "1px solid #E5E7EB", borderRadius: 8, cursor: "pointer" }}
+                              >
+                                {p.brand} {p.model}{p.imei ? ` — IMEI ${p.imei}` : ""}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                  <div className="row2">
+                    <div className="field"><label>Előleg összege (Lej)</label><input type="number" value={depositAmount} onChange={(e) => setDepositAmount(e.target.value)} placeholder="0" /></div>
+                    <ChipField
+                      label="Fizetés módja"
+                      value={depositPayment}
+                      onChange={setDepositPayment}
+                      options={[{ key: "Készpénz", label: "Készpénz" }, { key: "Kártya", label: "Kártya" }]}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
