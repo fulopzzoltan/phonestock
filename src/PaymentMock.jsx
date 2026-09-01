@@ -5,11 +5,15 @@ import { money } from "./lib/utils";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 
+// A valódi Netopia-fizetés még nincs bekötve — a korábbi "szimulált sikeres fizetés" gomb
+// a mark_web_order_paid RPC-t hívta, amit bárki (a saját public_token-jével bíró vásárló,
+// vagy akár egy böngésző-konzolból dolgozó rosszindulatú látogató) meg tudott volna hívni
+// valódi fizetés nélkül is — ezért az RPC-t szerver-oldalon lezártuk (ld. biztonsági audit),
+// itt pedig nem kínálunk fel egy amúgy sem működő "fizetés" gombot.
 export default function PaymentMock({ token }) {
   const [order, setOrder] = useState(null);
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
-  const [card, setCard] = useState({ number: "", name: "", expiry: "", cvc: "" });
 
   useEffect(() => {
     (async () => {
@@ -26,17 +30,12 @@ export default function PaymentMock({ token }) {
     })();
   }, [token]);
 
-  async function simulate(success) {
+  async function cancelOrder() {
     setBusy(true);
     setError("");
     try {
-      if (success) {
-        const { error: err } = await supabase.rpc("mark_web_order_paid", { p_token: token });
-        if (err) throw err;
-      } else {
-        const { error: err } = await supabase.rpc("cancel_web_order_by_token", { p_token: token });
-        if (err) throw err;
-      }
+      const { error: err } = await supabase.rpc("cancel_web_order_by_token", { p_token: token });
+      if (err) throw err;
       clearCart();
       window.location.href = `/rendeles/${token}`;
     } catch (err) {
@@ -49,7 +48,7 @@ export default function PaymentMock({ token }) {
     <div className="pub-shop">
       <PublicHeader activeNav="cart" />
       <div className="mock-pay-banner">
-        ⚠️ TESZT FIZETŐOLDAL — ez egy szimuláció, nem történik valódi terhelés. A valódi Netopia-fizetés bekötése folyamatban van.
+        ⚠️ Az online bankkártyás fizetés még nem aktív ezen az oldalon.
       </div>
       <main className="pub-lookup-main">
         <div className="login-card" style={{ maxWidth: 420 }}>
@@ -57,21 +56,17 @@ export default function PaymentMock({ token }) {
           {error && <div className="errbar">{error}</div>}
           {order && (
             <>
-              <div className="login-title">Kártyás fizetés (teszt)</div>
+              <div className="login-title">Fizetés</div>
               <div className="checkout-pickup-line" style={{ textAlign: "center", marginBottom: 16 }}>
                 Fizetendő: <b className="mono">{money(order.total_amount)}</b>
               </div>
-              <div className="field"><label>Kártyaszám</label><input value={card.number} onChange={(e) => setCard({ ...card, number: e.target.value })} placeholder="4111 1111 1111 1111" inputMode="numeric" /></div>
-              <div className="field"><label>Kártyabirtokos neve</label><input value={card.name} onChange={(e) => setCard({ ...card, name: e.target.value })} placeholder={order.guest_name} /></div>
-              <div style={{ display: "flex", gap: 10 }}>
-                <div className="field" style={{ flex: 1 }}><label>Lejárat</label><input value={card.expiry} onChange={(e) => setCard({ ...card, expiry: e.target.value })} placeholder="HH/ÉÉ" /></div>
-                <div className="field" style={{ flex: 1 }}><label>CVC</label><input value={card.cvc} onChange={(e) => setCard({ ...card, cvc: e.target.value })} placeholder="123" inputMode="numeric" /></div>
+              <div className="login-note" style={{ marginBottom: 16 }}>
+                A rendelésed rögzítettük és a kiválasztott terméket lefoglaltuk — az online
+                kártyás fizetés hamarosan elérhető lesz. Addig kérjük, vedd fel velünk a
+                kapcsolatot, hogy egyeztessük a fizetés/átvétel módját, vagy mondd le a
+                rendelést, ha meggondoltad magad.
               </div>
-              <div className="login-note" style={{ marginBottom: 10 }}>
-                Ez az űrlap nem valódi — bármit beírhatsz, semmilyen kártyaadat nem kerül mentésre vagy továbbításra.
-              </div>
-              <button className="btn checkout-submit" disabled={busy} onClick={() => simulate(true)}>Fizetés szimulálása — sikeres</button>
-              <button className="btn sec checkout-submit" style={{ marginTop: 8 }} disabled={busy} onClick={() => simulate(false)}>Fizetés szimulálása — sikertelen</button>
+              <button className="btn sec checkout-submit" disabled={busy} onClick={cancelOrder}>Rendelés lemondása</button>
             </>
           )}
         </div>

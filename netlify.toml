@@ -30,3 +30,15 @@
   for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# Alap biztonsági fejlécek — clickjacking (X-Frame-Options) és MIME-sniffing
+# (X-Content-Type-Options) ellen, plusz szűkebb Referrer-Policy. Szándékosan nincs
+# itt Content-Security-Policy: az pontos allowlistelést igényelne (Google Fonts,
+# Supabase, stb.), amit alaposabb teszteléssel kell összeállítani, nehogy eltörjön
+# valamit — ez a két fejléc kockázatmentes, gyors hardening.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
