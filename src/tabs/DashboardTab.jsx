@@ -97,7 +97,10 @@ export default function DashboardTab({
   const shownSoldBrands = showAllSoldBrands ? soldPhoneStats.brandConditionBreakdown : soldPhoneStats.brandConditionBreakdown.slice(0, SOLD_BRAND_TOP_N);
   const hiddenSoldBrandCount = soldPhoneStats.brandConditionBreakdown.length - SOLD_BRAND_TOP_N;
 
-  const [filter, setFilter] = useState("all");
+  // Alapból a Telefonok nézet legyen aktív — így a Bevétel & Kiadás (és a hozzá
+  // tartozó jelszó-megerősítés) csak akkor jön elő, ha valaki kifejezetten
+  // rákattint a "Bevétel & Kiadás" vagy "Mind" fülre.
+  const [filter, setFilter] = useState("phones");
   const showFinance = canSeeFinance && (filter === "all" || filter === "finance");
   const showPhones = filter === "all" || filter === "phones";
   const showService = filter === "all" || filter === "service";
