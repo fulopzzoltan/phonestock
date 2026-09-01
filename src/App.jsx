@@ -2168,6 +2168,25 @@ function AppShell() {
       .sort((a, b) => b[1] - a[1])
       .map(([name, count]) => ({ name, count, pct: brandTotal ? Math.round((count / brandTotal) * 1000) / 10 : 0 }));
 
+    // Egy adott márkán belüli modell-megoszlás (pl. melyik Samsung/iPhone modellt
+    // javítjuk leggyakrabban) — ugyanazon az átadott-munkalap alapon, mint fent.
+    function modelBreakdownForBrand(brandName) {
+      const counts = {};
+      let total = 0;
+      handedOverTickets.forEach((t) => {
+        if ((t.brand || "").trim() !== brandName) return;
+        const key = (t.model || "").trim() || "Ismeretlen";
+        counts[key] = (counts[key] || 0) + 1;
+        total++;
+      });
+      return Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 8)
+        .map(([name, count]) => ({ name, count, pct: total ? Math.round((count / total) * 1000) / 10 : 0 }));
+    }
+    const samsungModelBreakdown = modelBreakdownForBrand("Samsung");
+    const iphoneModelBreakdown = modelBreakdownForBrand("Apple");
+
     const problemCounts = {};
     let problemsSample = 0;
     customerTickets.forEach((t) => {
@@ -2204,6 +2223,8 @@ function AppShell() {
       topModels,
       brandBreakdown,
       brandTotal,
+      samsungModelBreakdown,
+      iphoneModelBreakdown,
       topProblems,
       problemsSample,
       problemsTotal: customerTickets.length,

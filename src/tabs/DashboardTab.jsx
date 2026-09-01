@@ -11,6 +11,20 @@ const SectionHead = ({ icon: Icon, children }) => (
   </div>
 );
 
+const BreakdownBars = ({ items }) => (
+  items.length ? items.map((b) => (
+    <div key={b.name} style={{ marginBottom: 10 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 4 }}>
+        <span style={{ fontWeight: 600, color: "#374151" }}>{b.name}</span>
+        <span style={{ color: "#6B7280" }}>{b.pct}% <span style={{ color: "#9CA3AF" }}>({b.count} db)</span></span>
+      </div>
+      <div style={{ height: 7, background: "#F1F2F6", borderRadius: 999, overflow: "hidden" }}>
+        <div style={{ width: `${b.pct}%`, height: "100%", background: "var(--primary)", borderRadius: 999 }} />
+      </div>
+    </div>
+  )) : <div style={{ fontSize: 12.5, color: "#9CA3AF" }}>Nincs adat</div>
+);
+
 export default function DashboardTab({
   effectiveLocFilter, locName, stockStats, stockHistory, svcStats,
   monthlyTrendSummary, currentMonthLive, monthlySummaries, locations,
@@ -126,17 +140,7 @@ export default function DashboardTab({
 
       <div className="statcard" style={{ marginBottom: 26 }}>
         <div className="dp-section-title">Márkák megoszlása (átadott munkák)</div>
-        {shownBrands.length ? shownBrands.map((b) => (
-          <div key={b.name} style={{ marginBottom: 10 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 4 }}>
-              <span style={{ fontWeight: 600, color: "#374151" }}>{b.name}</span>
-              <span style={{ color: "#6B7280" }}>{b.pct}% <span style={{ color: "#9CA3AF" }}>({b.count} db)</span></span>
-            </div>
-            <div style={{ height: 7, background: "#F1F2F6", borderRadius: 999, overflow: "hidden" }}>
-              <div style={{ width: `${b.pct}%`, height: "100%", background: "var(--primary)", borderRadius: 999 }} />
-            </div>
-          </div>
-        )) : <div style={{ fontSize: 12.5, color: "#9CA3AF" }}>Nincs adat</div>}
+        <BreakdownBars items={shownBrands} />
         {hiddenBrandCount > 0 && (
           <button
             type="button"
@@ -152,6 +156,17 @@ export default function DashboardTab({
             Összesen {svcStats.brandTotal} átadott munkalap alapján
           </div>
         )}
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginBottom: 26 }}>
+        <div className="statcard">
+          <div className="dp-section-title">Samsung modellek megoszlása</div>
+          <BreakdownBars items={svcStats.samsungModelBreakdown} />
+        </div>
+        <div className="statcard">
+          <div className="dp-section-title">iPhone modellek megoszlása</div>
+          <BreakdownBars items={svcStats.iphoneModelBreakdown} />
+        </div>
       </div>
 
       <SectionHead icon={FinanceIcon}>Bevételek &amp; Kiadások</SectionHead>
