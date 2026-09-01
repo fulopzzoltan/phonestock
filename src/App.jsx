@@ -2180,9 +2180,14 @@ function AppShell() {
     const samsungModelBreakdown = modelBreakdownForBrand("Samsung");
     const iphoneModelBreakdown = modelBreakdownForBrand("Apple");
 
+    // A sikertelen és garanciális munkalapokat kihagyjuk — azok probléma-típusai
+    // torzítanák a "normál" javítások megoszlását.
     const problemCounts = {};
     let problemsSample = 0;
+    let problemsBaseTotal = 0;
     customerTickets.forEach((t) => {
+      if (t.subStatus === "Sikertelen" || t.isWarranty) return;
+      problemsBaseTotal++;
       const probs = (t.issue || "").split(",").map((p) => p.trim()).filter(Boolean);
       if (probs.length) problemsSample++;
       probs.forEach((p) => { problemCounts[p] = (problemCounts[p] || 0) + 1; });
