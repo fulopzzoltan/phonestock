@@ -27,6 +27,7 @@ export const pFromApi = (r) => ({
   stockStatus: r.stock_status,
   productNo: r.product_no,
   dateAdded: r.date_added,
+  isFeaturePhone: !!r.is_feature_phone,
 });
 
 export const pToApi = (p, locId) => ({

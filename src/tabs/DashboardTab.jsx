@@ -11,21 +11,25 @@ const SectionHead = ({ icon: Icon, children }) => (
   </div>
 );
 
+// Új/Felújított jelölés a tulajdonos Sheets-es rendszerét követi: lila = új, narancssárga = felújított.
+const NEW_COLOR = "#7C3AED";
+const USED_COLOR = "#F59E0B";
+
 const SplitBars = ({ items }) => (
   items.length ? items.map((b) => (
     <div key={b.name} style={{ marginBottom: 10 }}>
       <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 4 }}>
         <span style={{ fontWeight: 600, color: "#374151" }}>{b.name}</span>
         <span style={{ color: "#6B7280" }}>
-          <span style={{ color: "var(--primary)" }}>Új {b.newPct}%</span>
+          <span style={{ color: NEW_COLOR }}>Új {b.newPct}%</span>
           {" · "}
-          <span style={{ color: "var(--info)" }}>Felújított {b.usedPct}%</span>
+          <span style={{ color: USED_COLOR }}>Felújított {b.usedPct}%</span>
           <span style={{ color: "#9CA3AF" }}> ({b.total} db)</span>
         </span>
       </div>
       <div style={{ height: 7, background: "#F1F2F6", borderRadius: 999, overflow: "hidden", display: "flex" }}>
-        <div style={{ width: `${b.newPct}%`, height: "100%", background: "var(--primary)" }} />
-        <div style={{ width: `${b.usedPct}%`, height: "100%", background: "var(--info)" }} />
+        <div style={{ width: `${b.newPct}%`, height: "100%", background: NEW_COLOR }} />
+        <div style={{ width: `${b.usedPct}%`, height: "100%", background: USED_COLOR }} />
       </div>
     </div>
   )) : <div style={{ fontSize: 12.5, color: "#9CA3AF" }}>Nincs adat</div>
@@ -124,12 +128,12 @@ export default function DashboardTab({
       <div className="statrow c2" style={{ marginBottom: 26 }}>
         <div className="statcard">
           <div className="lbl">Átlagos eladási ár — Új</div>
-          <div className="val" style={{ color: "var(--primary)" }}>{soldPhoneStats.avgPriceNew != null ? money(soldPhoneStats.avgPriceNew) : "—"}</div>
+          <div className="val" style={{ color: NEW_COLOR }}>{soldPhoneStats.avgPriceNew != null ? money(soldPhoneStats.avgPriceNew) : "—"}</div>
           {soldPhoneStats.countNew > 0 && <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 2 }}>{soldPhoneStats.countNew} eladott telefon alapján</div>}
         </div>
         <div className="statcard">
           <div className="lbl">Átlagos eladási ár — Felújított</div>
-          <div className="val" style={{ color: "var(--info)" }}>{soldPhoneStats.avgPriceUsed != null ? money(soldPhoneStats.avgPriceUsed) : "—"}</div>
+          <div className="val" style={{ color: USED_COLOR }}>{soldPhoneStats.avgPriceUsed != null ? money(soldPhoneStats.avgPriceUsed) : "—"}</div>
           {soldPhoneStats.countUsed > 0 && <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 2 }}>{soldPhoneStats.countUsed} eladott telefon alapján</div>}
         </div>
       </div>

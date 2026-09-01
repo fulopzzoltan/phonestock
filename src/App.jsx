@@ -2046,9 +2046,14 @@ function AppShell() {
     let sold = stock.filter((i) => i.status === "sold");
     if (effectiveLocFilter !== "all") sold = sold.filter((i) => i.locationId === effectiveLocFilter || i.locationId === reserveLocId);
 
+    // A "gombos" (nem okos-) telefonok — Nokia/Maxcom/Philips gombos modellek, Samsung
+    // Keystone/E-széria — külön kategóriaként jelennek meg, nem a valódi márkájuk alatt,
+    // mert az olcsó, szinte kizárólag "Új"-ként eladott darabjaik torzítanák a márkánkénti
+    // és az átlagár-statisztikát. Az "Orange" nem valódi telefon-márka (hibás adatbevitel).
     const brandCondCounts = {};
     sold.forEach((i) => {
-      const brand = i.brand === "Apple" ? "iPhone" : (i.brand || "Egyéb");
+      if (i.brand === "Orange") return;
+      const brand = i.isFeaturePhone ? "Gombos telefonok" : (i.brand === "Apple" ? "iPhone" : (i.brand || "Egyéb"));
       if (!brandCondCounts[brand]) brandCondCounts[brand] = { newCount: 0, usedCount: 0 };
       if (i.condition === "New") brandCondCounts[brand].newCount++; else brandCondCounts[brand].usedCount++;
     });
@@ -2062,13 +2067,15 @@ function AppShell() {
         };
       })
       .sort((a, b) => b.total - a.total);
+    const brandTotal = brandConditionBreakdown.reduce((s, b) => s + b.total, 0);
 
     const avg = (arr) => (arr.length ? Math.round(arr.reduce((s, n) => s + n, 0) / arr.length) : null);
-    const newPrices = sold.filter((i) => i.condition === "New").map((i) => Number(i.salePrice) || 0).filter((n) => n > 0);
-    const usedPrices = sold.filter((i) => i.condition !== "New").map((i) => Number(i.salePrice) || 0).filter((n) => n > 0);
+    const nonFeature = sold.filter((i) => !i.isFeaturePhone);
+    const newPrices = nonFeature.filter((i) => i.condition === "New").map((i) => Number(i.salePrice) || 0).filter((n) => n > 0);
+    const usedPrices = nonFeature.filter((i) => i.condition !== "New").map((i) => Number(i.salePrice) || 0).filter((n) => n > 0);
 
     return {
-      total: sold.length,
+      total: brandTotal,
       brandConditionBreakdown,
       avgPriceNew: avg(newPrices),
       avgPriceUsed: avg(usedPrices),
