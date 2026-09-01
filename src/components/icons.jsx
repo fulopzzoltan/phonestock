@@ -387,3 +387,9 @@ export const ReturnIcon = (props) => (
     <path d="M3 10h11a5 5 0 010 10H9" /><polyline points="7 5 3 10 7 15" />
   </svg>
 );
+
+export const PayrollIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <rect x="2.5" y="6" width="19" height="13" rx="2.2" /><path d="M2.5 10.5h19" /><circle cx="12" cy="14.5" r="2" />
+  </svg>
+);

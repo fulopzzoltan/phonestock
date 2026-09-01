@@ -197,7 +197,7 @@ export const PHONE_COLORS = [
 ];
 export const SOURCES = ["Konszignáció", "Számla"];
 export const PAYMENTS = ["Készpénz", "Kártya", "Átutalás", "Vegyes"];
-export const CATEGORIES = ["Fix", "Készlet", "Marketing", "Eszköz", "Szerviz", "Egyéb"];
+export const CATEGORIES = ["Fix", "Készlet", "Marketing", "Eszköz", "Szerviz", "Bér", "Adó", "Egyéb"];
 
 // "Vegyes" fizetésnél a tétel összege készpénz+kártya részre oszlik
 // (paymentCashAmount/paymentCardAmount) — ez a két helper adja vissza egy

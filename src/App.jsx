@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
 import { thumbPathOf } from "./lib/imageResize";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi, buybackOfferFromApi, loyaltyLedgerFromApi, loyaltyRewardFromApi, loyaltyRewardToApi, customerProfileFromApi, reviewFromApi, reviewToApi } from "./lib/mappers";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi, buybackOfferFromApi, loyaltyLedgerFromApi, loyaltyRewardFromApi, loyaltyRewardToApi, customerProfileFromApi, reviewFromApi, reviewToApi, employeeFromApi, payrollScheduleFromApi, payrollPaymentFromApi, companyTaxObligationFromApi } from "./lib/mappers";
 import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, normalizeImei, money, ticketCode, cashPortion, cardPortion } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
@@ -26,6 +26,7 @@ import PultTab from "./tabs/PultTab";
 import FinanceTab from "./tabs/FinanceTab";
 import InvoicesTab from "./tabs/InvoicesTab";
 import CashSettlementTab from "./tabs/CashSettlementTab";
+import PayrollTab from "./tabs/PayrollTab";
 import ServiceTab from "./tabs/ServiceTab";
 import PartsTab from "./tabs/PartsTab";
 import CustomersTab from "./tabs/CustomersTab";
@@ -227,6 +228,10 @@ function AppShell() {
   const [buybackOfferDetailId, setBuybackOfferDetailId] = useState(null);
   const [buybackModelModal, setBuybackModelModal] = useState(null); // null | "add" | model obj (edit)
   const [buybackRuleModal, setBuybackRuleModal] = useState(null); // null | "add" | rule obj (edit)
+  const [employees, setEmployees] = useState([]);
+  const [payrollSchedule, setPayrollSchedule] = useState([]);
+  const [payrollPayments, setPayrollPayments] = useState([]);
+  const [companyTaxObligations, setCompanyTaxObligations] = useState([]);
   const [leaveTypes, setLeaveTypes] = useState([]);
   const [leaveBalances, setLeaveBalances] = useState([]);
   const [leaveRequests, setLeaveRequests] = useState([]);
@@ -283,7 +288,7 @@ function AppShell() {
   async function loadAll({ silent = false } = {}) {
     if (!silent) setLoadingData(true);
     try {
-      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, bbOffers, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds, prodAcqs, dClosesR, loyRewards, loyLedger, custProfiles, revs] = await Promise.all([
+      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, bbOffers, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds, prodAcqs, dClosesR, loyRewards, loyLedger, custProfiles, revs, emps, paySched, payPays, coTax] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         fetchAllRows(() => supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false })),
         fetchAllRows(() => supabase.from("transactions").select("*, smartbill_documents(*), signatures(*)").is("deleted_at", null).order("date", { ascending: false })),
@@ -316,6 +321,10 @@ function AppShell() {
         fetchAllRows(() => supabase.from("loyalty_points_ledger").select("*").order("created_at", { ascending: false })),
         supabase.from("customer_profiles").select("*"),
         supabase.from("reviews").select("*").order("review_date", { ascending: false }),
+        supabase.from("employees").select("*").order("full_name", { ascending: true }),
+        supabase.from("payroll_schedule").select("*").order("sort_order", { ascending: true }),
+        supabase.from("payroll_payments").select("*").order("due_date", { ascending: true }),
+        supabase.from("company_tax_obligations").select("*").order("due_date", { ascending: true }),
       ]);
       setLocations(unwrap(locs) || []);
       const prodRows = unwrap(prods) || [];
@@ -343,6 +352,10 @@ function AppShell() {
       setBuybackModels((unwrap(bbModels) || []).map(buybackModelFromApi));
       setBuybackRules((unwrap(bbRules) || []).map(buybackRuleFromApi));
       setBuybackOffers((unwrap(bbOffers) || []).map(buybackOfferFromApi));
+      setEmployees((unwrap(emps) || []).map(employeeFromApi));
+      setPayrollSchedule((unwrap(paySched) || []).map(payrollScheduleFromApi));
+      setPayrollPayments((unwrap(payPays) || []).map(payrollPaymentFromApi));
+      setCompanyTaxObligations((unwrap(coTax) || []).map(companyTaxObligationFromApi));
       setLeaveTypes((unwrap(lTypes) || []).map(leaveTypeFromApi));
       setLeaveBalances((unwrap(lBalances) || []).map(leaveBalanceFromApi));
       setLeaveRequests((unwrap(lRequests) || []).map(leaveRequestFromApi));
@@ -994,6 +1007,107 @@ function AppShell() {
   }
 
   // SZABADSÁG
+  // BÉREK & ADÓK
+  function monthRevenue(locationId, year, month) {
+    const prefix = `${year}-${String(month).padStart(2, "0")}`;
+    return transactions
+      .filter((t) => t.type === "income" && t.locationId === locationId && (t.date || "").startsWith(prefix))
+      .reduce((s, t) => s + (Number(t.amount) || 0), 0);
+  }
+  async function ensurePayrollPeriod(period) {
+    const [y, m] = period.split("-").map(Number);
+    const existing = new Set(payrollPayments.filter((p) => p.period === period).map((p) => p.scheduleId));
+    const toCreate = payrollSchedule.filter((s) => s.active && !existing.has(s.id));
+    if (toCreate.length === 0) return;
+    const rows = toCreate.map((s) => {
+      let amount = s.baseAmount;
+      if (s.commissionPct) {
+        const prevM = m === 1 ? 12 : m - 1;
+        const prevY = m === 1 ? y - 1 : y;
+        const emp = employees.find((e) => e.id === s.employeeId);
+        const rev = monthRevenue(emp?.locationId, prevY, prevM);
+        amount = s.baseAmount + (rev * s.commissionPct) / 100;
+      }
+      return {
+        employee_id: s.employeeId, schedule_id: s.id, period, label: s.label,
+        due_date: `${period.slice(0, 7)}-${String(s.payDay).padStart(2, "0")}`,
+        computed_amount: Math.round(amount * 100) / 100,
+      };
+    });
+    // upsert + ignoreDuplicates: két gyors egymás utáni hívás (pl. React StrictMode dupla
+    // effekt-lefutása) ne fusson egymásba unique constraint hibával — a már létező sorokat
+    // egyszerűen kihagyja, csak az új sorokat adja vissza.
+    const r = unwrap(await supabase.from("payroll_payments").upsert(rows, { onConflict: "employee_id,schedule_id,period", ignoreDuplicates: true }).select());
+    if (r.length > 0) setPayrollPayments((prev) => [...prev, ...r.map(payrollPaymentFromApi)]);
+  }
+  async function ensureCompanyTaxPeriod(period) {
+    const existing = new Set(companyTaxObligations.filter((t) => t.period === period).map((t) => `${t.locationId}|${t.taxType}`));
+    const rows = locations
+      .filter((loc) => loc.name !== "Tartalék" && !existing.has(`${loc.id}|Bugetul de stat`))
+      .map((loc) => ({ location_id: loc.id, tax_type: "Bugetul de stat", period, due_date: `${period.slice(0, 7)}-25`, amount: 1500 }));
+    if (rows.length === 0) return;
+    const r = unwrap(await supabase.from("company_tax_obligations").upsert(rows, { onConflict: "location_id,tax_type,period", ignoreDuplicates: true }).select());
+    if (r.length > 0) setCompanyTaxObligations((prev) => [...prev, ...r.map(companyTaxObligationFromApi)]);
+  }
+  async function addCompanyTaxObligation(locationId, period, taxType, amount, dueDate) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("company_tax_obligations").insert({
+        location_id: locationId, tax_type: taxType, period, due_date: dueDate || null, amount: amount || null,
+      }).select());
+      setCompanyTaxObligations((prev) => [...prev, companyTaxObligationFromApi(r[0])]);
+    });
+  }
+  async function markPayrollPaid(paymentId, payment, amount) {
+    await withBusy(async () => {
+      const p = payrollPayments.find((x) => x.id === paymentId);
+      const emp = employees.find((e) => e.id === p.employeeId);
+      const r = unwrap(await supabase.from("transactions").insert(txToApi({
+        type: "expense", category: "Bér", description: `Bér: ${emp?.fullName || ""} — ${p.label}`,
+        amount, payment, payrollPaymentId: paymentId,
+      }, emp?.locationId)).select());
+      setTransactions((prev) => [txFromApi(r[0]), ...prev]);
+      const r2 = unwrap(await supabase.from("payroll_payments").update({ paid: true, paid_date: today(), paid_amount: amount }).eq("id", paymentId).select());
+      setPayrollPayments((prev) => prev.map((x) => (x.id === paymentId ? payrollPaymentFromApi(r2[0]) : x)));
+    });
+  }
+  async function unmarkPayrollPaid(paymentId) {
+    await withBusy(async () => {
+      const linked = unwrap(await supabase.from("transactions").select("id").eq("payroll_payment_id", paymentId).is("deleted_at", null));
+      if (linked.length > 0) {
+        const ids = linked.map((r) => r.id);
+        unwrap(await supabase.from("transactions").update({ deleted_at: new Date().toISOString() }).in("id", ids));
+        setTransactions((prev) => prev.filter((t) => !ids.includes(t.id)));
+      }
+      const r2 = unwrap(await supabase.from("payroll_payments").update({ paid: false, paid_date: null, paid_amount: null }).eq("id", paymentId).select());
+      setPayrollPayments((prev) => prev.map((x) => (x.id === paymentId ? payrollPaymentFromApi(r2[0]) : x)));
+    });
+  }
+  async function markTaxPaid(taxId, payment, amount) {
+    await withBusy(async () => {
+      const t = companyTaxObligations.find((x) => x.id === taxId);
+      const loc = locations.find((l) => l.id === t.locationId);
+      const r = unwrap(await supabase.from("transactions").insert(txToApi({
+        type: "expense", category: "Adó", description: `${t.taxType} — ${loc?.name || ""}`,
+        amount, payment, companyTaxObligationId: taxId,
+      }, t.locationId)).select());
+      setTransactions((prev) => [txFromApi(r[0]), ...prev]);
+      const r2 = unwrap(await supabase.from("company_tax_obligations").update({ paid: true, paid_date: today() }).eq("id", taxId).select());
+      setCompanyTaxObligations((prev) => prev.map((x) => (x.id === taxId ? companyTaxObligationFromApi(r2[0]) : x)));
+    });
+  }
+  async function unmarkTaxPaid(taxId) {
+    await withBusy(async () => {
+      const linked = unwrap(await supabase.from("transactions").select("id").eq("company_tax_obligation_id", taxId).is("deleted_at", null));
+      if (linked.length > 0) {
+        const ids = linked.map((r) => r.id);
+        unwrap(await supabase.from("transactions").update({ deleted_at: new Date().toISOString() }).in("id", ids));
+        setTransactions((prev) => prev.filter((t) => !ids.includes(t.id)));
+      }
+      const r2 = unwrap(await supabase.from("company_tax_obligations").update({ paid: false, paid_date: null }).eq("id", taxId).select());
+      setCompanyTaxObligations((prev) => prev.map((x) => (x.id === taxId ? companyTaxObligationFromApi(r2[0]) : x)));
+    });
+  }
+
   async function addLeaveRequest({ startDate, endDate, leaveTypeId, note }) {
     await withBusy(async () => {
       const days = countWorkdays(startDate, endDate);
@@ -2244,6 +2358,8 @@ function AppShell() {
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Alkatrész raktár</div>
             <button className="btn" style={{ padding: "8px 14px" }} disabled={busy} onClick={() => setPartModal("add")}>+ Új alkatrész</button>
           </>
+        ) : tab === "payroll" ? (
+          <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Bérek &amp; Adók</div>
         ) : tab === "service" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Szerviz</div>
@@ -2344,6 +2460,16 @@ function AppShell() {
             deleteCashSettlement={deleteCashSettlement} users={users}
             setTxModal={setTxModal} deleteTransaction={deleteTransaction} setReceiptTxId={setReceiptTxId}
             allowedLocations={allowedLocations} locName={locName}
+          />
+        )}
+
+        {isAdmin && tab === "payroll" && (
+          <PayrollTab
+            busy={busy} employees={employees} payrollSchedule={payrollSchedule}
+            payrollPayments={payrollPayments} companyTaxObligations={companyTaxObligations} locations={locations}
+            ensurePayrollPeriod={ensurePayrollPeriod} ensureCompanyTaxPeriod={ensureCompanyTaxPeriod}
+            markPayrollPaid={markPayrollPaid} unmarkPayrollPaid={unmarkPayrollPaid}
+            markTaxPaid={markTaxPaid} unmarkTaxPaid={unmarkTaxPaid} addCompanyTaxObligation={addCompanyTaxObligation}
           />
         )}
 

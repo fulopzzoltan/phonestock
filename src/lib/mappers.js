@@ -86,6 +86,8 @@ export const txFromApi = (r) => {
     paymentCardAmount: r.payment_card_amount != null ? Number(r.payment_card_amount) : null,
     productId: r.product_id,
     serviceTicketId: r.service_ticket_id,
+    payrollPaymentId: r.payroll_payment_id,
+    companyTaxObligationId: r.company_tax_obligation_id,
     costPrice: r.cost_price,
     warranty: r.warranty,
     customerName: r.customer_name,
@@ -111,6 +113,8 @@ export const txToApi = (t, locId) => ({
   payment_card_amount: t.payment === "Vegyes" ? Number(t.paymentCardAmount) || 0 : null,
   product_id: t.productId || null,
   service_ticket_id: t.serviceTicketId || null,
+  payroll_payment_id: t.payrollPaymentId || null,
+  company_tax_obligation_id: t.companyTaxObligationId || null,
   cost_price: Number(t.costPrice) || 0,
   warranty: t.warranty || null,
   customer_name: t.customerName || null,
@@ -570,4 +574,25 @@ export const webOrderFromApi = (r) => ({
     id: it.id, productId: it.product_id, price: it.price,
     brand: it.products?.brand, model: it.products?.model, storage: it.products?.storage, color: it.products?.color,
   })),
+});
+
+export const employeeFromApi = (r) => ({
+  id: r.id, fullName: r.full_name, locationId: r.location_id, profileId: r.profile_id, active: r.active !== false,
+});
+
+export const payrollScheduleFromApi = (r) => ({
+  id: r.id, employeeId: r.employee_id, label: r.label, payDay: r.pay_day,
+  baseAmount: Number(r.base_amount) || 0, commissionPct: r.commission_pct != null ? Number(r.commission_pct) : null,
+  commissionBasis: r.commission_basis, active: r.active !== false, sortOrder: r.sort_order || 0,
+});
+
+export const payrollPaymentFromApi = (r) => ({
+  id: r.id, employeeId: r.employee_id, scheduleId: r.schedule_id, period: r.period, label: r.label,
+  dueDate: r.due_date, computedAmount: r.computed_amount != null ? Number(r.computed_amount) : null,
+  paidAmount: r.paid_amount != null ? Number(r.paid_amount) : null, paid: !!r.paid, paidDate: r.paid_date, note: r.note,
+});
+
+export const companyTaxObligationFromApi = (r) => ({
+  id: r.id, locationId: r.location_id, taxType: r.tax_type, period: r.period, dueDate: r.due_date,
+  amount: r.amount != null ? Number(r.amount) : null, paid: !!r.paid, paidDate: r.paid_date, note: r.note,
 });

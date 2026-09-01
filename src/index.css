@@ -249,6 +249,20 @@ tr:hover td{background:#FAFAFA}
 /* Közös alap minden címke-jellegű elemhez (st-*, badge-*, prob-pill, gar-pill,
    sla-badge) — mindegyik ugyanazt a pill-formát kövesse, a szín a módosító. */
 .tag{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:var(--radius-pill);font-size:10.5px;font-weight:600}
+.tag.emp{background:var(--primary-soft);color:var(--primary-ink);flex-shrink:0}
+.tag.co{background:var(--info-soft);color:var(--info-ink);flex-shrink:0}
+
+/* Bérek & Adók egységes idővonal-lista */
+.month-nav{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #EEF0F2;border-radius:12px;padding:5px 6px;box-shadow:var(--shadow-card)}
+.pay-row{display:flex;align-items:center;gap:14px;padding:13px 18px;border-bottom:1px solid #F9FAFB}
+.pay-row:last-child{border-bottom:none}
+.pay-day{width:38px;height:38px;border-radius:11px;background:#F5F6F8;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#111827;flex-shrink:0}
+.pay-main{flex:1;min-width:0}
+.pay-title{font-size:13px;font-weight:600}
+.pay-sub{font-size:11px;color:#9CA3AF;margin-top:1px}
+.pay-amount{font-family:'Roboto Mono',monospace;font-weight:700;font-size:13.5px;white-space:nowrap;width:100px;text-align:right}
+.paid-toggle{display:flex;align-items:center;gap:5px;border:1.5px solid #E5E7EB;background:#fff;border-radius:999px;padding:6px 12px;font-size:11px;font-weight:700;color:#9CA3AF;cursor:pointer;white-space:nowrap;width:118px;justify-content:center;font-family:inherit}
+.paid-toggle.done{border-color:transparent;background:var(--primary-soft);color:var(--primary-ink)}
 .st{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:600}
 .st-beveve{background:#F3F4F6;color:#6B7280}
 .st-alkatresz{background:var(--info-soft);color:var(--info-ink)}
