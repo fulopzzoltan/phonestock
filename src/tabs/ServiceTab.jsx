@@ -115,8 +115,8 @@ export default function ServiceTab({
                     {nextActionOf(t) && (() => {
                       const na = nextActionOf(t);
                       return (
-                        <button className="btn sec sm" disabled={busy} title={na.title} onClick={() => onStatusChange(t.id, na.status, na.subStatus)}>
-                          <na.icon width={13} height={13} />{na.label}
+                        <button className="btn sec sm icon-only" disabled={busy} title={na.title} onClick={() => onStatusChange(t.id, na.status, na.subStatus)}>
+                          <na.icon width={13} height={13} />
                         </button>
                       );
                     })()}
@@ -156,8 +156,8 @@ export default function ServiceTab({
                     const na = nextActionOf(t);
                     return (
                       <div className="mob-row-sub" style={{ marginTop: 8 }} onClick={(e) => e.stopPropagation()}>
-                        <button className="btn sec sm" disabled={busy} title={na.title} onClick={() => onStatusChange(t.id, na.status, na.subStatus)}>
-                          <na.icon width={13} height={13} />{na.label}
+                        <button className="btn sec sm icon-only" disabled={busy} title={na.title} onClick={() => onStatusChange(t.id, na.status, na.subStatus)}>
+                          <na.icon width={13} height={13} />
                         </button>
                       </div>
                     );

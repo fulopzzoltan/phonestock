@@ -92,7 +92,7 @@ export default function PartsTab({
                     <td style={{ color: "#6B7280", fontSize: 12, whiteSpace: "nowrap" }}>{p.source || "—"}</td>
                     <td className="row-price">{money(p.costPrice)}</td>
                     <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
-                      <button type="button" className="use-btn" disabled={busy || !p.quantity} onClick={() => onUsePart(p)}><UseIcon width={13} height={13} />Felhasználás</button>
+                      <button type="button" className="use-btn icon-only" disabled={busy || !p.quantity} title="Felhasználás" onClick={() => onUsePart(p)}><UseIcon width={13} height={13} /></button>
                     </td>
                   </tr>
                 )}
@@ -109,7 +109,7 @@ export default function PartsTab({
                     </div>
                     <div className="mob-row-sub" style={{ marginTop: 8, gap: 6 }} onClick={(e) => e.stopPropagation()}>
                       <span style={{ fontSize: 11 }}>{p.source || "—"}</span>
-                      <button type="button" className="use-btn" style={{ marginLeft: "auto" }} disabled={busy || !p.quantity} onClick={() => onUsePart(p)}><UseIcon width={13} height={13} />Felhasználás</button>
+                      <button type="button" className="use-btn icon-only" style={{ marginLeft: "auto" }} disabled={busy || !p.quantity} title="Felhasználás" onClick={() => onUsePart(p)}><UseIcon width={13} height={13} /></button>
                     </div>
                   </div>
                 )}

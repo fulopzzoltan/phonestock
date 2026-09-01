@@ -104,7 +104,7 @@ export default function StockTab({
                       <td className="row-price" title={`Beszerzési ár: ${money(i.costPrice)}`}>{money(i.salePrice)}</td>
                       <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
                         {canAct(i) && (
-                          <button className="btn sec sm" disabled={busy} onClick={() => setSellModal(i)}><CartIcon width={13} height={13} />Eladás</button>
+                          <button className="btn sec sm icon-only" disabled={busy} title="Eladás" onClick={() => setSellModal(i)}><CartIcon width={13} height={13} /></button>
                         )}
                       </td>
                     </tr>
@@ -130,7 +130,7 @@ export default function StockTab({
                       </div>
                       {canAct(i) && (
                         <div className="mob-row-sub" style={{ marginTop: 8 }} onClick={(e) => e.stopPropagation()}>
-                          <button className="btn sec sm" disabled={busy} onClick={() => setSellModal(i)}><CartIcon width={13} height={13} />Eladás</button>
+                          <button className="btn sec sm icon-only" disabled={busy} title="Eladás" onClick={() => setSellModal(i)}><CartIcon width={13} height={13} /></button>
                         </div>
                       )}
                     </div>

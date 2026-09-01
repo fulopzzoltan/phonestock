@@ -457,6 +457,7 @@ tr:hover td{background:#FAFAFA}
 .pick-sub{color:#9CA3AF;font-size:11px;flex-shrink:0}
 .pick-empty{padding:14px 12px;font-size:12px;color:#9CA3AF;text-align:center}
 .use-btn{display:inline-flex;align-items:center;gap:5px;background:var(--sidebar-accent-soft,#E8FBEF);color:var(--sidebar-accent-text,#0F7A36);border:1px solid #BBF7D0;font-family:inherit;font-size:11.5px;font-weight:700;padding:6px 10px;border-radius:9px;cursor:pointer;white-space:nowrap}
+.btn.icon-only,.use-btn.icon-only{padding:7px;line-height:0}
 .use-btn:hover{background:#DCFCE7}
 .use-btn:disabled{opacity:.5;cursor:default}
 .chk{width:auto!important;transform:scale(1.2);accent-color:var(--accent);cursor:pointer}
