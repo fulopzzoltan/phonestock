@@ -2117,12 +2117,6 @@ function AppShell() {
     };
   }, [stock, effectiveLocFilter, reserveLocId]);
 
-  const txStats = useMemo(() => {
-    const income = filteredTransactions.filter((t) => t.type === "income" && !t.isPassthrough).reduce((a, t) => a + (Number(t.amount) || 0), 0);
-    const expense = filteredTransactions.filter((t) => t.type === "expense").reduce((a, t) => a + (Number(t.amount) || 0), 0);
-    return { count: filteredTransactions.length, income, expense, net: income - expense };
-  }, [filteredTransactions]);
-
   // a folyó, még nyitott hónap élő adata a monthly_summaries mellé — a trend ne szakadjon meg a jelennél
   const currentMonthLive = useMemo(() => {
     const now = new Date();
@@ -2591,7 +2585,7 @@ function AppShell() {
             effectiveLocFilter={effectiveLocFilter} locName={locName} stockStats={stockStats} stockHistory={stockHistory}
             soldPhoneStats={soldPhoneStats}
             svcStats={svcStats} monthlyTrendSummary={monthlyTrendSummary} currentMonthLive={currentMonthLive}
-            monthlySummaries={monthlySummaries} locations={locations} txStats={txStats} partsStats={partsStats} customerStats={customerStats}
+            monthlySummaries={monthlySummaries} locations={locations} transactions={filteredTransactions} partsStats={partsStats} customerStats={customerStats}
             todoItems={todoItems} setDetailId={setDetailId}
             stockSparkline={stockHistory.slice(-14).map((h) => h.value)} dailyIncomeTrend={dailyIncomeTrend}
           />

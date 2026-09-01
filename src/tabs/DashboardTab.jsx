@@ -81,7 +81,7 @@ const TABS = [
 export default function DashboardTab({
   effectiveLocFilter, locName, stockStats, stockHistory, svcStats, soldPhoneStats,
   monthlyTrendSummary, currentMonthLive, monthlySummaries, locations,
-  txStats, todoItems, setDetailId,
+  transactions, todoItems, setDetailId,
   stockSparkline, dailyIncomeTrend,
 }) {
   const todoCount = todoItems?.slaTickets.length || 0;
@@ -128,6 +128,21 @@ export default function DashboardTab({
     }
     return out;
   }, [trendPeriod, currentMonthLive, monthlySummaries]);
+
+  // A fenti sötét összesítő a KIVÁLASZTOTT periódus valós tranzakcióit összegzi
+  // (nem minden idők forgalmát) — ugyanaz a dátumtartomány, mint a trend-grafikonoké.
+  const heroStats = useMemo(() => {
+    if (trendMonths.length === 0) return { income: 0, expense: 0, net: 0, count: 0 };
+    const first = trendMonths[0];
+    const last = trendMonths[trendMonths.length - 1];
+    const startDate = `${first.year}-${String(first.month).padStart(2, "0")}-01`;
+    const lastDay = new Date(last.year, last.month, 0).getDate();
+    const endDate = `${last.year}-${String(last.month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+    const rows = transactions.filter((t) => t.date >= startDate && t.date <= endDate);
+    const income = rows.filter((t) => t.type === "income" && !t.isPassthrough).reduce((a, t) => a + (Number(t.amount) || 0), 0);
+    const expense = rows.filter((t) => t.type === "expense").reduce((a, t) => a + (Number(t.amount) || 0), 0);
+    return { income, expense, net: income - expense, count: rows.length };
+  }, [trendMonths, transactions]);
 
   const svcCountItems = [
     { label: "Összes", value: svcStats.total },
@@ -178,7 +193,7 @@ export default function DashboardTab({
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 24, flexWrap: "wrap" }}>
           <div>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#98A1B0", textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 8 }}>Nettó eredmény</div>
-            <div style={{ fontSize: 38, fontWeight: 800, letterSpacing: "-.6px", lineHeight: 1 }}>{money(txStats.net)}</div>
+            <div style={{ fontSize: 38, fontWeight: 800, letterSpacing: "-.6px", lineHeight: 1 }}>{money(heroStats.net)}</div>
           </div>
           {dailyIncomeTrend.length > 1 && (
             <div style={{ width: 200, flexShrink: 0 }}>
@@ -189,15 +204,15 @@ export default function DashboardTab({
         <div style={{ display: "flex", gap: 36, marginTop: 22, flexWrap: "wrap" }}>
           <div>
             <div style={{ fontSize: 10, fontWeight: 600, color: "#5B6472", textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 5 }}>Bevétel</div>
-            <div style={{ fontSize: 17, fontWeight: 800, color: "#4ADE80" }}>{money(txStats.income)}</div>
+            <div style={{ fontSize: 17, fontWeight: 800, color: "#4ADE80" }}>{money(heroStats.income)}</div>
           </div>
           <div>
             <div style={{ fontSize: 10, fontWeight: 600, color: "#5B6472", textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 5 }}>Kiadás</div>
-            <div style={{ fontSize: 17, fontWeight: 800, color: "#F87171" }}>{money(txStats.expense)}</div>
+            <div style={{ fontSize: 17, fontWeight: 800, color: "#F87171" }}>{money(heroStats.expense)}</div>
           </div>
           <div>
             <div style={{ fontSize: 10, fontWeight: 600, color: "#5B6472", textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 5 }}>Tranzakciók</div>
-            <div style={{ fontSize: 17, fontWeight: 800 }}>{txStats.count}</div>
+            <div style={{ fontSize: 17, fontWeight: 800 }}>{heroStats.count}</div>
           </div>
         </div>
       </div>
