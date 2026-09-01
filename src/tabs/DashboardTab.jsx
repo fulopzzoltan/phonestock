@@ -6,7 +6,7 @@ import FinanceTrendChart from "../components/FinanceTrendChart";
 import CategorySplitChart from "../components/CategorySplitChart";
 import ExpenseCategoryStats from "../components/ExpenseCategoryStats";
 import Sparkline from "../components/Sparkline";
-import { PhoneCaseIcon, ServiceIcon, WarningIcon, FinanceIcon } from "../components/icons";
+import { WarningIcon, FinanceIcon } from "../components/icons";
 
 // Egységes, kicsit vastagabb szekció-cím az egész Áttekintés oldalon.
 const SectionHead = ({ icon: Icon, children }) => (
@@ -147,22 +147,20 @@ export default function DashboardTab({
 
   return (
     <>
-      {/* A cím a legfelső sorban, mellette a Mind / Bevétel & Kiadás / Telefonok / Szerviz szűrő —
-          ugyanaz a "status-seg" pill-stílus, mint pl. a Szerviz fülön a státusz-választó. */}
-      <div className="topbar">
-        <div><div className="page-title">Áttekintés</div></div>
-        <div className="status-seg">
-          {TABS.map((t) => (
-            <button
-              key={t.key}
-              type="button"
-              className={filter === t.key ? "active" : ""}
-              onClick={() => setFilter(t.key)}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
+      {/* A cím fent, a helyszín-választó melletti sorban jelenik meg (App.jsx pageHeader) —
+          itt csak a Mind / Bevétel & Kiadás / Telefonok / Szerviz szűrő, bal oldalt, saját sorban,
+          ugyanazzal a "status-seg" pill-stílussal, mint pl. a Szerviz fülön a státusz-választó. */}
+      <div className="status-seg" style={{ marginBottom: 22, display: "inline-flex" }}>
+        {TABS.map((t) => (
+          <button
+            key={t.key}
+            type="button"
+            className={filter === t.key ? "active" : ""}
+            onClick={() => setFilter(t.key)}
+          >
+            {t.label}
+          </button>
+        ))}
       </div>
 
       {todoCount > 0 && (
@@ -294,7 +292,6 @@ export default function DashboardTab({
 
       {showPhones && (
         <div style={{ marginBottom: 22 }}>
-          <SectionHead icon={PhoneCaseIcon}>Telefonok</SectionHead>
           <KpiStrip items={[
             { label: "Raktáron", value: `${stockStats.count} db` },
             { label: "Készlet értéke", value: money(stockStats.value) },
@@ -342,7 +339,6 @@ export default function DashboardTab({
 
       {showService && (
         <div style={{ marginBottom: 22 }}>
-          <SectionHead icon={ServiceIcon}>Szerviz</SectionHead>
           <KpiStrip items={svcCountItems} />
           <KpiStrip items={[
             { label: "Sikertelenek %", value: svcStats.sikertelenPct != null ? `${svcStats.sikertelenPct}%` : "—", color: "#9D174D" },

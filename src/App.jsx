@@ -2536,6 +2536,8 @@ function AppShell() {
           </>
         ) : tab === "payroll" ? (
           <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Bérek &amp; Adók</div>
+        ) : tab === "dashboard" ? (
+          <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Áttekintés</div>
         ) : tab === "service" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Szerviz</div>
