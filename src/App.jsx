@@ -1632,19 +1632,35 @@ function AppShell() {
       // a Bevétel/Kiadás-t (és ne szaporítsa a hűségpontot, ami a tranzakció-insert triggerére épül).
       const shouldRecordIncome = subStatus === "Átadva" && ticket && !ticket.handoverIncomeRecorded && (Number(ticket.price) || 0) > 0;
       const shouldRecordMaterial = subStatus === "Átadva" && ticket && !ticket.handoverMaterialRecorded && ticket.ticketKind === "Saját készlet - garanciális" && (Number(ticket.matCost) || 0) > 0;
+      // Ha egy már átadott munkalapot valaki visszaállít egy korábbi státuszra (pl. tévedésből
+      // lett átadva, vagy a vevő visszahozta), a korábban felírt Bevétel/Kiadás tételeket is
+      // vissza kell vonni — különben az Árulásban egy olyan tétel marad, ami már nem valós.
+      const shouldReverseHandover = ticket && ticket.subStatus === "Átadva" && subStatus !== "Átadva";
       const patch = { status, sub_status: subStatus };
       if (subStatus === "Átadva") patch.date_out = today();
+      if (shouldReverseHandover) patch.date_out = null;
       if (becameReady) patch.ready_at = new Date().toISOString();
       if (shouldRecordIncome) patch.handover_income_recorded = true;
       if (shouldRecordMaterial) patch.handover_material_recorded = true;
+      if (shouldReverseHandover) { patch.handover_income_recorded = false; patch.handover_material_recorded = false; }
       unwrap(await supabase.from("service_tickets").update(patch).eq("id", id));
       setTickets(tickets.map((t) => (t.id === id ? {
         ...t, status, subStatus,
-        dateOut: subStatus === "Átadva" ? today() : t.dateOut,
+        dateOut: subStatus === "Átadva" ? today() : (shouldReverseHandover ? null : t.dateOut),
         readyAt: becameReady ? patch.ready_at : t.readyAt,
-        handoverIncomeRecorded: shouldRecordIncome ? true : t.handoverIncomeRecorded,
-        handoverMaterialRecorded: shouldRecordMaterial ? true : t.handoverMaterialRecorded,
+        handoverIncomeRecorded: shouldReverseHandover ? false : (shouldRecordIncome ? true : t.handoverIncomeRecorded),
+        handoverMaterialRecorded: shouldReverseHandover ? false : (shouldRecordMaterial ? true : t.handoverMaterialRecorded),
       } : t)));
+
+      if (shouldReverseHandover) {
+        const linked = unwrap(await supabase.from("transactions").select("id").eq("service_ticket_id", id).is("deleted_at", null));
+        if (linked.length > 0) {
+          const ids = linked.map((r) => r.id);
+          unwrap(await supabase.from("transactions").update({ deleted_at: new Date().toISOString() }).in("id", ids));
+          setTransactions((prev) => prev.filter((t) => !ids.includes(t.id)));
+          if (ticket.customerId) await refreshCustomerLoyalty(ticket.customerId);
+        }
+      }
 
       if (settings.smsOnTicketReady && becameReady && subStatus === null && ticket && ticket.customerPhone) {
         const device = [ticket.brand, ticket.model].filter(Boolean).join(" ");
@@ -1668,6 +1684,7 @@ function AppShell() {
             costPrice: ticket.matCost,
             customerName: ticket.customerName,
             customerPhone: ticket.customerPhone,
+            serviceTicketId: id,
           }, ticket.locationId),
           customer_id: ticket.customerId || null,
         }).select());
@@ -1683,6 +1700,7 @@ function AppShell() {
           description: `Garanciális javítás — ${product ? `${product.brand} ${product.model}` : [ticket.brand, ticket.model].filter(Boolean).join(" ")}`,
           amount: ticket.matCost,
           productId: ticket.productId,
+          serviceTicketId: id,
         }, ticket.locationId)).select());
         setTransactions((prev) => [txFromApi(r2[0]), ...prev]);
       }
