@@ -23,19 +23,14 @@ const SERIES = [
   { key: "profit", label: "Profit", color: "#111827" },
 ];
 
-export default function FinanceTrendChart({ summaries, liveMonth, locFilter }) {
+export default function FinanceTrendChart({ months, summaries, liveMonth, locFilter }) {
   const [hover, setHover] = useState(null);
   const wrapRef = useRef(null);
 
-  const months = useMemo(() => {
-    const out = [];
-    for (let i = 11; i >= 0; i--) {
-      let y = liveMonth.year, m = liveMonth.month - i;
-      while (m <= 0) { m += 12; y -= 1; }
-      out.push({ year: y, month: m, isLive: i === 0 });
-    }
-    return out;
-  }, [liveMonth]);
+  // Ha a periódus több naptári évet fog át, a hónap-cimkébe az évet is kiírjuk.
+  const spansMultipleYears = useMemo(() => new Set(months.map((m) => m.year)).size > 1, [months]);
+  // Csak január cimkéjéhez fűzzük hozzá az évet (évhatár-jelzés), hogy hosszú periódusnál se legyen zsúfolt a tengely.
+  const labelFor = (m) => spansMultipleYears && m.month === 1 ? `${MONTH_NAMES[m.month - 1]} '${String(m.year).slice(2)}` : MONTH_NAMES[m.month - 1];
 
   const points = useMemo(() => {
     return months.map(({ year, month, isLive }) => {
@@ -106,7 +101,7 @@ export default function FinanceTrendChart({ summaries, liveMonth, locFilter }) {
         )}
         {months.map((m, i) => (
           <text key={i} x={xFor(i)} y={H - PAD_B + 16} textAnchor="middle" fontSize="9.5" fill={m.isLive ? "#111827" : "#9CA3AF"} fontWeight={m.isLive ? "700" : "400"} fontFamily="Inter, sans-serif">
-            {MONTH_NAMES[m.month - 1]}
+            {labelFor(m)}
           </text>
         ))}
         {SERIES.map((s) => (

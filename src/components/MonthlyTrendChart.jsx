@@ -16,7 +16,7 @@ function niceMax(n) {
 
 const LOC_COLORS = ["#22C55E", "#0EA5E9", "#F97316"];
 
-export default function MonthlyTrendChart({ summaries, liveMonth, locations, locFilter, locName }) {
+export default function MonthlyTrendChart({ months, summaries, liveMonth, locations, locFilter, locName }) {
   const [hover, setHover] = useState(null);
   const wrapRef = useRef(null);
 
@@ -25,15 +25,11 @@ export default function MonthlyTrendChart({ summaries, liveMonth, locations, loc
     return list.map((l, i) => ({ ...l, color: LOC_COLORS[i % LOC_COLORS.length] }));
   }, [locations, locFilter]);
 
-  const months = useMemo(() => {
-    const out = [];
-    for (let i = 11; i >= 0; i--) {
-      let y = liveMonth.year, m = liveMonth.month - i;
-      while (m <= 0) { m += 12; y -= 1; }
-      out.push({ year: y, month: m, isLive: i === 0 });
-    }
-    return out;
-  }, [liveMonth]);
+  // Ha a kiválasztott periódus több naptári évet is átfog, a hónap-cimkébe az évet is kiírjuk,
+  // hogy pl. két "jan." ne legyen megkülönböztethetetlen.
+  const spansMultipleYears = useMemo(() => new Set(months.map((m) => m.year)).size > 1, [months]);
+  // Csak január cimkéjéhez fűzzük hozzá az évet (évhatár-jelzés), hogy hosszú periódusnál se legyen zsúfolt a tengely.
+  const labelFor = (m) => spansMultipleYears && m.month === 1 ? `${MONTH_NAMES[m.month - 1]} '${String(m.year).slice(2)}` : MONTH_NAMES[m.month - 1];
 
   const groups = useMemo(() => {
     return months.map(({ year, month, isLive }) => {
@@ -50,7 +46,7 @@ export default function MonthlyTrendChart({ summaries, liveMonth, locations, loc
       }).filter(Boolean);
       // "all" + élő hónap: egyetlen összesített csík, ne location-önként duplikálva
       const finalBars = isLive && locFilter === "all" ? [{ loc: null, isLive: true, data: liveMonth }] : bars;
-      return { year, month, isLive, label: `${MONTH_NAMES[month - 1]}`, bars: finalBars };
+      return { year, month, isLive, label: labelFor({ year, month }), bars: finalBars };
     });
   }, [months, activeLocations, summaries, liveMonth, locFilter]);
 

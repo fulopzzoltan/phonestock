@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { money, displayName, ticketCode } from "../lib/utils";
 import StockValueChart from "../components/StockValueChart";
 import MonthlyTrendChart from "../components/MonthlyTrendChart";
@@ -79,6 +79,7 @@ const BreakdownBars = ({ items, twoCol }) => {
 
 const TABS = [
   { key: "all", label: "Mind" },
+  { key: "finance", label: "Bevétel & Kiadás" },
   { key: "phones", label: "Telefonok" },
   { key: "service", label: "Szerviz" },
 ];
@@ -100,9 +101,40 @@ export default function DashboardTab({
   const hiddenSoldBrandCount = soldPhoneStats.brandConditionBreakdown.length - SOLD_BRAND_TOP_N;
 
   const [filter, setFilter] = useState("all");
-  const showPhones = filter !== "service";
-  const showService = filter !== "phones";
+  const showFinance = filter === "all" || filter === "finance";
+  const showPhones = filter === "all" || filter === "phones";
+  const showService = filter === "all" || filter === "service";
   const showFooter = filter === "all";
+
+  // Periódus-választó a fenti két trend-grafikonhoz (Bevétel/helyszín oszlopok + Bevétel-Kiadás-Profit vonal) —
+  // "Utolsó 12 hónap" a mostani (görgő) alapértelmezett, de kiválasztható egy konkrét év vagy a teljes eddigi adat is.
+  const monthIdx = (y, m) => y * 12 + (m - 1);
+  const idxToYM = (idx) => ({ year: Math.floor(idx / 12), month: (idx % 12) + 1 });
+  const availableYears = useMemo(() => {
+    const ys = new Set(monthlySummaries.map((s) => s.year));
+    ys.add(currentMonthLive.year);
+    return Array.from(ys).sort();
+  }, [monthlySummaries, currentMonthLive.year]);
+  const [trendPeriod, setTrendPeriod] = useState("12m");
+  const trendMonths = useMemo(() => {
+    const liveIdx = monthIdx(currentMonthLive.year, currentMonthLive.month);
+    let startIdx, endIdx = liveIdx;
+    if (trendPeriod === "all") {
+      const dataIdxs = monthlySummaries.map((s) => monthIdx(s.year, s.month));
+      startIdx = dataIdxs.length ? Math.min(...dataIdxs) : liveIdx - 11;
+    } else if (trendPeriod === "12m") {
+      startIdx = liveIdx - 11;
+    } else {
+      startIdx = monthIdx(trendPeriod, 1);
+      endIdx = Math.min(monthIdx(trendPeriod, 12), liveIdx);
+    }
+    const out = [];
+    for (let idx = startIdx; idx <= endIdx; idx++) {
+      const { year, month } = idxToYM(idx);
+      out.push({ year, month, isLive: idx === liveIdx });
+    }
+    return out;
+  }, [trendPeriod, currentMonthLive, monthlySummaries]);
 
   const svcCountItems = [
     { label: "Összes", value: svcStats.total },
@@ -115,9 +147,22 @@ export default function DashboardTab({
 
   return (
     <>
-      {/* A cím mindig a legfelső sorból indul. */}
+      {/* A cím a legfelső sorban, mellette a Mind / Bevétel & Kiadás / Telefonok / Szerviz szűrő —
+          ugyanaz a "status-seg" pill-stílus, mint pl. a Szerviz fülön a státusz-választó. */}
       <div className="topbar">
         <div><div className="page-title">Áttekintés</div></div>
+        <div className="status-seg">
+          {TABS.map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              className={filter === t.key ? "active" : ""}
+              onClick={() => setFilter(t.key)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {todoCount > 0 && (
@@ -135,7 +180,9 @@ export default function DashboardTab({
         </>
       )}
 
-      {/* Bevételek & Kiadások — mindig legelöl, kiemelt sávban. */}
+      {showFinance && (
+      <div style={{ marginBottom: 22 }}>
+      {/* Bevételek & Kiadások — mindig legelöl, kiemelt sávban, ha látszik. */}
       <div style={{ background: "#0A0A0C", borderRadius: 20, padding: "26px 28px", marginBottom: 18, color: "#fff" }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 24, flexWrap: "wrap" }}>
           <div>
@@ -170,13 +217,59 @@ export default function DashboardTab({
           <b style={{ color: monthlyTrendSummary.pct >= 0 ? "#15803D" : "#B91C1C" }}>{monthlyTrendSummary.pct >= 0 ? "+" : ""}{monthlyTrendSummary.pct}%</b>
         </div>
       )}
+
+      <div style={{ display: "flex", gap: 5, marginBottom: 12 }}>
+        <button
+          type="button"
+          onClick={() => setTrendPeriod("12m")}
+          style={{
+            border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 11.5, fontWeight: 700,
+            padding: "5px 11px", borderRadius: 999,
+            background: trendPeriod === "12m" ? "var(--primary-soft)" : "#fff",
+            color: trendPeriod === "12m" ? "var(--primary-ink)" : "#6B7280",
+            border: trendPeriod === "12m" ? "1px solid transparent" : "1px solid #EEF0F2",
+          }}
+        >
+          Utolsó 12 hónap
+        </button>
+        {availableYears.map((y) => (
+          <button
+            key={y}
+            type="button"
+            onClick={() => setTrendPeriod(y)}
+            style={{
+              border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 11.5, fontWeight: 700,
+              padding: "5px 11px", borderRadius: 999,
+              background: trendPeriod === y ? "var(--primary-soft)" : "#fff",
+              color: trendPeriod === y ? "var(--primary-ink)" : "#6B7280",
+              border: trendPeriod === y ? "1px solid transparent" : "1px solid #EEF0F2",
+            }}
+          >
+            {y}
+          </button>
+        ))}
+        <button
+          type="button"
+          onClick={() => setTrendPeriod("all")}
+          style={{
+            border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 11.5, fontWeight: 700,
+            padding: "5px 11px", borderRadius: 999,
+            background: trendPeriod === "all" ? "var(--primary-soft)" : "#fff",
+            color: trendPeriod === "all" ? "var(--primary-ink)" : "#6B7280",
+            border: trendPeriod === "all" ? "1px solid transparent" : "1px solid #EEF0F2",
+          }}
+        >
+          Mind
+        </button>
+      </div>
+
       <div style={{ marginBottom: 24 }}>
-        <MonthlyTrendChart summaries={monthlySummaries} liveMonth={currentMonthLive} locations={locations} locFilter={effectiveLocFilter} locName={locName} />
+        <MonthlyTrendChart months={trendMonths} summaries={monthlySummaries} liveMonth={currentMonthLive} locations={locations} locFilter={effectiveLocFilter} locName={locName} />
       </div>
 
       <div style={{ marginBottom: 22 }}>
         <SectionHead icon={FinanceIcon}>Bevétel, kiadás, profit — trend</SectionHead>
-        <FinanceTrendChart summaries={monthlySummaries} liveMonth={currentMonthLive} locFilter={effectiveLocFilter} />
+        <FinanceTrendChart months={trendMonths} summaries={monthlySummaries} liveMonth={currentMonthLive} locFilter={effectiveLocFilter} />
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 22 }}>
@@ -196,25 +289,8 @@ export default function DashboardTab({
           <ExpenseCategoryStats summaries={monthlySummaries} liveMonth={currentMonthLive} locFilter={effectiveLocFilter} />
         </div>
       </div>
-
-      {/* Szűrő: az alábbi adatok csak telefonra / csak szervizre is nézhetők. */}
-      <div style={{ display: "flex", gap: 4, borderBottom: "1px solid #E5E7EB", marginBottom: 22 }}>
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            type="button"
-            onClick={() => setFilter(t.key)}
-            style={{
-              border: "none", cursor: "pointer", background: "none", fontFamily: "inherit",
-              fontSize: 13, fontWeight: 700, padding: "11px 18px", marginBottom: -1,
-              color: filter === t.key ? "#0F7A36" : "#6B7280",
-              borderBottom: `2.5px solid ${filter === t.key ? "var(--primary)" : "transparent"}`,
-            }}
-          >
-            {t.label}
-          </button>
-        ))}
       </div>
+      )}
 
       {showPhones && (
         <div style={{ marginBottom: 22 }}>
