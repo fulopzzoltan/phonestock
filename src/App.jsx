@@ -2144,13 +2144,6 @@ function AppShell() {
       ? Math.round((withTAT.reduce((s, t) => s + (new Date(t.dateOut) - new Date(t.dateIn)), 0) / withTAT.length / 86400000) * 10) / 10
       : null;
 
-    const modelCounts = {};
-    customerTickets.forEach((t) => {
-      const key = [t.brand, t.model].filter(Boolean).join(" ").trim();
-      if (key) modelCounts[key] = (modelCounts[key] || 0) + 1;
-    });
-    const topModels = Object.entries(modelCounts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([name, count]) => ({ name, count }));
-
     // Márka-megoszlás az ÖSSZES átadott (lezárt) munkalapon — nem csak az aktívakon —,
     // hogy lássuk, hosszabb távon milyen arányban dolgozunk az egyes márkákkal.
     // A meg nem határozott ("Egyéb") márkájú munkalapokat kihagyjuk, mert nem
@@ -2194,7 +2187,10 @@ function AppShell() {
       if (probs.length) problemsSample++;
       probs.forEach((p) => { problemCounts[p] = (problemCounts[p] || 0) + 1; });
     });
-    const topProblems = Object.entries(problemCounts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([name, count]) => ({ name, count }));
+    const topProblems = Object.entries(problemCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([name, count]) => ({ name, count, pct: problemsSample ? Math.round((count / problemsSample) * 1000) / 10 : 0 }));
 
     const weekStart = rollingBusinessWeekStart();
     const kiadvaRecent = handedOverTickets.filter((t) => t.dateOut && t.dateOut >= weekStart).length;
@@ -2220,7 +2216,6 @@ function AppShell() {
       sikertelenPct: resolvedCount ? Math.round((sikertelenCount / resolvedCount) * 1000) / 10 : null,
       avgMargin,
       avgTAT,
-      topModels,
       brandBreakdown,
       brandTotal,
       samsungModelBreakdown,

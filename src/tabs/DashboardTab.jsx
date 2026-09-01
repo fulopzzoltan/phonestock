@@ -118,24 +118,14 @@ export default function DashboardTab({
           )}
         </div>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginBottom: 26 }}>
-        <div className="statcard">
-          <div className="dp-section-title">Leggyakoribb modell</div>
-          {svcStats.topModels.length ? svcStats.topModels.map((m) => (
-            <div key={m.name} className="dp-row"><span className="dp-key">{m.name}</span><span className="dp-val">{m.count} db</span></div>
-          )) : <div style={{ fontSize: 12.5, color: "#9CA3AF" }}>Nincs adat</div>}
-        </div>
-        <div className="statcard">
-          <div className="dp-section-title">Leggyakoribb probléma</div>
-          {svcStats.topProblems.length ? svcStats.topProblems.map((p) => (
-            <div key={p.name} className="dp-row"><span className="dp-key">{p.name}</span><span className="dp-val">{p.count} db</span></div>
-          )) : <div style={{ fontSize: 12.5, color: "#9CA3AF" }}>Nincs adat</div>}
-          {svcStats.problemsTotal > 0 && (
-            <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 8 }}>
-              {svcStats.problemsSample} / {svcStats.problemsTotal} munkalapon van rögzítve probléma-típus
-            </div>
-          )}
-        </div>
+      <div className="statcard" style={{ marginBottom: 26 }}>
+        <div className="dp-section-title">Leggyakoribb probléma</div>
+        <BreakdownBars items={svcStats.topProblems} />
+        {svcStats.problemsTotal > 0 && (
+          <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 8 }}>
+            {svcStats.problemsSample} / {svcStats.problemsTotal} munkalapon van rögzítve probléma-típus
+          </div>
+        )}
       </div>
 
       <div className="statcard" style={{ marginBottom: 26 }}>
