@@ -771,24 +771,6 @@ function AppShell() {
   async function retrySmartbillDocument(tx) {
     return issueSmartbillDocument(tx.id, tx.locationId, tx.smartbillDoc?.docType || "invoice");
   }
-  async function issueDailyBons() {
-    await withBusy(async () => {
-      const todayStr = today();
-      const candidates = transactions.filter((t) =>
-        t.date === todayStr && t.type === "income" && ["Készpénz", "Kártya", "Vegyes"].includes(t.payment) && t.smartbillDoc?.status !== "issued"
-      );
-      for (const t of candidates) {
-        const { data } = await supabase.functions.invoke("smartbill-issue-document", {
-          body: { action: "issue", doc_type: "bon", transaction_id: t.id, location_id: t.locationId },
-        });
-        if (data?.document) {
-          const doc = sbDocFromApi(data.document);
-          setTransactions((prev) => prev.map((x) => (x.id === t.id ? { ...x, smartbillDoc: doc } : x)));
-        }
-        await new Promise((r) => setTimeout(r, 400));
-      }
-    });
-  }
   async function quickIssueDocument(description, amount, customerName, docType, locId) {
     let ok = false;
     await withBusy(async () => {
@@ -2683,7 +2665,7 @@ function AppShell() {
           <InvoicesTab
             transactions={transactions} locName={locName} isAdmin={isAdmin}
             setIssueInvoiceModal={setIssueInvoiceModal} retrySmartbillDocument={retrySmartbillDocument}
-            issueDailyBons={issueDailyBons} quickIssueDocument={quickIssueDocument}
+            quickIssueDocument={quickIssueDocument}
             defaultLocId={defaultLocId} busy={busy}
           />
         )}

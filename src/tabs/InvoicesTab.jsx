@@ -1,12 +1,11 @@
 import { useMemo, useState } from "react";
-import { money, today } from "../lib/utils";
+import { money } from "../lib/utils";
 import { InvoiceIcon, ChevronDownIcon } from "../components/icons";
 import { EmptyState } from "../components/EmptyState";
 import ResponsiveTable from "../components/ResponsiveTable";
 
 const DOC_TYPE_LABELS = { invoice: "Számla", bon: "Bon", chitanta: "Nyugta" };
 const QUICK_DOC_TYPES = [
-  { key: "bon", label: "Bon" },
   { key: "chitanta", label: "Nyugta" },
   { key: "invoice", label: "Számla" },
 ];
@@ -16,7 +15,7 @@ function QuickIssuePanel({ defaultLocId, busy, onIssue }) {
   const [desc, setDesc] = useState("");
   const [amount, setAmount] = useState("");
   const [customerName, setCustomerName] = useState("");
-  const [docType, setDocType] = useState("bon");
+  const [docType, setDocType] = useState("chitanta");
   const [error, setError] = useState("");
 
   const valid = desc.trim() && Number(amount) > 0;
@@ -64,29 +63,17 @@ function QuickIssuePanel({ defaultLocId, busy, onIssue }) {
   );
 }
 
-export default function InvoicesTab({ transactions, locName, isAdmin, setIssueInvoiceModal, retrySmartbillDocument, issueDailyBons, quickIssueDocument, defaultLocId, busy }) {
+export default function InvoicesTab({ transactions, locName, isAdmin, setIssueInvoiceModal, retrySmartbillDocument, quickIssueDocument, defaultLocId, busy }) {
   const docs = useMemo(
     () => transactions.filter((t) => t.smartbillDoc).sort((a, b) => (a.smartbillDoc.createdAt < b.smartbillDoc.createdAt ? 1 : -1)),
     [transactions]
   );
-  const pendingBonCount = useMemo(() => {
-    const todayStr = today();
-    return transactions.filter((t) =>
-      t.date === todayStr && t.type === "income" && ["Készpénz", "Kártya", "Vegyes"].includes(t.payment)
-      && t.locationId === defaultLocId && t.smartbillDoc?.status !== "issued"
-    ).length;
-  }, [transactions, defaultLocId]);
 
   return (
     <>
       <div className="topbar">
         <div><div className="page-title">Számlák</div></div>
         <div style={{ display: "flex", gap: 8 }}>
-          {pendingBonCount > 0 && (
-            <button className="btn sec" disabled={busy} onClick={issueDailyBons}>
-              {busy ? "Kiállítás..." : `Napi bonok kiállítása (${pendingBonCount})`}
-            </button>
-          )}
           <button className="btn" onClick={() => setIssueInvoiceModal(true)}>+ Kiállítás</button>
         </div>
       </div>
