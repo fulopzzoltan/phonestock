@@ -464,6 +464,22 @@ export const monthlySummaryFromApi = (r) => ({
   phonesButton: r.phones_button,
   phonesRefurbished: r.phones_refurbished,
   phonesNew: r.phones_new,
+  // Bevétel-kategória bontás (csak a már feldolgozott hónapoknál van, ld. TASKS_TORTENETI_ADAT_IMPORT.md)
+  revenuePhone: r.revenue_phone != null ? Number(r.revenue_phone) : null,
+  revenueService: r.revenue_service != null ? Number(r.revenue_service) : null,
+  revenueAccessory: r.revenue_accessory != null ? Number(r.revenue_accessory) : null,
+  revenueOther: r.revenue_other != null ? Number(r.revenue_other) : null,
+  // Kiadás-kategória bontás
+  expensePhoneStock: r.expense_phone_stock != null ? Number(r.expense_phone_stock) : null,
+  expenseAccessoryStock: r.expense_accessory_stock != null ? Number(r.expense_accessory_stock) : null,
+  expenseServiceParts: r.expense_service_parts != null ? Number(r.expense_service_parts) : null,
+  expenseTax: r.expense_tax != null ? Number(r.expense_tax) : null,
+  expenseMarketing: r.expense_marketing != null ? Number(r.expense_marketing) : null,
+  expenseInvestment: r.expense_investment != null ? Number(r.expense_investment) : null,
+  expensePayroll: r.expense_payroll != null ? Number(r.expense_payroll) : null,
+  expenseAccounting: r.expense_accounting != null ? Number(r.expense_accounting) : null,
+  expenseLoan: r.expense_loan != null ? Number(r.expense_loan) : null,
+  expenseOther: r.expense_other != null ? Number(r.expense_other) : null,
 });
 
 export const internalMessageFromApi = (r) => ({

@@ -2,8 +2,11 @@ import { useState } from "react";
 import { money, displayName, ticketCode } from "../lib/utils";
 import StockValueChart from "../components/StockValueChart";
 import MonthlyTrendChart from "../components/MonthlyTrendChart";
+import FinanceTrendChart from "../components/FinanceTrendChart";
+import CategorySplitChart from "../components/CategorySplitChart";
+import ExpenseCategoryStats from "../components/ExpenseCategoryStats";
 import Sparkline from "../components/Sparkline";
-import { PhoneCaseIcon, ServiceIcon, WarningIcon } from "../components/icons";
+import { PhoneCaseIcon, ServiceIcon, WarningIcon, FinanceIcon } from "../components/icons";
 
 // Egységes, kicsit vastagabb szekció-cím az egész Áttekintés oldalon.
 const SectionHead = ({ icon: Icon, children }) => (
@@ -169,6 +172,29 @@ export default function DashboardTab({
       )}
       <div style={{ marginBottom: 24 }}>
         <MonthlyTrendChart summaries={monthlySummaries} liveMonth={currentMonthLive} locations={locations} locFilter={effectiveLocFilter} locName={locName} />
+      </div>
+
+      <div style={{ marginBottom: 22 }}>
+        <SectionHead icon={FinanceIcon}>Bevétel, kiadás, profit — trend</SectionHead>
+        <FinanceTrendChart summaries={monthlySummaries} liveMonth={currentMonthLive} locFilter={effectiveLocFilter} />
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 22 }}>
+        <div className="statcard">
+          <div className="dp-section-title">Bevétel-megoszlás — telefon / szerviz / tartozék</div>
+          <CategorySplitChart summaries={monthlySummaries} liveMonth={currentMonthLive} locFilter={effectiveLocFilter} mode="revenue" />
+        </div>
+        <div className="statcard">
+          <div className="dp-section-title">Rés-megoszlás — miből jön a haszon (becslés)</div>
+          <CategorySplitChart summaries={monthlySummaries} liveMonth={currentMonthLive} locFilter={effectiveLocFilter} mode="margin" />
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 22 }}>
+        <div className="statcard">
+          <div className="dp-section-title">Kiadás-statisztika — utolsó 12 hónap</div>
+          <ExpenseCategoryStats summaries={monthlySummaries} liveMonth={currentMonthLive} locFilter={effectiveLocFilter} />
+        </div>
       </div>
 
       {/* Szűrő: az alábbi adatok csak telefonra / csak szervizre is nézhetők. */}
