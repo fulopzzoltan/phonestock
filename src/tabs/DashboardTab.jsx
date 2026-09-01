@@ -11,6 +11,26 @@ const SectionHead = ({ icon: Icon, children }) => (
   </div>
 );
 
+const SplitBars = ({ items }) => (
+  items.length ? items.map((b) => (
+    <div key={b.name} style={{ marginBottom: 10 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 4 }}>
+        <span style={{ fontWeight: 600, color: "#374151" }}>{b.name}</span>
+        <span style={{ color: "#6B7280" }}>
+          <span style={{ color: "var(--primary)" }}>Új {b.newPct}%</span>
+          {" · "}
+          <span style={{ color: "var(--info)" }}>Felújított {b.usedPct}%</span>
+          <span style={{ color: "#9CA3AF" }}> ({b.total} db)</span>
+        </span>
+      </div>
+      <div style={{ height: 7, background: "#F1F2F6", borderRadius: 999, overflow: "hidden", display: "flex" }}>
+        <div style={{ width: `${b.newPct}%`, height: "100%", background: "var(--primary)" }} />
+        <div style={{ width: `${b.usedPct}%`, height: "100%", background: "var(--info)" }} />
+      </div>
+    </div>
+  )) : <div style={{ fontSize: 12.5, color: "#9CA3AF" }}>Nincs adat</div>
+);
+
 const BreakdownBars = ({ items }) => (
   items.length ? items.map((b) => (
     <div key={b.name} style={{ marginBottom: 10 }}>
@@ -26,7 +46,7 @@ const BreakdownBars = ({ items }) => (
 );
 
 export default function DashboardTab({
-  effectiveLocFilter, locName, stockStats, stockHistory, svcStats,
+  effectiveLocFilter, locName, stockStats, stockHistory, svcStats, soldPhoneStats,
   monthlyTrendSummary, currentMonthLive, monthlySummaries, locations,
   txStats, partsStats, customerStats, todoItems, setDetailId,
   stockSparkline, dailyIncomeTrend,
@@ -36,6 +56,10 @@ export default function DashboardTab({
   const BRAND_TOP_N = 6;
   const shownBrands = showAllBrands ? svcStats.brandBreakdown : svcStats.brandBreakdown.slice(0, BRAND_TOP_N);
   const hiddenBrandCount = svcStats.brandBreakdown.length - BRAND_TOP_N;
+  const [showAllSoldBrands, setShowAllSoldBrands] = useState(false);
+  const SOLD_BRAND_TOP_N = 6;
+  const shownSoldBrands = showAllSoldBrands ? soldPhoneStats.brandConditionBreakdown : soldPhoneStats.brandConditionBreakdown.slice(0, SOLD_BRAND_TOP_N);
+  const hiddenSoldBrandCount = soldPhoneStats.brandConditionBreakdown.length - SOLD_BRAND_TOP_N;
 
   return (
     <>
@@ -76,6 +100,38 @@ export default function DashboardTab({
       </div>
       <div style={{ marginBottom: 26 }}>
         <StockValueChart history={stockHistory} />
+      </div>
+
+      <div className="statcard" style={{ marginBottom: 14 }}>
+        <div className="dp-section-title">Eladott telefonok — márkánként új / felújított</div>
+        <SplitBars items={shownSoldBrands} />
+        {hiddenSoldBrandCount > 0 && (
+          <button
+            type="button"
+            className="toggle-link"
+            style={{ background: "none", border: "none", padding: 0, fontWeight: 600, marginTop: 6 }}
+            onClick={() => setShowAllSoldBrands((v) => !v)}
+          >
+            {showAllSoldBrands ? "Kevesebb mutatása" : `+ ${hiddenSoldBrandCount} további márka mutatása`}
+          </button>
+        )}
+        {soldPhoneStats.total > 0 && (
+          <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 4 }}>
+            Összesen {soldPhoneStats.total} eladott telefon alapján
+          </div>
+        )}
+      </div>
+      <div className="statrow c2" style={{ marginBottom: 26 }}>
+        <div className="statcard">
+          <div className="lbl">Átlagos eladási ár — Új</div>
+          <div className="val" style={{ color: "var(--primary)" }}>{soldPhoneStats.avgPriceNew != null ? money(soldPhoneStats.avgPriceNew) : "—"}</div>
+          {soldPhoneStats.countNew > 0 && <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 2 }}>{soldPhoneStats.countNew} eladott telefon alapján</div>}
+        </div>
+        <div className="statcard">
+          <div className="lbl">Átlagos eladási ár — Felújított</div>
+          <div className="val" style={{ color: "var(--info)" }}>{soldPhoneStats.avgPriceUsed != null ? money(soldPhoneStats.avgPriceUsed) : "—"}</div>
+          {soldPhoneStats.countUsed > 0 && <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 2 }}>{soldPhoneStats.countUsed} eladott telefon alapján</div>}
+        </div>
       </div>
 
       <SectionHead icon={ServiceIcon}>Szerviz</SectionHead>

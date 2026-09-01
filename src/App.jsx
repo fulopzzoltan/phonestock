@@ -2038,6 +2038,45 @@ function AppShell() {
     slowMoving: filteredStock.filter((p) => isSlowMoving(p, reserveLocId)).length,
   }), [filteredStock, reserveLocId]);
 
+  // Eladott telefonok márkánkénti új/felújított megoszlása + átlagár állapotonként.
+  // A tényleges eladási ár csak a linkelt tranzakción (transactions.amount) élne, de a
+  // legtöbb régi eladásnál nincs ilyen link — ezért a listaárat (products.sale_price)
+  // használjuk, ami majdnem minden eladott tételnél megvan.
+  const soldPhoneStats = useMemo(() => {
+    let sold = stock.filter((i) => i.status === "sold");
+    if (effectiveLocFilter !== "all") sold = sold.filter((i) => i.locationId === effectiveLocFilter || i.locationId === reserveLocId);
+
+    const brandCondCounts = {};
+    sold.forEach((i) => {
+      const brand = i.brand === "Apple" ? "iPhone" : (i.brand || "Egyéb");
+      if (!brandCondCounts[brand]) brandCondCounts[brand] = { newCount: 0, usedCount: 0 };
+      if (i.condition === "New") brandCondCounts[brand].newCount++; else brandCondCounts[brand].usedCount++;
+    });
+    const brandConditionBreakdown = Object.entries(brandCondCounts)
+      .map(([name, c]) => {
+        const total = c.newCount + c.usedCount;
+        return {
+          name, total, newCount: c.newCount, usedCount: c.usedCount,
+          newPct: total ? Math.round((c.newCount / total) * 1000) / 10 : 0,
+          usedPct: total ? Math.round((c.usedCount / total) * 1000) / 10 : 0,
+        };
+      })
+      .sort((a, b) => b.total - a.total);
+
+    const avg = (arr) => (arr.length ? Math.round(arr.reduce((s, n) => s + n, 0) / arr.length) : null);
+    const newPrices = sold.filter((i) => i.condition === "New").map((i) => Number(i.salePrice) || 0).filter((n) => n > 0);
+    const usedPrices = sold.filter((i) => i.condition !== "New").map((i) => Number(i.salePrice) || 0).filter((n) => n > 0);
+
+    return {
+      total: sold.length,
+      brandConditionBreakdown,
+      avgPriceNew: avg(newPrices),
+      avgPriceUsed: avg(usedPrices),
+      countNew: newPrices.length,
+      countUsed: usedPrices.length,
+    };
+  }, [stock, effectiveLocFilter, reserveLocId]);
+
   const txStats = useMemo(() => {
     const income = filteredTransactions.filter((t) => t.type === "income" && !t.isPassthrough).reduce((a, t) => a + (Number(t.amount) || 0), 0);
     const expense = filteredTransactions.filter((t) => t.type === "expense").reduce((a, t) => a + (Number(t.amount) || 0), 0);
@@ -2508,6 +2547,7 @@ function AppShell() {
         {!noLocationAssigned && isAdmin && tab === "dashboard" && (
           <DashboardTab
             effectiveLocFilter={effectiveLocFilter} locName={locName} stockStats={stockStats} stockHistory={stockHistory}
+            soldPhoneStats={soldPhoneStats}
             svcStats={svcStats} monthlyTrendSummary={monthlyTrendSummary} currentMonthLive={currentMonthLive}
             monthlySummaries={monthlySummaries} locations={locations} txStats={txStats} partsStats={partsStats} customerStats={customerStats}
             todoItems={todoItems} setDetailId={setDetailId}
