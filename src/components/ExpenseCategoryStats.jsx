@@ -16,14 +16,9 @@ const CATS = [
   { key: "expenseOther", label: "Egyéb", color: "#9CA3AF" },
 ];
 
-export default function ExpenseCategoryStats({ summaries, liveMonth, locFilter, months: monthCount = 12 }) {
+export default function ExpenseCategoryStats({ summaries, months, locFilter }) {
   const totals = useMemo(() => {
-    const monthKeys = [];
-    for (let i = 0; i < monthCount; i++) {
-      let y = liveMonth.year, m = liveMonth.month - i;
-      while (m <= 0) { m += 12; y -= 1; }
-      monthKeys.push(`${y}-${m}`);
-    }
+    const monthKeys = months.map((m) => `${m.year}-${m.month}`);
     const rows = summaries.filter((s) => monthKeys.includes(`${s.year}-${s.month}`) && (locFilter === "all" || s.locationId === locFilter));
     const out = {};
     let total = 0;
@@ -35,7 +30,7 @@ export default function ExpenseCategoryStats({ summaries, liveMonth, locFilter, 
       total += r.expenses || 0;
     });
     return { out, total, hasAnyBreakdown, monthCount: rows.length };
-  }, [summaries, liveMonth, locFilter, monthCount]);
+  }, [summaries, months, locFilter]);
 
   if (!totals.hasAnyBreakdown || totals.total <= 0) {
     return <div style={{ fontSize: 12.5, color: "#9CA3AF" }}>Ehhez még nincs kategória-bontású kiadás-adat.</div>;

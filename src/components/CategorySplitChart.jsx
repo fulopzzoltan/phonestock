@@ -16,17 +16,7 @@ const CATS = [
 ];
 const MONTH_NAMES = ["jan.", "febr.", "márc.", "ápr.", "máj.", "jún.", "júl.", "aug.", "szept.", "okt.", "nov.", "dec."];
 
-export default function CategorySplitChart({ summaries, liveMonth, locFilter, mode }) {
-  const months = useMemo(() => {
-    const out = [];
-    for (let i = 11; i >= 0; i--) {
-      let y = liveMonth.year, m = liveMonth.month - i;
-      while (m <= 0) { m += 12; y -= 1; }
-      out.push({ year: y, month: m, isLive: i === 0 });
-    }
-    return out;
-  }, [liveMonth]);
-
+export default function CategorySplitChart({ months, summaries, locFilter, mode }) {
   const rows = useMemo(() => {
     return months.map(({ year, month, isLive }) => {
       if (isLive) return { year, month, isLive, hasData: false };

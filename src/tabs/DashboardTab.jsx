@@ -87,7 +87,7 @@ const TABS = [
 export default function DashboardTab({
   effectiveLocFilter, locName, stockStats, stockHistory, svcStats, soldPhoneStats,
   monthlyTrendSummary, currentMonthLive, monthlySummaries, locations,
-  txStats, partsStats, customerStats, todoItems, setDetailId,
+  txStats, todoItems, setDetailId,
   stockSparkline, dailyIncomeTrend,
 }) {
   const todoCount = todoItems?.slaTickets.length || 0;
@@ -104,7 +104,6 @@ export default function DashboardTab({
   const showFinance = filter === "all" || filter === "finance";
   const showPhones = filter === "all" || filter === "phones";
   const showService = filter === "all" || filter === "service";
-  const showFooter = filter === "all";
 
   // Periódus-választó a fenti két trend-grafikonhoz (Bevétel/helyszín oszlopok + Bevétel-Kiadás-Profit vonal) —
   // "Utolsó 12 hónap" a mostani (görgő) alapértelmezett, de kiválasztható egy konkrét év vagy a teljes eddigi adat is.
@@ -273,18 +272,18 @@ export default function DashboardTab({
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 22 }}>
         <div className="statcard">
           <div className="dp-section-title">Bevétel-megoszlás — telefon / szerviz / tartozék</div>
-          <CategorySplitChart summaries={monthlySummaries} liveMonth={currentMonthLive} locFilter={effectiveLocFilter} mode="revenue" />
+          <CategorySplitChart months={trendMonths} summaries={monthlySummaries} locFilter={effectiveLocFilter} mode="revenue" />
         </div>
         <div className="statcard">
           <div className="dp-section-title">Rés-megoszlás — miből jön a haszon (becslés)</div>
-          <CategorySplitChart summaries={monthlySummaries} liveMonth={currentMonthLive} locFilter={effectiveLocFilter} mode="margin" />
+          <CategorySplitChart months={trendMonths} summaries={monthlySummaries} locFilter={effectiveLocFilter} mode="margin" />
         </div>
       </div>
 
       <div style={{ marginBottom: 22 }}>
         <div className="statcard">
-          <div className="dp-section-title">Kiadás-statisztika — utolsó 12 hónap</div>
-          <ExpenseCategoryStats summaries={monthlySummaries} liveMonth={currentMonthLive} locFilter={effectiveLocFilter} />
+          <div className="dp-section-title">Kiadás-statisztika</div>
+          <ExpenseCategoryStats months={trendMonths} summaries={monthlySummaries} locFilter={effectiveLocFilter} />
         </div>
       </div>
       </div>
@@ -391,13 +390,6 @@ export default function DashboardTab({
         </div>
       )}
 
-      {showFooter && (
-        <KpiStrip items={[
-          { label: "Alkatrész raktár értéke", value: money(partsStats.value) },
-          { label: "Ügyfelek", value: customerStats.count },
-          { label: "Bevétel az ügyfelektől", value: money(customerStats.revenue), color: "#15803D" },
-        ]} />
-      )}
     </>
   );
 }
