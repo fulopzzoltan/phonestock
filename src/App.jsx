@@ -1044,9 +1044,16 @@ function AppShell() {
   }
   async function ensureCompanyTaxPeriod(period) {
     const existing = new Set(companyTaxObligations.filter((t) => t.period === period).map((t) => `${t.locationId}|${t.taxType}`));
-    const rows = locations
-      .filter((loc) => loc.name !== "Tartalék" && !existing.has(`${loc.id}|Bugetul de stat`))
-      .map((loc) => ({ location_id: loc.id, tax_type: "Bugetul de stat", period, due_date: `${period.slice(0, 7)}-25`, amount: 1500 }));
+    const gyimes = locations.find((loc) => loc.name === "Gyimes");
+    const rows = [
+      ...locations
+        .filter((loc) => loc.name !== "Tartalék" && !existing.has(`${loc.id}|Bugetul de stat`))
+        .map((loc) => ({ location_id: loc.id, tax_type: "Bugetul de stat", period, due_date: `${period.slice(0, 7)}-25`, amount: 1500 })),
+      // Futó hitel — csak a Gyimesi céghez tartozik, minden hónap 1-jén esedékes.
+      ...(gyimes && !existing.has(`${gyimes.id}|Hitel`)
+        ? [{ location_id: gyimes.id, tax_type: "Hitel", period, due_date: `${period.slice(0, 7)}-01`, amount: 1500 }]
+        : []),
+    ];
     if (rows.length === 0) return;
     const r = unwrap(await supabase.from("company_tax_obligations").upsert(rows, { onConflict: "location_id,tax_type,period", ignoreDuplicates: true }).select());
     if (r.length > 0) setCompanyTaxObligations((prev) => [...prev, ...r.map(companyTaxObligationFromApi)]);
@@ -1089,7 +1096,7 @@ function AppShell() {
       const t = companyTaxObligations.find((x) => x.id === taxId);
       const loc = locations.find((l) => l.id === t.locationId);
       const r = unwrap(await supabase.from("transactions").insert(txToApi({
-        type: "expense", category: "Adó", description: `${t.taxType} — ${loc?.name || ""}`,
+        type: "expense", category: t.taxType === "Hitel" ? "Hitel" : "Adó", description: `${t.taxType} — ${loc?.name || ""}`,
         amount, payment, companyTaxObligationId: taxId,
       }, t.locationId)).select());
       setTransactions((prev) => [txFromApi(r[0]), ...prev]);
