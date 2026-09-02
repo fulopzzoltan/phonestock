@@ -141,7 +141,7 @@ export default function ContentTopbar({
       {pageHeader}
       <div className="ctb-spacer" />
 
-      {hasSearchData && (
+      {hasSearchData && tab === "pult" && (
         <GlobalSearch
           stock={stock} tickets={tickets} customersTable={customersTable} parts={parts} warranties={warranties}
           onOpenProduct={onOpenProduct} onOpenTicket={onOpenTicket} onOpenCustomer={onOpenCustomer} onOpenPart={onOpenPart} onOpenWarranty={onOpenWarranty}
