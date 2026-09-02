@@ -771,12 +771,13 @@ function AppShell() {
   async function retrySmartbillDocument(tx) {
     return issueSmartbillDocument(tx.id, tx.locationId, tx.smartbillDoc?.docType || "invoice");
   }
-  async function quickIssueDocument(description, amount, customerName, docType, locId) {
+  async function quickIssueDocument(description, amount, customerName, customerId, docType, locId) {
     let ok = false;
     await withBusy(async () => {
-      const tr = unwrap(await supabase.from("transactions").insert(
-        txToApi({ type: "income", category: "Egyéb", description, amount: Number(amount) || 0, payment: "Készpénz", customerName: customerName || null }, locId)
-      ).select());
+      const tr = unwrap(await supabase.from("transactions").insert({
+        ...txToApi({ type: "income", category: "Egyéb", description, amount: Number(amount) || 0, payment: "Készpénz", customerName: customerName || null }, locId),
+        customer_id: customerId || null,
+      }).select());
       const newTx = txFromApi(tr[0]);
       setTransactions((prev) => [newTx, ...prev]);
       const { data, error: fnError } = await supabase.functions.invoke("smartbill-issue-document", {
@@ -1512,7 +1513,12 @@ function AppShell() {
   }
   async function editTransaction(id, data, locId) {
     await withBusy(async () => {
-      const r = unwrap(await supabase.from("transactions").update(txToApi(data, locId)).eq("id", id).select());
+      let customerId = data.customerId || null;
+      if (!customerId && data.customerPhone) {
+        const { data: cid } = await supabase.rpc("upsert_customer", { p_name: data.customerName, p_phone: data.customerPhone });
+        customerId = cid || null;
+      }
+      const r = unwrap(await supabase.from("transactions").update({ ...txToApi(data, locId), customer_id: customerId }).eq("id", id).select());
       if (!r[0]) throw new Error("A mentés nem sikerült — előfordulhat, hogy nincs jogosultságod ehhez a helyszínhez, vagy időközben törölték a tételt.");
       setTransactions(transactions.map((t) => (t.id === id ? txFromApi(r[0]) : t)));
       setTxModal(null);
@@ -1560,8 +1566,8 @@ function AppShell() {
   // PULT: VÁRAKOZIK VALAMIRE
   async function addWaitingItem(data, status = "megrendelve") {
     await withBusy(async () => {
-      let customerId = null;
-      if (data.customerPhone) {
+      let customerId = data.customerId || null;
+      if (!customerId && data.customerPhone) {
         const { data: cid } = await supabase.rpc("upsert_customer", { p_name: data.customerName, p_phone: data.customerPhone });
         customerId = cid || null;
       }
@@ -2674,7 +2680,7 @@ function AppShell() {
           <InvoicesTab
             transactions={transactions} locName={locName} isAdmin={isAdmin}
             setIssueInvoiceModal={setIssueInvoiceModal} retrySmartbillDocument={retrySmartbillDocument}
-            quickIssueDocument={quickIssueDocument}
+            quickIssueDocument={quickIssueDocument} customers={customersTable}
             defaultLocId={defaultLocId} busy={busy}
           />
         )}
@@ -2859,6 +2865,7 @@ function AppShell() {
         <TransactionModal
           tx={txModal}
           locations={allowedLocations}
+          customers={customersTable}
           defaultLocId={defaultLocId}
           onClose={() => setTxModal(null)}
           busy={busy}

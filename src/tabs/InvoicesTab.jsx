@@ -3,6 +3,7 @@ import { money } from "../lib/utils";
 import { InvoiceIcon, ChevronDownIcon } from "../components/icons";
 import { EmptyState } from "../components/EmptyState";
 import ResponsiveTable from "../components/ResponsiveTable";
+import CustomerAutocomplete from "../components/CustomerAutocomplete";
 
 const DOC_TYPE_LABELS = { invoice: "Számla", bon: "Bon", chitanta: "Nyugta" };
 const QUICK_DOC_TYPES = [
@@ -10,11 +11,12 @@ const QUICK_DOC_TYPES = [
   { key: "invoice", label: "Számla" },
 ];
 
-function QuickIssuePanel({ defaultLocId, busy, onIssue }) {
+function QuickIssuePanel({ defaultLocId, busy, onIssue, customers = [] }) {
   const [open, setOpen] = useState(false);
   const [desc, setDesc] = useState("");
   const [amount, setAmount] = useState("");
   const [customerName, setCustomerName] = useState("");
+  const [customerId, setCustomerId] = useState(null);
   const [docType, setDocType] = useState("chitanta");
   const [error, setError] = useState("");
 
@@ -22,9 +24,9 @@ function QuickIssuePanel({ defaultLocId, busy, onIssue }) {
 
   async function submit() {
     setError("");
-    const ok = await onIssue(desc.trim(), amount, customerName.trim(), docType, defaultLocId);
+    const ok = await onIssue(desc.trim(), amount, customerName.trim(), customerId, docType, defaultLocId);
     if (ok) {
-      setDesc(""); setAmount(""); setCustomerName(""); setOpen(false);
+      setDesc(""); setAmount(""); setCustomerName(""); setCustomerId(null); setOpen(false);
     } else {
       setError("Hiba történt a kiállítás közben.");
     }
@@ -45,7 +47,14 @@ function QuickIssuePanel({ defaultLocId, busy, onIssue }) {
             <div className="field"><label>Leírás</label><input value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="pl. Fólia" /></div>
             <div className="field"><label>Összeg (Lei)</label><input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0" /></div>
           </div>
-          <div className="field"><label>Vevő neve (opcionális)</label><input value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="pl. Kovács János" /></div>
+          <div className="field"><label>Vevő neve (opcionális)</label>
+            <CustomerAutocomplete
+              customers={customers}
+              name={customerName}
+              onChangeName={(name) => { setCustomerName(name); setCustomerId(null); }}
+              onSelect={(c) => { setCustomerName(c.name); setCustomerId(c.id); }}
+            />
+          </div>
           <div className="field">
             <label>Dokumentum típusa</label>
             <div className="seg">
@@ -63,7 +72,7 @@ function QuickIssuePanel({ defaultLocId, busy, onIssue }) {
   );
 }
 
-export default function InvoicesTab({ transactions, locName, isAdmin, setIssueInvoiceModal, retrySmartbillDocument, quickIssueDocument, defaultLocId, busy }) {
+export default function InvoicesTab({ transactions, locName, isAdmin, setIssueInvoiceModal, retrySmartbillDocument, quickIssueDocument, defaultLocId, busy, customers = [] }) {
   const docs = useMemo(
     () => transactions.filter((t) => t.smartbillDoc).sort((a, b) => (a.smartbillDoc.createdAt < b.smartbillDoc.createdAt ? 1 : -1)),
     [transactions]
@@ -78,7 +87,7 @@ export default function InvoicesTab({ transactions, locName, isAdmin, setIssueIn
         </div>
       </div>
 
-      <QuickIssuePanel defaultLocId={defaultLocId} busy={busy} onIssue={quickIssueDocument} />
+      <QuickIssuePanel defaultLocId={defaultLocId} busy={busy} onIssue={quickIssueDocument} customers={customers} />
 
       {docs.length === 0 ? (
         <div className="tw"><EmptyState icon={InvoiceIcon}>Még nincs kiállított SmartBill dokumentum.</EmptyState></div>

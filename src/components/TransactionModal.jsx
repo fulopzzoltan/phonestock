@@ -2,8 +2,9 @@ import { useState } from "react";
 import LocationField from "./LocationField";
 import { CloseIcon } from "./icons";
 import { CATEGORIES, PAYMENTS, today } from "../lib/utils";
+import CustomerAutocomplete from "./CustomerAutocomplete";
 
-export default function TransactionModal({ tx, locations, defaultLocId, onClose, onSave, busy }) {
+export default function TransactionModal({ tx, locations, customers = [], defaultLocId, onClose, onSave, busy }) {
   const [f, setF] = useState({
     type: tx.type,
     description: tx.description || "",
@@ -14,6 +15,7 @@ export default function TransactionModal({ tx, locations, defaultLocId, onClose,
     paymentCardAmount: tx.paymentCardAmount ?? "",
     customerName: tx.customerName || "",
     customerPhone: tx.customerPhone || "",
+    customerId: tx.customerId || null,
     costPrice: tx.costPrice ?? "",
     date: tx.date || today(),
   });
@@ -76,7 +78,15 @@ export default function TransactionModal({ tx, locations, defaultLocId, onClose,
           <div className="field"><label>Beszerzési ár (Lei)</label><input type="number" value={f.costPrice} onChange={set("costPrice")} placeholder="0" /></div>
         )}
         <div className="row2">
-          <div className="field"><label>Vevő neve</label><input value={f.customerName} onChange={set("customerName")} placeholder="Opcionális" /></div>
+          <div className="field"><label>Vevő neve</label>
+            <CustomerAutocomplete
+              customers={customers}
+              name={f.customerName}
+              onChangeName={(name) => setF({ ...f, customerName: name, customerId: null })}
+              onSelect={(c) => setF({ ...f, customerName: c.name, customerPhone: c.phone || f.customerPhone, customerId: c.id })}
+              placeholder="Opcionális"
+            />
+          </div>
           <div className="field"><label>Telefonszám</label><input value={f.customerPhone} onChange={set("customerPhone")} placeholder="Opcionális" /></div>
         </div>
         <LocationField locations={locations} value={locId} onChange={setLocId} />

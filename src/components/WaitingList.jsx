@@ -1,17 +1,19 @@
 import { useState } from "react";
 import { EmptyState } from "./EmptyState";
 import { PartsIcon } from "./icons";
+import CustomerAutocomplete from "./CustomerAutocomplete";
 
 const STATUS_LABEL = { megrendelve: "Megrendelve", megerkezett: "Megérkezett", ertesitve: "Értesítve", lezarva: "Lezárva" };
 const NEXT = { megrendelve: "megerkezett", megerkezett: "ertesitve", ertesitve: "lezarva" };
 const NEXT_LABEL = { megrendelve: "Megérkezett", megerkezett: "Értesítettük", ertesitve: "Átadva / lezárva" };
 const STATUS_CLS = { megrendelve: "st-alkatresz", megerkezett: "st-garancialis", ertesitve: "st-kesz" };
 
-export default function WaitingList({ items, onAdd, onAdvance, onDelete }) {
+export default function WaitingList({ items, customers = [], onAdd, onAdvance, onDelete }) {
   const [open, setOpen] = useState(false);
   const [description, setDescription] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [customerId, setCustomerId] = useState(null);
   const [supplier, setSupplier] = useState("");
 
   function submit() {
@@ -20,9 +22,10 @@ export default function WaitingList({ items, onAdd, onAdvance, onDelete }) {
       description: description.trim(),
       customerName: customerName.trim() || null,
       customerPhone: customerPhone.trim() || null,
+      customerId,
       supplier: supplier.trim() || null,
     });
-    setDescription(""); setCustomerName(""); setCustomerPhone(""); setSupplier(""); setOpen(false);
+    setDescription(""); setCustomerName(""); setCustomerPhone(""); setCustomerId(null); setSupplier(""); setOpen(false);
   }
 
   return (
@@ -47,7 +50,15 @@ export default function WaitingList({ items, onAdd, onAdvance, onDelete }) {
         <div>
           <div className="field" style={{ margin: "0 0 10px" }}><label>Mit várunk</label><input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Pl. roz tok Xiaomi Poco C65-höz" autoFocus /></div>
           <div className="row3" style={{ alignItems: "flex-end" }}>
-            <div className="field" style={{ margin: 0 }}><label>Kinek (ha ügyfélnek)</label><input value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Opcionális" /></div>
+            <div className="field" style={{ margin: 0 }}><label>Kinek (ha ügyfélnek)</label>
+              <CustomerAutocomplete
+                customers={customers}
+                name={customerName}
+                onChangeName={(name) => { setCustomerName(name); setCustomerId(null); }}
+                onSelect={(c) => { setCustomerName(c.name); setCustomerPhone(c.phone || customerPhone); setCustomerId(c.id); }}
+                placeholder="Opcionális"
+              />
+            </div>
             <div className="field" style={{ margin: 0 }}><label>Telefonszám</label><input value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="07xx xxx xxx" /></div>
             <div className="field" style={{ margin: 0 }}><label>Forrás</label><input value={supplier} onChange={(e) => setSupplier(e.target.value)} placeholder="GSMnet, SEP..." /></div>
           </div>
