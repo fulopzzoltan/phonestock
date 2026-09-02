@@ -20,13 +20,14 @@ export default function PartUsageModal({ part, tickets, stock, locName, busy, on
     ).slice(0, 8);
   }, [openTickets, q, locName]);
 
+  const availableStock = useMemo(() => stock.filter((p) => p.status !== "sold"), [stock]);
   const productMatches = useMemo(() => {
-    if (!q.trim()) return stock.slice(0, 8);
+    if (!q.trim()) return availableStock.slice(0, 8);
     const needle = q.trim().toLowerCase();
-    return stock.filter((p) =>
+    return availableStock.filter((p) =>
       [displayName(p.brand, p.model), phoneCode(p.productNo)].filter(Boolean).join(" ").toLowerCase().includes(needle)
     ).slice(0, 8);
-  }, [stock, q]);
+  }, [availableStock, q]);
 
   function pick(id) {
     setSelId(id);
