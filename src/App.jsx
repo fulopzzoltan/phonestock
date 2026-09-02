@@ -51,6 +51,7 @@ import PrintSlip from "./components/PrintSlip";
 import SaleReceiptPanel from "./components/SaleReceiptPanel";
 import PrintReceiptSlip from "./components/PrintReceiptSlip";
 import PrintConsignmentDocs from "./components/PrintConsignmentDocs";
+import PrintPurchaseDocs from "./components/PrintPurchaseDocs";
 import WarrantyDetailPanel from "./components/WarrantyDetailPanel";
 import WarrantyModal from "./components/WarrantyModal";
 import PrintWarrantySlip from "./components/PrintWarrantySlip";
@@ -217,7 +218,8 @@ function AppShell() {
   const [receiptTxId, setReceiptTxId] = useState(null);
   const [printReceipt, setPrintReceipt] = useState(null);
   const [printConsignment, setPrintConsignment] = useState(null);
-  const [consignmentPrintPrompt, setConsignmentPrintPrompt] = useState(null);
+  const [printPurchase, setPrintPurchase] = useState(null);
+  const [acquisitionPrintPrompt, setAcquisitionPrintPrompt] = useState(null);
   const [warranties, setWarranties] = useState([]);
   const [notes, setNotes] = useState([]);
   const [waitingItems, setWaitingItems] = useState([]);
@@ -277,7 +279,17 @@ function AppShell() {
     setPrintReceipt(null);
     setPrintWarranty(null);
     setPrintConsignment({ product, acquisition });
-    setConsignmentPrintPrompt(null);
+    setAcquisitionPrintPrompt(null);
+    requestAnimationFrame(() => {
+      window.print();
+    });
+  }
+  function printPurchaseDocs(product, acquisition) {
+    setPrintTicket(null);
+    setPrintReceipt(null);
+    setPrintWarranty(null);
+    setPrintPurchase({ product, acquisition });
+    setAcquisitionPrintPrompt(null);
     requestAnimationFrame(() => {
       window.print();
     });
@@ -639,9 +651,7 @@ function AppShell() {
           }
         }
         setStock((prev) => prev.map((i) => (i.id === product.id ? { ...i, acquisition: savedAcq } : i)));
-        if (acquisition.acquisitionType === "consignment") {
-          setConsignmentPrintPrompt({ product, acquisition: savedAcq });
-        }
+        setAcquisitionPrintPrompt({ product, acquisition: savedAcq });
       }
       setStockModal(null);
     });
@@ -2946,7 +2956,7 @@ function AppShell() {
           onReturnToStock={returnProductToStock}
           onShowHistory={(imei) => setDeviceHistoryImei(imei)}
           onPayoutConsignor={payoutConsignor}
-          onPrintConsignment={() => printConsignmentDocs(detailProduct, detailProduct.acquisition)}
+          onPrintConsignment={() => (detailProduct.acquisition?.acquisitionType === "consignment" ? printConsignmentDocs : printPurchaseDocs)(detailProduct, detailProduct.acquisition)}
           onPrint={printReceiptSlip}
         />
       )}
@@ -3089,17 +3099,25 @@ function AppShell() {
         {printReceipt && <PrintReceiptSlip tx={printReceipt} location={locations.find((l) => l.id === printReceipt.locationId)} />}
         {printWarranty && <PrintWarrantySlip w={printWarranty} location={locations.find((l) => l.id === printWarranty.locationId)} />}
         {printConsignment && <PrintConsignmentDocs product={printConsignment.product} acquisition={printConsignment.acquisition} settings={settings} location={locations.find((l) => l.id === printConsignment.product.locationId)} />}
+        {printPurchase && <PrintPurchaseDocs product={printPurchase.product} acquisition={printPurchase.acquisition} settings={settings} location={locations.find((l) => l.id === printPurchase.product.locationId)} />}
       </div>
-      {consignmentPrintPrompt && (
-        <div className="overlay" onClick={() => setConsignmentPrintPrompt(null)}>
+      {acquisitionPrintPrompt && (
+        <div className="overlay" onClick={() => setAcquisitionPrintPrompt(null)}>
           <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 380 }}>
-            <h2>Bizományos termék felvéve</h2>
+            <h2>{acquisitionPrintPrompt.acquisition.acquisitionType === "consignment" ? "Bizományos termék felvéve" : "Telefon felvéve"}</h2>
             <p style={{ fontSize: 13, color: "#374151", lineHeight: 1.5 }}>
-              Nyomtassuk ki most az öt bizományos dokumentumot (nyilatkozat, borderou, bon, szerződés, GDPR-nyilatkozat) aláírásra?
+              {acquisitionPrintPrompt.acquisition.acquisitionType === "consignment"
+                ? "Nyomtassuk ki most az öt bizományos dokumentumot (nyilatkozat, borderou, bon, szerződés, GDPR-nyilatkozat) aláírásra?"
+                : "Nyomtassuk ki most a vásárlási dokumentumokat (nyilatkozat, bon, szerződés, GDPR-nyilatkozat) aláírásra?"}
             </p>
             <div className="modal-actions">
-              <button className="btn sec" onClick={() => setConsignmentPrintPrompt(null)}>Most nem</button>
-              <button className="btn" onClick={() => printConsignmentDocs(consignmentPrintPrompt.product, consignmentPrintPrompt.acquisition)}>Dokumentumok nyomtatása</button>
+              <button className="btn sec" onClick={() => setAcquisitionPrintPrompt(null)}>Most nem</button>
+              <button
+                className="btn"
+                onClick={() => (acquisitionPrintPrompt.acquisition.acquisitionType === "consignment" ? printConsignmentDocs : printPurchaseDocs)(acquisitionPrintPrompt.product, acquisitionPrintPrompt.acquisition)}
+              >
+                Dokumentumok nyomtatása
+              </button>
             </div>
           </div>
         </div>

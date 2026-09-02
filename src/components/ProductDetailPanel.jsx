@@ -37,14 +37,14 @@ export default function ProductDetailPanel({
                 <>
                   <Row k="Kifizetendő" v={money(acq.consignorPayoutAmount)} />
                   <Row k="Kifizetés" v={acq.payoutStatus === "kifizetve" ? <span style={{ color: "#22C55E", fontWeight: 700 }}>✓ Kifizetve ({acq.payoutDate})</span> : <span className="st st-alkatresz">Fizetésre vár</span>} />
-                  <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                    {acq.payoutStatus !== "kifizetve" && (
-                      <button type="button" className="btn sec sm" disabled={busy} onClick={() => onPayoutConsignor(product.id)}>Bizományos kifizetése</button>
-                    )}
-                    <button type="button" className="btn sec sm" onClick={onPrintConsignment}>Dokumentumok nyomtatása</button>
-                  </div>
                 </>
               )}
+              <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                {isConsignment && acq.payoutStatus !== "kifizetve" && (
+                  <button type="button" className="btn sec sm" disabled={busy} onClick={() => onPayoutConsignor(product.id)}>Bizományos kifizetése</button>
+                )}
+                <button type="button" className="btn sec sm" onClick={onPrintConsignment}>Dokumentumok nyomtatása</button>
+              </div>
             </div>
           )}
           <ProductPhotos productId={product.id} />
