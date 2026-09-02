@@ -258,26 +258,33 @@ function AppShell() {
   const [repairLeadFilter, setRepairLeadFilter] = useState("Új");
   const [repairLeadConvert, setRepairLeadConvert] = useState(null); // lead obj being converted to a ticket
 
-  function printTicketSlip(ticket) {
+  // Az összes #print-slip-root-beli állapot törlése, mielőtt egy újat beállítunk — így soha
+  // nem marad ott egy korábban kiválasztott nyomtatvány (pl. bizományi/vásárlási iratok egy
+  // korábbi telefonfelvitelről), ami a következő nyomtatáshoz (munkalap, garancia, stb.) a
+  // végére odaragadva kinyomtatódna.
+  function clearAllPrints() {
+    setPrintTicket(null);
     setPrintReceipt(null);
     setPrintWarranty(null);
+    setPrintConsignment(null);
+    setPrintPurchase(null);
+  }
+  function printTicketSlip(ticket) {
+    clearAllPrints();
     setPrintTicket(ticket);
     requestAnimationFrame(() => {
       window.print();
     });
   }
   function printReceiptSlip(tx) {
-    setPrintTicket(null);
-    setPrintWarranty(null);
+    clearAllPrints();
     setPrintReceipt(tx);
     requestAnimationFrame(() => {
       window.print();
     });
   }
   function printConsignmentDocs(product, acquisition) {
-    setPrintTicket(null);
-    setPrintReceipt(null);
-    setPrintWarranty(null);
+    clearAllPrints();
     setPrintConsignment({ product, acquisition });
     setAcquisitionPrintPrompt(null);
     requestAnimationFrame(() => {
@@ -285,9 +292,7 @@ function AppShell() {
     });
   }
   function printPurchaseDocs(product, acquisition) {
-    setPrintTicket(null);
-    setPrintReceipt(null);
-    setPrintWarranty(null);
+    clearAllPrints();
     setPrintPurchase({ product, acquisition });
     setAcquisitionPrintPrompt(null);
     requestAnimationFrame(() => {
@@ -300,8 +305,7 @@ function AppShell() {
       printTicketSlip(tickets.find((t) => t.id === w.refId));
       return;
     }
-    setPrintTicket(null);
-    setPrintReceipt(null);
+    clearAllPrints();
     setPrintWarranty(w);
     requestAnimationFrame(() => window.print());
   }
