@@ -595,8 +595,8 @@ function AppShell() {
       setStock([product, ...stock]);
 
       if (acquisition) {
-        let customerId = null;
-        if (acquisition.sellerPhone) {
+        let customerId = acquisition.sellerCustomerId || null;
+        if (!customerId && acquisition.sellerPhone) {
           const { data: cid } = await supabase.rpc("upsert_customer", { p_name: acquisition.sellerName, p_phone: acquisition.sellerPhone });
           customerId = cid;
         }
@@ -2812,6 +2812,7 @@ function AppShell() {
           locations={stockLocations}
           stock={stock}
           tickets={tickets}
+          customers={customersTable}
           onClose={() => setStockModal(null)}
           busy={busy}
           defaultLocId={defaultStockLocId}

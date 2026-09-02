@@ -5,6 +5,7 @@ import { WARRANTIES, SOURCES, STOCK_STATUSES, CONDITION_GRADES, conditionGradeKe
 import { ChipField, DropdownField } from "./FormPickers";
 import BrandField from "./BrandField";
 import PicklistField from "./PicklistField";
+import CustomerAutocomplete from "./CustomerAutocomplete";
 
 function SectionHead({ n, title, sub }) {
   return (
@@ -18,7 +19,7 @@ function SectionHead({ n, title, sub }) {
   );
 }
 
-export default function StockModal({ product, prefill, locations, onClose, onSave, busy, defaultLocId, stock = [], tickets = [] }) {
+export default function StockModal({ product, prefill, locations, onClose, onSave, busy, defaultLocId, stock = [], tickets = [], customers = [] }) {
   const isEdit = !!product;
   const [f, setF] = useState({
     brand: product?.brand || prefill?.brand || "",
@@ -40,7 +41,7 @@ export default function StockModal({ product, prefill, locations, onClose, onSav
   });
   const [locId, setLocId] = useState(product?.locationId || prefill?.locationId || defaultLocId || locations[0]?.id || "");
   const [acqType, setAcqType] = useState("purchase");
-  const [seller, setSeller] = useState({ name: prefill?.sellerName || "", idDoc: "", cnp: "", phone: prefill?.sellerPhone || "", address: "" });
+  const [seller, setSeller] = useState({ name: prefill?.sellerName || "", idDoc: "", cnp: "", phone: prefill?.sellerPhone || "", address: "", customerId: null });
   const [payoutAmount, setPayoutAmount] = useState("");
   const [payoutNow, setPayoutNow] = useState(false);
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
@@ -66,6 +67,7 @@ export default function StockModal({ product, prefill, locations, onClose, onSav
       sellerCnp: seller.cnp.trim(),
       sellerPhone: seller.phone.trim(),
       sellerAddress: seller.address.trim(),
+      sellerCustomerId: seller.customerId,
       consignorPayoutAmount: acqType === "consignment" ? payoutAmount : null,
       payoutNow: acqType === "consignment" ? payoutNow : false,
     };
@@ -88,7 +90,15 @@ export default function StockModal({ product, prefill, locations, onClose, onSav
               </div>
             </div>
             <div className="row2">
-              <div className="field"><label>Eladó neve{isConsignment ? "" : " (opcionális)"}</label><input value={seller.name} onChange={setSellerField("name")} placeholder="pl. Kovács János" /></div>
+              <div className="field"><label>Eladó neve{isConsignment ? "" : " (opcionális)"}</label>
+                <CustomerAutocomplete
+                  customers={customers}
+                  name={seller.name}
+                  onChangeName={(name) => setSeller({ ...seller, name, customerId: null })}
+                  onSelect={(c) => setSeller({ ...seller, name: c.name, phone: c.phone || seller.phone, customerId: c.id })}
+                  placeholder="pl. Kovács János"
+                />
+              </div>
               <div className="field"><label>Eladó telefonszáma{isConsignment ? "" : " (opcionális)"}</label><input value={seller.phone} onChange={setSellerField("phone")} placeholder="07xx xxx xxx" /></div>
             </div>
             <div className="row2">
