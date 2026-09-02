@@ -1779,7 +1779,7 @@ function AppShell() {
     if (newTicket && pendingPartUsage) {
       const { part, qty } = pendingPartUsage;
       setPendingPartUsage(null);
-      await addPartToTicket(newTicket.id, part, qty);
+      await addPartToTicket(newTicket.id, part, qty, newTicket);
     }
     // szándékosan NEM zárjuk be a ProductDetailPanel-t — a felhasználó rögtön lássa
     // a most létrejött "Előkészítés / szerviz" szekciót és kezdje címkézni az alkatrészeket.
@@ -1939,9 +1939,9 @@ function AppShell() {
   // raktáron lévő darab elöl) — innen választjuk ki a felhasznált konkrét egyedi darabokat.
   // Minden felhasznált darabhoz saját `service_parts` sor jön létre (quantity=1), hogy a
   // garanciális visszakereséskor pontosan tudni lehessen, melyik fizikai darab hova került.
-  async function addPartToTicket(ticketId, part, qty) {
+  async function addPartToTicket(ticketId, part, qty, ticketOverride) {
     await withBusy(async () => {
-      const ticket = tickets.find((t) => t.id === ticketId);
+      const ticket = ticketOverride || tickets.find((t) => t.id === ticketId);
       const units = (part.units || [part]).slice(0, qty);
       if (units.length < qty) throw new Error(`Csak ${units.length} db van raktáron ebből: ${part.name}.`);
       const usedAt = new Date().toISOString();
@@ -1970,7 +1970,7 @@ function AppShell() {
 
       const usedIds = new Set(units.map((u) => u.id));
       setParts((prev) => prev.map((p) => (usedIds.has(p.id) ? { ...p, status: "felhasznalva", usedInTicketId: ticketId, usedAt } : p)));
-      setTickets(tickets.map((t) => (t.id === ticketId ? { ...t, matCost: newMatCost, usedParts: [...(t.usedParts || []), ...newSp] } : t)));
+      setTickets((prev) => prev.map((t) => (t.id === ticketId ? { ...t, matCost: newMatCost, usedParts: [...(t.usedParts || []), ...newSp] } : t)));
     });
   }
   // `usedPart` egyetlen `service_parts` sor (mindig quantity=1) — az eltávolítás a pontosan
@@ -2482,6 +2482,15 @@ function AppShell() {
     if (!detailProduct) return null;
     return tickets.find((t) => t.productId === detailProduct.id && t.ticketKind !== "Ügyfél" && t.subStatus !== "Átadva") || null;
   }, [tickets, detailProduct]);
+  // A beszerzési árba beépült alkatrészek — a lezárt (Átadva) "saját készlet" munkalapokét is
+  // idehozzuk, hogy a bekerülési ár mindig visszakövethető legyen, ne csak amíg a munkalap aktív.
+  const productPartUsage = useMemo(() => {
+    if (!detailProduct) return [];
+    return tickets
+      .filter((t) => t.productId === detailProduct.id && t.ticketKind !== "Ügyfél")
+      .flatMap((t) => t.usedParts || [])
+      .sort((a, b) => (a.usedAt || "").localeCompare(b.usedAt || ""));
+  }, [tickets, detailProduct]);
 
   function buildDeviceHistory(rawImei) {
     const key = normalizeImei(rawImei);
@@ -2917,6 +2926,7 @@ function AppShell() {
           users={users}
           parts={partGroups}
           activeServiceTicket={activeServiceTicket}
+          partUsageHistory={productPartUsage}
           onAddPart={addPartToTicket}
           onRemovePart={removePartFromTicket}
           onStartService={openOwnServiceModal}

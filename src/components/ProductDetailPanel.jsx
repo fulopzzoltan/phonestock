@@ -7,12 +7,14 @@ import PhonePartsPicker from "./PhonePartsPicker";
 
 export default function ProductDetailPanel({
   product, saleTx, locName, onClose, onSell, onEdit, onDelete, busy,
-  users = [], activeServiceTicket, parts = [], onAddPart, onRemovePart, onStartService, onOpenTicket, onReturnToStock, onShowHistory, onPayoutConsignor, onPrintConsignment, onPrint,
+  users = [], activeServiceTicket, parts = [], partUsageHistory = [], onAddPart, onRemovePart, onStartService, onOpenTicket, onReturnToStock, onShowHistory, onPayoutConsignor, onPrintConsignment, onPrint,
 }) {
   const profit = (Number(product.salePrice) || 0) - (Number(product.costPrice) || 0);
   const isSold = product.status === "sold";
   const acq = product.acquisition;
   const isConsignment = acq?.acquisitionType === "consignment";
+  const partsCost = partUsageHistory.reduce((s, sp) => s + (Number(sp.costPrice) || 0) * (Number(sp.quantity) || 0), 0);
+  const baseCostPrice = (Number(product.costPrice) || 0) - partsCost;
   return (
     <div className="detail-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="detail-panel">
@@ -96,6 +98,18 @@ export default function ProductDetailPanel({
           <div className="dp-section">
             <div className="dp-section-title">Pénzügyek</div>
             <Row k="Beszerzési ár" v={money(product.costPrice)} />
+            {partsCost > 0 && (
+              <div style={{ marginBottom: 6 }}>
+                <Row k="— alap ár" v={money(baseCostPrice)} />
+                {partUsageHistory.map((sp) => (
+                  <Row
+                    key={sp.id}
+                    k={`— ${sp.partName}${sp.quantity > 1 ? ` (${sp.quantity} db)` : ""}`}
+                    v={money((Number(sp.costPrice) || 0) * (Number(sp.quantity) || 0))}
+                  />
+                ))}
+              </div>
+            )}
             <Row k="Eladási ár" v={money(product.salePrice)} />
             <Row k={isSold ? "Profit" : "Várható profit"} v={<span style={{ color: "#22C55E", fontWeight: 700 }}>{money(profit)}</span>} />
           </div>
