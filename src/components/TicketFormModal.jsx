@@ -101,7 +101,7 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
   }
 
   return (
-    <div className="overlay" onClick={onClose}>
+    <div className="overlay">
       <div className="modal wf" onClick={(e) => e.stopPropagation()}>
         <h2>{isEdit ? "Munkalap szerkesztése" : "Új szerviz munkalap"} <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
 

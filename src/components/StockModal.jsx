@@ -75,7 +75,7 @@ export default function StockModal({ product, prefill, locations, onClose, onSav
     onSave(finalF, locId, acquisition);
   }
   return (
-    <div className="overlay" onClick={onClose}>
+    <div className="overlay">
       <div className="modal wf" onClick={(e) => e.stopPropagation()}>
         <h2>{isEdit ? "Termék szerkesztése" : "Új termék"} <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
 

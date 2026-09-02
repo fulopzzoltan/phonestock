@@ -13,7 +13,7 @@ export default function LeaveRequestModal({ leaveTypes, onClose, onSubmit, busy 
   const valid = f.startDate && f.endDate && f.endDate >= f.startDate;
   const days = valid ? countWorkdays(f.startDate, f.endDate) : 0;
   return (
-    <div className="overlay" onClick={onClose}>
+    <div className="overlay">
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2>Szabadság kérése <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
         <div className="row2">

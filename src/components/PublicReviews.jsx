@@ -98,7 +98,7 @@ export default function ReviewsSection({ lang = "hu", limit = 8 }) {
       )}
 
       {showAll && (
-        <div className="overlay" onClick={() => setShowAll(false)}>
+        <div className="overlay">
           <div className="modal pub-reviews-modal" onClick={(e) => e.stopPropagation()}>
             <div className="pub-reviews-modal-head">
               <div className="pub-reviews-title">{s.reviewsTitle}</div>

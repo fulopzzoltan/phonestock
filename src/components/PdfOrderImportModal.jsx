@@ -44,7 +44,7 @@ export default function PdfOrderImportModal({ locations, defaultLocId, busy, onC
   const valid = rows && rows.length > 0 && rows.every((r) => r.name.trim() && r.qty > 0 && r.unitPrice >= 0) && !!locId;
 
   return (
-    <div className="overlay" onClick={onClose}>
+    <div className="overlay">
       <div className="modal" style={{ maxWidth: 780 }} onClick={(e) => e.stopPropagation()}>
         <h2>Rendelés felvétele PDF számlából <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
 

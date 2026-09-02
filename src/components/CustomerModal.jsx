@@ -18,7 +18,7 @@ export default function CustomerModal({ customer, customers, onClose, onSave, bu
   const valid = f.name.trim() || f.phone.trim();
 
   return (
-    <div className="overlay" onClick={onClose}>
+    <div className="overlay">
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2>{isEdit ? "Ügyfél szerkesztése" : "Új ügyfél"} <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
         <div className="row2">

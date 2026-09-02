@@ -5,7 +5,7 @@ export default function LeaveBalanceModal({ user, year, initial, onClose, onSave
   const [days, setDays] = useState(initial);
   const valid = days !== "" && Number(days) >= 0;
   return (
-    <div className="overlay" onClick={onClose}>
+    <div className="overlay">
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2>Szabadság-keret — {user.fullName} <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
         <div className="field"><label>{year}. évi jár (nap)</label>

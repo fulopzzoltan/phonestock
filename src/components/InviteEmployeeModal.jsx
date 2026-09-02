@@ -13,7 +13,7 @@ export default function InviteEmployeeModal({ locations, onClose, onInvite, busy
   }
 
   return (
-    <div className="overlay" onClick={onClose}>
+    <div className="overlay">
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2>Új kolléga meghívása <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
         {error && <div className="errbar">{error}</div>}

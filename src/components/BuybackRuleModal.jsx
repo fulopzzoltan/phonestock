@@ -20,7 +20,7 @@ export default function BuybackRuleModal({ rule, onClose, onSave, busy }) {
   };
   const valid = f.label.trim() && f.deductionValue !== "";
   return (
-    <div className="overlay" onClick={onClose}>
+    <div className="overlay">
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2>{isEdit ? "Levonási szabály szerkesztése" : "Új levonási szabály"} <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
         <div className="row2">

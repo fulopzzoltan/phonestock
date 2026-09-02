@@ -22,7 +22,7 @@ function AddTaxModal({ locations, period, onClose, onSave, busy }) {
   const [amount, setAmount] = useState("");
   const valid = locationId && taxType.trim() && amount !== "";
   return (
-    <div className="overlay" onClick={onClose}>
+    <div className="overlay">
       <div className="modal" style={{ maxWidth: 360 }} onClick={(e) => e.stopPropagation()}>
         <h2>Új adótétel <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
         <div className="field"><label>Cég / helyszín</label>

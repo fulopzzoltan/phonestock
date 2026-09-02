@@ -25,7 +25,7 @@ export default function TransactionModal({ tx, locations, customers = [], defaul
   const splitValid = f.payment !== "Vegyes" || (f.paymentCashAmount !== "" && f.paymentCardAmount !== "" && splitSum === (Number(f.amount) || 0));
   const valid = f.description.trim() && f.amount !== "" && locId && splitValid;
   return (
-    <div className="overlay" onClick={onClose}>
+    <div className="overlay">
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2>Tranzakció szerkesztése <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
         <div className="row2">

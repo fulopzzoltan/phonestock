@@ -14,7 +14,7 @@ export default function HandoverPaymentModal({ ticket, onClose, onConfirm, busy 
   const splitValid = payment !== "Vegyes" || (cash !== "" && card !== "" && splitSum === amount);
 
   return (
-    <div className="overlay" onClick={onClose}>
+    <div className="overlay">
       <div className="modal" style={{ maxWidth: 360 }} onClick={(e) => e.stopPropagation()}>
         <h2>Munkalap átadása <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
         <p style={{ margin: "0 0 14px", fontSize: 13, color: "#6B7280" }}>

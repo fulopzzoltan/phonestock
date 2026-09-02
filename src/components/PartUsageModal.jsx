@@ -52,7 +52,7 @@ export default function PartUsageModal({ part, tickets, stock, locName, busy, on
   }
 
   return (
-    <div className="overlay" onClick={onClose}>
+    <div className="overlay">
       <div className="modal" style={{ maxWidth: 460 }} onClick={(e) => e.stopPropagation()}>
         <h2 style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           Alkatrész felhasználása

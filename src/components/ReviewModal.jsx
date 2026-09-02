@@ -41,7 +41,7 @@ export default function ReviewModal({ review, locations, onClose, onSave, busy }
   const valid = f.authorName.trim() && f.body.trim();
 
   return (
-    <div className="overlay" onClick={onClose}>
+    <div className="overlay">
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2>{review ? "Vélemény szerkesztése" : "Új vélemény"} <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
 

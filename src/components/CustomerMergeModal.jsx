@@ -29,7 +29,7 @@ export default function CustomerMergeModal({ primaryCustomer, customers, busy, o
   }
 
   return (
-    <div className="overlay" onClick={onClose}>
+    <div className="overlay">
       <div className="modal" style={{ maxWidth: 480 }} onClick={(e) => e.stopPropagation()}>
         <h2>Ügyfélkártya összevonása <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
 

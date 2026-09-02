@@ -9,7 +9,7 @@ export default function TicketDepositModal({ ticket, onClose, onConfirm, busy })
   const valid = Number(amount) > 0;
 
   return (
-    <div className="overlay" onClick={onClose}>
+    <div className="overlay">
       <div className="modal" style={{ maxWidth: 360 }} onClick={(e) => e.stopPropagation()}>
         <h2>Előleg felvétele <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
         <div className="field"><label>Összeg (Lej)</label><input type="number" autoFocus value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0" /></div>

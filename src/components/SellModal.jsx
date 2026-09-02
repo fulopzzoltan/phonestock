@@ -26,7 +26,7 @@ export default function SellModal({ item, locName, customers = [], rewards = [],
   const tradeInValid = !hasTradeIn || tradeIns.every((t) => t.brand.trim() && t.model.trim() && t.value !== "");
   const valid = f.customerPhone.trim().length > 0 && tradeInValid;
   return (
-    <div className="overlay" onClick={onClose}>
+    <div className="overlay">
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2>Eladás rögzítése <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
         <div className="field"><label>Helyszín</label><input disabled value={locName(item.locationId)} /></div>

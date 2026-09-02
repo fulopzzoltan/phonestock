@@ -14,7 +14,7 @@ export default function BuybackModelModal({ model, onClose, onSave, busy }) {
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const valid = f.brand.trim() && f.model.trim() && f.basePrice !== "";
   return (
-    <div className="overlay" onClick={onClose}>
+    <div className="overlay">
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2>{isEdit ? "Modell szerkesztése" : "Új felvásárlási modell"} <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
         <div className="row2">

@@ -3102,7 +3102,7 @@ function AppShell() {
         {printPurchase && <PrintPurchaseDocs product={printPurchase.product} acquisition={printPurchase.acquisition} settings={settings} location={locations.find((l) => l.id === printPurchase.product.locationId)} />}
       </div>
       {acquisitionPrintPrompt && (
-        <div className="overlay" onClick={() => setAcquisitionPrintPrompt(null)}>
+        <div className="overlay">
           <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 380 }}>
             <h2>{acquisitionPrintPrompt.acquisition.acquisitionType === "consignment" ? "Bizományos termék felvéve" : "Telefon felvéve"}</h2>
             <p style={{ fontSize: 13, color: "#374151", lineHeight: 1.5 }}>

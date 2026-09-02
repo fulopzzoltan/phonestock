@@ -14,7 +14,7 @@ export default function ChangePasswordModal({ onClose, onChange, busy }) {
   }
 
   return (
-    <div className="overlay" onClick={onClose}>
+    <div className="overlay">
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2>Jelszó módosítása <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
         {localError && <div className="errbar">{localError}</div>}

@@ -23,7 +23,7 @@ export default function PartModal({ part, prefill, locations = [], defaultLocId,
   const qtyNum = Number(f.quantity) || 0;
   const valid = isEdit ? f.name.trim() : f.name.trim() && f.quantity !== "" && qtyNum >= 1;
   return (
-    <div className="overlay" onClick={onClose}>
+    <div className="overlay">
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2>{isEdit ? "Alkatrész-csoport szerkesztése" : "Új alkatrész"} <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
         <div className="field"><label>Kategória</label>

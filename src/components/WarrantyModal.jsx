@@ -20,7 +20,7 @@ export default function WarrantyModal({ initial, locations, customers = [], onCl
   const valid = f.customerName.trim() && f.label.trim() && f.warranty && f.fromDate && locId;
 
   return (
-    <div className="overlay" onClick={onClose}>
+    <div className="overlay">
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2>{isEdit ? "Garancia szerkesztése" : "Garancia felvétele"} <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
         <div className="row2">

@@ -12,7 +12,7 @@ export default function RepairPriceModal({ familyLabel, problemLabel, price, onC
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const valid = f.priceOem !== "";
   return (
-    <div className="overlay" onClick={onClose}>
+    <div className="overlay">
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2>{familyLabel} — {problemLabel} <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
         <div className="row2">

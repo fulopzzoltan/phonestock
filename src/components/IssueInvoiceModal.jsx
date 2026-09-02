@@ -36,7 +36,7 @@ export default function IssueInvoiceModal({ transactions, locName, onClose, onIs
   }
 
   return (
-    <div className="overlay" onClick={onClose}>
+    <div className="overlay">
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2>Számla / nyugta kiállítása <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
 

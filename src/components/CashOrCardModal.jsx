@@ -5,7 +5,7 @@ import { CloseIcon, CashIcon, CardIcon } from "./icons";
 // ez alapján kerül be a tétel a Bevételek & Kiadások közé.
 export default function CashOrCardModal({ title, amount, onClose, onConfirm, busy }) {
   return (
-    <div className="overlay" onClick={onClose}>
+    <div className="overlay">
       <div className="modal" style={{ maxWidth: 340 }} onClick={(e) => e.stopPropagation()}>
         <h2>{title} <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
         <p style={{ margin: "0 0 16px", fontSize: 13, color: "#6B7280" }}>

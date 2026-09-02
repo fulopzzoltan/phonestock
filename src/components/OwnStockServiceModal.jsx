@@ -38,7 +38,7 @@ export default function OwnStockServiceModal({ product, kind, locations, users =
   }
 
   return (
-    <div className="overlay" onClick={onClose}>
+    <div className="overlay">
       <div className="modal" style={{ maxWidth: 460 }} onClick={(e) => e.stopPropagation()}>
         <h2>
           {kind === "Saját készlet - garanciális" ? "Garanciális javítás felvétele" : "Szerviz előkészítés indítása"}
