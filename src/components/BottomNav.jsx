@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   BoardIcon, ServiceIcon, PhoneCaseIcon, FinanceIcon, MoreIcon,
   PartsIcon, CustomersIcon, WarrantyIcon, CashSettlementIcon, InvoiceIcon, LeaveIcon,
-  DashboardIcon, UsersNavIcon, TrashNavIcon, BuybackIcon, RepairPriceIcon, ReviewsIcon, SettingsIcon, LogoutIcon,
+  DashboardIcon, UsersNavIcon, TrashNavIcon, BuybackIcon, RepairPriceIcon, ReviewsIcon, SettingsIcon, LogoutIcon, ChatIcon,
 } from "./icons";
 import BottomSheet from "./BottomSheet";
 import { SITE_URL } from "../lib/utils";
@@ -49,6 +49,7 @@ export default function BottomNav({
         <div className="nav-lbl" style={{ marginTop: 0 }}>Napi munka</div>
         <button className={`navbtn ${tab === "parts" ? "active" : ""}`} onClick={() => go("parts")}><PartsIcon className="nav-ic" />Alkatrészek</button>
         <button className={`navbtn ${tab === "customers" ? "active" : ""}`} onClick={() => go("customers")}><CustomersIcon className="nav-ic" />Kliensek</button>
+        <button className={`navbtn ${tab === "whatsapp" ? "active" : ""}`} onClick={() => go("whatsapp")}><ChatIcon className="nav-ic" />WhatsApp</button>
         <button className={`navbtn ${tab === "warranty" ? "active" : ""}`} onClick={() => go("warranty")}><WarrantyIcon className="nav-ic" />Garancia</button>
 
         <div className="nav-lbl">Pénzügyek</div>

@@ -229,6 +229,19 @@ export const tToApi = (t, locId) => ({
   product_id: t.productId || null,
 });
 
+export const whatsappMessageFromApi = (r) => ({
+  id: r.id,
+  waMessageId: r.wa_message_id,
+  direction: r.direction,
+  phoneNorm: r.phone_norm,
+  body: r.body || "",
+  templateName: r.template_name,
+  status: r.status,
+  errorMessage: r.error_message,
+  customerId: r.customer_id,
+  ticketId: r.ticket_id,
+  createdAt: r.created_at,
+});
 export const customerFromApi = (r) => ({
   id: r.id,
   name: r.name || "",

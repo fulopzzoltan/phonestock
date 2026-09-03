@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
 import { thumbPathOf } from "./lib/imageResize";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi, buybackOfferFromApi, loyaltyLedgerFromApi, loyaltyRewardFromApi, loyaltyRewardToApi, customerProfileFromApi, reviewFromApi, reviewToApi, employeeFromApi, payrollScheduleFromApi, payrollPaymentFromApi, companyTaxObligationFromApi } from "./lib/mappers";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi, buybackOfferFromApi, loyaltyLedgerFromApi, loyaltyRewardFromApi, loyaltyRewardToApi, customerProfileFromApi, reviewFromApi, reviewToApi, employeeFromApi, payrollScheduleFromApi, payrollPaymentFromApi, companyTaxObligationFromApi, whatsappMessageFromApi } from "./lib/mappers";
 import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, normalizeImei, money, ticketCode, cashPortion, cardPortion } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
@@ -31,6 +31,7 @@ import PayrollTab from "./tabs/PayrollTab";
 import ServiceTab from "./tabs/ServiceTab";
 import PartsTab from "./tabs/PartsTab";
 import CustomersTab from "./tabs/CustomersTab";
+import WhatsAppTab from "./tabs/WhatsAppTab";
 import WarrantyTab from "./tabs/WarrantyTab";
 import LeaveTab from "./tabs/LeaveTab";
 import BuybackTab from "./tabs/BuybackTab";
@@ -176,6 +177,7 @@ function AppShell() {
   const [parts, setParts] = useState([]);
   const [users, setUsers] = useState([]);
   const [customersTable, setCustomersTable] = useState([]);
+  const [whatsappMessages, setWhatsappMessages] = useState([]);
   const [customerProfiles, setCustomerProfiles] = useState([]);
   const [loyaltyRewards, setLoyaltyRewards] = useState([]);
   const [loyaltyLedger, setLoyaltyLedger] = useState([]);
@@ -313,7 +315,7 @@ function AppShell() {
   async function loadAll({ silent = false } = {}) {
     if (!silent) setLoadingData(true);
     try {
-      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, bbOffers, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds, prodAcqs, dClosesR, loyRewards, loyLedger, custProfiles, revs, emps, paySched, payPays, coTax] = await Promise.all([
+      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, bbOffers, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds, prodAcqs, dClosesR, loyRewards, loyLedger, custProfiles, revs, emps, paySched, payPays, coTax, wappMsgs] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         fetchAllRows(() => supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false })),
         fetchAllRows(() => supabase.from("transactions").select("*, smartbill_documents(*), signatures(*)").is("deleted_at", null).order("date", { ascending: false })),
@@ -350,6 +352,7 @@ function AppShell() {
         supabase.from("payroll_schedule").select("*").order("sort_order", { ascending: true }),
         supabase.from("payroll_payments").select("*").order("due_date", { ascending: true }),
         supabase.from("company_tax_obligations").select("*").order("due_date", { ascending: true }),
+        fetchAllRows(() => supabase.from("whatsapp_messages").select("*").order("created_at", { ascending: true })),
       ]);
       setLocations(unwrap(locs) || []);
       const prodRows = unwrap(prods) || [];
@@ -381,6 +384,7 @@ function AppShell() {
       setPayrollSchedule((unwrap(paySched) || []).map(payrollScheduleFromApi));
       setPayrollPayments((unwrap(payPays) || []).map(payrollPaymentFromApi));
       setCompanyTaxObligations((unwrap(coTax) || []).map(companyTaxObligationFromApi));
+      setWhatsappMessages((unwrap(wappMsgs) || []).map(whatsappMessageFromApi));
       setLeaveTypes((unwrap(lTypes) || []).map(leaveTypeFromApi));
       setLeaveBalances((unwrap(lBalances) || []).map(leaveBalanceFromApi));
       setLeaveRequests((unwrap(lRequests) || []).map(leaveRequestFromApi));
@@ -1267,6 +1271,29 @@ function AppShell() {
     });
   }
 
+  // WHATSAPP — szabad szöveges válasz egy meglévő beszélgetésben (a send-whatsapp function
+  // freeformBody ágát hívja; ez csak akkor kézbesíthető, ha az ügyfél 24 órán belül írt nekünk —
+  // a Meta-oldali "service window" szabály miatt, ld. TASKS_WHATSAPP_INTEGRACIO.md).
+  async function sendWhatsappReply(phoneNorm, body) {
+    const { data, error: fnError } = await supabase.functions.invoke("send-whatsapp", {
+      body: { phone: phoneNorm, freeformBody: body },
+    });
+    if (fnError) throw fnError;
+    if (data?.error) throw new Error(data.error);
+    // Optimista sor a helyi listához — a webhook/valós wa_message_id majd a következő
+    // frissítéskor (loadAll) pontosítja, de a felhasználónak azonnal látszania kell a válasz.
+    setWhatsappMessages((prev) => [...prev, {
+      id: `local-${Date.now()}`,
+      direction: "out",
+      phoneNorm,
+      body,
+      status: data?.channel === "whatsapp" ? "sent" : "sent",
+      customerId: customersTable.find((c) => c.phone && c.phone.replace(/\D/g, "").slice(-9) === phoneNorm)?.id || null,
+      createdAt: new Date().toISOString(),
+    }]);
+    return data;
+  }
+
   // USERS (admin only)
   async function updateUserProfile(id, patch) {
     await withBusy(async () => {
@@ -1778,10 +1805,22 @@ function AppShell() {
 
       if (settings.smsOnTicketCreate && newTicket.customerPhone) {
         const device = [newTicket.brand, newTicket.model].filter(Boolean).join(" ");
-        const message = stripAccents(`Szia! Atvettuk a keszulekedet (${device}), munkalapszam: #${newTicket.ticketNo}. A javitas allapotat itt kovetheted nyomon: ${SITE_URL}/s/${newTicket.shortCode}`);
-        supabase.functions.invoke("send-sms", { body: { phone: newTicket.customerPhone, message } }).catch((err) => {
-          console.error("SMS küldés sikertelen:", err);
-          setError("Az SMS nem ment ki (a mentés egyébként sikeres volt) — nézd meg a konzolt vagy próbáld újra.");
+        const statusUrl = `${SITE_URL}/s/${newTicket.shortCode}`;
+        // send-whatsapp WhatsApp-sablonnal próbálkozik először (ha be van állítva a fiók és a
+        // sablon jóváhagyva), és csendben visszaesik erre a sima SMS-szövegre, ha bármi nem
+        // stimmel — amíg a WhatsApp-oldal nincs kész, ez pontosan a mai SMS-küldést jelenti.
+        const smsMessage = stripAccents(`Szia! Atvettuk a keszulekedet (${device}), munkalapszam: #${newTicket.ticketNo}. A javitas allapotat itt kovetheted nyomon: ${statusUrl}`);
+        supabase.functions.invoke("send-whatsapp", {
+          body: {
+            phone: newTicket.customerPhone,
+            smsMessage,
+            whatsappTemplate: "ticket_created",
+            whatsappParams: [device, newTicket.ticketNo, statusUrl],
+            ticketId: newTicket.id,
+          },
+        }).catch((err) => {
+          console.error("Értesítés küldése sikertelen:", err);
+          setError("Az értesítés nem ment ki (a mentés egyébként sikeres volt) — nézd meg a konzolt vagy próbáld újra.");
         });
       }
       return newTicket;
@@ -1869,10 +1908,19 @@ function AppShell() {
 
       if (settings.smsOnTicketReady && becameReady && subStatus === null && ticket && ticket.customerPhone) {
         const device = [ticket.brand, ticket.model].filter(Boolean).join(" ");
-        const message = stripAccents(`Szia! A(z) ${device} javítása elkészült, átveheted nálunk (${locName(ticket.locationId)}). Részletek: ${SITE_URL}/s/${ticket.shortCode}`);
-        supabase.functions.invoke("send-sms", { body: { phone: ticket.customerPhone, message } }).catch((err) => {
-          console.error("SMS küldés sikertelen:", err);
-          setError("Az SMS nem ment ki (a mentés egyébként sikeres volt) — nézd meg a konzolt vagy próbáld újra.");
+        const statusUrl = `${SITE_URL}/s/${ticket.shortCode}`;
+        const smsMessage = stripAccents(`Szia! A(z) ${device} javítása elkészült, átveheted nálunk (${locName(ticket.locationId)}). Részletek: ${statusUrl}`);
+        supabase.functions.invoke("send-whatsapp", {
+          body: {
+            phone: ticket.customerPhone,
+            smsMessage,
+            whatsappTemplate: "ticket_ready",
+            whatsappParams: [device, locName(ticket.locationId), statusUrl],
+            ticketId: ticket.id,
+          },
+        }).catch((err) => {
+          console.error("Értesítés küldése sikertelen:", err);
+          setError("Az értesítés nem ment ki (a mentés egyébként sikeres volt) — nézd meg a konzolt vagy próbáld újra.");
         });
       }
 
@@ -2742,6 +2790,12 @@ function AppShell() {
             effectiveLocFilter={effectiveLocFilter} locName={locName} busy={busy} setCustomerModal={setCustomerModal}
             custSearch={custSearch} setCustSearch={setCustSearch} loadingData={loadingData} customers={customers} setCustomerKey={setCustomerKey}
             customerStats={customerStats}
+          />
+        )}
+
+        {!noLocationAssigned && tab === "whatsapp" && (
+          <WhatsAppTab
+            messages={whatsappMessages} customers={customersTable} onSend={sendWhatsappReply} onOpenCustomer={setCustomerKey}
           />
         )}
 
