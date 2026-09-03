@@ -15,7 +15,8 @@ const LOYALTY_LIVE = false;
 // (szerviz + vásárlás egy helyen, telefonszám alapján) — ez a komponens csak a
 // már kinyomtatott/kiküldött /receipt/:token linkeket szolgálja ki, hogy azok
 // visszamenőleg is működjenek.
-export default function ReceiptLookup({ token, signStage, minimal = false }) {
+export default function ReceiptLookup({ token, signStage, minimal = false, lang = "hu" }) {
+  const otherLangHref = `${window.location.pathname}${lang === "ro" ? "" : "?lang=ro"}`;
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
   const [result, setResult] = useState(null);
@@ -78,7 +79,7 @@ export default function ReceiptLookup({ token, signStage, minimal = false }) {
 
   return (
     <div className="pub-shop">
-      <PublicHeader activeNav="status" minimal={minimal} />
+      <PublicHeader activeNav="status" minimal={minimal} lang={lang} langSwitchHref={otherLangHref} />
       <main className="pub-lookup-main">
       <div className="login-card" style={{ maxWidth: 440 }}>
         {busy && <div style={{ textAlign: "center", color: "#6B7280", fontSize: 13, padding: "10px 0" }}>Betöltés...</div>}
@@ -140,7 +141,7 @@ export default function ReceiptLookup({ token, signStage, minimal = false }) {
         )}
       </div>
       </main>
-      <PublicFooter minimal={minimal} />
+      <PublicFooter minimal={minimal} lang={lang} />
     </div>
   );
 }

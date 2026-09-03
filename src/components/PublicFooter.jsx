@@ -10,6 +10,42 @@ const SOCIAL_LINKS = [
   { Icon: TiktokIcon, href: "https://www.tiktok.com/@telefonos.ro", label: "TikTok" },
 ];
 
+// Konkrét Google Maps link, ahol már van — a többinél egy név-alapú keresőlinkre esünk
+// vissza (nincs cím rögzítve a locations táblában), amíg nem kapunk pontosabbat.
+const LOCATION_MAPS_URL = {
+  "Gyimes": "https://share.google/EnrnhRGT6LgrWxRVs",
+  "Szentgyörgy": "https://share.google/1p5lZA2Erlnvk9XlF",
+  "Csíkmadaras": "https://share.google/9pmy0iwklNkanY3EB",
+};
+function mapsHref(name) {
+  return LOCATION_MAPS_URL[name] || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`Telefonos ${name}`)}`;
+}
+// Csíkmadarason egy franchise-partner üzemelteti a Telefonos brand alatt — nem szerepel
+// a locations táblában (nincs saját raktár/személyzet-hozzárendelése a rendszerben), ezért
+// itt statikusan tüntetjük fel, külön "Franchise partner" jelöléssel.
+const FRANCHISE_LOCATIONS = [{ name: "Csíkmadaras" }];
+
+function LocationLinks({ locations }) {
+  return (
+    <>
+      {locations.map((l) => (
+        <a key={l.id} className="pub-footer-loc" href={mapsHref(l.name)} target="_blank" rel="noopener noreferrer">
+          <PinIcon width={12} height={12} />{l.name}
+        </a>
+      ))}
+      {FRANCHISE_LOCATIONS.map((l) => (
+        <a key={l.name} className="pub-footer-loc pub-footer-loc-franchise" href={mapsHref(l.name)} target="_blank" rel="noopener noreferrer">
+          <PinIcon width={12} height={12} />
+          <span>
+            {l.name}
+            <small>Franchise partner</small>
+          </span>
+        </a>
+      ))}
+    </>
+  );
+}
+
 export default function PublicFooter({ lang = "hu", minimal = false }) {
   const s = t(lang);
   const [locations, setLocations] = useState([]);
@@ -40,7 +76,6 @@ export default function PublicFooter({ lang = "hu", minimal = false }) {
                 <img src="/logo.png" alt="Telefonos" className="pub-footer-logo" />
               </div>
               <a className="pub-footer-phone" href="tel:0773985278"><CallIcon width={12} height={12} />0773 985 278</a>
-              <a className="pub-footer-phone" href="mailto:info@telefonos.ro">info@telefonos.ro</a>
               <div className="pub-footer-social">
                 {SOCIAL_LINKS.map(({ Icon, href, label }) => (
                   <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>
@@ -52,9 +87,7 @@ export default function PublicFooter({ lang = "hu", minimal = false }) {
 
             <div className="pub-footer-col">
               <div className="pub-footer-heading">{s.footerLocations}</div>
-              {locations.map((l) => (
-                <div key={l.id} className="pub-footer-loc"><PinIcon width={12} height={12} />{l.name}</div>
-              ))}
+              <LocationLinks locations={locations} />
             </div>
           </div>
 
@@ -105,9 +138,7 @@ export default function PublicFooter({ lang = "hu", minimal = false }) {
 
           <div className="pub-footer-col">
             <div className="pub-footer-heading">{s.footerLocations}</div>
-            {locations.map((l) => (
-              <div key={l.id} className="pub-footer-loc"><PinIcon width={12} height={12} />{l.name}</div>
-            ))}
+            <LocationLinks locations={locations} />
           </div>
 
           <div className="pub-footer-col">

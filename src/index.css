@@ -957,7 +957,12 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-footer-social a{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;background:var(--pub-paper-raised);border:1px solid var(--pub-line);color:var(--pub-ink-soft)!important;text-decoration:none!important;transition:border-color .12s,color .12s}
 .pub-footer-social a:hover{border-color:var(--pub-accent);color:var(--pub-accent-ink)!important}
 .pub-footer-heading{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--pub-ink);margin-bottom:2px}
-.pub-footer-loc{display:flex;align-items:center;gap:6px;font-size:12.5px}
+.pub-footer-loc{display:flex;align-items:center;gap:6px;font-size:12.5px;color:inherit;text-decoration:none}
+.pub-footer-loc:hover{color:var(--pub-accent-ink);text-decoration:underline}
+.pub-footer-loc-franchise{align-items:flex-start}
+.pub-footer-loc-franchise svg{margin-top:2px}
+.pub-footer-loc-franchise span{display:flex;flex-direction:column;gap:1px}
+.pub-footer-loc-franchise small{font-size:10px;font-weight:600;color:var(--pub-ink-soft)}
 .pub-footer-bottom{border-top:1px solid var(--pub-line);padding-top:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:11.5px}
 .pub-footer-bottom-left{display:flex;flex-direction:column;gap:3px}
 .pub-footer-legal{display:flex;gap:16px}

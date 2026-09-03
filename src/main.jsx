@@ -84,13 +84,13 @@ function Root() {
   // fejléc/lábléc egyéb menüpontjai (webshop, kosár, fiók stb.) sosem vezetnének sehova —
   // ott a header/footer "minimal" módban csak a logót és az elérhetőséget mutatja.
   const trackingOnly = PUBLIC_SCOPE === "tracking";
-  if (statusMatch) return <StatusLookup token={statusMatch[1] || null} signStage={signStage} minimal={trackingOnly} />;
-  if (shortMatch) return <StatusLookup shortCode={shortMatch[1]} signStage={signStage} minimal={trackingOnly} />;
-  if (receiptMatch) return <ReceiptLookup token={receiptMatch[1] || null} signStage={signStage} minimal={trackingOnly} />;
+  if (statusMatch) return <StatusLookup token={statusMatch[1] || null} signStage={signStage} minimal={trackingOnly} lang={legalLang} />;
+  if (shortMatch) return <StatusLookup shortCode={shortMatch[1]} signStage={signStage} minimal={trackingOnly} lang={legalLang} />;
+  if (receiptMatch) return <ReceiptLookup token={receiptMatch[1] || null} signStage={signStage} minimal={trackingOnly} lang={legalLang} />;
   if (trackingOnly) {
     // Erre a subdomain-re szándékosan nem megy ki más — sem a webshop, sem a
     // többi publikus oldal — még nincs kész éles indulásra.
-    return <StatusLookup token={null} signStage={signStage} minimal />;
+    return <StatusLookup token={null} signStage={signStage} minimal lang={legalLang} />;
   }
   if (accountMatch) return <CustomerPortal />;
   if (cartMatch) return <Cart />;

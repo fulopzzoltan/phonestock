@@ -115,7 +115,11 @@ function StatusTimeline({ status, handedOver, dateIn, dateOut }) {
   );
 }
 
-export default function StatusLookup({ token, shortCode, signStage, minimal = false }) {
+export default function StatusLookup({ token, shortCode, signStage, minimal = false, lang = "hu" }) {
+  // Nincs külön RO tartalma ennek az oldalnak — a ?lang=ro csak a fejléc/lábléc keretet
+  // (és a nyelvváltó saját állapotát) tartja meg a látogató nyelvén, ugyanaz a minta,
+  // mint az ÁSZF/Adatvédelem oldalaknál.
+  const otherLangHref = `${window.location.pathname}${lang === "ro" ? "" : "?lang=ro"}`;
   const [phone, setPhone] = useState("");
   const [busy, setBusy] = useState(!!token || !!shortCode);
   const [error, setError] = useState("");
@@ -242,7 +246,7 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
 
   return (
     <div className="pub-shop">
-      <PublicHeader activeNav="status" minimal={minimal} />
+      <PublicHeader activeNav="status" minimal={minimal} lang={lang} langSwitchHref={otherLangHref} />
       <main className="pub-lookup-main">
       <div className="login-card" style={{ maxWidth: 460 }}>
         {!result && !matches && (
@@ -430,7 +434,7 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
         )}
       </div>
       </main>
-      <PublicFooter minimal={minimal} />
+      <PublicFooter minimal={minimal} lang={lang} />
     </div>
   );
 }
