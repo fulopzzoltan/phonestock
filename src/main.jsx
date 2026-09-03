@@ -33,6 +33,13 @@ function RouteFallback() {
 // hogy a személyzeti bejelentkezés session-je sose kerülhessen a publikus webshop originjébe.
 const ADMIN_ONLY = import.meta.env.VITE_ADMIN_ONLY === "true";
 
+// A "csak nyomonkövetés" origin (nyomonkovetes.telefonos.ro) — amíg a többi publikus
+// funkció (webshop, felvásárlás stb.) nincs kész az éles indulásra, ezen a külön
+// Netlify site-on/aldomain-en szándékosan CSAK a /status és /receipt önkiszolgáló
+// oldalak érhetők el, minden más útvonal (a "/" gyökér is) ezekre esik vissza.
+// Amint kész egy újabb funkció, itt egy sorral bővíthető — nem kell újraépíteni semmit.
+const PUBLIC_SCOPE = import.meta.env.VITE_PUBLIC_SCOPE || "full"; // "full" | "tracking"
+
 const statusMatch = window.location.pathname.match(/^\/status\/?([0-9a-f-]{36})?$/i);
 const receiptMatch = window.location.pathname.match(/^\/receipt\/?([0-9a-f-]{36})?$/i);
 // "?sign=service_intake|service_handover|sale" — aláírás mód a publikus /status és /receipt oldalakon (ld. TASKS_DIGITALIS_ALAIRAS.md)
@@ -73,9 +80,18 @@ function Root() {
       <App />
     </AuthProvider>
   );
-  if (statusMatch) return <StatusLookup token={statusMatch[1] || null} signStage={signStage} />;
-  if (shortMatch) return <StatusLookup shortCode={shortMatch[1]} signStage={signStage} />;
-  if (receiptMatch) return <ReceiptLookup token={receiptMatch[1] || null} signStage={signStage} />;
+  // A "csak nyomonkövetés" origin-en minden útvonal ugyanide esik vissza (ld. lent), tehát a
+  // fejléc/lábléc egyéb menüpontjai (webshop, kosár, fiók stb.) sosem vezetnének sehova —
+  // ott a header/footer "minimal" módban csak a logót és az elérhetőséget mutatja.
+  const trackingOnly = PUBLIC_SCOPE === "tracking";
+  if (statusMatch) return <StatusLookup token={statusMatch[1] || null} signStage={signStage} minimal={trackingOnly} />;
+  if (shortMatch) return <StatusLookup shortCode={shortMatch[1]} signStage={signStage} minimal={trackingOnly} />;
+  if (receiptMatch) return <ReceiptLookup token={receiptMatch[1] || null} signStage={signStage} minimal={trackingOnly} />;
+  if (trackingOnly) {
+    // Erre a subdomain-re szándékosan nem megy ki más — sem a webshop, sem a
+    // többi publikus oldal — még nincs kész éles indulásra.
+    return <StatusLookup token={null} signStage={signStage} minimal />;
+  }
   if (accountMatch) return <CustomerPortal />;
   if (cartMatch) return <Cart />;
   if (checkoutMatch) return <Checkout />;
@@ -102,7 +118,7 @@ function Root() {
 
 // Első látogatáskor, ha a böngésző/eszköz nyelve román, átirányítunk a RO tüköroldalra
 // (ha van neki) — utána ez sose fut le újra, sem automatikusan, sem a kézi HU/RO váltás után.
-const redirectingByLang = !ADMIN_ONLY && redirectToPreferredLang({ stockMatch, phoneDetailMatch, repairMatch, finderMatch });
+const redirectingByLang = !ADMIN_ONLY && PUBLIC_SCOPE !== "tracking" && redirectToPreferredLang({ stockMatch, phoneDetailMatch, repairMatch, finderMatch });
 
 if (!redirectingByLang) {
   ReactDOM.createRoot(document.getElementById("root")).render(

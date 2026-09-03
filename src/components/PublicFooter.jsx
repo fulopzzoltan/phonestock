@@ -10,7 +10,7 @@ const SOCIAL_LINKS = [
   { Icon: TiktokIcon, href: "https://www.tiktok.com/@telefonos.ro", label: "TikTok" },
 ];
 
-export default function PublicFooter({ lang = "hu" }) {
+export default function PublicFooter({ lang = "hu", minimal = false }) {
   const s = t(lang);
   const [locations, setLocations] = useState([]);
   const stockHref = lang === "ro" ? "/ro/telefoane" : "/";
@@ -27,6 +27,46 @@ export default function PublicFooter({ lang = "hu" }) {
       setLocations(data || []);
     })();
   }, []);
+
+  // "Minimal" lábléc — a csak-nyomonkövetés origin-en a webshop/fiók/jogi menüpontok
+  // (és a fizetési logók) úgysem vezetnének sehova, csak az elérhetőség marad hasznos.
+  if (minimal) {
+    return (
+      <footer className="pub-footer">
+        <div className="pub-footer-inner">
+          <div className="pub-footer-grid">
+            <div className="pub-footer-col">
+              <div className="pub-footer-brand">
+                <img src="/logo.png" alt="Telefonos" className="pub-footer-logo" />
+              </div>
+              <a className="pub-footer-phone" href="tel:0773985278"><CallIcon width={12} height={12} />0773 985 278</a>
+              <a className="pub-footer-phone" href="mailto:info@telefonos.ro">info@telefonos.ro</a>
+              <div className="pub-footer-social">
+                {SOCIAL_LINKS.map(({ Icon, href, label }) => (
+                  <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>
+                    <Icon width={16} height={16} />
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            <div className="pub-footer-col">
+              <div className="pub-footer-heading">{s.footerLocations}</div>
+              {locations.map((l) => (
+                <div key={l.id} className="pub-footer-loc"><PinIcon width={12} height={12} />{l.name}</div>
+              ))}
+            </div>
+          </div>
+
+          <div className="pub-footer-bottom">
+            <div className="pub-footer-bottom-left">
+              <span>{s.footerRights(new Date().getFullYear())}</span>
+            </div>
+          </div>
+        </div>
+      </footer>
+    );
+  }
 
   return (
     <footer className="pub-footer">

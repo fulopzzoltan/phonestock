@@ -34,21 +34,39 @@ const DEFAULT_LANG_TARGETS = {
 };
 const FALLBACK_LANG_TARGET = { hu: "/", ro: "/ro/telefoane" };
 
-export default function PublicHeader({ children, activeNav = "stock", lang = "hu", langSwitchHref }) {
+export default function PublicHeader({ children, activeNav = "stock", lang = "hu", langSwitchHref, minimal = false }) {
   const s = t(lang);
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const cartCount = useCart().length;
   const [announceIdx, setAnnounceIdx] = useState(0);
   useEffect(() => {
+    if (minimal) return;
     const id = setInterval(() => setAnnounceIdx((i) => (i + 1) % ANNOUNCEMENTS.length), 5000);
     return () => clearInterval(id);
-  }, []);
+  }, [minimal]);
   const stockHref = lang === "ro" ? "/ro/telefoane" : "/";
   const repairHref = lang === "ro" ? "/ro/estimare" : "/becsles";
   const otherLang = lang === "ro" ? "hu" : "ro";
   const defaultTarget = DEFAULT_LANG_TARGETS[activeNav] || FALLBACK_LANG_TARGET;
   const resolvedLangHref = langSwitchHref || defaultTarget[otherLang];
+
+  // "Minimal" fejléc — a csak-nyomonkövetés origin-en minden más menüpont (webshop, kosár,
+  // fiók, ajánlat-sáv) úgyis sehova sem vezetne, mert az egyetlen elérhető funkció ez az oldal.
+  if (minimal) {
+    return (
+      <header className="pub-header">
+        <div className="pub-header-inner">
+          <div className="pub-brand-row" style={{ justifyContent: "center" }}>
+            <div className="pub-wordmark" aria-label="Telefonos">
+              <img src="/logo.png" alt="Telefonos" className="pub-logo-img" />
+            </div>
+          </div>
+          <div className={`pub-header-children${mobileSearchOpen ? " open" : ""}`}>{children}</div>
+        </div>
+      </header>
+    );
+  }
 
   const langSwitch = resolvedLangHref && (
     <div className="pub-lang-switch" role="group" aria-label="Nyelv">

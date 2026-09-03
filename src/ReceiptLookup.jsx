@@ -11,7 +11,7 @@ const SALE_CONSENT_TEXT = "Megvásároltam, átvettem, elfogadom a garanciafelt�
 // (szerviz + vásárlás egy helyen, telefonszám alapján) — ez a komponens csak a
 // már kinyomtatott/kiküldött /receipt/:token linkeket szolgálja ki, hogy azok
 // visszamenőleg is működjenek.
-export default function ReceiptLookup({ token, signStage }) {
+export default function ReceiptLookup({ token, signStage, minimal = false }) {
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
   const [result, setResult] = useState(null);
@@ -74,7 +74,7 @@ export default function ReceiptLookup({ token, signStage }) {
 
   return (
     <div className="pub-shop">
-      <PublicHeader activeNav="status" />
+      <PublicHeader activeNav="status" minimal={minimal} />
       <main className="pub-lookup-main">
       <div className="login-card" style={{ maxWidth: 440 }}>
         {busy && <div style={{ textAlign: "center", color: "#6B7280", fontSize: 13, padding: "10px 0" }}>Betöltés...</div>}
@@ -137,7 +137,7 @@ export default function ReceiptLookup({ token, signStage }) {
         )}
       </div>
       </main>
-      <PublicFooter />
+      <PublicFooter minimal={minimal} />
     </div>
   );
 }

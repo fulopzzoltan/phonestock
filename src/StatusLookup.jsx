@@ -52,7 +52,7 @@ function StatusStepper({ status, handedOver }) {
   );
 }
 
-export default function StatusLookup({ token, shortCode, signStage }) {
+export default function StatusLookup({ token, shortCode, signStage, minimal = false }) {
   const [phone, setPhone] = useState("");
   const [busy, setBusy] = useState(!!token || !!shortCode);
   const [error, setError] = useState("");
@@ -179,7 +179,7 @@ export default function StatusLookup({ token, shortCode, signStage }) {
 
   return (
     <div className="pub-shop">
-      <PublicHeader activeNav="status" />
+      <PublicHeader activeNav="status" minimal={minimal} />
       <main className="pub-lookup-main">
       <div className="login-card" style={{ maxWidth: 460 }}>
         {!result && <div className="login-title">Vásárlás / szerviz állapota</div>}
@@ -340,14 +340,14 @@ export default function StatusLookup({ token, shortCode, signStage }) {
           </div>
         )}
         {!token && !shortCode && !result && !matches && <div className="login-note">Írd be a leadáskor/vásárláskor megadott telefonszámot — a szervizmunkáidat és a vásárlásaidat is megmutatjuk.</div>}
-        {!token && !shortCode && !result && !matches && (
+        {!token && !shortCode && !result && !matches && !minimal && (
           <div className="login-note" style={{ marginTop: 6 }}>
             Vissza a <a href="/">készlethez</a>.
           </div>
         )}
       </div>
       </main>
-      <PublicFooter />
+      <PublicFooter minimal={minimal} />
     </div>
   );
 }
