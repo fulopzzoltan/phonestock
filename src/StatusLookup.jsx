@@ -1,20 +1,24 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { supabase } from "./lib/supabaseClient";
 import { money, statusCls, subStatusLabel, warrantyExpiry, isWarrantyActive, SERVICE_WARRANTY_TERMS } from "./lib/utils";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 import SignaturePad from "./components/SignaturePad";
 import FoliaUpsellBanner from "./components/FoliaUpsellBanner";
-import { ServiceIcon, CheckIcon, LockIcon, UserPlusIcon } from "./components/icons";
+import WarrantyTermsToggle from "./components/WarrantyTermsToggle";
+import { CallIcon, PhoneCaseIcon } from "./components/icons";
 
 const INTAKE_CONSENT_TEXT = "Átadom a készüléket javításra, elfogadom a leírt hibát/állapotot";
+// A hűségpont/ajánlói rendszer még nincs élesítve — amíg nem az, ne mutassuk a
+// vásárlóknak, hogy ne keltsünk hamis elvárást egy nem működő funkcióról.
+const LOYALTY_LIVE = false;
 
 const STEP_MAP = { "Átvett": 0, "Javítás alatt": 1, "Minőségellenőrzés": 1, "Átadásra": 2 };
-const STEPS = [
-  { label: "Bejelentve", icon: UserPlusIcon },
-  { label: "Szerviz alatt", icon: ServiceIcon },
-  { label: "Kész", icon: CheckIcon },
-  { label: "Átvéve", icon: LockIcon },
+const TIMELINE_STEPS = [
+  { label: "Bejelentve" },
+  { label: "Szerviz alatt", activeCaption: "most zajlik", pendingCaption: "még nem kezdődött el" },
+  { label: "Kész", activeCaption: "átvehető az üzletben", pendingCaption: "javítás lezárva" },
+  { label: "Átvéve", pendingCaption: "nálad lesz a készülék" },
 ];
 
 function LoyaltyBox({ balance, code }) {
@@ -27,27 +31,86 @@ function LoyaltyBox({ balance, code }) {
   );
 }
 
-function StatusStepper({ status, handedOver }) {
+// "Élő" jelvény — csomagkövetős alkalmazások (UPS, DPDgroup) mintájára: azt kommunikálja
+// első pillantásra, hogy ez nem egy statikus PDF-kép, hanem valós idejű állapot, amit a
+// szerviz frissít.
+function LiveBadge({ label = "Élő nyomonkövetés" }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10.5, fontWeight: 700, color: "var(--primary-ink)", letterSpacing: 0.3, textTransform: "uppercase" }}>
+      <span className="status-live-dot" />
+      {label}
+    </div>
+  );
+}
+
+// A találat "fejléce" egy csomag-/eszközkártyaként — ikon, cím, alcím (jegyszám + ügyfél)
+// és egy státusz-jelvény egy sorban, a korábbi külön "cím + #szám" sor és "Ügyfél" adatsor
+// összevonva, hogy azonnal, egy pillantásra átlátható legyen, miről van szó.
+function EntityTile({ icon: Icon, title, subtitle, statusLabel, statusClass }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 14, padding: 16, borderRadius: 18, background: "var(--pub-paper)", border: "1px solid var(--pub-line)", marginBottom: 22 }}>
+      <div style={{ width: 46, height: 46, borderRadius: 14, background: "var(--primary-soft)", border: "1px solid rgba(29,185,84,.3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <Icon width={20} height={20} style={{ color: "var(--primary-ink)" }} />
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 15, fontWeight: 800, color: "#111827" }}>{title}</div>
+        <div className="mono" style={{ fontSize: 11.5, color: "#9CA3AF" }}>{subtitle}</div>
+      </div>
+      {statusLabel && <span className={`st ${statusClass}`} style={{ flexShrink: 0 }}>{statusLabel}</span>}
+    </div>
+  );
+}
+
+// Két gyors-pillantású kártya (ár + garancia) az idővonal alatt — ugyanaz a mintázat, mint
+// egy csomagküldő app "várható kézbesítés / súly" chip-sora.
+function StatChip({ label, children }) {
+  return (
+    <div style={{ flex: 1, padding: "13px 14px", borderRadius: 14, background: "var(--pub-paper)", border: "1px solid var(--pub-line)" }}>
+      <div style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", color: "#9CA3AF", marginBottom: 5 }}>{label}</div>
+      <div>{children}</div>
+    </div>
+  );
+}
+
+// Függőleges idővonal a korábbi vízszintes lépésjelző helyett — több hely jut a lépésekhez
+// tartozó valós dátumnak/leírásnak, és jobban követi egy élő csomagkövetés megszokott nyelvét.
+function StatusTimeline({ status, handedOver, dateIn, dateOut }) {
   const activeStep = handedOver ? 3 : (STEP_MAP[status] ?? 0);
   return (
-    <div style={{ display: "flex", alignItems: "center", margin: "16px 0 4px" }}>
-      {STEPS.map((s, i) => (
-        <div key={s.label} style={{ display: "flex", alignItems: "center", flex: i < STEPS.length - 1 ? 1 : "none" }}>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-            <div style={{
-              width: 30, height: 30, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
-              background: i <= activeStep ? "var(--primary)" : "#F3F4F6",
-              color: i <= activeStep ? "#fff" : "#9CA3AF",
-            }}>
-              <s.icon width={15} height={15} />
+    <div style={{ display: "flex", gap: 16, margin: "4px 0 22px" }}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 2 }}>
+        {TIMELINE_STEPS.map((s, i) => {
+          const reached = i <= activeStep;
+          const current = i === activeStep && !handedOver;
+          return (
+            <Fragment key={s.label}>
+              <div
+                className={current ? "status-node-pulse" : ""}
+                style={{ width: 16, height: 16, borderRadius: "50%", flexShrink: 0, background: reached ? "var(--primary)" : "#F3F4F6", border: reached ? "none" : "1px solid #E5E7EB" }}
+              />
+              {i < TIMELINE_STEPS.length - 1 && (
+                <div style={{ width: 2, flex: 1, minHeight: 26, margin: "2px 0", background: i < activeStep || handedOver ? "var(--primary)" : "#E5E7EB" }} />
+              )}
+            </Fragment>
+          );
+        })}
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", flex: 1 }}>
+        {TIMELINE_STEPS.map((s, i) => {
+          const reached = i <= activeStep;
+          const current = i === activeStep && !handedOver;
+          let caption;
+          if (i === 0) caption = dateIn || "munkalap felvéve";
+          else if (i === 3 && handedOver) caption = dateOut || "átvéve";
+          else caption = current ? s.activeCaption : s.pendingCaption;
+          return (
+            <div key={s.label} style={{ paddingBottom: i < TIMELINE_STEPS.length - 1 ? 18 : 0 }}>
+              <div style={{ fontSize: 13.5, fontWeight: reached ? 800 : 700, color: reached ? "#111827" : "#9CA3AF" }}>{s.label}</div>
+              <div style={{ fontSize: 11, color: reached ? "#6B7280" : "#C1C6CC" }}>{caption}</div>
             </div>
-            <span style={{ fontSize: 9.5, color: i <= activeStep ? "var(--primary-ink)" : "#9CA3AF", fontWeight: i === activeStep ? 700 : 500, whiteSpace: "nowrap" }}>{s.label}</span>
-          </div>
-          {i < STEPS.length - 1 && (
-            <div style={{ flex: 1, height: 2, background: i < activeStep ? "var(--primary)" : "#F3F4F6", margin: "0 4px 16px" }} />
-          )}
-        </div>
-      ))}
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -182,7 +245,12 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
       <PublicHeader activeNav="status" minimal={minimal} />
       <main className="pub-lookup-main">
       <div className="login-card" style={{ maxWidth: 460 }}>
-        {!result && <div className="login-title">Vásárlás / szerviz állapota</div>}
+        {!result && !matches && (
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
+            <LiveBadge />
+          </div>
+        )}
+        {!result && <div className="login-title">Hol tart most a telefonod?</div>}
         {error && <div className="errbar">{error}</div>}
         {busy && !result && <div style={{ textAlign: "center", color: "#6B7280", fontSize: 13, padding: "10px 0" }}>Betöltés...</div>}
         {!token && !shortCode && !result && !matches && !busy && (
@@ -217,36 +285,41 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
         )}
         {isTicket && (
           <div>
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14 }}>
-              <div style={{ fontSize: 16, fontWeight: 800 }}>Szerviz átadási lap</div>
-              <div style={{ fontSize: 13, color: "#9CA3AF", fontWeight: 700 }}>#{result.ticket_no}</div>
+            <div style={{ marginBottom: 14 }}>
+              <LiveBadge label="Élő frissítés" />
+            </div>
+            <EntityTile
+              icon={PhoneCaseIcon}
+              title={[result.brand, result.model].filter(Boolean).join(" ") || "Készülék"}
+              subtitle={`#${result.ticket_no} · ${result.customer_name}`}
+              statusLabel={result.sub_status ? subStatusLabel(result.status, result.sub_status) : result.status}
+              statusClass={statusCls(result.status)}
+            />
+            <StatusTimeline status={result.status} handedOver={handedOver} dateIn={result.date_in} dateOut={result.date_out} />
+            <div style={{ display: "flex", gap: 10, marginBottom: 22 }}>
+              <StatChip label="Javítási költség">
+                <span className="mono" style={{ fontSize: 16, fontWeight: 800, color: "#111827" }}>{money(result.price)}</span>
+              </StatChip>
+              <StatChip label="Garancia">
+                {!handedOver ? <span style={{ fontSize: 13, fontWeight: 800, color: "#9CA3AF" }}>—</span> : result.warranty ? (
+                  <span className={`st ${ticketActive ? "st-kesz" : "st-kiadva"}`}>{ticketActive ? "Érvényes" : "Lejárt"}</span>
+                ) : (
+                  <span className="st st-sikertelen">Nincs</span>
+                )}
+              </StatChip>
             </div>
             <div className="dp-section">
-              <div className="dp-row"><span className="dp-key">Ügyfél</span><span className="dp-val">{result.customer_name}</span></div>
-              <div className="dp-row"><span className="dp-key">Elérhetőség</span><span className="dp-val">{result.customer_phone || "—"}</span></div>
-              <div className="dp-row"><span className="dp-key">Eszköz</span><span className="dp-val">{[result.brand, result.model].filter(Boolean).join(" ")}</span></div>
               <div className="dp-row"><span className="dp-key">Helyszín</span><span className="dp-val">{result.location_name || "—"}{result.location_phone ? ` · ${result.location_phone}` : ""}</span></div>
               <div className="dp-row"><span className="dp-key">Bejelentett hibák</span><span className="dp-val">{probs.length ? probs.map((p, i) => <span key={i} className="prob-pill">{p}</span>) : "—"}</span></div>
-              <div className="dp-row"><span className="dp-key">Javítási költség</span><span className="dp-val">{money(result.price)}</span></div>
-              <div className="dp-row"><span className="dp-key">Átvéve</span><span className="dp-val">{result.date_in || "—"}</span></div>
-              <div className="dp-row"><span className="dp-key">Átadva</span><span className="dp-val">{result.date_out || "—"}</span></div>
-              <div className="dp-row">
-                <span className="dp-key">Garancia</span>
-                <span className="dp-val">
-                  {!handedOver ? "—" : result.warranty ? (
-                    <span className={`st ${ticketActive ? "st-kesz" : "st-kiadva"}`}>{ticketActive ? `Érvényes (${ticketExpiry}-ig)` : `Lejárt (${ticketExpiry})`}</span>
-                  ) : (
-                    <span className="st st-sikertelen">Nincs</span>
-                  )}
-                </span>
-              </div>
+              {handedOver && result.warranty && (
+                <div className="dp-row"><span className="dp-key">Garancia lejárata</span><span className="dp-val">{ticketExpiry}</span></div>
+              )}
             </div>
-            <StatusStepper status={result.status} handedOver={handedOver} />
-            <div style={{ textAlign: "center", margin: "16px 0" }}>
-              <span className={`st ${statusCls(result.status)}`} style={{ fontSize: 14, padding: "8px 18px" }}>
-                {result.sub_status ? subStatusLabel(result.status, result.sub_status) : result.status}
-              </span>
-            </div>
+            {result.location_phone && (
+              <a href={`tel:${result.location_phone.replace(/\s+/g, "")}`} className="btn" style={{ width: "100%", justifyContent: "center", marginBottom: 14, textDecoration: "none" }}>
+                <CallIcon width={13} height={13} /> Hívás a szervizhez
+              </a>
+            )}
             {token && result.ticket_kind === "Ügyfél" && !handedOver && !result.folia_upsell_requested && (
               <FoliaUpsellBanner token={token} deviceLabel={[result.brand, result.model].filter(Boolean).join(" ")} onDone={() => setResult({ ...result, folia: true, folia_upsell_requested: true, folia_upsell_price: 30, price: (Number(result.price) || 0) + 30 })} />
             )}
@@ -270,10 +343,8 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
                 )}
               </div>
             )}
-            <LoyaltyBox balance={result.customer_points_balance} code={result.customer_referral_code} />
-            <div style={{ background: "#F9FAFB", border: "1px solid #EEF0F2", borderRadius: 12, padding: 14, fontSize: 11, color: "#6B7280", lineHeight: 1.6, whiteSpace: "pre-line", marginBottom: 14 }}>
-              {SERVICE_WARRANTY_TERMS}
-            </div>
+            {LOYALTY_LIVE && <LoyaltyBox balance={result.customer_points_balance} code={result.customer_referral_code} />}
+            <WarrantyTermsToggle title="Szerviz garancia feltételek" text={SERVICE_WARRANTY_TERMS} />
             {signMode && signStage === "service_handover" && !handoverAllowed && (
               <div className="errbar" style={{ marginBottom: 14 }}>Ez a munkalap még nincs átadásra kész.</div>
             )}
@@ -308,29 +379,41 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
         )}
         {isPurchase && (
           <div>
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14 }}>
-              <div style={{ fontSize: 16, fontWeight: 800 }}>Vásárlási bizonylat</div>
-              <div style={{ fontSize: 13, color: "#9CA3AF", fontWeight: 700 }}>#{result.receipt_no}</div>
+            <div style={{ marginBottom: 14 }}>
+              <LiveBadge label="Vásárlási bizonylat" />
+            </div>
+            <EntityTile
+              icon={PhoneCaseIcon}
+              title={result.description}
+              subtitle={`#${result.receipt_no} · ${result.customer_name || "—"}`}
+              statusLabel="Megvásárolva"
+              statusClass="st-beveve"
+            />
+            <div style={{ display: "flex", gap: 10, marginBottom: 22 }}>
+              <StatChip label="Ár">
+                <span className="mono" style={{ fontSize: 16, fontWeight: 800, color: "#111827" }}>{money(result.amount)}</span>
+              </StatChip>
+              <StatChip label="Garancia">
+                {result.warranty ? (
+                  <span className={`st ${purchaseActive ? "st-kesz" : "st-kiadva"}`}>{purchaseActive ? "Érvényes" : "Lejárt"}</span>
+                ) : (
+                  <span className="st st-sikertelen">Nincs</span>
+                )}
+              </StatChip>
             </div>
             <div className="dp-section">
-              <div className="dp-row"><span className="dp-key">Ügyfél</span><span className="dp-val">{result.customer_name || "—"}</span></div>
-              <div className="dp-row"><span className="dp-key">Elérhetőség</span><span className="dp-val">{result.customer_phone || "—"}</span></div>
-              <div className="dp-row"><span className="dp-key">Termék</span><span className="dp-val">{result.description}</span></div>
               <div className="dp-row"><span className="dp-key">Helyszín</span><span className="dp-val">{result.location_name || "—"}{result.location_phone ? ` · ${result.location_phone}` : ""}</span></div>
               <div className="dp-row"><span className="dp-key">Vásárlás dátuma</span><span className="dp-val">{result.date || "—"}</span></div>
-              <div className="dp-row"><span className="dp-key">Ár</span><span className="dp-val">{money(result.amount)}</span></div>
-              <div className="dp-row">
-                <span className="dp-key">Garancia</span>
-                <span className="dp-val">
-                  {result.warranty ? (
-                    <span className={`st ${purchaseActive ? "st-kesz" : "st-kiadva"}`}>{purchaseActive ? `Érvényes (${purchaseExpiry}-ig)` : `Lejárt (${purchaseExpiry})`}</span>
-                  ) : (
-                    <span className="st st-sikertelen">Nincs</span>
-                  )}
-                </span>
-              </div>
+              {result.warranty && (
+                <div className="dp-row"><span className="dp-key">Garancia lejárata</span><span className="dp-val">{purchaseExpiry}</span></div>
+              )}
             </div>
-            <LoyaltyBox balance={result.customer_points_balance} code={result.customer_referral_code} />
+            {result.location_phone && (
+              <a href={`tel:${result.location_phone.replace(/\s+/g, "")}`} className="btn" style={{ width: "100%", justifyContent: "center", marginBottom: 14, textDecoration: "none" }}>
+                <CallIcon width={13} height={13} /> Hívás a szervizhez
+              </a>
+            )}
+            {LOYALTY_LIVE && <LoyaltyBox balance={result.customer_points_balance} code={result.customer_referral_code} />}
             {!token && !shortCode && (
               <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
                 {matches && <button className="btn sec" style={{ flex: 1, justifyContent: "center" }} onClick={() => setResult(null)}>← Vissza a találatokhoz</button>}

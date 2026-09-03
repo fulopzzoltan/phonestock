@@ -4,8 +4,12 @@ import { money, warrantyExpiry, isWarrantyActive, SALE_WARRANTY_TERMS } from "./
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 import SignaturePad from "./components/SignaturePad";
+import WarrantyTermsToggle from "./components/WarrantyTermsToggle";
 
 const SALE_CONSENT_TEXT = "Megvásároltam, átvettem, elfogadom a garanciafeltételeket";
+// A hűségpont/ajánlói rendszer még nincs élesítve — amíg nem az, ne mutassuk a
+// vásárlóknak, hogy ne keltsünk hamis elvárást egy nem működő funkcióról.
+const LOYALTY_LIVE = false;
 
 // Kézzel beírt keresés (token nélkül) mostantól a /status egyesített oldalon zajlik
 // (szerviz + vásárlás egy helyen, telefonszám alapján) — ez a komponens csak a
@@ -87,7 +91,6 @@ export default function ReceiptLookup({ token, signStage, minimal = false }) {
             </div>
             <div className="dp-section">
               <div className="dp-row"><span className="dp-key">Ügyfél</span><span className="dp-val">{result.customer_name || "—"}</span></div>
-              <div className="dp-row"><span className="dp-key">Elérhetőség</span><span className="dp-val">{result.customer_phone || "—"}</span></div>
               <div className="dp-row"><span className="dp-key">Termék</span><span className="dp-val">{result.description}</span></div>
               <div className="dp-row"><span className="dp-key">Helyszín</span><span className="dp-val">{result.location_name || "—"}{result.location_phone ? ` · ${result.location_phone}` : ""}</span></div>
               <div className="dp-row"><span className="dp-key">Vásárlás dátuma</span><span className="dp-val">{result.date || "—"}</span></div>
@@ -103,15 +106,15 @@ export default function ReceiptLookup({ token, signStage, minimal = false }) {
                 </span>
               </div>
             </div>
-            {result.customer_points_balance != null && (
+            {LOYALTY_LIVE && result.customer_points_balance != null && (
               <div style={{ background: "var(--primary-soft)", border: "1px solid var(--primary)", borderRadius: 12, padding: "12px 14px", marginTop: 14, fontSize: 12.5, color: "#374151", lineHeight: 1.6 }}>
                 <b style={{ color: "var(--primary-ink)" }}>{result.customer_points_balance} pontod van.</b>
                 {result.customer_referral_code && <> Ajánlói kódod: <span className="mono" style={{ fontWeight: 700 }}>{result.customer_referral_code}</span> — add tovább egy barátnak, és ha nálunk vásárol vagy szervizeltet, mindketten +200 pontot kaptok!</>}
               </div>
             )}
             {result.warranty && (
-              <div style={{ background: "#F9FAFB", border: "1px solid #EEF0F2", borderRadius: 12, padding: 14, fontSize: 11, color: "#6B7280", lineHeight: 1.6, whiteSpace: "pre-line", marginTop: 14 }}>
-                {SALE_WARRANTY_TERMS}
+              <div style={{ marginTop: 14 }}>
+                <WarrantyTermsToggle title="Vásárlási garancia feltételek" text={SALE_WARRANTY_TERMS} />
               </div>
             )}
             {signMode && (

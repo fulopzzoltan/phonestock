@@ -1094,6 +1094,15 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-related-price{font-size:14px;font-weight:800}
 .pub-lookup-main{max-width:1180px;margin:0 auto;padding:40px 24px 64px;display:flex;justify-content:center}
 
+/* Csomagkövetős ("UPS-stílusú") állapotjelzés a /status oldalon — élő pötty a fejlécen,
+   és pulzáló gyűrű az aktuális lépésen, hogy azonnal látszódjon, hol tart most a munkalap. */
+.status-live-dot{width:7px;height:7px;border-radius:50%;background:var(--primary);flex-shrink:0;animation:statusLiveDotPulse 1.8s ease-in-out infinite}
+@keyframes statusLiveDotPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.8)}}
+.status-step-pulse{animation:statusStepPulse 1.8s ease-in-out infinite}
+@keyframes statusStepPulse{0%,100%{box-shadow:0 0 0 4px var(--primary-soft)}50%{box-shadow:0 0 0 8px transparent}}
+.status-node-pulse{animation:statusNodePulse 1.8s ease-in-out infinite}
+@keyframes statusNodePulse{0%,100%{box-shadow:0 0 0 0 var(--primary-soft)}50%{box-shadow:0 0 0 5px transparent}}
+
 .pub-legal-main{max-width:760px;margin:0 auto;padding:40px 24px 64px}
 .pub-legal-title{font-size:26px;font-weight:800;margin-bottom:28px;color:var(--pub-ink)}
 .pub-legal-body h2{font-size:16.5px;font-weight:800;margin:32px 0 10px;color:var(--pub-ink)}
