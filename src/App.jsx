@@ -3,7 +3,7 @@ import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
 import { thumbPathOf } from "./lib/imageResize";
 import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi, buybackOfferFromApi, loyaltyLedgerFromApi, loyaltyRewardFromApi, loyaltyRewardToApi, customerProfileFromApi, reviewFromApi, reviewToApi, employeeFromApi, payrollScheduleFromApi, payrollPaymentFromApi, companyTaxObligationFromApi, whatsappMessageFromApi } from "./lib/mappers";
-import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, TRACKING_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, normalizeImei, money, ticketCode, cashPortion, cardPortion } from "./lib/utils";
+import { today, warrantyExpiry, isWarrantyActive, stripAccents, TRACKING_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, normalizeImei, money, ticketCode, cashPortion, cardPortion } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
 import PublicHeader from "./components/PublicHeader";
@@ -1807,7 +1807,7 @@ function AppShell() {
 
       if (settings.smsOnTicketCreate && newTicket.customerPhone) {
         const device = [newTicket.brand, newTicket.model].filter(Boolean).join(" ");
-        const statusUrl = `${SITE_URL}/s/${newTicket.shortCode}`;
+        const statusUrl = `${TRACKING_URL}/s/${newTicket.shortCode}`;
         // send-whatsapp WhatsApp-sablonnal próbálkozik először (ha be van állítva a fiók és a
         // sablon jóváhagyva), és csendben visszaesik erre a sima SMS-szövegre, ha bármi nem
         // stimmel — amíg a WhatsApp-oldal nincs kész, ez pontosan a mai SMS-küldést jelenti.
@@ -1910,7 +1910,7 @@ function AppShell() {
 
       if (settings.smsOnTicketReady && becameReady && subStatus === null && ticket && ticket.customerPhone) {
         const device = [ticket.brand, ticket.model].filter(Boolean).join(" ");
-        const statusUrl = `${SITE_URL}/s/${ticket.shortCode}`;
+        const statusUrl = `${TRACKING_URL}/s/${ticket.shortCode}`;
         const smsMessage = stripAccents(`Szia! A(z) ${device} javítása elkészült, átveheted nálunk (${locName(ticket.locationId)}). Részletek: ${statusUrl}`);
         supabase.functions.invoke("send-whatsapp", {
           body: {

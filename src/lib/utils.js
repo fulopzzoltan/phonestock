@@ -29,6 +29,10 @@ export function exportToCsv(filename, columns, rows) {
 // sose window.location.origin-t — az localhost lenne, ha valaki fejlesztés közben
 // (npm run dev) hoz létre/módosít egy valós tételt, az ügyfél meg nem tudná megnyitni
 export const SITE_URL = "https://phonestock-manager.netlify.app";
+// A szerviz-értesítésekben (SMS/WhatsApp) kiküldött nyomon követő link ezen a külön,
+// letisztult "csak nyomon követés" domainen nyílik meg — ne a SITE_URL-t használd itt,
+// az a teljes webshopra mutat (referál-link, "Webshop megtekintése" gomb stb.).
+export const TRACKING_URL = "https://nyomonkovetes.telefonos.ro";
 // ékezetek eltávolítása — SMS-eknél 1 szegmensben (160 karakter) marad az üzenet,
 // ékezetekkel a GSM-7 kódolás elesik és 70 karakterenként darabolódik (2x drágább)
 export const stripAccents = (str) => (str || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
