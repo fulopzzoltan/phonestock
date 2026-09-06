@@ -93,6 +93,7 @@ export const STRINGS = {
 
     // Nyomonkövetés (/status)
     statusLiveBadge: "Élő nyomonkövetés",
+    statusUpdatedNow: "Utoljára frissítve: most",
     statusPurchaseBadge: "Vásárlás és garancia",
     statusPageTitle: "Hol tart most a telefonod?",
     statusInvalidLink: "Érvénytelen vagy lejárt link.",
@@ -215,6 +216,7 @@ export const STRINGS = {
 
     // Urmărire (/status)
     statusLiveBadge: "Urmărire live",
+    statusUpdatedNow: "Ultima actualizare: acum",
     statusPurchaseBadge: "Cumpărare și garanție",
     statusPageTitle: "Unde este telefonul tău acum?",
     statusInvalidLink: "Link invalid sau expirat.",

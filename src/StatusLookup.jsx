@@ -7,7 +7,7 @@ import PublicFooter from "./components/PublicFooter";
 import SignaturePad from "./components/SignaturePad";
 import FoliaUpsellBanner from "./components/FoliaUpsellBanner";
 import WarrantyTermsToggle from "./components/WarrantyTermsToggle";
-import { CallIcon, PhoneCaseIcon } from "./components/icons";
+import { CallIcon, PhoneCaseIcon, ChevronLeftIcon } from "./components/icons";
 
 const INTAKE_CONSENT_TEXT = "Átadom a készüléket javításra, elfogadom a leírt hibát/állapotot";
 // A hűségpont/ajánlói rendszer még nincs élesítve — amíg nem az, ne mutassuk a
@@ -79,48 +79,39 @@ function StatChip({ label, children }) {
   );
 }
 
-// Függőleges idővonal a korábbi vízszintes lépésjelző helyett — több hely jut a lépésekhez
-// tartozó valós dátumnak/leírásnak, és jobban követi egy élő csomagkövetés megszokott nyelvét.
+// Rács-alapú idővonal (nem flex+space-between) — a dot-oszlop mindig ugyanolyan
+// széles, ezért egy hosszabb dátum/felirat sem tudja elcsúsztatni a sorokat.
 function StatusTimeline({ status, handedOver, dateIn, dateOut, s }) {
   const activeStep = handedOver ? 3 : (STEP_MAP[status] ?? 0);
   const steps = timelineSteps(s);
   return (
-    <div style={{ display: "flex", gap: 16, margin: "4px 0 22px" }}>
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 2 }}>
-        {steps.map((step, i) => {
-          const reached = i <= activeStep;
-          const current = i === activeStep && !handedOver;
-          return (
-            <Fragment key={step.label}>
-              <div
-                className={current ? "status-node-pulse" : ""}
-                style={{ width: 16, height: 16, borderRadius: "50%", flexShrink: 0, background: reached ? "var(--primary)" : "#F3F4F6", border: reached ? "none" : "1px solid #E5E7EB" }}
-              />
-              {i < steps.length - 1 && (
-                <div style={{ width: 2, flex: 1, minHeight: 26, margin: "2px 0", background: i < activeStep || handedOver ? "var(--primary)" : "#E5E7EB" }} />
-              )}
-            </Fragment>
-          );
-        })}
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", flex: 1 }}>
-        {steps.map((step, i) => {
-          const reached = i <= activeStep;
-          const current = i === activeStep && !handedOver;
-          let caption;
-          if (i === 0) caption = dateIn || s.capReportedFallback;
-          else if (i === 3 && handedOver) caption = dateOut || step.label;
-          else if (current) caption = step.activeCaption;
-          else if (i < activeStep || handedOver) caption = step.doneCaption;
-          else caption = step.upcomingCaption;
-          return (
-            <div key={step.label} style={{ paddingBottom: i < steps.length - 1 ? 18 : 0 }}>
-              <div style={{ fontSize: 13.5, fontWeight: reached ? 800 : 700, color: reached ? "#111827" : "#9CA3AF" }}>{step.label}</div>
-              <div style={{ fontSize: 11, color: reached ? "#6B7280" : "#C1C6CC" }}>{caption}</div>
+    <div className="ticket-timeline">
+      {steps.map((step, i) => {
+        const reached = i <= activeStep;
+        const current = i === activeStep && !handedOver;
+        const isLast = i === steps.length - 1;
+        let caption;
+        if (i === 0) caption = dateIn || s.capReportedFallback;
+        else if (i === 3 && handedOver) caption = dateOut || step.label;
+        else if (current) caption = step.activeCaption;
+        else if (i < activeStep || handedOver) caption = step.doneCaption;
+        else caption = step.upcomingCaption;
+        return (
+          <Fragment key={step.label}>
+            <div className="ticket-tl-dotcol">
+              <span className={`ticket-tl-dot${reached ? " reached" : ""}${current ? " status-node-pulse" : ""}`} />
+              {!isLast && <span className={`ticket-tl-line${i < activeStep || handedOver ? " reached" : ""}`} />}
             </div>
-          );
-        })}
-      </div>
+            <div className={`ticket-tl-body${isLast ? " last" : ""}`}>
+              <div className="ticket-tl-title-row">
+                <span className={`ticket-tl-title${current ? " current" : ""}${!reached ? " upcoming" : ""}`}>{step.label}</span>
+                {current && <span className="status-live-dot" style={{ width: 5, height: 5 }} />}
+              </div>
+              <div className={`ticket-tl-caption${!reached ? " upcoming" : ""}`}>{caption}</div>
+            </div>
+          </Fragment>
+        );
+      })}
     </div>
   );
 }
@@ -263,82 +254,79 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
     <div className="pub-shop">
       <PublicHeader activeNav="status" minimal={minimal} lang={lang} langSwitchHref={otherLangHref} />
       <main className="pub-lookup-main">
-      <div className="login-card" style={{ maxWidth: 460 }}>
-        {!result && !matches && (
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
+      {isTicket ? (
+        <div style={{ width: "100%", maxWidth: 340, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center" }}>
+          {matches && (
+            <button type="button" className="ticket-back-link" onClick={() => setResult(null)}>
+              <ChevronLeftIcon width={12} height={12} /> {s.backToResults}
+            </button>
+          )}
+          <div style={{ marginBottom: 18 }}>
             <LiveBadge label={s.statusLiveBadge} />
           </div>
-        )}
-        {!result && <div className="login-title">{s.statusPageTitle}</div>}
-        {error && <div className="errbar">{error}</div>}
-        {busy && !result && <div style={{ textAlign: "center", color: "#6B7280", fontSize: 13, padding: "10px 0" }}>{s.loading}</div>}
-        {!token && !shortCode && !result && !matches && !busy && (
-          <form onSubmit={submit}>
-            <div className="field"><label>{s.phoneLabel}</label><input required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={s.statusPhonePlaceholder} /></div>
-            <button className="btn" style={{ width: "100%", justifyContent: "center", marginTop: 6 }} disabled={busy} type="submit">
-              {busy ? s.statusSearching : s.statusViewBtn}
-            </button>
-          </form>
-        )}
-        {matches && !result && (
-          <div>
-            <div className="login-note" style={{ marginBottom: 10 }}>{s.statusMultipleFound}</div>
-            <div className="dp-section">
-              {matches.map((m) => (
-                <div key={`${m.kind}-${m.kind === "ticket" ? m.ticket_no : m.receipt_no}`} className="dp-row" style={{ cursor: "pointer" }} onClick={() => setResult(m)}>
-                  <span className="dp-key">
-                    <span className="badge-loc" style={{ marginRight: 6 }}>{m.kind === "ticket" ? s.statusKindTicket : s.statusKindPurchase}</span>
-                    #{m.kind === "ticket" ? m.ticket_no : m.receipt_no} · {m.kind === "ticket" ? [m.brand, m.model].filter(Boolean).join(" ") : m.description}
-                    <br /><span style={{ color: "#9CA3AF", fontWeight: 500 }}>{m.customer_name}</span>
-                  </span>
-                  {m.kind === "ticket" ? (
-                    <span className={`st ${statusCls(m.status)}`}>{m.sub_status ? subStatusLabel(m.status, m.sub_status) : m.status}</span>
-                  ) : (
-                    <span className="dp-val mono">{money(m.amount)}</span>
-                  )}
-                </div>
-              ))}
+
+          <div className="ticket-card">
+            <div className="ticket-head">
+              <div className="ticket-head-row">
+                <span className="ticket-eyebrow">{s.statusKindTicket}</span>
+                <span className={`st ${statusCls(result.status)}`}>{result.sub_status ? subStatusLabel(result.status, result.sub_status) : result.status}</span>
+              </div>
+              <div className="ticket-no">#{result.ticket_no}</div>
+              <div className="ticket-device">{[result.brand, result.model].filter(Boolean).join(" ") || s.statusDeviceFallback}</div>
+              <div className="ticket-customer">{result.customer_name}</div>
             </div>
-            <button className="btn sec" style={{ width: "100%", justifyContent: "center", marginTop: 10 }} onClick={() => setMatches(null)}>{s.statusBackBtn}</button>
-          </div>
-        )}
-        {isTicket && (
-          <div>
-            <div style={{ marginBottom: 14 }}>
-              <LiveBadge label={s.statusLiveBadge} />
+
+            <div className="ticket-perf">
+              <span className="ticket-notch l" /><span className="ticket-notch r" />
+              <div className="ticket-perf-line" />
             </div>
-            <EntityTile
-              icon={PhoneCaseIcon}
-              title={[result.brand, result.model].filter(Boolean).join(" ") || s.statusDeviceFallback}
-              subtitle={`#${result.ticket_no}`}
-              statusLabel={result.sub_status ? subStatusLabel(result.status, result.sub_status) : result.status}
-              statusClass={statusCls(result.status)}
-            />
+
             <StatusTimeline status={result.status} handedOver={handedOver} dateIn={result.date_in} dateOut={result.date_out} s={s} />
-            <div style={{ display: "flex", gap: 10, marginBottom: 22 }}>
-              <StatChip label={s.chipRepairCost}>
-                <span className="mono" style={{ fontSize: 16, fontWeight: 800, color: "#111827" }}>{money(result.price)}</span>
-              </StatChip>
-              <StatChip label={s.chipWarranty}>
-                {!handedOver ? <span style={{ fontSize: 13, fontWeight: 800, color: "#9CA3AF" }}>—</span> : result.warranty ? (
+
+            <div className="ticket-rows">
+              <div className="ticket-row">
+                <span className="ticket-row-label">{s.chipRepairCost}</span>
+                <span className="ticket-row-value">{money(result.price)}</span>
+              </div>
+              <div className="ticket-row">
+                <span className="ticket-row-label">{s.chipWarranty}</span>
+                {!handedOver ? (
+                  <span className="ticket-row-value muted">—</span>
+                ) : result.warranty ? (
                   <span className={`st ${ticketActive ? "st-kesz" : "st-kiadva"}`}>{ticketActive ? s.warrantyActive : s.warrantyExpired}</span>
                 ) : (
                   <span className="st st-sikertelen">{s.warrantyNone}</span>
                 )}
-              </StatChip>
-            </div>
-            <div className="dp-section">
-              <div className="dp-row"><span className="dp-key">{s.rowShop}</span><span className="dp-val">{result.location_name || "—"}{result.location_phone ? ` · ${result.location_phone}` : ""}</span></div>
-              <div className="dp-row"><span className="dp-key">{s.rowIssues}</span><span className="dp-val">{probs.length ? probs.map((p, i) => <span key={i} className="prob-pill">{p}</span>) : "—"}</span></div>
+              </div>
               {handedOver && result.warranty && (
-                <div className="dp-row"><span className="dp-key">{s.rowWarrantyExpiry}</span><span className="dp-val">{ticketExpiry}</span></div>
+                <div className="ticket-row">
+                  <span className="ticket-row-label">{s.rowWarrantyExpiry}</span>
+                  <span className="ticket-row-value muted">{ticketExpiry}</span>
+                </div>
               )}
+              <div className="ticket-row-tags">
+                <span className="ticket-row-tags-label">{s.rowIssues}</span>
+                <span className="ticket-row-tags-value">{probs.length ? probs.map((p, i) => <span key={i} className="prob-pill">{p}</span>) : "—"}</span>
+              </div>
             </div>
-            {result.location_phone && (
-              <a href={`tel:${result.location_phone.replace(/\s+/g, "")}`} className="btn" style={{ width: "100%", justifyContent: "center", marginBottom: 14, textDecoration: "none" }}>
-                <CallIcon width={13} height={13} /> {s.callUsBtn}
-              </a>
-            )}
+
+            <div className="ticket-shop-row">
+              <CallIcon width={13} height={13} style={{ color: "var(--pub-ink-soft)" }} />
+              <span className="ticket-shop-link">{result.location_name || "—"}{result.location_phone ? ` · ${result.location_phone}` : ""}</span>
+            </div>
+          </div>
+
+          {result.location_phone && (
+            <a href={`tel:${result.location_phone.replace(/\s+/g, "")}`} className="ticket-cta">
+              <CallIcon width={13} height={13} /> {s.callUsBtn}
+            </a>
+          )}
+          <div className="ticket-updated">
+            <span className="status-live-dot" style={{ width: 5, height: 5 }} />
+            <span className="ticket-updated-label">{s.statusUpdatedNow}</span>
+          </div>
+
+          <div style={{ width: "100%", marginTop: 16 }}>
             {token && result.ticket_kind === "Ügyfél" && !handedOver && !result.folia_upsell_requested && (
               <FoliaUpsellBanner token={token} deviceLabel={[result.brand, result.model].filter(Boolean).join(" ")} onDone={() => setResult({ ...result, folia: true, folia_upsell_requested: true, folia_upsell_price: 30, price: (Number(result.price) || 0) + 30 })} />
             )}
@@ -369,12 +357,12 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
             )}
             {signMode && (signStage === "service_intake" || handoverAllowed) && (
               signature ? (
-                <div className="dp-section" style={{ marginBottom: 14, textAlign: "center" }}>
+                <div className="ticket-extra-card" style={{ textAlign: "center" }}>
                   <div style={{ color: "#22C55E", fontWeight: 700, fontSize: 14 }}>✓ {s.signedLabel} {signature.signer_name}</div>
                   <div style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}>{new Date(signature.signed_at).toLocaleString("hu-HU")}</div>
                 </div>
               ) : (
-                <div className="dp-section" style={{ marginBottom: 14 }}>
+                <div className="ticket-extra-card">
                   <div className="dp-section-title">{signStage === "service_intake" ? s.intakeSignTitle : s.handoverSignTitle}</div>
                   {signStage === "service_intake" && (
                     <div style={{ fontSize: 12.5, color: "#374151", marginBottom: 10, lineHeight: 1.5 }}>{INTAKE_CONSENT_TEXT}</div>
@@ -394,6 +382,49 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
                 <button className="btn sec" style={{ flex: 1, justifyContent: "center" }} onClick={() => { setResult(null); setMatches(null); setPhone(""); }}>{s.newSearch}</button>
               </div>
             )}
+          </div>
+        </div>
+      ) : (
+      <div className="login-card" style={{ maxWidth: 460 }}>
+        {!result && !matches && (
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
+            <LiveBadge label={s.statusLiveBadge} />
+          </div>
+        )}
+        {!result && <div className="login-title">{s.statusPageTitle}</div>}
+        {error && <div className="errbar">{error}</div>}
+        {busy && !result && <div style={{ textAlign: "center", color: "#6B7280", fontSize: 13, padding: "10px 0" }}>{s.loading}</div>}
+        {!token && !shortCode && !result && !matches && !busy && (
+          <form onSubmit={submit}>
+            <div className="field"><label>{s.phoneLabel}</label><input required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={s.statusPhonePlaceholder} /></div>
+            <button className="btn" style={{ width: "100%", justifyContent: "center", marginTop: 6 }} disabled={busy} type="submit">
+              {busy ? s.statusSearching : s.statusViewBtn}
+            </button>
+          </form>
+        )}
+        {matches && !result && (
+          <div>
+            <div className="login-note" style={{ marginBottom: 10 }}>{s.statusMultipleFound}</div>
+            <div className="match-list">
+              {matches.map((m) => (
+                <div key={`${m.kind}-${m.kind === "ticket" ? m.ticket_no : m.receipt_no}`} className="match-row" onClick={() => setResult(m)}>
+                  <div className="match-row-top">
+                    <span className="badge-loc">{m.kind === "ticket" ? s.statusKindTicket : s.statusKindPurchase}</span>
+                    <span className="match-row-no mono">#{m.kind === "ticket" ? m.ticket_no : m.receipt_no}</span>
+                  </div>
+                  <div className="match-row-title">{m.kind === "ticket" ? [m.brand, m.model].filter(Boolean).join(" ") : m.description}</div>
+                  <div className="match-row-bottom">
+                    <span className="match-row-customer">{m.customer_name}</span>
+                    {m.kind === "ticket" ? (
+                      <span className={`st ${statusCls(m.status)}`}>{m.sub_status ? subStatusLabel(m.status, m.sub_status) : m.status}</span>
+                    ) : (
+                      <span className="match-row-amount mono">{money(m.amount)}</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button className="btn sec" style={{ width: "100%", justifyContent: "center", marginTop: 10 }} onClick={() => setMatches(null)}>{s.statusBackBtn}</button>
           </div>
         )}
         {isPurchase && (
@@ -448,6 +479,7 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
           </div>
         )}
       </div>
+      )}
       </main>
       <PublicFooter minimal={minimal} lang={lang} />
     </div>

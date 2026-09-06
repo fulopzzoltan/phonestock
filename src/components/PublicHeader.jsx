@@ -73,14 +73,11 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
     return (
       <header className="pub-header">
         <div className="pub-header-inner">
-          <div className="pub-brand-row" style={{ alignItems: "center" }}>
-            <div style={{ flex: 1 }} />
+          <div className="pub-brand-row pub-brand-row-minimal" style={{ alignItems: "center" }}>
             <div className="pub-wordmark" aria-label="Telefonos">
               <img src="/logo.png" alt="Telefonos" className="pub-logo-img" />
             </div>
-            <div style={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
-              {langSwitch}
-            </div>
+            {langSwitch}
           </div>
           <div className={`pub-header-children${mobileSearchOpen ? " open" : ""}`}>{children}</div>
         </div>
