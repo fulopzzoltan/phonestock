@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { ChatIcon, SearchIcon } from "../components/icons";
 import { EmptyState } from "../components/EmptyState";
 import { formatPhone } from "../lib/utils";
@@ -26,7 +26,7 @@ function buildThreads(messages, customers) {
       messages: sorted,
       lastAt: last?.createdAt || "",
       lastPreview: last?.body || (last?.templateName ? `Sablon: ${last.templateName}` : ""),
-      unread: sorted.some((m) => m.direction === "in" && m.status === "received"),
+      unread: sorted.some((m) => m.direction === "in" && !m.readAt),
     };
   }).sort((a, b) => (b.lastAt || "").localeCompare(a.lastAt || ""));
 }
@@ -41,7 +41,7 @@ function fmtTime(iso) {
     : d.toLocaleDateString("hu-HU", { month: "short", day: "numeric" });
 }
 
-export default function WhatsAppTab({ messages, customers, onSend, onOpenCustomer }) {
+export default function WhatsAppTab({ messages, customers, onSend, onOpenCustomer, onMarkRead }) {
   const [q, setQ] = useState("");
   const [activePhone, setActivePhone] = useState(null);
   const [draft, setDraft] = useState("");
@@ -56,6 +56,12 @@ export default function WhatsAppTab({ messages, customers, onSend, onOpenCustome
   }, [threads, q]);
 
   const active = threads.find((t) => t.phoneNorm === activePhone) || filtered[0] || null;
+
+  // Amint valaki megnyit egy beszélgetést, olvasottnak jelöljük — ez tünteti el a jelvényt
+  // a Sidebar/BottomNav "WhatsApp" gombjáról.
+  useEffect(() => {
+    if (active?.unread && onMarkRead) onMarkRead(active.phoneNorm);
+  }, [active?.phoneNorm, active?.unread, onMarkRead]);
 
   async function submit() {
     if (!draft.trim() || !active) return;

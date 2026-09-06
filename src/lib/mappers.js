@@ -241,6 +241,7 @@ export const whatsappMessageFromApi = (r) => ({
   customerId: r.customer_id,
   ticketId: r.ticket_id,
   createdAt: r.created_at,
+  readAt: r.read_at,
 });
 export const customerFromApi = (r) => ({
   id: r.id,

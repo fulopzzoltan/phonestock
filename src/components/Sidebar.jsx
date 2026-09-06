@@ -7,7 +7,7 @@ import {
 // navigáció szerepét (alsó sáv + "Több" bottom sheet), hogy applikáció-szerű legyen a felület.
 // A helyszín-választó, webshop-link, chat és felhasználói menü a ContentTopbar-ban van.
 export default function Sidebar({
-  tab, setTab, isAdmin, lastActiveLocationId, pultPendingCounts,
+  tab, setTab, isAdmin, lastActiveLocationId, pultPendingCounts, whatsappUnreadCount,
 }) {
   function go(nextTab) {
     setTab(nextTab);
@@ -36,7 +36,10 @@ export default function Sidebar({
         <button className={`navbtn ${tab === "stock" ? "active" : ""}`} onClick={() => go("stock")}><PhoneCaseIcon className="nav-ic" />Telefonok</button>
         <button className={`navbtn ${tab === "parts" ? "active" : ""}`} onClick={() => go("parts")}><PartsIcon className="nav-ic" />Alkatrészek</button>
         <button className={`navbtn ${tab === "customers" ? "active" : ""}`} onClick={() => go("customers")}><CustomersIcon className="nav-ic" />Kliensek</button>
-        <button className={`navbtn ${tab === "whatsapp" ? "active" : ""}`} onClick={() => go("whatsapp")}><ChatIcon className="nav-ic" />WhatsApp</button>
+        <button className={`navbtn ${tab === "whatsapp" ? "active" : ""}`} onClick={() => go("whatsapp")}>
+          <ChatIcon className="nav-ic" />WhatsApp
+          {whatsappUnreadCount > 0 && <span className="nav-pill-group"><span className="nav-pill blue">{whatsappUnreadCount}</span></span>}
+        </button>
         <button className={`navbtn ${tab === "warranty" ? "active" : ""}`} onClick={() => go("warranty")}><WarrantyIcon className="nav-ic" />Garancia</button>
 
         <div className="nav-lbl">Pénzügyek</div>

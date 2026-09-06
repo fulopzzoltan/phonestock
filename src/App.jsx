@@ -447,6 +447,21 @@ function AppShell() {
     };
   }, []);
 
+  // A fenti fókusz/láthatóság-alapú frissítés csak akkor sül el, ha valaki elhagyja, majd
+  // visszavált erre a böngészőlapra — ha valaki egyfolytában az appban dolgozik (más fülön,
+  // pl. Szerviz), egy közben beérkező ügyfél-WhatsApp-üzenetről nem szerezne tudomást, amíg
+  // nem frissít kézzel. Websocket helyett (ld. fenti megjegyzés a Realtime-ról) egy rövid,
+  // csak látható böngészőlapon futó pollozással pótoljuk ezt — ez sima REST-lekérés, nem
+  // tartós kapcsolat, tehát nem okozza a korábban tapasztalt bejelentkezési megbízhatósági gondot.
+  useEffect(() => {
+    const id = setInterval(async () => {
+      if (document.visibilityState !== "visible") return;
+      const rows = unwrap(await fetchAllRows(() => supabase.from("whatsapp_messages").select("*").order("created_at", { ascending: true })));
+      setWhatsappMessages((rows || []).map(whatsappMessageFromApi));
+    }, 30000);
+    return () => clearInterval(id);
+  }, []);
+
   async function loadTrash() {
     setTrashLoading(true);
     try {
@@ -1294,6 +1309,19 @@ function AppShell() {
       createdAt: new Date().toISOString(),
     }]);
     return data;
+  }
+
+  // Olvasottnak jelöli egy beszélgetés összes eddigi bejövő üzenetét — akkor hívjuk, amikor
+  // valaki megnyitja azt a beszélgetést a WhatsApp fülön. Ez adja az alapját a Sidebar/BottomNav
+  // "olvasatlan" jelvényének (nav-pill), ugyanúgy, mint a Pult fülnél.
+  async function markWhatsappRead(phoneNorm) {
+    const unreadIds = whatsappMessages
+      .filter((m) => m.phoneNorm === phoneNorm && m.direction === "in" && !m.readAt)
+      .map((m) => m.id);
+    if (unreadIds.length === 0) return;
+    const nowIso = new Date().toISOString();
+    setWhatsappMessages((prev) => prev.map((m) => (unreadIds.includes(m.id) ? { ...m, readAt: nowIso } : m)));
+    await supabase.from("whatsapp_messages").update({ read_at: nowIso }).in("id", unreadIds);
   }
 
   // USERS (admin only)
@@ -2617,16 +2645,23 @@ function AppShell() {
     notes: notes.filter((n) => n.status === "open").length,
   };
 
+  // Hány beszélgetésben van olvasatlan (ügyféltől jött, még meg nem nyitott) üzenet —
+  // ugyanez a jelvény a WhatsApp fülön is a Sidebar/BottomNav-ban, mint a Pultnál.
+  const whatsappUnreadCount = new Set(
+    whatsappMessages.filter((m) => m.direction === "in" && !m.readAt).map((m) => m.phoneNorm)
+  ).size;
+
   return (
     <div className="shell">
       <Sidebar
         tab={tab} setTab={setTab} setTicketModal={setTicketModal} isAdmin={isAdmin}
         lastActiveLocationId={lastActiveLocationId} pultPendingCounts={pultPendingCounts}
+        whatsappUnreadCount={whatsappUnreadCount}
       />
       <BottomNav
         tab={tab} setTab={setTab} isAdmin={isAdmin} locFilter={locFilter} setLocFilter={setLocFilter}
         allowedLocations={allowedLocations} myLocationId={myLocationId} locName={locName} profile={profile} user={user}
-        signOut={signOut} pultPendingCounts={pultPendingCounts}
+        signOut={signOut} pultPendingCounts={pultPendingCounts} whatsappUnreadCount={whatsappUnreadCount}
       />
 
       <div className="content-col">
@@ -2798,6 +2833,7 @@ function AppShell() {
         {!noLocationAssigned && tab === "whatsapp" && (
           <WhatsAppTab
             messages={whatsappMessages} customers={customersTable} onSend={sendWhatsappReply} onOpenCustomer={setCustomerKey}
+            onMarkRead={markWhatsappRead}
           />
         )}
 
