@@ -70,7 +70,7 @@ export default function PublicFooter({ lang = "hu", minimal = false }) {
     return (
       <footer className="pub-footer">
         <div className="pub-footer-inner">
-          <div className="pub-footer-grid">
+          <div className="pub-footer-grid pub-footer-grid-minimal">
             <div className="pub-footer-col">
               <div className="pub-footer-brand">
                 <img src="/logo.png" alt="Telefonos" className="pub-footer-logo" />
@@ -91,7 +91,7 @@ export default function PublicFooter({ lang = "hu", minimal = false }) {
             </div>
           </div>
 
-          <div className="pub-footer-bottom">
+          <div className="pub-footer-bottom pub-footer-bottom-minimal">
             <div className="pub-footer-bottom-left">
               <span>{s.footerRights(new Date().getFullYear())}</span>
             </div>

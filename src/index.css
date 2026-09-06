@@ -640,7 +640,12 @@ tr:hover td{background:#FAFAFA}
   --pub-line:#DEE4DF; --pub-accent:var(--accent); --pub-accent-ink:var(--primary-ink); --pub-accent-soft:var(--primary-soft);
   --pub-new:#A5722A; --pub-new-soft:#F3E6D4;
   background:var(--pub-paper); color:var(--pub-ink); min-height:100vh; min-height:100dvh; font-family:'Inter',sans-serif;
+  /* "Sticky footer" elrendezés — enélkül rövid tartalmú oldalakon (pl. üres állapotkereső)
+     a lábléc a tartalom után ragadt, a min-height csak a .pub-shop divet nyújtotta meg,
+     ami mobil Chrome-on üres, görgethető sáv érzetét keltette a lábléc alatt. */
+  display:flex; flex-direction:column;
 }
+.pub-shop > main{flex:1 0 auto}
 .pub-announce-bar{background:var(--pub-ink);color:#fff;overflow:hidden}
 .pub-announce-inner{max-width:1180px;margin:0 auto;padding:7px 24px;position:relative;height:16px;display:flex;align-items:center;justify-content:center;text-align:center}
 .pub-announce-msg{position:absolute;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0;transform:translateY(6px);transition:opacity .35s,transform .35s;pointer-events:none}
@@ -946,6 +951,12 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-footer{border-top:1px solid var(--pub-line);padding:36px 24px 24px;margin-top:32px;background:var(--pub-paper-raised)}
 .pub-footer-inner{max-width:1180px;margin:0 auto;font-size:12px;color:var(--pub-ink-soft);line-height:1.6}
 .pub-footer-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr 1fr;gap:28px;padding-bottom:26px}
+/* A "csak nyomonkövetés" origin fejlécében a logó középre van igazítva (két flex:1 spacerrel) —
+   a lábléc alapból bal-igazított grid lenne csak 2 oszloppal, ami elcsúszva hatna alatta.
+   Ez a variáns középre rendezi a lábléc tartalmát is, hogy egy vonalba essen a fejléc logójával. */
+.pub-footer-grid-minimal{display:flex;justify-content:center;flex-wrap:wrap;text-align:center}
+.pub-footer-grid-minimal .pub-footer-col{align-items:center}
+.pub-footer-bottom-minimal{justify-content:center}
 .pub-footer-col{display:flex;flex-direction:column;gap:9px}
 .pub-footer-col a{color:var(--pub-ink-soft);text-decoration:none;font-size:12.5px}
 .pub-footer-col a:hover{color:var(--pub-accent-ink);text-decoration:underline}
