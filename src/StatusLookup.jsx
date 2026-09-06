@@ -221,15 +221,18 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
     setResult(null);
     setMatches(null);
     try {
-      const [ticketsRes, purchasesRes] = await Promise.all([
-        supabase.rpc("get_ticket_status_by_phone", { p_phone: phone }),
-        supabase.rpc("get_receipt_by_phone", { p_phone: phone }),
-      ]);
-      if (ticketsRes.error) throw ticketsRes.error;
-      if (purchasesRes.error) throw purchasesRes.error;
+      // A telefonszám-keresés nem közvetlen RPC-t hív, hanem a status-phone-lookup Edge
+      // Function-t — az intézi az IP- és cél-szám-alapú rate-limitet, és a visszaadott nevet
+      // is maszkolja (csak annyi látszik, amennyi több találatnál a megkülönböztetéshez kell) —
+      // ld. a felhasználóval egyeztetett biztonsági intézkedést.
+      const { data, error: fnError } = await supabase.functions.invoke("status-phone-lookup", { body: { phone } });
+      if (fnError) throw fnError;
+      if (data?.error === "rate_limited") throw new Error(s.statusRateLimited);
+      if (data?.error === "invalid_phone") throw new Error(s.statusInvalidPhone);
+      if (data?.error) throw new Error(s.statusSearchError);
       const combined = [
-        ...(ticketsRes.data || []).map((t) => ({ kind: "ticket", ...t })),
-        ...(purchasesRes.data || []).map((r) => ({ kind: "purchase", ...r })),
+        ...(data?.tickets || []).map((t) => ({ kind: "ticket", ...t })),
+        ...(data?.purchases || []).map((r) => ({ kind: "purchase", ...r })),
       ];
       if (combined.length === 0) {
         setError(s.statusNotFound);
@@ -307,7 +310,7 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
             <EntityTile
               icon={PhoneCaseIcon}
               title={[result.brand, result.model].filter(Boolean).join(" ") || s.statusDeviceFallback}
-              subtitle={`#${result.ticket_no} · ${result.customer_name}`}
+              subtitle={`#${result.ticket_no}`}
               statusLabel={result.sub_status ? subStatusLabel(result.status, result.sub_status) : result.status}
               statusClass={statusCls(result.status)}
             />
@@ -401,7 +404,7 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
             <EntityTile
               icon={PhoneCaseIcon}
               title={result.description}
-              subtitle={`#${result.receipt_no} · ${result.customer_name || "—"}`}
+              subtitle={`#${result.receipt_no}`}
               statusLabel={s.purchasedLabel}
               statusClass="st-beveve"
             />

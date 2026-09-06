@@ -121,6 +121,8 @@ export const STRINGS = {
     backToStockPrefix: "Vissza a", backToStockLink: "készlethez",
     intakeSignTitle: "Átvételi aláírás", handoverSignTitle: "Átadási aláírás",
     signerNameLabel: "Aláíró neve", signedLabel: "Aláírva —",
+    statusRateLimited: "Túl sok próbálkozás rövid időn belül — próbáld újra kb. 15 perc múlva.",
+    statusInvalidPhone: "Érvénytelen telefonszám.",
   },
   ro: {
     navStock: "Telefoane", navBuyback: "Vinde", navRepair: "Service",
@@ -241,6 +243,8 @@ export const STRINGS = {
     backToStockPrefix: "Înapoi la", backToStockLink: "stoc",
     intakeSignTitle: "Semnătură la primire", handoverSignTitle: "Semnătură la predare",
     signerNameLabel: "Numele semnatarului", signedLabel: "Semnat —",
+    statusRateLimited: "Prea multe încercări într-un timp scurt — încearcă din nou peste 15 minute.",
+    statusInvalidPhone: "Număr de telefon invalid.",
   },
 };
 
