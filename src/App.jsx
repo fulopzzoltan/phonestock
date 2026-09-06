@@ -3,7 +3,7 @@ import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
 import { thumbPathOf } from "./lib/imageResize";
 import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi, buybackOfferFromApi, loyaltyLedgerFromApi, loyaltyRewardFromApi, loyaltyRewardToApi, customerProfileFromApi, reviewFromApi, reviewToApi, employeeFromApi, payrollScheduleFromApi, payrollPaymentFromApi, companyTaxObligationFromApi, whatsappMessageFromApi } from "./lib/mappers";
-import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, normalizeImei, money, ticketCode, cashPortion, cardPortion } from "./lib/utils";
+import { today, warrantyExpiry, isWarrantyActive, stripAccents, SITE_URL, TRACKING_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, normalizeImei, money, ticketCode, cashPortion, cardPortion } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
 import PublicHeader from "./components/PublicHeader";
@@ -191,7 +191,7 @@ function AppShell() {
   const [inviteModal, setInviteModal] = useState(false);
   const [inviteError, setInviteError] = useState("");
   const [changePasswordModal, setChangePasswordModal] = useState(false);
-  const [settings, setSettings] = useState({ smsOnTicketCreate: false, smsOnTicketReady: true });
+  const [settings, setSettings] = useState({ smsOnTicketCreate: false, smsOnTicketReady: true, loyaltyFollowupEnabled: false, loyaltyFollowupDays: 3 });
   const { messages: chatMessages, unreadCount: chatUnread, send: sendChatMessage, markRead: markChatRead } = useInternalChat(profile);
   const [search, setSearch] = useState("");
   const [svcSearch, setSvcSearch] = useState("");
@@ -1256,6 +1256,8 @@ function AppShell() {
       const apiPatch = {};
       if ("smsOnTicketCreate" in patch) apiPatch.sms_on_ticket_create = patch.smsOnTicketCreate;
       if ("smsOnTicketReady" in patch) apiPatch.sms_on_ticket_ready = patch.smsOnTicketReady;
+      if ("loyaltyFollowupEnabled" in patch) apiPatch.loyalty_followup_enabled = patch.loyaltyFollowupEnabled;
+      if ("loyaltyFollowupDays" in patch) apiPatch.loyalty_followup_days = patch.loyaltyFollowupDays;
       if ("companyName" in patch) apiPatch.company_name = patch.companyName;
       if ("companyCui" in patch) apiPatch.company_cui = patch.companyCui;
       if ("companyAddress" in patch) apiPatch.company_address = patch.companyAddress;

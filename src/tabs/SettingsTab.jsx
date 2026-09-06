@@ -220,6 +220,37 @@ export default function SettingsTab({ isAdmin, profile, user, settings, updateSe
           </div>
         )}
 
+        {isAdmin && (
+          <div className="pult-section">
+            <div className="pult-section-head"><ChatIcon width={16} height={16} />Vásárlás utáni visszajelzés-kérés</div>
+            <div className="settings-row">
+              <div>
+                <div className="settings-row-lbl">WhatsApp-üzenet telefon-vásárlás után</div>
+                <div className="settings-row-desc">
+                  Néhány nappal egy telefon-eladás után az ügyfél kap egy rövid "minden rendben?" üzenetet
+                  Google-értékelés kéréssel, benne a hűségpont-egyenlegével. <b>Szándékosan kikapcsolva marad</b>,
+                  amíg a hűségpont-rendszert ténylegesen el nem indítjuk az ügyfelek felé — ne kapjon valaki
+                  pontokról szóló üzenetet egy programról, amiről még nem is tud.
+                </div>
+              </div>
+              <Toggle checked={!!settings.loyaltyFollowupEnabled} disabled={busy} onChange={(v) => updateSettings({ loyaltyFollowupEnabled: v })} />
+            </div>
+            {settings.loyaltyFollowupEnabled && (
+              <div className="settings-row">
+                <div>
+                  <div className="settings-row-lbl">Hány nappal a vásárlás után menjen ki</div>
+                  <div className="settings-row-desc">Legyen elég idő kipróbálni a telefont, de még friss legyen az élmény — 2-4 nap a szokásos.</div>
+                </div>
+                <input
+                  type="number" min={1} max={14} style={{ width: 64 }}
+                  value={settings.loyaltyFollowupDays}
+                  onChange={(e) => updateSettings({ loyaltyFollowupDays: Number(e.target.value) || 3 })}
+                />
+              </div>
+            )}
+          </div>
+        )}
+
         {isAdmin && <CompanySettings settings={settings} updateSettings={updateSettings} busy={busy} />}
         {isAdmin && <SmartBillSettings settings={settings} updateSettings={updateSettings} busy={busy} locations={locations} />}
         {isAdmin && <LoyaltyRewardsSettings rewards={loyaltyRewards} addLoyaltyReward={addLoyaltyReward} editLoyaltyReward={editLoyaltyReward} busy={busy} />}
