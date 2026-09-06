@@ -95,6 +95,9 @@ export default function PublicFooter({ lang = "hu", minimal = false }) {
             <div className="pub-footer-bottom-left">
               <span>{s.footerRights(new Date().getFullYear())}</span>
             </div>
+            <span className="pub-footer-legal">
+              <a href={`/adatvedelem${legalLangQuery}`}>{s.footerPrivacy}</a>
+            </span>
           </div>
         </div>
       </footer>

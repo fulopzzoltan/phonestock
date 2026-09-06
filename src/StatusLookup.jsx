@@ -255,7 +255,7 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
       <PublicHeader activeNav="status" minimal={minimal} lang={lang} langSwitchHref={otherLangHref} />
       <main className="pub-lookup-main">
       {isTicket ? (
-        <div style={{ width: "100%", maxWidth: 340, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div style={{ width: "100%", maxWidth: 400, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center" }}>
           {matches && (
             <button type="button" className="ticket-back-link" onClick={() => setResult(null)}>
               <ChevronLeftIcon width={12} height={12} /> {s.backToResults}
