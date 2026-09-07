@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
 import { thumbPathOf } from "./lib/imageResize";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi, buybackOfferFromApi, loyaltyLedgerFromApi, loyaltyRewardFromApi, loyaltyRewardToApi, customerProfileFromApi, reviewFromApi, reviewToApi, employeeFromApi, payrollScheduleFromApi, payrollPaymentFromApi, companyTaxObligationFromApi, whatsappMessageFromApi } from "./lib/mappers";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi, buybackOfferFromApi, loyaltyLedgerFromApi, loyaltyRewardFromApi, loyaltyRewardToApi, customerProfileFromApi, reviewFromApi, reviewToApi, employeeFromApi, payrollScheduleFromApi, payrollPaymentFromApi, companyTaxObligationFromApi, chatMessageFromApi } from "./lib/mappers";
 import { today, warrantyExpiry, isWarrantyActive, stripAccents, TRACKING_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, normalizeImei, money, ticketCode, cashPortion, cardPortion } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
@@ -31,7 +31,7 @@ import PayrollTab from "./tabs/PayrollTab";
 import ServiceTab from "./tabs/ServiceTab";
 import PartsTab from "./tabs/PartsTab";
 import CustomersTab from "./tabs/CustomersTab";
-import WhatsAppTab from "./tabs/WhatsAppTab";
+import InboxTab from "./tabs/InboxTab";
 import WarrantyTab from "./tabs/WarrantyTab";
 import LeaveTab from "./tabs/LeaveTab";
 import BuybackTab from "./tabs/BuybackTab";
@@ -177,7 +177,9 @@ function AppShell() {
   const [parts, setParts] = useState([]);
   const [users, setUsers] = useState([]);
   const [customersTable, setCustomersTable] = useState([]);
-  const [whatsappMessages, setWhatsappMessages] = useState([]);
+  // Közös postaláda (WhatsApp + Messenger) — "inbox", nem "chat", mert a `chatMessages`
+  // nevet lent már a belső (kolléga-kolléga) csevegés hook-ja foglalja.
+  const [inboxMessages, setInboxMessages] = useState([]);
   const [customerProfiles, setCustomerProfiles] = useState([]);
   const [loyaltyRewards, setLoyaltyRewards] = useState([]);
   const [loyaltyLedger, setLoyaltyLedger] = useState([]);
@@ -352,7 +354,7 @@ function AppShell() {
         supabase.from("payroll_schedule").select("*").order("sort_order", { ascending: true }),
         supabase.from("payroll_payments").select("*").order("due_date", { ascending: true }),
         supabase.from("company_tax_obligations").select("*").order("due_date", { ascending: true }),
-        fetchAllRows(() => supabase.from("whatsapp_messages").select("*").order("created_at", { ascending: true })),
+        fetchAllRows(() => supabase.from("chat_messages").select("*").order("created_at", { ascending: true })),
       ]);
       setLocations(unwrap(locs) || []);
       const prodRows = unwrap(prods) || [];
@@ -384,7 +386,7 @@ function AppShell() {
       setPayrollSchedule((unwrap(paySched) || []).map(payrollScheduleFromApi));
       setPayrollPayments((unwrap(payPays) || []).map(payrollPaymentFromApi));
       setCompanyTaxObligations((unwrap(coTax) || []).map(companyTaxObligationFromApi));
-      setWhatsappMessages((unwrap(wappMsgs) || []).map(whatsappMessageFromApi));
+      setInboxMessages((unwrap(wappMsgs) || []).map(chatMessageFromApi));
       setLeaveTypes((unwrap(lTypes) || []).map(leaveTypeFromApi));
       setLeaveBalances((unwrap(lBalances) || []).map(leaveBalanceFromApi));
       setLeaveRequests((unwrap(lRequests) || []).map(leaveRequestFromApi));
@@ -456,8 +458,8 @@ function AppShell() {
   useEffect(() => {
     const id = setInterval(async () => {
       if (document.visibilityState !== "visible") return;
-      const rows = unwrap(await fetchAllRows(() => supabase.from("whatsapp_messages").select("*").order("created_at", { ascending: true })));
-      setWhatsappMessages((rows || []).map(whatsappMessageFromApi));
+      const rows = unwrap(await fetchAllRows(() => supabase.from("chat_messages").select("*").order("created_at", { ascending: true })));
+      setInboxMessages((rows || []).map(chatMessageFromApi));
     }, 30000);
     return () => clearInterval(id);
   }, []);
@@ -1288,40 +1290,66 @@ function AppShell() {
     });
   }
 
-  // WHATSAPP — szabad szöveges válasz egy meglévő beszélgetésben (a send-whatsapp function
-  // freeformBody ágát hívja; ez csak akkor kézbesíthető, ha az ügyfél 24 órán belül írt nekünk —
-  // a Meta-oldali "service window" szabály miatt, ld. TASKS_WHATSAPP_INTEGRACIO.md).
-  async function sendWhatsappReply(phoneNorm, body) {
+  // KÖZÖS POSTALÁDA — szabad szöveges (vagy kép-) válasz egy meglévő beszélgetésben,
+  // csatornától függően a send-whatsapp vagy a send-messenger functiont hívja. Mindkettő
+  // csak akkor tud kézbesíteni, ha az ügyfél a közelmúltban (WhatsApp: gyakorlatban
+  // korlátlan sablon nélkül is elfogadják; Messenger: szigorúan 24 órán belül) írt nekünk —
+  // ld. TASKS_WHATSAPP_INTEGRACIO.md.
+  async function sendInboxReply(thread, body, mediaUrl) {
+    if (thread.channel === "messenger") {
+      const { data, error: fnError } = await supabase.functions.invoke("send-messenger", {
+        body: { psid: thread.senderPsid, text: body || null, mediaUrl: mediaUrl || null, customerId: thread.customerId || null },
+      });
+      if (fnError) throw fnError;
+      if (data?.error) throw new Error(data.error);
+      setInboxMessages((prev) => [...prev, {
+        id: `local-${Date.now()}`, channel: "messenger", direction: "out", senderPsid: thread.senderPsid,
+        body: body || "", mediaUrl: mediaUrl || null, mediaType: mediaUrl ? "image" : null, status: "sent",
+        customerId: thread.customerId || null, createdAt: new Date().toISOString(),
+      }]);
+      return data;
+    }
     const { data, error: fnError } = await supabase.functions.invoke("send-whatsapp", {
-      body: { phone: phoneNorm, freeformBody: body },
+      body: { phone: thread.phoneNorm, freeformBody: body || null, imageUrl: mediaUrl || null },
     });
     if (fnError) throw fnError;
     if (data?.error) throw new Error(data.error);
-    // Optimista sor a helyi listához — a webhook/valós wa_message_id majd a következő
+    // Optimista sor a helyi listához — a webhook/valós external_message_id majd a következő
     // frissítéskor (loadAll) pontosítja, de a felhasználónak azonnal látszania kell a válasz.
-    setWhatsappMessages((prev) => [...prev, {
-      id: `local-${Date.now()}`,
-      direction: "out",
-      phoneNorm,
-      body,
-      status: data?.channel === "whatsapp" ? "sent" : "sent",
-      customerId: customersTable.find((c) => c.phone && c.phone.replace(/\D/g, "").slice(-9) === phoneNorm)?.id || null,
+    setInboxMessages((prev) => [...prev, {
+      id: `local-${Date.now()}`, channel: "whatsapp", direction: "out", phoneNorm: thread.phoneNorm,
+      body: body || "", mediaUrl: mediaUrl || null, mediaType: mediaUrl ? "image" : null, status: "sent",
+      customerId: thread.customerId || customersTable.find((c) => c.phone && c.phone.replace(/\D/g, "").slice(-9) === thread.phoneNorm)?.id || null,
       createdAt: new Date().toISOString(),
     }]);
     return data;
   }
 
   // Olvasottnak jelöli egy beszélgetés összes eddigi bejövő üzenetét — akkor hívjuk, amikor
-  // valaki megnyitja azt a beszélgetést a WhatsApp fülön. Ez adja az alapját a Sidebar/BottomNav
-  // "olvasatlan" jelvényének (nav-pill), ugyanúgy, mint a Pult fülnél.
-  async function markWhatsappRead(phoneNorm) {
-    const unreadIds = whatsappMessages
-      .filter((m) => m.phoneNorm === phoneNorm && m.direction === "in" && !m.readAt)
+  // valaki megnyitja azt a beszélgetést a Postaláda fülön. Ez adja az alapját a
+  // Sidebar/BottomNav "olvasatlan" jelvényének (nav-pill), ugyanúgy, mint a Pult fülnél.
+  async function markInboxRead(thread) {
+    const unreadIds = inboxMessages
+      .filter((m) => m.channel === thread.channel
+        && (thread.channel === "messenger" ? m.senderPsid === thread.senderPsid : m.phoneNorm === thread.phoneNorm)
+        && m.direction === "in" && !m.readAt)
       .map((m) => m.id);
     if (unreadIds.length === 0) return;
     const nowIso = new Date().toISOString();
-    setWhatsappMessages((prev) => prev.map((m) => (unreadIds.includes(m.id) ? { ...m, readAt: nowIso } : m)));
-    await supabase.from("whatsapp_messages").update({ read_at: nowIso }).in("id", unreadIds);
+    setInboxMessages((prev) => prev.map((m) => (unreadIds.includes(m.id) ? { ...m, readAt: nowIso } : m)));
+    await supabase.from("chat_messages").update({ read_at: nowIso }).in("id", unreadIds);
+  }
+
+  // Ügyfél/lead pipeline-státusz és forrás-cimke frissítése a Postaláda beszélgetés-fejlécéből
+  // (ld. customers.lead_stage / lead_source, unified_chat_inbox_and_crm_pipeline migráció).
+  async function updateLead(customerId, patch) {
+    const apiPatch = {};
+    if ("leadStage" in patch) apiPatch.lead_stage = patch.leadStage || null;
+    if ("leadSource" in patch) apiPatch.lead_source = patch.leadSource || null;
+    if ("name" in patch) apiPatch.name = patch.name || null;
+    apiPatch.lead_updated_at = new Date().toISOString();
+    const r = unwrap(await supabase.from("customers").update(apiPatch).eq("id", customerId).select());
+    if (r?.[0]) setCustomersTable((prev) => prev.map((c) => (c.id === customerId ? customerFromApi(r[0]) : c)));
   }
 
   // USERS (admin only)
@@ -2646,9 +2674,10 @@ function AppShell() {
   };
 
   // Hány beszélgetésben van olvasatlan (ügyféltől jött, még meg nem nyitott) üzenet —
-  // ugyanez a jelvény a WhatsApp fülön is a Sidebar/BottomNav-ban, mint a Pultnál.
-  const whatsappUnreadCount = new Set(
-    whatsappMessages.filter((m) => m.direction === "in" && !m.readAt).map((m) => m.phoneNorm)
+  // ugyanez a jelvény a Postaláda fülön is a Sidebar/BottomNav-ban, mint a Pultnál.
+  // Csatornánként más az azonosító (WhatsApp: phoneNorm, Messenger: senderPsid).
+  const inboxUnreadCount = new Set(
+    inboxMessages.filter((m) => m.direction === "in" && !m.readAt).map((m) => `${m.channel}:${m.phoneNorm || m.senderPsid}`)
   ).size;
 
   return (
@@ -2656,12 +2685,12 @@ function AppShell() {
       <Sidebar
         tab={tab} setTab={setTab} setTicketModal={setTicketModal} isAdmin={isAdmin}
         lastActiveLocationId={lastActiveLocationId} pultPendingCounts={pultPendingCounts}
-        whatsappUnreadCount={whatsappUnreadCount}
+        inboxUnreadCount={inboxUnreadCount}
       />
       <BottomNav
         tab={tab} setTab={setTab} isAdmin={isAdmin} locFilter={locFilter} setLocFilter={setLocFilter}
         allowedLocations={allowedLocations} myLocationId={myLocationId} locName={locName} profile={profile} user={user}
-        signOut={signOut} pultPendingCounts={pultPendingCounts} whatsappUnreadCount={whatsappUnreadCount}
+        signOut={signOut} pultPendingCounts={pultPendingCounts} inboxUnreadCount={inboxUnreadCount}
       />
 
       <div className="content-col">
@@ -2830,10 +2859,10 @@ function AppShell() {
           />
         )}
 
-        {!noLocationAssigned && tab === "whatsapp" && (
-          <WhatsAppTab
-            messages={whatsappMessages} customers={customersTable} onSend={sendWhatsappReply} onOpenCustomer={setCustomerKey}
-            onMarkRead={markWhatsappRead}
+        {!noLocationAssigned && tab === "inbox" && (
+          <InboxTab
+            messages={inboxMessages} customers={customersTable} onSend={sendInboxReply} onOpenCustomer={setCustomerKey}
+            onMarkRead={markInboxRead} onUpdateLead={updateLead}
           />
         )}
 

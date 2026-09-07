@@ -229,17 +229,24 @@ export const tToApi = (t, locId) => ({
   product_id: t.productId || null,
 });
 
-export const whatsappMessageFromApi = (r) => ({
+// chat_messages — közös postaláda (WhatsApp + Messenger), a régi whatsapp_messages
+// tábla csatorna-semlegesre bővítve (ld. unified_chat_inbox_and_crm_pipeline migráció).
+export const chatMessageFromApi = (r) => ({
   id: r.id,
-  waMessageId: r.wa_message_id,
+  channel: r.channel || "whatsapp",
+  externalMessageId: r.external_message_id,
   direction: r.direction,
   phoneNorm: r.phone_norm,
+  senderPsid: r.sender_psid,
   body: r.body || "",
   templateName: r.template_name,
   status: r.status,
   errorMessage: r.error_message,
   customerId: r.customer_id,
   ticketId: r.ticket_id,
+  mediaUrl: r.media_url,
+  mediaType: r.media_type,
+  mediaStoragePath: r.media_storage_path,
   createdAt: r.created_at,
   readAt: r.read_at,
 });
@@ -257,6 +264,12 @@ export const customerFromApi = (r) => ({
   loyaltyPointsBalance: r.loyalty_points_balance || 0,
   referralCode: r.referral_code || "",
   referredByCustomerId: r.referred_by_customer_id,
+  // CRM pipeline (ld. unified_chat_inbox_and_crm_pipeline migráció) — null azoknál a
+  // régi ügyfeleknél, akiket sosem érintett a postaláda-funkció.
+  leadStage: r.lead_stage,
+  leadSource: r.lead_source,
+  leadUpdatedAt: r.lead_updated_at,
+  messengerPsid: r.messenger_psid,
 });
 export const customerToApi = (c) => ({
   name: c.name || null,
@@ -266,6 +279,8 @@ export const customerToApi = (c) => ({
   address: c.address || null,
   notes: c.notes || null,
   ...(c.referredByCustomerId !== undefined ? { referred_by_customer_id: c.referredByCustomerId || null } : {}),
+  ...(c.leadStage !== undefined ? { lead_stage: c.leadStage || null } : {}),
+  ...(c.leadSource !== undefined ? { lead_source: c.leadSource || null } : {}),
 });
 
 export const loyaltyLedgerFromApi = (r) => ({

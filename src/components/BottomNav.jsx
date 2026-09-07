@@ -16,7 +16,7 @@ const FIXED = [
 
 export default function BottomNav({
   tab, setTab, isAdmin, locFilter, setLocFilter, allowedLocations,
-  myLocationId, locName, profile, user, signOut, pultPendingCounts, whatsappUnreadCount,
+  myLocationId, locName, profile, user, signOut, pultPendingCounts, inboxUnreadCount,
 }) {
   const [moreOpen, setMoreOpen] = useState(false);
   const fixedKeys = FIXED.map((f) => f.key);
@@ -49,9 +49,9 @@ export default function BottomNav({
         <div className="nav-lbl" style={{ marginTop: 0 }}>Napi munka</div>
         <button className={`navbtn ${tab === "parts" ? "active" : ""}`} onClick={() => go("parts")}><PartsIcon className="nav-ic" />Alkatrészek</button>
         <button className={`navbtn ${tab === "customers" ? "active" : ""}`} onClick={() => go("customers")}><CustomersIcon className="nav-ic" />Kliensek</button>
-        <button className={`navbtn ${tab === "whatsapp" ? "active" : ""}`} onClick={() => go("whatsapp")}>
-          <ChatIcon className="nav-ic" />WhatsApp
-          {whatsappUnreadCount > 0 && <span className="nav-pill-group"><span className="nav-pill blue">{whatsappUnreadCount}</span></span>}
+        <button className={`navbtn ${tab === "inbox" ? "active" : ""}`} onClick={() => go("inbox")}>
+          <ChatIcon className="nav-ic" />Postaláda
+          {inboxUnreadCount > 0 && <span className="nav-pill-group"><span className="nav-pill blue">{inboxUnreadCount}</span></span>}
         </button>
         <button className={`navbtn ${tab === "warranty" ? "active" : ""}`} onClick={() => go("warranty")}><WarrantyIcon className="nav-ic" />Garancia</button>
 
