@@ -5,3 +5,7 @@ dist
 .netlify
 deploy-*.zip
 vite.config.js.timestamp-*.mjs
+.DS_Store
+.impeccable/hook.cache.json
+.impeccable/config.local.json
+supabase/.temp/
