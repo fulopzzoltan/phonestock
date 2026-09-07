@@ -124,6 +124,7 @@ export const STRINGS = {
     signerNameLabel: "Aláíró neve", signedLabel: "Aláírva —",
     statusRateLimited: "Túl sok próbálkozás rövid időn belül — próbáld újra kb. 15 perc múlva.",
     statusInvalidPhone: "Érvénytelen telefonszám.",
+    bottomNavStatus: "Nyomon követés", bottomNavCall: "Hívás", bottomNavLocations: "Helyszínek",
   },
   ro: {
     navStock: "Telefoane", navBuyback: "Vinde", navRepair: "Service",
@@ -247,6 +248,7 @@ export const STRINGS = {
     signerNameLabel: "Numele semnatarului", signedLabel: "Semnat —",
     statusRateLimited: "Prea multe încercări într-un timp scurt — încearcă din nou peste 15 minute.",
     statusInvalidPhone: "Număr de telefon invalid.",
+    bottomNavStatus: "Urmărire", bottomNavCall: "Sună", bottomNavLocations: "Locații",
   },
 };
 

@@ -4,10 +4,14 @@ import { money, statusCls, subStatusLabel, warrantyExpiry, isWarrantyActive, SER
 import { t } from "./lib/i18n";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
+import PublicBottomNav from "./components/PublicBottomNav";
 import SignaturePad from "./components/SignaturePad";
 import FoliaUpsellBanner from "./components/FoliaUpsellBanner";
 import WarrantyTermsToggle from "./components/WarrantyTermsToggle";
-import { CallIcon, PhoneCaseIcon, ChevronLeftIcon } from "./components/icons";
+import { CallIcon, PhoneCaseIcon, ChevronLeftIcon, ClockIcon, PinIcon } from "./components/icons";
+
+// Központi ügyfélszolgálati szám — ugyanaz, mint a lábléc "minimal" nézetében.
+const SUPPORT_PHONE = "0773985278";
 
 const INTAKE_CONSENT_TEXT = "Átadom a készüléket javításra, elfogadom a leírt hibát/állapotot";
 // A hűségpont/ajánlói rendszer még nincs élesítve — amíg nem az, ne mutassuk a
@@ -250,8 +254,31 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
   const purchaseExpiry = isPurchase ? warrantyExpiry(result.date, result.warranty) : null;
   const purchaseActive = isPurchase ? isWarrantyActive(result.date, result.warranty) : false;
 
+  // Mobilon (iOS / eMag app mintára) az alsó tabsáv veszi át a fő navigáció szerepét —
+  // egyelőre csak ezen a "csak nyomonkövetés" oldalon éles teszt jelleggel. A "Nyomon
+  // követés" tab mindig a kezdőállapotba (üres kereső) visz vissza, ha épp van már
+  // találat/lista — token/short_code alapú (privát linkes) nézetben nincs mit resetelni,
+  // ott egyszerű "aktív" jelző marad.
+  const canReset = !token && !shortCode && (result || matches || error);
+  const bottomNavItems = minimal
+    ? [
+        {
+          key: "status",
+          label: s.bottomNavStatus,
+          icon: ClockIcon,
+          active: true,
+          onClick: () => {
+            if (canReset) { setResult(null); setMatches(null); setPhone(""); setError(""); }
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          },
+        },
+        { key: "call", label: s.bottomNavCall, icon: CallIcon, href: `tel:${SUPPORT_PHONE}` },
+        { key: "locations", label: s.bottomNavLocations, icon: PinIcon, href: "#pub-footer-locations" },
+      ]
+    : null;
+
   return (
-    <div className="pub-shop">
+    <div className={`pub-shop${minimal ? " pub-shop-tabbed" : ""}`}>
       <PublicHeader activeNav="status" minimal={minimal} lang={lang} langSwitchHref={otherLangHref} />
       <main className="pub-lookup-main">
       {isTicket ? (
@@ -482,6 +509,7 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
       )}
       </main>
       <PublicFooter minimal={minimal} lang={lang} />
+      {bottomNavItems && <PublicBottomNav items={bottomNavItems} />}
     </div>
   );
 }

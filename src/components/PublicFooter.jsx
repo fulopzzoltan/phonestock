@@ -85,7 +85,7 @@ export default function PublicFooter({ lang = "hu", minimal = false }) {
               </div>
             </div>
 
-            <div className="pub-footer-col">
+            <div className="pub-footer-col" id="pub-footer-locations">
               <div className="pub-footer-heading">{s.footerLocations}</div>
               <LocationLinks locations={locations} />
             </div>
