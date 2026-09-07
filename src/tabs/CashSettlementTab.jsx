@@ -1,8 +1,7 @@
 import { useMemo, useState } from "react";
-import { money, cashPortion, cardPortion, exportToCsv } from "../lib/utils";
-import { EmptyState } from "../components/EmptyState";
+import { money, cashPortion, cardPortion } from "../lib/utils";
 import { FinanceIcon, EditIcon } from "../components/icons";
-import TransactionsPeriodList from "../components/TransactionsPeriodList";
+import HistorySection from "../components/HistorySection";
 import ConfirmDelete from "../components/ConfirmDelete";
 
 function EditSettlementRow({ settlement, busy, onSave, onCancel }) {
@@ -51,6 +50,23 @@ function yesterday() {
 function daysBetweenInclusive(a, b) {
   return Math.round((new Date(b + "T00:00:00Z") - new Date(a + "T00:00:00Z")) / 86400000) + 1;
 }
+function dayLabel(dateStr) {
+  const d = new Date(dateStr + "T00:00:00Z");
+  return d.toLocaleDateString("hu-HU", { month: "short", day: "numeric", weekday: "short", timeZone: "UTC" });
+}
+function shortDayLabel(dateStr) {
+  const d = new Date(dateStr + "T00:00:00Z");
+  const weekday = d.toLocaleDateString("hu-HU", { weekday: "short", timeZone: "UTC" });
+  return `${weekday}. ${d.getUTCDate()}`;
+}
+function numOnly(n) {
+  return Math.round(Number(n) || 0).toLocaleString("hu-HU");
+}
+function dayTotal(day) {
+  const withTx = day.locs.filter((l) => l.hasTx);
+  if (withTx.length === 0) return { total: 0, hasAny: false };
+  return { total: withTx.reduce((s, l) => s + l.net, 0), hasAny: true };
+}
 
 // Greedy settle-up: minimális számú átutalással kiegyenlíti az egyenlegeket (N helyszínre is működik,
 // nem csak kettőre — ha csak két helyszín van, ez pontosan egy sima "A ad B-nek X-et" mondatot ad.
@@ -72,17 +88,101 @@ function computeTransfers(locs) {
   return transfers;
 }
 
+const LOC_PALETTE = ["#1DB954", "#2563EB", "#7C3AED", "#F59E0B"];
+
+function amtColor(net, hasTx) {
+  if (!hasTx) return "#C4C9D2";
+  if (net > 0.5) return "#15803D";
+  if (net < -0.5) return "#B91C1C";
+  return "#9CA3AF";
+}
+
+// A) Napi tábla — sűrű, pontos számokra optimalizált nézet: egy sor egy napra,
+// minden helyszín saját oszlopban. A legjobb, ha sok el nem számolt nap van egyszerre.
+function DailyNumbersTable({ days }) {
+  const locations = days[0]?.locs || [];
+  return (
+    <div className="tw">
+      <table>
+        <thead>
+          <tr>
+            <th>Nap</th>
+            {locations.map((l) => <th key={l.id} className="num-col">{l.name}</th>)}
+          </tr>
+        </thead>
+        <tbody>
+          {days.map((d) => (
+            <tr key={d.date}>
+              <td className="mono" style={!d.hasTx ? { color: "#C4C9D2" } : undefined}>{dayLabel(d.date)}</td>
+              {d.locs.map((l) => (
+                <td key={l.id} className="num-col mono" style={{ fontWeight: 600, color: amtColor(l.net, l.hasTx) }}>
+                  {l.hasTx ? `${l.net > 0 ? "+" : ""}${money(l.net)}` : "—"}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// B) Napi kártyák — egy fehér, keretes kártya naponta (az app saját kártya-nyelve, nem
+// kitalált forma), tetején a nappal, alatta helyszínenként a készpénz +/- egyenlege,
+// alján egy rögzített, zöld/piros hátterű sávban a napi összesítő — a szín önmagában is
+// jelzi, milyen volt a nap. A helyszín-nevek csak egyszer, a sor elején szerepelnek.
+function DailyCards({ days }) {
+  const locations = days[0]?.locs || [];
+  return (
+    <div style={{ display: "flex", gap: 14, paddingTop: 4, paddingBottom: 8 }}>
+      <div className="cs-daycard-legend">
+        <div className="cs-daycard-legend-spacer" />
+        <div className="cs-daycard-legend-rows">
+          {locations.map((l, i) => (
+            <div key={l.id} className="cs-daycard-legend-row">
+              <span className="cs-settle-dot" style={{ background: LOC_PALETTE[i % LOC_PALETTE.length] }} />
+              {l.name}
+            </div>
+          ))}
+        </div>
+        <div className="cs-daycard-legend-total">ÖSSZESEN</div>
+      </div>
+      <div style={{ display: "flex", gap: 10, overflowX: "auto" }}>
+        {days.map((d) => {
+          const { total, hasAny } = dayTotal(d);
+          const footerCls = !hasAny ? "neutral" : total > 0.5 ? "positive" : total < -0.5 ? "negative" : "neutral";
+          return (
+            <div key={d.date} className="cs-daycard" style={!d.hasTx ? { opacity: 0.55 } : undefined}>
+              <div className="cs-daycard-date">{shortDayLabel(d.date)}</div>
+              <div className="cs-daycard-rows">
+                {d.locs.map((l) => (
+                  <div key={l.id} className="cs-daycard-row" style={{ color: amtColor(l.net, l.hasTx) }}>
+                    {l.hasTx ? `${l.net > 0 ? "+" : ""}${numOnly(l.net)}` : "—"}
+                  </div>
+                ))}
+              </div>
+              <div className={`cs-daycard-footer ${footerCls}`}>
+                {hasAny ? `${total > 0 ? "+" : ""}${numOnly(total)}` : "—"}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function CashSettlementTab({
   busy, transactions, cashSettlements, saveCashSettlement, editCashSettlement, deleteCashSettlement, users,
-  setTxModal, deleteTransaction, setReceiptTxId, allowedLocations, locName,
+  allowedLocations, locName,
 }) {
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
   const [countedByLoc, setCountedByLoc] = useState({});
   const [note, setNote] = useState("");
-  const [showList, setShowList] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [dailyView, setDailyView] = useState("cards");
 
   const lastSettlement = cashSettlements[0] || null;
   // Alapértelmezett kezdet: az utolsó elszámolás utáni nap (vagy tegnap, ha még nem volt
@@ -114,20 +214,27 @@ export default function CashSettlementTab({
   const transfers = useMemo(() => computeTransfers(withBalance), [withBalance]);
   const allSettled = withBalance.length > 0 && transfers.length === 0;
 
+  const dailyPerLoc = useMemo(() => {
+    if (!periodValid) return [];
+    const days = [];
+    for (let d = periodStart; d <= periodEnd; d = dayAfter(d)) {
+      const dayTx = periodTx.filter((t) => t.date === d);
+      const locs = allowedLocations.map((loc) => {
+        const locTx = dayTx.filter((t) => t.locationId === loc.id);
+        const cashIncome = locTx.filter((t) => t.type === "income").reduce((s, t) => s + cashPortion(t), 0);
+        const cashExpense = locTx.filter((t) => t.type === "expense").reduce((s, t) => s + cashPortion(t), 0);
+        return { id: loc.id, name: loc.name, net: cashIncome - cashExpense, hasTx: locTx.length > 0 };
+      });
+      days.push({ date: d, locs, hasTx: dayTx.length > 0 });
+    }
+    return days;
+  }, [periodValid, periodStart, periodEnd, periodTx, allowedLocations]);
+
   const cardIncome = periodTx.filter((t) => t.type === "income").reduce((s, t) => s + cardPortion(t), 0);
   const transferIncome = periodTx.filter((t) => t.type === "income" && t.payment === "Átutalás").reduce((s, t) => s + (Number(t.amount) || 0), 0);
 
   function holderNameFor(locId) {
     return locName(locId);
-  }
-
-  function exportPeriodTx() {
-    exportToCsv(`tranzakciok-${periodStart}_${periodEnd}`, [
-      { key: (t) => t.date, label: "Dátum" }, { key: (t) => (t.type === "income" ? "Bevétel" : "Kiadás"), label: "Típus" },
-      { key: (t) => t.category || "", label: "Kategória" }, { key: (t) => t.description || "", label: "Leírás" },
-      { key: (t) => t.amount ?? "", label: "Összeg" }, { key: (t) => t.payment || "", label: "Fizetés" },
-      { key: (t) => locName(t.locationId), label: "Helyszín" }, { key: (t) => t.customerName || "", label: "Ügyfél" },
-    ], periodTx);
   }
 
   async function handleSubmit(e) {
@@ -169,72 +276,50 @@ export default function CashSettlementTab({
           Az elszámolás rögzítve. Az alábbi új időszak a következő elszámoláshoz készült elő — csak akkor nyomd meg újra a "Rögzítés" gombot, ha ehhez is van elszámolnivaló.
         </div>
       )}
-      <div className="row2" style={{ maxWidth: 420, marginBottom: 16 }}>
-        <div className="field" style={{ margin: 0 }}>
-          <label>Időszak kezdete</label>
-          <input type="date" value={periodStart} onChange={(e) => { setCustomStart(e.target.value); setJustSaved(false); }} />
+      <form className="pult-section" style={{ marginBottom: 16 }} onSubmit={handleSubmit}>
+        <div className="pult-section-head cs-daily-head">
+          {withBalance.length > 0 && (
+            <div className="cs-settle-hint" title={allSettled ? "Nincs teendő, egyenlőek." : transfers.map((tr) => `${tr.fromName} → ${tr.toName}: ${money(tr.amount)}`).join("; ")}>
+              {allSettled ? (
+                <span className="cs-settle-ok">Egyenleg rendben</span>
+              ) : transfers.map((tr, i) => {
+                const fromIdx = withBalance.findIndex((l) => l.id === tr.fromId);
+                const toIdx = withBalance.findIndex((l) => l.id === tr.toId);
+                return (
+                  <span key={i} className="cs-settle-flow">
+                    <span className="cs-settle-dot" style={{ background: LOC_PALETTE[fromIdx % LOC_PALETTE.length] }} />
+                    <span className="cs-settle-arrow">→</span>
+                    <span className="cs-settle-dot" style={{ background: LOC_PALETTE[toIdx % LOC_PALETTE.length] }} />
+                    <b className="cs-settle-amt">{money(tr.amount)}</b>
+                  </span>
+                );
+              })}
+            </div>
+          )}
+          <div className="cs-daterange" style={{ marginLeft: "auto" }}>
+            <input type="date" value={periodStart} onChange={(e) => { setCustomStart(e.target.value); setJustSaved(false); }} />
+            <span className="sep">–</span>
+            <input type="date" value={periodEnd} onChange={(e) => { setCustomEnd(e.target.value); setJustSaved(false); }} />
+          </div>
+          {periodValid && <span className="cnt-text" style={{ fontWeight: 500, fontSize: 12.5, color: "#9CA3AF" }}>{daysBetweenInclusive(periodStart, periodEnd)} nap</span>}
+          <div className="seg">
+            <button type="button" className={dailyView === "table" ? "active" : ""} onClick={() => setDailyView("table")}>Tábla</button>
+            <button type="button" className={dailyView === "cards" ? "active" : ""} onClick={() => setDailyView("cards")}>Kártyák</button>
+          </div>
         </div>
-        <div className="field" style={{ margin: 0 }}>
-          <label>Időszak vége</label>
-          <input type="date" value={periodEnd} onChange={(e) => { setCustomEnd(e.target.value); setJustSaved(false); }} />
-        </div>
-      </div>
-      {!periodValid && (
-        <div style={{ fontSize: 13, color: "#B91C1C", background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: "var(--radius-md)", padding: "10px 14px", marginBottom: 16 }}>
-          A kezdő dátum ({periodStart}) nem lehet később, mint a záró dátum ({periodEnd}) — emiatt a rögzítés gomb ki van kapcsolva.
-        </div>
-      )}
-      <div style={{ fontSize: 13, color: "#6B7280", marginBottom: 16 }}>
-        Időszak: <b style={{ color: "#111827" }}>{periodStart} – {periodEnd}</b>
-        {periodValid && ` (${daysBetweenInclusive(periodStart, periodEnd)} nap)`}
-      </div>
+        {periodValid ? (
+          <>
+            {dailyView === "table" && <DailyNumbersTable days={dailyPerLoc} />}
+            {dailyView === "cards" && <DailyCards days={dailyPerLoc} />}
+          </>
+        ) : (
+          <div style={{ fontSize: 13, color: "#B91C1C", background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: "var(--radius-md)", padding: "10px 14px" }}>
+            A kezdő dátum ({periodStart}) nem lehet később, mint a záró dátum ({periodEnd}) — emiatt a rögzítés gomb ki van kapcsolva.
+          </div>
+        )}
 
-      <form className="tw" style={{ padding: 20 }} onSubmit={handleSubmit}>
-        <div className="tw" style={{ marginBottom: 16, overflow: "hidden" }}>
-          <table>
-            <thead>
-              <tr>
-                <th>Helyszín</th>
-                <th className="num-col">Nettó cash</th>
-                <th className="num-col">Jár (fele)</th>
-                <th className="num-col">Egyenleg</th>
-              </tr>
-            </thead>
-            <tbody>
-              {withBalance.map((l) => (
-                <tr key={l.id}>
-                  <td style={{ fontWeight: 600 }}>{l.name}</td>
-                  <td className="num-col mono">{money(l.net)}</td>
-                  <td className="num-col mono" style={{ color: "#6B7280" }}>{money(fairShare)}</td>
-                  <td className="num-col mono" style={{ fontWeight: 700, color: l.balance > 0.5 ? "#15803D" : l.balance < -0.5 ? "#B91C1C" : "#6B7280" }}>
-                    {l.balance > 0 ? "+" : ""}{money(l.balance)}
-                  </td>
-                </tr>
-              ))}
-              <tr>
-                <td style={{ fontWeight: 700, color: "#374151" }}>Összesen</td>
-                <td className="num-col mono" style={{ fontWeight: 700 }}>{money(totalNet)}</td>
-                <td className="num-col mono" style={{ color: "#6B7280" }}>{money(totalNet)}</td>
-                <td className="num-col mono">0</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <div style={{ borderTop: "1px solid #EEF0F2", margin: "20px 0 16px" }} />
 
-        <div style={{ textAlign: "center", padding: "14px 10px", fontSize: 16, fontWeight: 700, color: allSettled ? "#15803D" : "#111827", background: "#F9FAFB", borderRadius: "var(--radius-md)", marginBottom: 16 }}>
-          {withBalance.length === 0 ? "Nincs helyszín az elszámoláshoz."
-            : allSettled ? "Nincs teendő, egyenlőek."
-            : transfers.map((tr, i) => (
-              <div key={i}>{tr.fromName} ad át {tr.toName}-nak <span style={{ color: "var(--accent)" }}>{money(tr.amount)}</span>-t.</div>
-            ))}
-        </div>
-
-        <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-          <span className="badge-income">Kártyás: {money(cardIncome)}</span>
-          <span className="badge-income">Utalásos: {money(transferIncome)}</span>
-        </div>
-
-        <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", marginBottom: 12 }}>Fizikai ellenőrzés (opcionális) — ténylegesen mennyi készpénz van most</div>
         <div className="row3">
           {withBalance.map((l) => {
             const counted = countedByLoc[l.id];
@@ -250,37 +335,27 @@ export default function CashSettlementTab({
               </div>
             );
           })}
+          <div className="field">
+            <label>Megjegyzés</label>
+            <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="pl. eltérés oka" />
+          </div>
         </div>
-        <div className="field">
-          <label>Megjegyzés (opcionális)</label>
-          <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="pl. eltérés oka" />
-        </div>
-        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10, marginTop: 4 }}>
+          <div style={{ display: "flex", gap: 8 }}>
+            <span className="badge-income">Kártyás: {money(cardIncome)}</span>
+            <span className="badge-income">Utalásos: {money(transferIncome)}</span>
+          </div>
           <button type="submit" className="btn" disabled={busy || !periodValid || withBalance.length === 0}>Elszámolás rögzítése</button>
         </div>
       </form>
 
-      <div style={{ marginTop: 18, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-        <span className="toggle-link" onClick={() => setShowList((v) => !v)}>
-          {showList ? "Időszak tételeinek elrejtése" : `Időszak tételei megtekintése (${periodTx.length})`}
-        </span>
-        {periodTx.length > 0 && (
-          <button type="button" className="btn sec sm" onClick={exportPeriodTx}>Időszak exportálása CSV-be</button>
-        )}
-      </div>
-      <div>
-        {showList && (
-          <div style={{ marginTop: 10 }}>
-            <TransactionsPeriodList transactions={periodTx} locName={locName} onEdit={setTxModal} onDelete={deleteTransaction} onOpenReceipt={setReceiptTxId} busy={busy} />
-          </div>
-        )}
-      </div>
-
-      <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "22px 0 8px 2px" }}>Korábbi elszámolások</div>
-      <div className="tw">
-        {cashSettlements.length === 0 ? (
-          <EmptyState icon={FinanceIcon}>Még nincs rögzített elszámolás.</EmptyState>
-        ) : (
+      <HistorySection
+        icon={FinanceIcon}
+        label="Korábbi elszámolások"
+        items={cashSettlements}
+        filterFn={(s, q) => [s.periodStart, s.periodEnd, ...(s.locationBreakdown || []).map((l) => l.location_name)].filter(Boolean).join(" ").toLowerCase().includes(q)}
+      >
+        {(rows) => (
           <table>
             <thead>
               <tr>
@@ -292,7 +367,7 @@ export default function CashSettlementTab({
               </tr>
             </thead>
             <tbody>
-              {cashSettlements.map((s) => {
+              {rows.map((s) => {
                 const closer = users.find((u) => u.id === s.settledBy);
                 if (editingId === s.id) {
                   return (
@@ -327,7 +402,7 @@ export default function CashSettlementTab({
             </tbody>
           </table>
         )}
-      </div>
+      </HistorySection>
     </>
   );
 }

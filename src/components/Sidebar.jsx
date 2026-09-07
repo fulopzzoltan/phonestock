@@ -6,7 +6,6 @@ import {
 
 const WEBSHOP_TABS = ["buyback", "repair-prices", "reviews"];
 const ADMIN_TABS = ["dashboard", "leave", "users", "vault", "trash"];
-const FINANCE_MORE_TABS = ["cash-settlement", "payroll", "invoices", "leave"];
 
 // Mobilon (<=640px) ez a teljes komponens el van rejtve — ott a BottomNav.jsx veszi át a
 // navigáció szerepét (alsó sáv + "Több" bottom sheet), hogy applikáció-szerű legyen a felület.
@@ -19,10 +18,8 @@ export default function Sidebar({
   // hogy az aktív elem sose tűnjön el szem elől.
   const [openWebshop, setOpenWebshop] = useState(false);
   const [openAdmin, setOpenAdmin] = useState(false);
-  const [openFinanceMore, setOpenFinanceMore] = useState(false);
   const webshopOpen = openWebshop || WEBSHOP_TABS.includes(tab);
   const adminOpen = openAdmin || ADMIN_TABS.includes(tab);
-  const financeMoreOpen = openFinanceMore || FINANCE_MORE_TABS.includes(tab);
 
   function go(nextTab) {
     setTab(nextTab);
@@ -64,22 +61,15 @@ export default function Sidebar({
 
         <div className="nav-lbl">Pénzügyek</div>
         <button className={`navbtn ${tab === "finance" ? "active" : ""}`} onClick={() => go("finance")}><FinanceIcon className="nav-ic" />Bevételek és Kiadások</button>
-        <button type="button" className="group-toggle" style={{ marginTop: 2 }} onClick={() => setOpenFinanceMore((v) => !v)}>
-          Több <ChevronDownIcon style={{ transform: financeMoreOpen ? "rotate(180deg)" : undefined, transition: "transform .15s" }} />
-        </button>
-        {financeMoreOpen && (
-          <div className="group-body">
-            {isAdmin && (
-              <button className={`navbtn ${tab === "cash-settlement" ? "active" : ""}`} onClick={() => go("cash-settlement")}><CashSettlementIcon className="nav-ic" />Elszámolás</button>
-            )}
-            {isAdmin && (
-              <button className={`navbtn ${tab === "payroll" ? "active" : ""}`} onClick={() => go("payroll")}><PayrollIcon className="nav-ic" />Bérek &amp; Adók</button>
-            )}
-            <button className={`navbtn ${tab === "invoices" ? "active" : ""}`} onClick={() => go("invoices")}><InvoiceIcon className="nav-ic" />Számlák</button>
-            {!isAdmin && (
-              <button className={`navbtn ${tab === "leave" ? "active" : ""}`} onClick={() => go("leave")}><LeaveIcon className="nav-ic" />Szabadság</button>
-            )}
-          </div>
+        {isAdmin && (
+          <button className={`navbtn ${tab === "cash-settlement" ? "active" : ""}`} onClick={() => go("cash-settlement")}><CashSettlementIcon className="nav-ic" />Elszámolás</button>
+        )}
+        {isAdmin && (
+          <button className={`navbtn ${tab === "payroll" ? "active" : ""}`} onClick={() => go("payroll")}><PayrollIcon className="nav-ic" />Bérek &amp; Adók</button>
+        )}
+        <button className={`navbtn ${tab === "invoices" ? "active" : ""}`} onClick={() => go("invoices")}><InvoiceIcon className="nav-ic" />Számlák</button>
+        {!isAdmin && (
+          <button className={`navbtn ${tab === "leave" ? "active" : ""}`} onClick={() => go("leave")}><LeaveIcon className="nav-ic" />Szabadság</button>
         )}
 
         {isAdmin && (

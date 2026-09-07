@@ -380,6 +380,41 @@ tr:hover td{background:#FAFAFA}
 .pult-section-head .cnt{margin-left:auto;font-size:11.5px;font-weight:600;color:#9CA3AF;background:#F3F4F6;padding:2px 9px;border-radius:var(--radius-pill)}
 .pult-section-head.sub{font-size:13px;margin-bottom:10px}
 
+.cs-daily-head{flex-wrap:wrap}
+.cs-daily-head .cnt-text{white-space:nowrap}
+.cs-daily-head .seg{flex-shrink:0}
+@media (max-width:480px){
+  .cs-daily-head .cs-daterange{flex-basis:100%;margin-left:0!important}
+}
+
+.cs-daterange{display:flex;align-items:center;gap:6px;background:#F9FAFB;border:1px solid #EEF0F2;border-radius:10px;padding:2px 8px;flex-shrink:0}
+.cs-daterange input[type=date]{border:none;background:none;font-family:inherit;font-size:12.5px;font-weight:600;color:#111827;padding:5px 2px;outline:none;color-scheme:light}
+.cs-daterange .sep{color:#9CA3AF;font-size:12px;flex-shrink:0}
+
+.cs-settle-hint{display:flex;align-items:center;flex-wrap:wrap;gap:12px;cursor:default}
+.cs-settle-flow{display:inline-flex;align-items:center;gap:5px}
+.cs-settle-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.cs-settle-arrow{color:#9CA3AF;font-size:13px}
+.cs-settle-amt{font-family:'Roboto Mono',monospace;font-size:14px;font-weight:800;color:#111827}
+.cs-settle-ok{font-size:13px;font-weight:700;color:#15803D}
+
+.cs-daycard-legend{display:flex;flex-direction:column;flex-shrink:0}
+.cs-daycard-legend-spacer{height:32px}
+.cs-daycard-legend-rows{padding:10px 0}
+.cs-daycard-legend-row{height:27px;display:flex;align-items:center;gap:6px;font-size:9.5px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+.cs-daycard-legend-row+.cs-daycard-legend-row{border-top:1px dashed transparent}
+.cs-daycard-legend-total{height:36px;display:flex;align-items:center;font-size:9.5px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+
+.cs-daycard{flex-shrink:0;width:96px;background:#fff;border:1px solid #EEF0F2;border-radius:14px;box-shadow:0 1px 2px rgba(16,24,40,.04);overflow:hidden;display:flex;flex-direction:column}
+.cs-daycard-date{font-size:11px;font-weight:700;color:#374151;text-align:center;padding:10px 0 8px;background:#F9FAFB;border-bottom:1px solid #F3F4F6;text-transform:capitalize}
+.cs-daycard-rows{display:flex;flex-direction:column;padding:10px 0}
+.cs-daycard-row{font-family:'Roboto Mono',monospace;font-size:12.5px;font-weight:700;text-align:center;padding:5px 0}
+.cs-daycard-row+.cs-daycard-row{border-top:1px dashed #F3F4F6}
+.cs-daycard-footer{display:flex;align-items:center;justify-content:center;font-family:'Roboto Mono',monospace;font-size:13.5px;font-weight:800;padding:9px 0}
+.cs-daycard-footer.positive{background:#DCFCE7;color:#15803D}
+.cs-daycard-footer.negative{background:#FEE2E2;color:#B91C1C}
+.cs-daycard-footer.neutral{background:#F3F4F6;color:#6B7280}
+
 .note-card{border-radius:14px;padding:13px 14px;background:#F9FAFB;border:1px solid #EEF0F2;display:flex;flex-direction:column;height:100%}
 .note-card.due-today{background:var(--warning-soft);border-color:var(--warning-soft)}
 .note-card.mine{border-left:3px solid var(--primary)}

@@ -2936,7 +2936,6 @@ function AppShell() {
             busy={busy} transactions={transactions} cashSettlements={cashSettlements}
             saveCashSettlement={saveCashSettlement} editCashSettlement={editCashSettlement}
             deleteCashSettlement={deleteCashSettlement} users={users}
-            setTxModal={setTxModal} deleteTransaction={deleteTransaction} setReceiptTxId={setReceiptTxId}
             allowedLocations={allowedLocations} locName={locName}
           />
         )}
