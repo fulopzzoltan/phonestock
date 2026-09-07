@@ -1,20 +1,8 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabaseClient";
-import { WarrantyIcon, ShieldCheckIcon, ClockIcon, CardIcon } from "./icons";
 
 const FOLIA_PRICE = 30;
 const FOLIA_LIST_PRICE = 49;
-const FOLIA_SAVING_AMOUNT = FOLIA_LIST_PRICE - FOLIA_PRICE;
-
-// Value-stack: nem "olcsóbb fólia", hanem a valós, ellenőrizhető előnyök, amiért pont
-// most, itt éri meg igent mondani — Hormozi offer-logika (érzékelt érték fel, erőfeszítés/
-// kockázat le), de csak olyan állítással, ami ténylegesen igaz a folyamatra.
-// Az app saját vonalas ikonkészletét használjuk (nem emoji), hogy illeszkedjen a többi oldalhoz.
-const VALUE_STACK = [
-  { icon: ShieldCheckIcon, title: "Buborékmentes garancia", text: "Szakemberünk patyolattisztán, tökéletesen helyezi fel." },
-  { icon: ClockIcon, title: "Időt spórolsz", text: "Már védve kapod vissza a telefont, nem kell máshova szaladgálnod." },
-  { icon: CardIcon, title: "Kényelmes fizetés", text: "Nincs macera, csak hozzáadjuk a végszámlához." },
-];
 
 export default function FoliaUpsellBanner({ token, onDone }) {
   const [busy, setBusy] = useState(false);
@@ -36,58 +24,36 @@ export default function FoliaUpsellBanner({ token, onDone }) {
   }
 
   return (
-    <div style={{ background: "var(--primary-soft)", border: "1px solid var(--primary)", borderRadius: 14, padding: 16, marginBottom: 14, boxShadow: "0 10px 26px rgba(15,122,54,0.14)" }}>
-      {/* A jelvény az app saját "Új" akcentjét (arany/bronz) használja a random narancs
-          helyett — ez már ismerős szín a webshopból, nem egy új, oda nem illő hangsúly. */}
-      <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "var(--pub-new)", color: "#FDF6EC", fontSize: 10.5, fontWeight: 800, letterSpacing: 0.3, textTransform: "uppercase", padding: "4px 10px", borderRadius: 999, marginBottom: 12 }}>
-        Spórolj {FOLIA_SAVING_AMOUNT} Leit, amíg a telefon nálunk van!
+    <div style={{ border: "1.5px solid var(--primary)", borderRadius: 16, padding: 18, marginBottom: 14 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 12 }}>
+        <span style={{ width: 20, height: 20, borderRadius: "50%", background: "var(--primary-soft)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <svg viewBox="0 0 24 24" width={11} height={11} fill="none" stroke="var(--primary-ink)" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" /></svg>
+        </span>
+        <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.4, color: "var(--primary-ink)", textTransform: "uppercase" }}>Akciós ajánlat</span>
       </div>
 
-      <div style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 14 }}>
-        <div style={{ flexShrink: 0, width: 44, height: 44, borderRadius: 12, background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary-ink)" }}>
-          <WarrantyIcon width={21} height={21} />
-        </div>
-        <div>
-          <div style={{ fontSize: 14, fontWeight: 800, color: "#111827", marginBottom: 4, lineHeight: 1.35 }}>
-            Tökéletes kijelző, nulla stressz: Kérsz rá egy prémium védőfóliát?
-          </div>
-          <div style={{ fontSize: 12.5, color: "#374151", lineHeight: 1.5 }}>
-            Ez a legjobb pillanat rá — utána, ha otthon próbálod felragasztani, könnyen kerül alá buborék vagy porszem. Itt egy kattintás, és a szervizzel együtt elkészül.
-          </div>
-        </div>
+      <div style={{ fontSize: 16, fontWeight: 800, color: "#111827", marginBottom: 6 }}>Fóliázás akciós áron!</div>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 6 }}>
+        <span style={{ fontSize: 20, fontWeight: 800, color: "var(--primary)" }}>{FOLIA_PRICE} Lei</span>
+        <span style={{ fontSize: 12.5, color: "#9CA3AF", textDecoration: "line-through" }}>{FOLIA_LIST_PRICE} Lei</span>
       </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 14 }}>
-        {VALUE_STACK.map((v) => (
-          <div key={v.title} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 12, color: "#374151" }}>
-            <v.icon width={14} height={14} style={{ flexShrink: 0, marginTop: 2, color: "var(--primary-ink)" }} />
-            <span><b style={{ color: "#111827" }}>{v.title}</b> – {v.text}</span>
-          </div>
-        ))}
+      <div style={{ fontSize: 12.5, color: "#5B6472", lineHeight: 1.55, marginBottom: 16 }}>
+        Amíg nálunk van a készüléked, felrakjuk a kijelzővédő fóliát — csak most, a szervizzel egyszerre.
       </div>
-
-      <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 2 }}>
-        <span style={{ fontSize: 27, fontWeight: 800, color: "var(--primary)", letterSpacing: -0.5 }}>{FOLIA_PRICE} Lei</span>
-        <span style={{ fontSize: 13, color: "#9CA3AF", textDecoration: "line-through" }}>{FOLIA_LIST_PRICE} Lei</span>
-      </div>
-      <div style={{ fontSize: 11, color: "#6B7280", marginBottom: 14 }}>a helyszíni {FOLIA_LIST_PRICE} Lei-es ár helyett — csak most, a szervizzel egyszerre</div>
 
       {message && <div style={{ fontSize: 12, color: "#B91C1C", marginBottom: 10 }}>{message}</div>}
-      <div style={{ fontSize: 11, color: "#6B7280", textAlign: "center", marginBottom: 8 }}>
-        Az ügyfeleink 80%-a kéri ezt a védelmet javítás után.
-      </div>
+
       <button
         type="button"
-        className="btn"
-        style={{ width: "100%", justifyContent: "center", fontWeight: 700 }}
-        disabled={busy}
         onClick={submit}
+        disabled={busy}
+        style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", border: "1px solid var(--pub-line)", borderRadius: 12, padding: "12px 14px", background: "none", cursor: busy ? "default" : "pointer", fontFamily: "inherit", textAlign: "left" }}
       >
-        {busy ? "Feldolgozás..." : `KÉREM A FÓLIÁT (Csak +${FOLIA_PRICE} Lei)`}
+        <span style={{ width: 17, height: 17, borderRadius: 5, border: "1.5px solid #C1C6CC", flexShrink: 0 }} />
+        <span style={{ fontSize: 13, fontWeight: 700, color: "#111827" }}>
+          {busy ? "Feldolgozás..." : `Igen, kérem a fóliázást (+${FOLIA_PRICE} Lei)`}
+        </span>
       </button>
-      <div style={{ fontSize: 10.5, color: "#9CA3AF", textAlign: "center", marginTop: 8 }}>
-        Ha buborékos lenne, ingyen cseréljük! Fizetés csak átvételkor.
-      </div>
     </div>
   );
 }

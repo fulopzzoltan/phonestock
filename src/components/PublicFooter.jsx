@@ -46,7 +46,7 @@ function LocationLinks({ locations }) {
   );
 }
 
-export default function PublicFooter({ lang = "hu", minimal = false }) {
+export default function PublicFooter({ lang = "hu", minimal = false, onContactClick }) {
   const s = t(lang);
   const [locations, setLocations] = useState([]);
   const stockHref = lang === "ro" ? "/ro/telefoane" : "/";
@@ -75,7 +75,6 @@ export default function PublicFooter({ lang = "hu", minimal = false }) {
               <div className="pub-footer-brand">
                 <img src="/logo.png" alt="Telefonos" className="pub-footer-logo" />
               </div>
-              <a className="pub-footer-phone" href="tel:0773985278"><CallIcon width={12} height={12} />0773 985 278</a>
               <div className="pub-footer-social">
                 {SOCIAL_LINKS.map(({ Icon, href, label }) => (
                   <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>
@@ -83,11 +82,10 @@ export default function PublicFooter({ lang = "hu", minimal = false }) {
                   </a>
                 ))}
               </div>
-            </div>
-
-            <div className="pub-footer-col" id="pub-footer-locations">
-              <div className="pub-footer-heading">{s.footerLocations}</div>
-              <LocationLinks locations={locations} />
+              {onContactClick && (
+                <button type="button" className="pub-footer-linkbtn" onClick={onContactClick}>{s.bottomNavContact}</button>
+              )}
+              <a href={`/adatvedelem${legalLangQuery}`}>{s.footerPrivacy}</a>
             </div>
           </div>
 
@@ -95,9 +93,6 @@ export default function PublicFooter({ lang = "hu", minimal = false }) {
             <div className="pub-footer-bottom-left">
               <span>{s.footerRights(new Date().getFullYear())}</span>
             </div>
-            <span className="pub-footer-legal">
-              <a href={`/adatvedelem${legalLangQuery}`}>{s.footerPrivacy}</a>
-            </span>
           </div>
         </div>
       </footer>

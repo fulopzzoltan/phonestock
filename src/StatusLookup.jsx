@@ -8,10 +8,124 @@ import PublicBottomNav from "./components/PublicBottomNav";
 import SignaturePad from "./components/SignaturePad";
 import FoliaUpsellBanner from "./components/FoliaUpsellBanner";
 import WarrantyTermsToggle from "./components/WarrantyTermsToggle";
-import { CallIcon, PhoneCaseIcon, ChevronLeftIcon, ClockIcon, PinIcon } from "./components/icons";
+import { CallIcon, PhoneCaseIcon, ChevronLeftIcon, ClockIcon, PinIcon, WhatsappIcon, CardIcon } from "./components/icons";
 
 // Központi ügyfélszolgálati szám — ugyanaz, mint a lábléc "minimal" nézetében.
 const SUPPORT_PHONE = "0773985278";
+// wa.me nemzetközi formátumot vár (nincs vezető 0, országhívó helyette) — a Meta WhatsApp
+// integrációhoz használt ügyfélszolgálati szám román előhívóval.
+const SUPPORT_WHATSAPP = `40${SUPPORT_PHONE.replace(/^0/, "")}`;
+
+// Ugyanaz a Google Maps link-térkép, mint a lábléc "minimal" nézetében — nincs cím
+// rögzítve a locations táblában, ezért itt is ugyanerre a statikus térképre esünk vissza.
+const LOCATION_MAPS_URL = {
+  "Gyimes": "https://share.google/EnrnhRGT6LgrWxRVs",
+  "Szentgyörgy": "https://share.google/1p5lZA2Erlnvk9XlF",
+  "Csíkmadaras": "https://share.google/9pmy0iwklNkanY3EB",
+};
+function mapsHref(name) {
+  return LOCATION_MAPS_URL[name] || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`Telefonos ${name}`)}`;
+}
+const FRANCHISE_LOCATIONS = [{ name: "Csíkmadaras" }];
+
+// Helyszínenként eltérő nyitvatartás (a locations táblában nincs ilyen mező) — a Kapcsolat
+// panel kártyáin ez jelenik meg a generikus "H-P 9-18" felirat helyett.
+const LOCATION_HOURS = {
+  "Gyimes": {
+    hu: ["H–P: 09:00–17:00", "Szo: 09:00–13:00"],
+    ro: ["L–V: 09:00–17:00", "Sb: 09:00–13:00"],
+  },
+  "Szentgyörgy": {
+    hu: ["H–P: 10:00–18:00"],
+    ro: ["L–V: 10:00–18:00"],
+  },
+};
+
+// "Kapcsolat" nézet (alsó tabsáv, csak minimal/nyomonkövetés oldalon) — WhatsApp-elsődleges
+// kontaktlehetőség (a felhasználó kifejezett kérésére: "a hívást ennyire ne erőltessük,
+// whatsappon kapja meg eleve a nagyobb %-ban az értesítést"), a hívás csak másodlagos link.
+function ContactPanel({ s, lang, locations, onBack }) {
+  return (
+    <div style={{ width: "100%", maxWidth: 400, margin: "0 auto" }}>
+      <button type="button" className="ticket-back-link" onClick={onBack}>
+        <ChevronLeftIcon width={12} height={12} /> {s.bottomNavStatus}
+      </button>
+      <div style={{ marginBottom: 18 }}>
+        <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.3, textTransform: "uppercase", color: "var(--pub-ink-soft)", marginBottom: 2 }}>{s.contactEyebrow}</div>
+        <div style={{ fontSize: 19, fontWeight: 800, color: "var(--pub-ink)" }}>{s.contactTitle}</div>
+      </div>
+
+      {locations.map((l) => {
+        const hours = LOCATION_HOURS[l.name]?.[lang] || [s.contactHours];
+        return (
+          <a key={l.id} href={mapsHref(l.name)} target="_blank" rel="noopener noreferrer" className="ticket-extra-card" style={{ display: "flex", gap: 12, textDecoration: "none", color: "inherit" }}>
+            <PinIcon width={18} height={18} style={{ color: "var(--primary-ink)", flexShrink: 0, marginTop: 2 }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13.5, fontWeight: 800, color: "var(--pub-ink)", marginBottom: 2 }}>{l.name}</div>
+              <div style={{ fontSize: 12, color: "var(--pub-ink-soft)", lineHeight: 1.5, marginBottom: 8 }}>
+                {hours.map((line, i) => <div key={i}>{line}</div>)}
+              </div>
+              <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--primary-ink)" }}>{l.phone || SUPPORT_PHONE}</span>
+            </div>
+          </a>
+        );
+      })}
+      {FRANCHISE_LOCATIONS.map((l) => (
+        <a key={l.name} href={mapsHref(l.name)} target="_blank" rel="noopener noreferrer" className="ticket-extra-card" style={{ display: "flex", gap: 12, textDecoration: "none", color: "inherit" }}>
+          <PinIcon width={18} height={18} style={{ color: "#A5722A", flexShrink: 0, marginTop: 2 }} />
+          <div style={{ flex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+              <span style={{ fontSize: 13.5, fontWeight: 800, color: "var(--pub-ink)" }}>{l.name}</span>
+              <span style={{ fontSize: 9.5, fontWeight: 700, color: "#A5722A", background: "#F3E6D4", padding: "1px 6px", borderRadius: 999 }}>{s.contactFranchisePartner}</span>
+            </div>
+            <div style={{ fontSize: 12, color: "var(--pub-ink-soft)" }}>{s.contactFranchiseNote}</div>
+          </div>
+        </a>
+      ))}
+
+      <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.3, textTransform: "uppercase", color: "var(--pub-ink-soft)", margin: "22px 0 10px" }}>{s.contactFaqTitle}</div>
+      <div className="ticket-extra-card">
+        <div style={{ paddingBottom: 14, borderBottom: "1px solid var(--pub-line)", marginBottom: 14 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--pub-ink)", marginBottom: 4 }}>{s.contactFaqQ1}</div>
+          <div style={{ fontSize: 12, color: "var(--pub-ink-soft)", lineHeight: 1.5 }}>{s.contactFaqA1}</div>
+        </div>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--pub-ink)", marginBottom: 4 }}>{s.contactFaqQ2}</div>
+          <div style={{ fontSize: 12, color: "var(--pub-ink-soft)", lineHeight: 1.5 }}>{s.contactFaqA2}</div>
+        </div>
+      </div>
+
+      <a
+        href={`https://wa.me/${SUPPORT_WHATSAPP}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="ticket-cta"
+        style={{ marginTop: 22, background: "#1DB954", border: "none", color: "#fff", boxShadow: "0 4px 12px rgba(29,185,84,.25)" }}
+      >
+        <WhatsappIcon width={15} height={15} /> {s.contactWhatsappBtn}
+      </a>
+      <a href={`tel:${SUPPORT_PHONE}`} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, color: "var(--pub-ink-soft)", fontWeight: 600, fontSize: 12.5, padding: "10px 0", textDecoration: "none" }}>
+        <CallIcon width={12} height={12} /> {s.contactCallAlt}
+      </a>
+    </div>
+  );
+}
+
+// Egy funkció-ismertető sor a nyomonkövetés kezdőoldalán (kereső alatt) — miért érdemes
+// itt keresni, mielőtt bármi eredmény van.
+function FeatureRow({ icon: Icon, title, desc, last = false }) {
+  return (
+    <div className="ticket-extra-card" style={{ width: "100%", display: "flex", alignItems: "flex-start", gap: 14, marginBottom: last ? 0 : 10 }}>
+      <span style={{ width: 36, height: 36, borderRadius: 11, background: "var(--primary-soft)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <Icon width={17} height={17} style={{ color: "var(--primary-ink)" }} />
+      </span>
+      <div>
+        <div style={{ fontSize: 13.5, fontWeight: 800, color: "var(--pub-ink)", marginBottom: 3 }}>{title}</div>
+        <div style={{ fontSize: 12, color: "var(--pub-ink-soft)", lineHeight: 1.5 }}>{desc}</div>
+      </div>
+    </div>
+  );
+}
 
 const INTAKE_CONSENT_TEXT = "Átadom a készüléket javításra, elfogadom a leírt hibát/állapotot";
 // A hűségpont/ajánlói rendszer még nincs élesítve — amíg nem az, ne mutassuk a
@@ -83,39 +197,52 @@ function StatChip({ label, children }) {
   );
 }
 
-// Rács-alapú idővonal (nem flex+space-between) — a dot-oszlop mindig ugyanolyan
-// széles, ezért egy hosszabb dátum/felirat sem tudja elcsúsztatni a sorokat.
-function StatusTimeline({ status, handedOver, dateIn, dateOut, s }) {
+// A jelenlegi lépéshez tartozó nagy cím + magyarázat a Munkafolyamat kártya tetején —
+// nem lépésenkénti alsó felirat (azt korábban kifejezetten kivettük), hanem egyetlen,
+// az aktuális állapotot elmagyarázó sor a kártya élén, ahogy a jóváhagyott makett mutatja.
+function workflowHeadline(activeStep, handedOver, s) {
+  if (handedOver) return { title: s.workflowHeadlineDone, desc: s.workflowDescDone };
+  if (activeStep >= 2) return { title: s.workflowHeadlineReady, desc: s.workflowDescReady };
+  if (activeStep === 1) return { title: s.workflowHeadlineInProgress, desc: s.workflowDescInProgress };
+  return { title: s.workflowHeadlineReported, desc: s.workflowDescReported };
+}
+
+// Szegmentált folyamatsáv (nem függőleges pont+vonal idővonal) — 4 egyenlő szakasz,
+// a jelenlegi szakaszon pulzáló "élő" jelzéssel, alatta a lépés-címkék egy sorban.
+function StatusTimeline({ status, handedOver, s }) {
   const activeStep = handedOver ? 3 : (STEP_MAP[status] ?? 0);
   const steps = timelineSteps(s);
+  const { title, desc } = workflowHeadline(activeStep, handedOver, s);
   return (
-    <div className="ticket-timeline">
-      {steps.map((step, i) => {
-        const reached = i <= activeStep;
-        const current = i === activeStep && !handedOver;
-        const isLast = i === steps.length - 1;
-        let caption;
-        if (i === 0) caption = dateIn || s.capReportedFallback;
-        else if (i === 3 && handedOver) caption = dateOut || step.label;
-        else if (current) caption = step.activeCaption;
-        else if (i < activeStep || handedOver) caption = step.doneCaption;
-        else caption = step.upcomingCaption;
-        return (
-          <Fragment key={step.label}>
-            <div className="ticket-tl-dotcol">
-              <span className={`ticket-tl-dot${reached ? " reached" : ""}${current ? " status-node-pulse" : ""}`} />
-              {!isLast && <span className={`ticket-tl-line${i < activeStep || handedOver ? " reached" : ""}`} />}
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 4 }}>
+        <span style={{ fontSize: 15, fontWeight: 800, color: "var(--pub-ink)" }}>{title}</span>
+        <span className="status-live-dot" style={{ width: 5, height: 5 }} />
+      </div>
+      <div style={{ fontSize: 12.5, color: "var(--pub-ink-soft)", lineHeight: 1.5, marginBottom: 18 }}>{desc}</div>
+
+      <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
+        {steps.map((step, i) => {
+          const reached = i <= activeStep;
+          const current = i === activeStep && !handedOver;
+          return (
+            <div key={step.label} style={{ flex: 1, height: 6, borderRadius: 999, background: reached ? "var(--primary)" : "#E5E7EB", position: "relative", overflow: "visible" }}>
+              {current && <div className="status-step-pulse" style={{ position: "absolute", inset: 0, borderRadius: 999, background: "var(--primary)" }} />}
             </div>
-            <div className={`ticket-tl-body${isLast ? " last" : ""}`}>
-              <div className="ticket-tl-title-row">
-                <span className={`ticket-tl-title${current ? " current" : ""}${!reached ? " upcoming" : ""}`}>{step.label}</span>
-                {current && <span className="status-live-dot" style={{ width: 5, height: 5 }} />}
-              </div>
-              <div className={`ticket-tl-caption${!reached ? " upcoming" : ""}`}>{caption}</div>
-            </div>
-          </Fragment>
-        );
-      })}
+          );
+        })}
+      </div>
+      <div style={{ display: "flex", gap: 6 }}>
+        {steps.map((step, i) => {
+          const reached = i <= activeStep;
+          const current = i === activeStep && !handedOver;
+          return (
+            <span key={step.label} style={{ flex: 1, textAlign: "center", fontSize: 10.5, fontWeight: current ? 800 : 600, color: current ? "var(--pub-ink)" : reached ? "var(--pub-ink-soft)" : "#C1C6CC" }}>
+              {step.label}
+            </span>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -137,8 +264,18 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
   const [signError, setSignError] = useState("");
   const [foliaCancelBusy, setFoliaCancelBusy] = useState(false);
   const [foliaCancelError, setFoliaCancelError] = useState("");
+  const [view, setView] = useState("status");
+  const [locations, setLocations] = useState([]);
 
   const signMode = signStage === "service_intake" || signStage === "service_handover";
+
+  useEffect(() => {
+    if (!minimal) return;
+    (async () => {
+      const { data } = await supabase.rpc("get_public_locations");
+      setLocations(data || []);
+    })();
+  }, [minimal]);
 
   useEffect(() => {
     if (!token && !shortCode) return;
@@ -263,17 +400,23 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
   const bottomNavItems = minimal
     ? [
         {
+          key: "contact",
+          label: s.bottomNavContact,
+          icon: WhatsappIcon,
+          active: view === "contact",
+          onClick: () => { setView("contact"); window.scrollTo({ top: 0, behavior: "smooth" }); },
+        },
+        {
           key: "status",
           label: s.bottomNavStatus,
           icon: ClockIcon,
-          active: true,
+          active: view === "status",
           onClick: () => {
+            if (view !== "status") { setView("status"); return; }
             if (canReset) { setResult(null); setMatches(null); setPhone(""); setError(""); }
             window.scrollTo({ top: 0, behavior: "smooth" });
           },
         },
-        { key: "call", label: s.bottomNavCall, icon: CallIcon, href: `tel:${SUPPORT_PHONE}` },
-        { key: "locations", label: s.bottomNavLocations, icon: PinIcon, href: "#pub-footer-locations" },
       ]
     : null;
 
@@ -281,73 +424,82 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
     <div className={`pub-shop${minimal ? " pub-shop-tabbed" : ""}`}>
       <PublicHeader activeNav="status" minimal={minimal} lang={lang} langSwitchHref={otherLangHref} />
       <main className="pub-lookup-main">
-      {isTicket ? (
+      {view === "contact" ? (
+        <ContactPanel s={s} lang={lang} locations={locations} onBack={() => setView("status")} />
+      ) : isTicket ? (
         <div style={{ width: "100%", maxWidth: 400, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center" }}>
-          {matches && (
-            <button type="button" className="ticket-back-link" onClick={() => setResult(null)}>
-              <ChevronLeftIcon width={12} height={12} /> {s.backToResults}
-            </button>
-          )}
-          <div style={{ marginBottom: 18 }}>
+          <button
+            type="button"
+            className="ticket-back-link"
+            onClick={() => {
+              if (matches) { setResult(null); return; }
+              // Token/short-code linkről (SMS/WhatsApp) nem lehet csak state-tel visszaállni a
+              // keresőűrlaphoz — a token prop az URL-ből jön, amíg az megvan, addig a form soha
+              // nem jelenik meg (szándékosan, hogy privát linkről ne lehessen nyílt keresésre jutni).
+              if (token || shortCode) { window.location.href = lang === "ro" ? "/status?lang=ro" : "/status"; return; }
+              setResult(null); setMatches(null); setPhone(""); setError("");
+            }}
+          >
+            <ChevronLeftIcon width={12} height={12} /> {matches ? s.backToResults : s.bottomNavStatus}
+          </button>
+          <div style={{ marginBottom: 14 }}>
             <LiveBadge label={s.statusLiveBadge} />
           </div>
 
-          <div className="ticket-card">
-            <div className="ticket-head">
-              <div className="ticket-head-row">
-                <span className="ticket-eyebrow">{s.statusKindTicket}</span>
-                <span className={`st ${statusCls(result.status)}`}>{result.sub_status ? subStatusLabel(result.status, result.sub_status) : result.status}</span>
-              </div>
-              <div className="ticket-no">#{result.ticket_no}</div>
-              <div className="ticket-device">{[result.brand, result.model].filter(Boolean).join(" ") || s.statusDeviceFallback}</div>
-              <div className="ticket-customer">{result.customer_name}</div>
+          <div className="ticket-extra-card" style={{ width: "100%" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+              <span className="mono" style={{ fontSize: 10.5, fontWeight: 700, color: "#6B7280", background: "var(--pub-paper)", padding: "4px 9px", borderRadius: 999 }}>#{result.ticket_no}</span>
+              <span className={`st ${statusCls(result.status)}`}>{result.sub_status ? subStatusLabel(result.status, result.sub_status) : result.status}</span>
             </div>
-
-            <div className="ticket-perf">
-              <span className="ticket-notch l" /><span className="ticket-notch r" />
-              <div className="ticket-perf-line" />
-            </div>
-
-            <StatusTimeline status={result.status} handedOver={handedOver} dateIn={result.date_in} dateOut={result.date_out} s={s} />
-
-            <div className="ticket-rows">
-              <div className="ticket-row">
-                <span className="ticket-row-label">{s.chipRepairCost}</span>
-                <span className="ticket-row-value">{money(result.price)}</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ width: 52, height: 52, borderRadius: 12, background: "var(--pub-paper)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <PhoneCaseIcon width={22} height={22} style={{ color: "#9CA3AF" }} />
               </div>
-              <div className="ticket-row">
-                <span className="ticket-row-label">{s.chipWarranty}</span>
-                {!handedOver ? (
-                  <span className="ticket-row-value muted">—</span>
-                ) : result.warranty ? (
-                  <span className={`st ${ticketActive ? "st-kesz" : "st-kiadva"}`}>{ticketActive ? s.warrantyActive : s.warrantyExpired}</span>
-                ) : (
-                  <span className="st st-sikertelen">{s.warrantyNone}</span>
-                )}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 15, fontWeight: 800, color: "var(--pub-ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{[result.brand, result.model].filter(Boolean).join(" ") || s.statusDeviceFallback}</div>
+                <div style={{ fontSize: 12.5, color: "var(--pub-ink-soft)", marginTop: 1 }}>{result.customer_name}</div>
               </div>
-              {handedOver && result.warranty && (
-                <div className="ticket-row">
-                  <span className="ticket-row-label">{s.rowWarrantyExpiry}</span>
-                  <span className="ticket-row-value muted">{ticketExpiry}</span>
-                </div>
-              )}
-              <div className="ticket-row-tags">
-                <span className="ticket-row-tags-label">{s.rowIssues}</span>
-                <span className="ticket-row-tags-value">{probs.length ? probs.map((p, i) => <span key={i} className="prob-pill">{p}</span>) : "—"}</span>
-              </div>
-            </div>
-
-            <div className="ticket-shop-row">
-              <CallIcon width={13} height={13} style={{ color: "var(--pub-ink-soft)" }} />
-              <span className="ticket-shop-link">{result.location_name || "—"}{result.location_phone ? ` · ${result.location_phone}` : ""}</span>
             </div>
           </div>
 
-          {result.location_phone && (
-            <a href={`tel:${result.location_phone.replace(/\s+/g, "")}`} className="ticket-cta">
-              <CallIcon width={13} height={13} /> {s.callUsBtn}
-            </a>
-          )}
+          <div style={{ width: "100%", fontSize: 14, fontWeight: 800, color: "var(--pub-ink)", margin: "2px 0 12px" }}>{s.ticketStatusSectionTitle}</div>
+
+          <div className="ticket-extra-card" style={{ width: "100%" }}>
+            <StatusTimeline status={result.status} handedOver={handedOver} s={s} />
+          </div>
+
+          <div className="ticket-extra-card" style={{ width: "100%" }}>
+            <div className="ticket-row">
+              <span className="ticket-row-label">{s.chipRepairCost}</span>
+              <span className="ticket-row-value">{money(result.price)}</span>
+            </div>
+            <div className="ticket-row">
+              <span className="ticket-row-label">{s.chipWarranty}</span>
+              {!handedOver ? (
+                <span className="ticket-row-value muted">—</span>
+              ) : result.warranty ? (
+                <span className={`st ${ticketActive ? "st-kesz" : "st-kiadva"}`}>{ticketActive ? s.warrantyActive : s.warrantyExpired}</span>
+              ) : (
+                <span className="st st-sikertelen">{s.warrantyNone}</span>
+              )}
+            </div>
+            {handedOver && result.warranty && (
+              <div className="ticket-row">
+                <span className="ticket-row-label">{s.rowWarrantyExpiry}</span>
+                <span className="ticket-row-value muted">{ticketExpiry}</span>
+              </div>
+            )}
+            <div className="ticket-row-tags">
+              <span className="ticket-row-tags-label">{s.rowIssues}</span>
+              <span className="ticket-row-tags-value" style={{ fontSize: 12.5, color: "var(--pub-ink)", fontWeight: 600 }}>{probs.length ? probs.join(", ") : "—"}</span>
+            </div>
+          </div>
+
+          <div style={{ width: "100%", display: "flex", gap: 10, background: "#F0FDF4", borderRadius: 14, padding: "14px 16px", marginTop: 16 }}>
+            <WhatsappIcon width={16} height={16} style={{ color: "#0F7A36", flexShrink: 0, marginTop: 1 }} />
+            <span style={{ fontSize: 12, color: "#166534", lineHeight: 1.5 }}>{s.ticketWhatsappTip}</span>
+          </div>
+
           <div className="ticket-updated">
             <span className="status-live-dot" style={{ width: 5, height: 5 }} />
             <span className="ticket-updated-label">{s.statusUpdatedNow}</span>
@@ -411,6 +563,30 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
             )}
           </div>
         </div>
+      ) : (!token && !shortCode && !result && !matches) ? (
+        <div style={{ width: "100%", maxWidth: 400, margin: "0 auto" }}>
+          <div style={{ fontSize: 22, fontWeight: 800, color: "var(--pub-ink)", marginBottom: 18 }}>{s.landingHeadline}</div>
+
+          <div className="ticket-extra-card" style={{ width: "100%" }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: "var(--pub-ink)", marginBottom: 6 }}>{s.searchCardTitle}</div>
+            <div style={{ fontSize: 12.5, color: "var(--pub-ink-soft)", lineHeight: 1.5, marginBottom: 16 }}>{s.searchCardDesc}</div>
+            {error && <div className="errbar" style={{ marginBottom: 12 }}>{error}</div>}
+            <form onSubmit={submit}>
+              <div className="field" style={{ marginBottom: 12 }}>
+                <label>{s.phoneLabel}</label>
+                <input required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={s.statusPhonePlaceholder} />
+              </div>
+              <button className="btn" style={{ width: "100%", justifyContent: "center" }} disabled={busy} type="submit">
+                {busy ? s.statusSearching : s.statusViewBtn}
+              </button>
+            </form>
+          </div>
+
+          <div style={{ fontSize: 14, fontWeight: 800, color: "var(--pub-ink)", margin: "26px 0 12px" }}>{s.featuresTitle}</div>
+          <FeatureRow icon={ClockIcon} title={s.feature1Title} desc={s.feature1Desc} />
+          <FeatureRow icon={WhatsappIcon} title={s.feature2Title} desc={s.feature2Desc} />
+          <FeatureRow icon={CardIcon} title={s.feature3Title} desc={s.feature3Desc} last />
+        </div>
       ) : (
       <div className="login-card" style={{ maxWidth: 460 }}>
         {!result && !matches && (
@@ -418,17 +594,8 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
             <LiveBadge label={s.statusLiveBadge} />
           </div>
         )}
-        {!result && <div className="login-title">{s.statusPageTitle}</div>}
         {error && <div className="errbar">{error}</div>}
         {busy && !result && <div style={{ textAlign: "center", color: "#6B7280", fontSize: 13, padding: "10px 0" }}>{s.loading}</div>}
-        {!token && !shortCode && !result && !matches && !busy && (
-          <form onSubmit={submit}>
-            <div className="field"><label>{s.phoneLabel}</label><input required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={s.statusPhonePlaceholder} /></div>
-            <button className="btn" style={{ width: "100%", justifyContent: "center", marginTop: 6 }} disabled={busy} type="submit">
-              {busy ? s.statusSearching : s.statusViewBtn}
-            </button>
-          </form>
-        )}
         {matches && !result && (
           <div>
             <div className="login-note" style={{ marginBottom: 10 }}>{s.statusMultipleFound}</div>
@@ -508,7 +675,7 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
       </div>
       )}
       </main>
-      <PublicFooter minimal={minimal} lang={lang} />
+      <PublicFooter minimal={minimal} lang={lang} onContactClick={minimal ? () => { setView("contact"); window.scrollTo({ top: 0, behavior: "smooth" }); } : undefined} />
       {bottomNavItems && <PublicBottomNav items={bottomNavItems} />}
     </div>
   );

@@ -660,17 +660,16 @@ tr:hover td{background:#FAFAFA}
    navigáció jobb, ezért csak a mobil media query-ben van display:flex. */
 .pub-bottom-nav{display:none}
 @media (max-width:640px){
-  .pub-shop-tabbed{padding-bottom:calc(58px + env(safe-area-inset-bottom))}
+  .pub-shop-tabbed{padding-bottom:calc(100px + env(safe-area-inset-bottom))}
   .pub-bottom-nav{
     display:flex;
-    position:fixed; left:0; right:0; bottom:0; z-index:20;
-    background:rgba(255,255,255,.92); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
-    border-top:1px solid var(--pub-line);
-    padding:6px 4px calc(4px + env(safe-area-inset-bottom));
-    box-shadow:0 -2px 12px rgba(16,24,40,.06);
+    position:fixed; left:16px; right:16px; bottom:calc(16px + env(safe-area-inset-bottom)); z-index:20;
+    background:#fff; border-radius:22px;
+    padding:10px 6px;
+    box-shadow:0 8px 24px rgba(16,24,40,.14);
   }
   .pub-bnav-item{
-    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
     padding:5px 2px 4px; border:none; background:none; font-family:inherit; text-decoration:none;
     color:var(--pub-ink-soft); cursor:pointer; -webkit-tap-highlight-color:transparent;
   }
@@ -995,8 +994,9 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-footer-grid-minimal .pub-footer-col{align-items:flex-start}
 .pub-footer-bottom-minimal{justify-content:flex-start}
 .pub-footer-col{display:flex;flex-direction:column;gap:9px}
-.pub-footer-col a{color:var(--pub-ink-soft);text-decoration:none;font-size:12.5px}
-.pub-footer-col a:hover{color:var(--pub-accent-ink);text-decoration:underline}
+.pub-footer-col a, .pub-footer-col .pub-footer-linkbtn{color:var(--pub-ink-soft);text-decoration:none;font-size:12.5px}
+.pub-footer-col a:hover, .pub-footer-col .pub-footer-linkbtn:hover{color:var(--pub-accent-ink);text-decoration:underline}
+.pub-footer-linkbtn{background:none;border:none;padding:0;font-family:inherit;cursor:pointer;text-align:left}
 .pub-footer-brand{margin-bottom:2px}
 .pub-footer-logo{height:23px;width:auto;display:block}
 .pub-footer-about{margin:0;font-size:12px;line-height:1.6;color:var(--pub-ink-soft);max-width:280px}
@@ -1178,25 +1178,12 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .status-node-pulse{animation:statusNodePulse 1.8s ease-in-out infinite}
 @keyframes statusNodePulse{0%,100%{box-shadow:0 0 0 0 var(--primary-soft)}50%{box-shadow:0 0 0 5px transparent}}
 
-/* "Szerviz jegy" kártya a /status oldalon — fizikai jegy/beszállókártya hangulat,
-   kivágott perforációval a fejléc és az idővonal között. A CSS grid-alapú idővonal
-   (label-oszlop mindig ugyanolyan széles) szándékosan zárja ki azt, hogy hosszabb
-   dátum/felirat esetén elcsússzon egy sor — ez volt a régi flex-es elrendezés hibája. */
-.ticket-card{width:100%;max-width:400px;margin:0 auto;background:var(--pub-paper-raised);border-radius:20px;border:1px solid var(--pub-line);box-shadow:var(--shadow-lg);position:relative}
-.ticket-head{padding:24px 24px 20px}
-.ticket-head-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;gap:10px}
+/* "Szerviz jegy" nézet a /status oldalon — kártyás elrendezés (Munkafolyamat kártya,
+   Részletek kártya, üzlet-sor), a CSS grid-alapú idővonal (label-oszlop mindig
+   ugyanolyan széles) szándékosan zárja ki, hogy hosszabb felirat esetén elcsússzon
+   egy sor — ez volt a régi flex-es elrendezés hibája. */
 .ticket-eyebrow{font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9CA3AF}
-.ticket-no{font-family:'Roboto Mono',monospace;font-size:34px;font-weight:700;color:var(--pub-ink);line-height:1;margin-bottom:10px}
-.ticket-device{font-size:15px;font-weight:700;color:var(--pub-ink)}
-.ticket-customer{font-size:12px;color:#9CA3AF;margin-top:2px}
 
-.ticket-perf{position:relative;height:0}
-.ticket-notch{position:absolute;top:-11px;width:22px;height:22px;border-radius:50%;background:var(--pub-paper)}
-.ticket-notch.l{left:-11px}
-.ticket-notch.r{right:-11px}
-.ticket-perf-line{margin:0 22px;border-top:2px dashed var(--pub-line)}
-
-.ticket-rows{padding:16px 24px;border-top:1px solid var(--pub-paper)}
 .ticket-row{display:flex;justify-content:space-between;padding:6px 0}
 .ticket-row-label{font-size:12px;color:var(--pub-ink-soft)}
 .ticket-row-value{font-family:'Roboto Mono',monospace;font-size:13px;font-weight:700;color:var(--pub-ink)}
@@ -1217,10 +1204,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .ticket-tl-title{font-size:13px;font-weight:700;color:var(--pub-ink)}
 .ticket-tl-title.current{font-weight:800}
 .ticket-tl-title.upcoming{color:#9CA3AF}
-.ticket-tl-caption{font-size:11px;color:var(--pub-ink-soft);margin-top:1px}
-.ticket-tl-caption.upcoming{color:#C1C6CC}
 
-.ticket-shop-row{margin:0 24px 22px;padding-top:14px;border-top:1px solid var(--pub-paper);display:flex;align-items:center;justify-content:center;gap:7px}
 .ticket-shop-link{font-size:12px;color:var(--pub-ink-soft);font-weight:600;text-decoration:underline;text-underline-offset:2px}
 
 .ticket-cta{margin:20px auto 0;display:flex;width:100%;max-width:400px;justify-content:center;align-items:center;gap:6px;background:transparent;border:1.5px solid var(--primary);color:var(--primary-dark);font-weight:700;font-size:13px;padding:13px 0;border-radius:999px;cursor:pointer;font-family:inherit;text-decoration:none}

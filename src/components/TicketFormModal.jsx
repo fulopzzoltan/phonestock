@@ -45,7 +45,10 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
     imei: ticket?.imei || "",
     price: ticket?.price ?? prefill?.price ?? "",
     matCost: ticket?.matCost ?? "",
-    warranty: ticket?.warranty || "",
+    // Új munkalapnál (nem garanciális ügy esetén — az alapból nincs bepipálva) alapértelmezetten
+    // 1 hónap garanciát adunk a javításra, hogy ne maradjon üresen — a kolléga felülírhatja, ha
+    // az adott javításnál más időtartam indokolt.
+    warranty: ticket?.warranty || (isEdit ? "" : "1 hó"),
     handoverDate: ticket?.handoverDate || "",
     dueDate: ticket?.dueDate || "",
     folia: ticket?.folia || false,
