@@ -47,13 +47,9 @@ const LOCATION_HOURS = {
 function ContactPanel({ s, lang, locations, onBack }) {
   return (
     <div style={{ width: "100%", maxWidth: 400, margin: "0 auto" }}>
-      <button type="button" className="ticket-back-link" onClick={onBack}>
+      <button type="button" className="ticket-back-link" onClick={onBack} style={{ marginBottom: 18 }}>
         <ChevronLeftIcon width={12} height={12} /> {s.bottomNavStatus}
       </button>
-      <div style={{ marginBottom: 18 }}>
-        <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.3, textTransform: "uppercase", color: "var(--pub-ink-soft)", marginBottom: 2 }}>{s.contactEyebrow}</div>
-        <div style={{ fontSize: 19, fontWeight: 800, color: "var(--pub-ink)" }}>{s.contactTitle}</div>
-      </div>
 
       {locations.map((l) => {
         const hours = LOCATION_HOURS[l.name]?.[lang] || [s.contactHours];
@@ -99,12 +95,12 @@ function ContactPanel({ s, lang, locations, onBack }) {
         href={`https://wa.me/${SUPPORT_WHATSAPP}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="ticket-cta"
-        style={{ marginTop: 22, background: "#1DB954", border: "none", color: "#fff", boxShadow: "0 4px 12px rgba(29,185,84,.25)" }}
+        style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", background: "#1DB954", borderRadius: 14, padding: "14px 16px", marginTop: 22, boxShadow: "0 4px 12px rgba(29,185,84,.25)", textDecoration: "none" }}
       >
-        <WhatsappIcon width={15} height={15} /> {s.contactWhatsappBtn}
+        <WhatsappIcon width={15} height={15} style={{ color: "#fff", flexShrink: 0 }} />
+        <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{s.contactWhatsappBtn}</span>
       </a>
-      <a href={`tel:${SUPPORT_PHONE}`} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, color: "var(--pub-ink-soft)", fontWeight: 600, fontSize: 12.5, padding: "10px 0", textDecoration: "none" }}>
+      <a href={`tel:${SUPPORT_PHONE}`} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, color: "var(--pub-ink-soft)", fontWeight: 600, fontSize: 12.5, padding: "10px 0", marginTop: 14, textDecoration: "none" }}>
         <CallIcon width={12} height={12} /> {s.contactCallAlt}
       </a>
     </div>
@@ -116,7 +112,7 @@ function ContactPanel({ s, lang, locations, onBack }) {
 function FeatureRow({ icon: Icon, title, desc, last = false }) {
   return (
     <div className="ticket-extra-card" style={{ width: "100%", display: "flex", alignItems: "flex-start", gap: 14, marginBottom: last ? 0 : 10 }}>
-      <span style={{ width: 36, height: 36, borderRadius: 11, background: "var(--primary-soft)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <span style={{ width: 36, height: 36, borderRadius: 0, background: "var(--primary-soft)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
         <Icon width={17} height={17} style={{ color: "var(--primary-ink)" }} />
       </span>
       <div>
@@ -174,7 +170,7 @@ function LiveBadge({ label = "Élő nyomonkövetés" }) {
 function EntityTile({ icon: Icon, title, subtitle, statusLabel, statusClass }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 14, padding: 16, borderRadius: 18, background: "var(--pub-paper)", border: "1px solid var(--pub-line)", marginBottom: 22 }}>
-      <div style={{ width: 46, height: 46, borderRadius: 14, background: "var(--primary-soft)", border: "1px solid rgba(29,185,84,.3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <div style={{ width: 46, height: 46, borderRadius: 2, background: "var(--primary-soft)", border: "1px solid rgba(29,185,84,.3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
         <Icon width={20} height={20} style={{ color: "var(--primary-ink)" }} />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -190,7 +186,7 @@ function EntityTile({ icon: Icon, title, subtitle, statusLabel, statusClass }) {
 // egy csomagküldő app "várható kézbesítés / súly" chip-sora.
 function StatChip({ label, children }) {
   return (
-    <div style={{ flex: 1, padding: "13px 14px", borderRadius: 14, background: "var(--pub-paper)", border: "1px solid var(--pub-line)" }}>
+    <div style={{ flex: 1, padding: "13px 14px", borderRadius: 0, background: "var(--pub-paper)", border: "1px solid var(--pub-line)" }}>
       <div style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", color: "#9CA3AF", marginBottom: 5 }}>{label}</div>
       <div>{children}</div>
     </div>
@@ -201,10 +197,10 @@ function StatChip({ label, children }) {
 // nem lépésenkénti alsó felirat (azt korábban kifejezetten kivettük), hanem egyetlen,
 // az aktuális állapotot elmagyarázó sor a kártya élén, ahogy a jóváhagyott makett mutatja.
 function workflowHeadline(activeStep, handedOver, s) {
-  if (handedOver) return { title: s.workflowHeadlineDone, desc: s.workflowDescDone };
-  if (activeStep >= 2) return { title: s.workflowHeadlineReady, desc: s.workflowDescReady };
-  if (activeStep === 1) return { title: s.workflowHeadlineInProgress, desc: s.workflowDescInProgress };
-  return { title: s.workflowHeadlineReported, desc: s.workflowDescReported };
+  if (handedOver) return s.workflowHeadlineDone;
+  if (activeStep >= 2) return s.workflowHeadlineReady;
+  if (activeStep === 1) return s.workflowHeadlineInProgress;
+  return s.workflowHeadlineReported;
 }
 
 // Szegmentált folyamatsáv (nem függőleges pont+vonal idővonal) — 4 egyenlő szakasz,
@@ -212,14 +208,13 @@ function workflowHeadline(activeStep, handedOver, s) {
 function StatusTimeline({ status, handedOver, s }) {
   const activeStep = handedOver ? 3 : (STEP_MAP[status] ?? 0);
   const steps = timelineSteps(s);
-  const { title, desc } = workflowHeadline(activeStep, handedOver, s);
+  const title = workflowHeadline(activeStep, handedOver, s);
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 4 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 18 }}>
         <span style={{ fontSize: 15, fontWeight: 800, color: "var(--pub-ink)" }}>{title}</span>
         <span className="status-live-dot" style={{ width: 5, height: 5 }} />
       </div>
-      <div style={{ fontSize: 12.5, color: "var(--pub-ink-soft)", lineHeight: 1.5, marginBottom: 18 }}>{desc}</div>
 
       <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
         {steps.map((step, i) => {
@@ -382,7 +377,6 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
 
   const isTicket = result?.kind === "ticket";
   const isPurchase = result?.kind === "purchase";
-  const probs = (result?.issue || "").split(",").map((p) => p.trim()).filter(Boolean);
   const handedOver = result?.sub_status === "Átadva";
   const handoverAllowed = result?.status === "Átadásra" && result?.sub_status !== "Sikertelen";
   const warrantyFrom = result?.date_out || null;
@@ -442,17 +436,14 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
           >
             <ChevronLeftIcon width={12} height={12} /> {matches ? s.backToResults : s.bottomNavStatus}
           </button>
-          <div style={{ marginBottom: 14 }}>
-            <LiveBadge label={s.statusLiveBadge} />
-          </div>
-
-          <div className="ticket-extra-card" style={{ width: "100%" }}>
+          <div className="ticket-extra-card" style={{ width: "100%", marginTop: 18 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
               <span className="mono" style={{ fontSize: 10.5, fontWeight: 700, color: "#6B7280", background: "var(--pub-paper)", padding: "4px 9px", borderRadius: 999 }}>#{result.ticket_no}</span>
+              <LiveBadge label={s.statusLiveBadge} />
               <span className={`st ${statusCls(result.status)}`}>{result.sub_status ? subStatusLabel(result.status, result.sub_status) : result.status}</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ width: 52, height: 52, borderRadius: 12, background: "var(--pub-paper)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <div style={{ width: 52, height: 52, borderRadius: 0, background: "var(--pub-paper)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <PhoneCaseIcon width={22} height={22} style={{ color: "#9CA3AF" }} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -460,49 +451,33 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
                 <div style={{ fontSize: 12.5, color: "var(--pub-ink-soft)", marginTop: 1 }}>{result.customer_name}</div>
               </div>
             </div>
-          </div>
 
-          <div style={{ width: "100%", fontSize: 14, fontWeight: 800, color: "var(--pub-ink)", margin: "2px 0 12px" }}>{s.ticketStatusSectionTitle}</div>
-
-          <div className="ticket-extra-card" style={{ width: "100%" }}>
-            <StatusTimeline status={result.status} handedOver={handedOver} s={s} />
-          </div>
-
-          <div className="ticket-extra-card" style={{ width: "100%" }}>
-            <div className="ticket-row">
-              <span className="ticket-row-label">{s.chipRepairCost}</span>
-              <span className="ticket-row-value">{money(result.price)}</span>
+            <div style={{ borderTop: "1px solid var(--pub-line)", marginTop: 18, paddingTop: 18 }}>
+              <StatusTimeline status={result.status} handedOver={handedOver} s={s} />
             </div>
-            <div className="ticket-row">
-              <span className="ticket-row-label">{s.chipWarranty}</span>
-              {!handedOver ? (
-                <span className="ticket-row-value muted">—</span>
-              ) : result.warranty ? (
-                <span className={`st ${ticketActive ? "st-kesz" : "st-kiadva"}`}>{ticketActive ? s.warrantyActive : s.warrantyExpired}</span>
-              ) : (
-                <span className="st st-sikertelen">{s.warrantyNone}</span>
+
+            <div style={{ borderTop: "1px solid var(--pub-line)", marginTop: 18, paddingTop: 18 }}>
+              <div style={{ display: "flex", gap: 10 }}>
+                <StatChip label={s.chipRepairCost}>
+                  <span className="mono" style={{ fontSize: 15, fontWeight: 800, color: "var(--pub-ink)" }}>{money(result.price)}</span>
+                </StatChip>
+                <StatChip label={s.chipWarranty}>
+                  {!handedOver ? (
+                    <span style={{ fontSize: 12.5, fontWeight: 600, color: "#9CA3AF" }}>—</span>
+                  ) : result.warranty ? (
+                    <span className={`st ${ticketActive ? "st-kesz" : "st-kiadva"}`}>{ticketActive ? s.warrantyActive : s.warrantyExpired}</span>
+                  ) : (
+                    <span className="st st-sikertelen">{s.warrantyNone}</span>
+                  )}
+                </StatChip>
+              </div>
+              {handedOver && result.warranty && (
+                <div className="ticket-row" style={{ marginTop: 6 }}>
+                  <span className="ticket-row-label">{s.rowWarrantyExpiry}</span>
+                  <span className="ticket-row-value muted">{ticketExpiry}</span>
+                </div>
               )}
             </div>
-            {handedOver && result.warranty && (
-              <div className="ticket-row">
-                <span className="ticket-row-label">{s.rowWarrantyExpiry}</span>
-                <span className="ticket-row-value muted">{ticketExpiry}</span>
-              </div>
-            )}
-            <div className="ticket-row-tags">
-              <span className="ticket-row-tags-label">{s.rowIssues}</span>
-              <span className="ticket-row-tags-value" style={{ fontSize: 12.5, color: "var(--pub-ink)", fontWeight: 600 }}>{probs.length ? probs.join(", ") : "—"}</span>
-            </div>
-          </div>
-
-          <div style={{ width: "100%", display: "flex", gap: 10, background: "#F0FDF4", borderRadius: 14, padding: "14px 16px", marginTop: 16 }}>
-            <WhatsappIcon width={16} height={16} style={{ color: "#0F7A36", flexShrink: 0, marginTop: 1 }} />
-            <span style={{ fontSize: 12, color: "#166534", lineHeight: 1.5 }}>{s.ticketWhatsappTip}</span>
-          </div>
-
-          <div className="ticket-updated">
-            <span className="status-live-dot" style={{ width: 5, height: 5 }} />
-            <span className="ticket-updated-label">{s.statusUpdatedNow}</span>
           </div>
 
           <div style={{ width: "100%", marginTop: 16 }}>
@@ -510,7 +485,7 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
               <FoliaUpsellBanner token={token} deviceLabel={[result.brand, result.model].filter(Boolean).join(" ")} onDone={() => setResult({ ...result, folia: true, folia_upsell_requested: true, folia_upsell_price: 30, price: (Number(result.price) || 0) + 30 })} />
             )}
             {result.folia_upsell_requested && (
-              <div style={{ background: "#F0FDF4", borderRadius: 10, padding: "8px 12px", marginBottom: 14 }}>
+              <div style={{ background: "#F0FDF4", borderRadius: 10, padding: "8px 12px", marginBottom: 24 }}>
                 <div style={{ fontSize: 12, color: "#15803D" }}>
                   {s.foliaOrderedNote(money(result.folia_upsell_price))}
                 </div>
@@ -530,7 +505,19 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
               </div>
             )}
             {LOYALTY_LIVE && <LoyaltyBox balance={result.customer_points_balance} code={result.customer_referral_code} />}
-            <WarrantyTermsToggle title={s.warrantyTermsTitle} text={SERVICE_WARRANTY_TERMS} />
+
+            <button
+              type="button"
+              onClick={() => { setView("contact"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", background: "#1DB954", border: "none", borderRadius: 14, padding: "14px 16px", marginBottom: 28, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 12px rgba(29,185,84,.25)" }}
+            >
+              <WhatsappIcon width={15} height={15} style={{ color: "#fff", flexShrink: 0 }} />
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{s.ticketWhatsappTip}</span>
+            </button>
+
+            <div style={{ marginBottom: 24 }}>
+              <WarrantyTermsToggle title={s.warrantyTermsTitle} text={SERVICE_WARRANTY_TERMS} />
+            </div>
             {signMode && signStage === "service_handover" && !handoverAllowed && (
               <div className="errbar" style={{ marginBottom: 14 }}>{s.handoverNotReady}</div>
             )}
@@ -556,7 +543,7 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
               )
             )}
             {!token && !shortCode && (
-              <div style={{ display: "flex", gap: 8 }}>
+              <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
                 {matches && <button className="btn sec" style={{ flex: 1, justifyContent: "center" }} onClick={() => setResult(null)}>{s.backToResults}</button>}
                 <button className="btn sec" style={{ flex: 1, justifyContent: "center" }} onClick={() => { setResult(null); setMatches(null); setPhone(""); }}>{s.newSearch}</button>
               </div>

@@ -91,6 +91,10 @@ export default function RepairEstimator({ lang = "hu" }) {
   const displayPrice = selectedPriceRow
     ? (origin === "after" && selectedPriceRow.price_after ? selectedPriceRow.price_after : selectedPriceRow.price_oem)
     : null;
+  // Kijelző- és akkucserénél a mátrix-ár csak a munkadíjat jelenti (az alkatrészköltség a
+  // bevizsgáláskor derül ki, mert az beszerzési forrástól/minőségtől függően nagyon szór) —
+  // ezért itt "-tól" jelzést és egy magyarázó megjegyzést kap az ár, a többi tételnél nem.
+  const isLaborOnly = problem === "Kijelző csere" || problem === "Akku csere";
   const stockAvailable = selectedPriceRow?.part_category
     ? availability.some((a) => a.part_category === selectedPriceRow.part_category && a.available)
     : null;
@@ -313,7 +317,10 @@ export default function RepairEstimator({ lang = "hu" }) {
                     <button type="button" className={`pub-origin-btn${origin === "after" ? " active" : ""}`} onClick={() => setOrigin("after")}>{s.repairAfter}</button>
                   </div>
                 )}
-                <div className="bb-offer-price">{Math.round(Number(displayPrice)).toLocaleString("hu-HU")} Lei</div>
+                <div className="bb-offer-price">
+                  {isLaborOnly ? s.repairFromPrice(Math.round(Number(displayPrice)).toLocaleString("hu-HU")) : `${Math.round(Number(displayPrice)).toLocaleString("hu-HU")} Lei`}
+                </div>
+                {isLaborOnly && <div className="field-hint" style={{ marginBottom: 10 }}>{s.repairLaborOnlyNote}</div>}
                 {selectedPriceRow.warranty && <div className="pub-warranty-tag" style={{ marginBottom: 10 }}>{s.repairWarrantyFor(selectedPriceRow.warranty)}</div>}
                 {stockAvailable === true && (
                   <div className="pub-stock-note available">{s.repairStockAvail(selectedPriceRow.est_minutes || "~30")}</div>

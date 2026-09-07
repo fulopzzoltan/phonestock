@@ -24,7 +24,7 @@ export default function FoliaUpsellBanner({ token, onDone }) {
   }
 
   return (
-    <div style={{ border: "1.5px solid var(--primary)", borderRadius: 16, padding: 18, marginBottom: 14 }}>
+    <div style={{ background: "var(--pub-paper-raised)", border: "1.5px solid var(--primary)", borderRadius: 16, padding: 18, marginBottom: 14 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 12 }}>
         <span style={{ width: 20, height: 20, borderRadius: "50%", background: "var(--primary-soft)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           <svg viewBox="0 0 24 24" width={11} height={11} fill="none" stroke="var(--primary-ink)" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" /></svg>
@@ -47,7 +47,7 @@ export default function FoliaUpsellBanner({ token, onDone }) {
         type="button"
         onClick={submit}
         disabled={busy}
-        style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", border: "1px solid var(--pub-line)", borderRadius: 12, padding: "12px 14px", background: "none", cursor: busy ? "default" : "pointer", fontFamily: "inherit", textAlign: "left" }}
+        style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", border: "1px solid var(--pub-line)", borderRadius: 0, padding: "12px 14px", background: "none", cursor: busy ? "default" : "pointer", fontFamily: "inherit", textAlign: "left" }}
       >
         <span style={{ width: 17, height: 17, borderRadius: 5, border: "1.5px solid #C1C6CC", flexShrink: 0 }} />
         <span style={{ fontSize: 13, fontWeight: 700, color: "#111827" }}>
