@@ -184,10 +184,6 @@ function LoyaltyRewardsSettings({ rewards, addLoyaltyReward, editLoyaltyReward, 
 export default function SettingsTab({ isAdmin, profile, user, settings, updateSettings, busy, setChangePasswordModal, locations, loyaltyRewards, addLoyaltyReward, editLoyaltyReward }) {
   return (
     <>
-      <div className="topbar">
-        <div><div className="page-title">Beállítások</div></div>
-      </div>
-
       <div className="pult-grid">
         <div className="pult-section">
           <div className="pult-section-head"><SettingsIcon width={16} height={16} />Fiók</div>

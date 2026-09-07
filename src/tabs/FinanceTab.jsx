@@ -113,7 +113,7 @@ export default function FinanceTab({
   loadingData, transactions, filteredTransactions, setTxModal, deleteTransaction, setReceiptTxId,
   productConditionById,
   smartQuickItems, checkoutBasket,
-  dayCloses, closeDay, reopenDay, setPdfImportModal,
+  dayCloses, closeDay, reopenDay,
   isAdmin,
 }) {
   const [showHistory, setShowHistory] = useState(false);
@@ -141,11 +141,6 @@ export default function FinanceTab({
 
   return (
     <>
-      <div className="topbar">
-        <div><div className="page-title">Bevételek &amp; Kiadások</div></div>
-        <button className="btn sec" disabled={busy} onClick={() => setPdfImportModal(true)}>+ Rendelés PDF-ből</button>
-      </div>
-
       {cashByLocation.length > 0 && (
         <div className={`statrow c${Math.min(Math.max(cashByLocation.length, 1), 6)}`} style={{ marginTop: 16, marginBottom: 22 }}>
           {cashByLocation.map((c) => (

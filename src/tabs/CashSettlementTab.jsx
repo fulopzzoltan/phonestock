@@ -164,10 +164,6 @@ export default function CashSettlementTab({
 
   return (
     <>
-      <div className="topbar">
-        <div><div className="page-title">Elszámolás</div></div>
-      </div>
-
       {justSaved && (
         <div style={{ fontSize: 13, color: "#15803D", background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: "var(--radius-md)", padding: "10px 14px", marginBottom: 16 }}>
           Az elszámolás rögzítve. Az alábbi új időszak a következő elszámoláshoz készült elő — csak akkor nyomd meg újra a "Rögzítés" gombot, ha ehhez is van elszámolnivaló.

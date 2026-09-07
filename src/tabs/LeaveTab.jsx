@@ -4,16 +4,11 @@ import { EmptyState } from "../components/EmptyState";
 import ResponsiveTable from "../components/ResponsiveTable";
 
 export default function LeaveTab({
-  leaveYear, busy, setLeaveRequestModal, coverageWarnings, locName, users, leaveBalanceByUser, isAdmin,
+  leaveYear, busy, coverageWarnings, locName, users, leaveBalanceByUser, isAdmin,
   setLeaveBalanceModal, upcomingLeave, leaveTypes, user, decideLeaveRequest, revokeLeaveRequest,
 }) {
   return (
     <>
-      <div className="topbar">
-        <div><div className="page-title">Szabadság</div></div>
-        <button className="btn" disabled={busy} onClick={() => setLeaveRequestModal(true)}>+ Szabadság kérése</button>
-      </div>
-
       {coverageWarnings.length > 0 && (
         <div className="leave-warn">
           <div className="leave-warn-title" style={{ display: "flex", alignItems: "center", gap: 6 }}><WarningIcon width={14} height={14} /> Ezeken a napokon egy helyszínen mindenki szabadságon lesz</div>

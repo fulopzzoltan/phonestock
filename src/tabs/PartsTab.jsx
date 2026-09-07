@@ -114,7 +114,6 @@ export default function PartsTab({
         icon={PartsIcon}
         label="Felhasznált alkatrészek"
         items={allUsedParts}
-        searchPlaceholder="Keresés alkatrész, munkalap vagy vevő szerint..."
         filterFn={(sp, q) => [sp.partName, sp.ticket.customerName, sp.ticket.brand, sp.ticket.model, ticketCode(sp.ticket.ticketNo, locName(sp.ticket.intakeLocationId || sp.ticket.locationId))].filter(Boolean).join(" ").toLowerCase().includes(q)}
       >
         {(rows) => (

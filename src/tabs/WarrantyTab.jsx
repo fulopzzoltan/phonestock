@@ -6,7 +6,7 @@ import HistorySection from "../components/HistorySection";
 const FILTERS = [["all", "Mind"], ["sale", "Telefon garancia"], ["service", "Szerviz garancia"]];
 
 export default function WarrantyTab({
-  busy, setWarrantyModal, warrantyFilter, setWarrantyFilter, loadingData, filteredWarranties,
+  warrantyFilter, setWarrantyFilter, loadingData, filteredWarranties,
   setWarrantyDetailKey, expiredWarranties,
 }) {
   const [search, setSearch] = useState("");
@@ -19,13 +19,8 @@ export default function WarrantyTab({
 
   return (
     <>
-      <div className="topbar">
-        <div><div className="page-title">Garancia</div></div>
-        <button className="btn" disabled={busy} onClick={() => setWarrantyModal("add")}>+ Garancia felvétele</button>
-      </div>
-
       <div className="filter-row">
-        <div className="searchbar"><SearchIcon /><input placeholder="Keresés ügyfél vagy termék szerint..." value={search} onChange={(e) => setSearch(e.target.value)} /></div>
+        <div className="searchbar"><SearchIcon /><input value={search} onChange={(e) => setSearch(e.target.value)} /></div>
         <div className="seg">
           {FILTERS.map(([key, label]) => (
             <button key={key} type="button" className={warrantyFilter === key ? "active" : ""} onClick={() => setWarrantyFilter(key)}>{label}</button>
@@ -71,7 +66,6 @@ export default function WarrantyTab({
         icon={WarrantyIcon}
         label="Lejárt garanciák"
         items={expiredWarranties}
-        searchPlaceholder="Keresés ügyfél vagy termék szerint..."
         filterFn={(w, q) => [w.customerName, w.label].filter(Boolean).join(" ").toLowerCase().includes(q)}
       >
         {(rows) => (

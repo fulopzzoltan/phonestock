@@ -191,7 +191,6 @@ export default function ServiceTab({
         icon={ServiceIcon}
         label="Átadott munkalapok"
         items={handedOverTickets}
-        searchPlaceholder="Keresés vevő, márka, modell szerint..."
         filterFn={(t, q) => [t.customerName, t.brand, t.model, ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))].filter(Boolean).join(" ").toLowerCase().includes(q)}
       >
         {(rows) => (

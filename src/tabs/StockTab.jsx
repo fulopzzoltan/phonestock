@@ -159,7 +159,6 @@ export default function StockTab({
         icon={PhoneCaseIcon}
         label="Eladott telefonok"
         items={soldStock}
-        searchPlaceholder="Keresés márka, modell, vevő szerint..."
         filterFn={(i, q) => [i.brand, i.model, i.saleTx?.customerName, phoneCode(i.productNo)].filter(Boolean).join(" ").toLowerCase().includes(q)}
       >
         {(rows) => (

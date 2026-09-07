@@ -24,10 +24,6 @@ export default function BuybackTab({
 
   return (
     <>
-      <div className="topbar">
-        <div><div className="page-title">Felvásárlás</div></div>
-      </div>
-
       {loadingData ? <LoadingState /> : (
         <div className="kanban-wrap" style={{ marginBottom: 24 }}>
           <div className="kanban">
@@ -58,7 +54,6 @@ export default function BuybackTab({
         icon={BuybackIcon}
         label="Lezárt ajánlatok"
         items={closedOffers}
-        searchPlaceholder="Keresés ügyfél, márka, modell szerint..."
         filterFn={(o, q) => [o.customerName, o.brand, o.model].filter(Boolean).join(" ").toLowerCase().includes(q)}
       >
         {(rows) => (

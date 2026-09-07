@@ -6,23 +6,10 @@ import ResponsiveTable from "../components/ResponsiveTable";
 
 export default function TrashTab({
   trashLoading, trash, busy, restoreProduct, hardDeleteProduct, restorePart, hardDeletePart,
-  restoreTransaction, hardDeleteTransaction, restoreTicket, hardDeleteTicket, hardDeleteAllTrash,
+  restoreTransaction, hardDeleteTransaction, restoreTicket, hardDeleteTicket,
 }) {
-  const totalCount = trash ? trash.products.length + trash.parts.length + trash.transactions.length + trash.tickets.length : 0;
   return (
     <>
-      <div className="topbar">
-        <div><div className="page-title">Kuka</div></div>
-        {totalCount > 0 && (
-          <ConfirmDelete
-            variant="full"
-            disabled={busy}
-            label="Kuka ürítése"
-            confirmLabel={`Biztos? ${totalCount} tétel véglegesen törlődik.`}
-            onConfirm={hardDeleteAllTrash}
-          />
-        )}
-      </div>
       {trashLoading || !trash ? <div className="tw"><LoadingState /></div> : (
         <>
           {trash.products.length === 0 && trash.parts.length === 0 && trash.transactions.length === 0 && trash.tickets.length === 0 && (

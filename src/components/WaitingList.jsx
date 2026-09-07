@@ -34,11 +34,11 @@ export default function WaitingList({ items, customers = [], onAdd, onAdvance, o
         <div className="tw" style={{ marginBottom: 10 }}>
           {items.map((w) => (
             <div key={w.id} className="dp-row" style={{ padding: "10px 14px" }}>
-              <span className="dp-key">
+              <span className="dp-key" style={{ flexShrink: 1, minWidth: 0, overflowWrap: "break-word" }}>
                 <span className={`st ${STATUS_CLS[w.status]}`} style={{ marginRight: 8 }}>{STATUS_LABEL[w.status]}</span>
                 {w.description}{w.customerName ? ` — ${w.customerName}` : ""}{w.supplier ? ` (${w.supplier})` : ""}
               </span>
-              <span style={{ display: "flex", gap: 6 }}>
+              <span style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                 {NEXT[w.status] && <button type="button" className="btn sec sm" onClick={() => onAdvance(w.id, NEXT[w.status])}>{NEXT_LABEL[w.status]}</button>}
                 <button type="button" className="iconbtn" onClick={() => onDelete(w.id)}>×</button>
               </span>

@@ -1,7 +1,6 @@
 import { useState, useMemo, useRef } from "react";
-import { SearchIcon, LockIcon, ExternalLinkIcon, EditIcon, TrashIcon, ClockIcon } from "../components/icons";
-import { EmptyState, LoadingState } from "../components/EmptyState";
-import VaultCredentialModal from "../components/VaultCredentialModal";
+import { SearchIcon, LockIcon, ExternalLinkIcon, EditIcon, TrashIcon } from "../components/icons";
+import { EmptyState } from "../components/EmptyState";
 
 // Cég belépések ("Belépések" fül) — a jelszavak titkosítva, a Supabase beépített
 // Vault-jában (libsodium) tárolódnak, sosem nyílt szövegként ebben a listában. Egy jelszó
@@ -10,19 +9,14 @@ import VaultCredentialModal from "../components/VaultCredentialModal";
 // alkalommal újra lekéri, nem cache-eli hosszú távra.
 const REVEAL_HIDE_MS = 20000;
 
-export default function VaultTab({ credentials, isAdmin, users, onCreate, onUpdateMeta, onChangePassword, onDelete, onReveal, onLoadAccessLog }) {
+export default function VaultTab({ credentials, isAdmin, modal, setModal, onDelete, onReveal }) {
   const [q, setQ] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [modal, setModal] = useState(null); // null | "add" | credential obj
-  const [busy, setBusy] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [revealed, setRevealed] = useState({}); // id -> password
   const [revealBusy, setRevealBusy] = useState({}); // id -> boolean
   const [revealError, setRevealError] = useState({}); // id -> message
   const [copiedId, setCopiedId] = useState(null);
-  const [logFor, setLogFor] = useState(null); // credential obj
-  const [logEntries, setLogEntries] = useState(null);
-  const [logLoading, setLogLoading] = useState(false);
   const hideTimers = useRef({});
 
   const categories = useMemo(() => {
@@ -38,11 +32,6 @@ export default function VaultTab({ credentials, isAdmin, users, onCreate, onUpda
       return [c.siteName, c.username, c.siteUrl, c.category].filter(Boolean).join(" ").toLowerCase().includes(qq);
     });
   }, [credentials, q, categoryFilter]);
-
-  function userName(id) {
-    const u = users.find((x) => x.id === id);
-    return u?.fullName || u?.email || "Ismeretlen";
-  }
 
   function scheduleHide(id) {
     clearTimeout(hideTimers.current[id]);
@@ -94,41 +83,10 @@ export default function VaultTab({ credentials, isAdmin, users, onCreate, onUpda
     setTimeout(() => setCopiedId((prev) => (prev === `u-${id}` ? null : prev)), 1800);
   }
 
-  async function submitModal(f) {
-    setBusy(true);
-    try {
-      if (modal === "add") {
-        await onCreate(f);
-      } else {
-        await onUpdateMeta(modal.id, f);
-      }
-      setModal(null);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function openLog(c) {
-    setLogFor(c);
-    setLogEntries(null);
-    setLogLoading(true);
-    try {
-      const rows = await onLoadAccessLog(c.id);
-      setLogEntries(rows);
-    } finally {
-      setLogLoading(false);
-    }
-  }
-
   return (
     <>
-      <div className="topbar">
-        <div><div className="page-title">Belépések</div></div>
-        {isAdmin && <button type="button" className="btn" onClick={() => setModal("add")}>+ Új belépés</button>}
-      </div>
-
       <div className="filter-row">
-        <div className="searchbar"><SearchIcon /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Keresés név, felhasználónév, oldal szerint..." /></div>
+        <div className="searchbar"><SearchIcon /><input value={q} onChange={(e) => setQ(e.target.value)} /></div>
         {categories.length > 0 && (
           <div className="status-seg">
             <button className={categoryFilter === "all" ? "active" : ""} onClick={() => setCategoryFilter("all")}>Mind</button>
@@ -164,7 +122,6 @@ export default function VaultTab({ credentials, isAdmin, users, onCreate, onUpda
                 </div>
                 {isAdmin && (
                   <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-                    <button className="iconbtn" title="Ki nézte meg" onClick={() => openLog(c)}><ClockIcon width={15} height={15} /></button>
                     <button className="iconbtn" title="Szerkesztés" onClick={() => setModal(c)}><EditIcon width={15} height={15} /></button>
                     {confirmDeleteId === c.id ? (
                       <>
@@ -201,39 +158,6 @@ export default function VaultTab({ credentials, isAdmin, users, onCreate, onUpda
               </div>
             </div>
           ))}
-        </div>
-      )}
-
-      {modal && (
-        <VaultCredentialModal
-          credential={modal === "add" ? null : modal}
-          busy={busy}
-          onClose={() => setModal(null)}
-          onSave={submitModal}
-          onChangePassword={(pw) => onChangePassword(modal.id, pw)}
-        />
-      )}
-
-      {logFor && (
-        <div className="overlay" onClick={() => setLogFor(null)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 420 }}>
-            <h2>Megtekintési napló <button className="iconbtn" onClick={() => setLogFor(null)}>×</button></h2>
-            <div style={{ fontSize: 12, color: "#6B7280", marginBottom: 10 }}>{logFor.siteName}</div>
-            {logLoading ? (
-              <LoadingState />
-            ) : !logEntries || logEntries.length === 0 ? (
-              <EmptyState icon={ClockIcon}>Ezt a jelszót még senki nem nézte meg.</EmptyState>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 320, overflowY: "auto" }}>
-                {logEntries.map((e) => (
-                  <div key={e.id} style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, borderBottom: "1px solid #F3F4F6", paddingBottom: 6 }}>
-                    <span>{userName(e.viewedBy)}</span>
-                    <span className="mono" style={{ color: "#6B7280" }}>{new Date(e.viewedAt).toLocaleString("hu-HU")}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
         </div>
       )}
     </>

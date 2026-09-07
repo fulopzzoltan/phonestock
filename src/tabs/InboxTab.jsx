@@ -206,7 +206,7 @@ export default function InboxTab({ messages, customers, onSend, onOpenCustomer, 
       <div className="wa-threads">
         <div className="searchbar" style={{ margin: "0 0 8px" }}>
           <SearchIcon width={14} height={14} />
-          <input placeholder="Keresés név vagy szám szerint..." value={q} onChange={(e) => setQ(e.target.value)} />
+          <input value={q} onChange={(e) => setQ(e.target.value)} />
         </div>
         <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#6B7280", margin: "0 0 8px", cursor: "pointer" }}>
           <input type="checkbox" checked={showIrrelevant} onChange={(e) => setShowIrrelevant(e.target.checked)} />

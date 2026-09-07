@@ -4,7 +4,6 @@ import { StarIcon, ReviewsIcon } from "../components/icons";
 import { EmptyState } from "../components/EmptyState";
 import ResponsiveTable from "../components/ResponsiveTable";
 import ConfirmDelete from "../components/ConfirmDelete";
-import ReviewModal from "../components/ReviewModal";
 
 function Stars({ n, size = 13 }) {
   return (
@@ -74,23 +73,12 @@ function BulkImportPanel({ onImport, onCancel, busy }) {
   );
 }
 
-export default function ReviewsTab({ reviews, locations, locName, addReview, editReview, deleteReview, bulkImportReviews, busy }) {
-  const [modal, setModal] = useState(null); // null | "add" | review obj
-  const [bulkOpen, setBulkOpen] = useState(false);
-
+export default function ReviewsTab({ reviews, locName, editReview, deleteReview, bulkImportReviews, busy, modal, setModal, bulkOpen, setBulkOpen }) {
   const published = reviews.filter((r) => r.isPublished);
   const avg = published.length ? published.reduce((s, r) => s + r.rating, 0) / published.length : 0;
 
   return (
     <>
-      <div className="topbar">
-        <div><div className="page-title">Vélemények</div></div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <button type="button" className="btn sec" onClick={() => setBulkOpen((v) => !v)}>{bulkOpen ? "Tömeges felvitel bezárása" : "Tömeges felvitel"}</button>
-          <button type="button" className="btn" onClick={() => setModal("add")}>+ Új vélemény</button>
-        </div>
-      </div>
-
       <div className="statrow c3" style={{ marginBottom: 18 }}>
         <div className="statcard accent">
           <div className="lbl">Átlag (publikus)</div>
@@ -157,20 +145,6 @@ export default function ReviewsTab({ reviews, locations, locName, addReview, edi
           />
         )}
       </div>
-
-      {modal && (
-        <ReviewModal
-          review={modal === "add" ? null : modal}
-          locations={locations}
-          busy={busy}
-          onClose={() => setModal(null)}
-          onSave={async (data) => {
-            if (modal === "add") await addReview(data);
-            else await editReview(modal.id, data);
-            setModal(null);
-          }}
-        />
-      )}
     </>
   );
 }

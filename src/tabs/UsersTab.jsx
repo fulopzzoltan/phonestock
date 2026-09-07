@@ -4,15 +4,11 @@ import { EmptyState, LoadingState } from "../components/EmptyState";
 import ResponsiveTable from "../components/ResponsiveTable";
 
 export default function UsersTab({
-  busy, setInviteError, setInviteModal, loadingData, users, user, updateUserProfile,
+  busy, loadingData, users, user, updateUserProfile,
   allowedLocations, resetEmployeePassword, deleteEmployee,
 }) {
   return (
     <>
-      <div className="topbar">
-        <div><div className="page-title">Felhasználók</div></div>
-        <button className="btn" disabled={busy} onClick={() => { setInviteError(""); setInviteModal(true); }}>+ Új kolléga meghívása</button>
-      </div>
       <div className="tw">
         {loadingData ? <LoadingState /> : users.length === 0 ? <EmptyState icon={UsersNavIcon}>Nincs felhasználó.</EmptyState> : (
           <ResponsiveTable

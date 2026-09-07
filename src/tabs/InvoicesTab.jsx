@@ -72,7 +72,7 @@ function QuickIssuePanel({ defaultLocId, busy, onIssue, customers = [] }) {
   );
 }
 
-export default function InvoicesTab({ transactions, locName, isAdmin, setIssueInvoiceModal, retrySmartbillDocument, quickIssueDocument, defaultLocId, busy, customers = [] }) {
+export default function InvoicesTab({ transactions, locName, isAdmin, retrySmartbillDocument, quickIssueDocument, defaultLocId, busy, customers = [] }) {
   const docs = useMemo(
     () => transactions.filter((t) => t.smartbillDoc).sort((a, b) => (a.smartbillDoc.createdAt < b.smartbillDoc.createdAt ? 1 : -1)),
     [transactions]
@@ -80,13 +80,6 @@ export default function InvoicesTab({ transactions, locName, isAdmin, setIssueIn
 
   return (
     <>
-      <div className="topbar">
-        <div><div className="page-title">Számlák</div></div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn" onClick={() => setIssueInvoiceModal(true)}>+ Kiállítás</button>
-        </div>
-      </div>
-
       <QuickIssuePanel defaultLocId={defaultLocId} busy={busy} onIssue={quickIssueDocument} customers={customers} />
 
       {docs.length === 0 ? (

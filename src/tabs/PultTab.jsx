@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { today, phoneCode, displayName, money, LEAVE_STATUS_CLS } from "../lib/utils";
-import { NoteIcon, PartsIcon, PhoneCaseIcon, LeaveIcon, CustomersIcon } from "../components/icons";
+import { today, phoneCode, displayName, money } from "../lib/utils";
+import { NoteIcon, PartsIcon, PhoneCaseIcon, LeaveIcon, CustomersIcon, ServiceIcon } from "../components/icons";
 import NoteComposer from "../components/NoteComposer";
 import NoteCard from "../components/NoteCard";
 import WaitingList from "../components/WaitingList";
@@ -18,9 +18,10 @@ export default function PultTab({
   notes, addNote, completeNote, reopenNote, deleteNote,
   waitingItems, addWaitingItem, advanceWaiting, deleteWaitingItem,
   users, currentUserId, tickets, stock, parts, customersTable, warranties,
-  upcomingLeave, leaveTypes, customerRequests, advanceCustomerRequest,
+  upcomingLeave, customerRequests, advanceCustomerRequest,
   webOrders, confirmWebOrder, cancelWebOrder, completeWebOrder,
   onOpenTicket, onOpenProduct, onOpenPart, onOpenCustomer, onOpenWarranty,
+  setTicketModal, setStockModal,
 }) {
   const promisedToday = useMemo(() => {
     const t0 = today();
@@ -51,9 +52,15 @@ export default function PultTab({
 
   return (
     <div className="pb-wrap">
+      <div className="pb-rail-col">
       <div className="pb-rail">
         <div className="pb-rail-hero"><span className="n">{attentionCount}</span><span className="l">tennivaló ma</span></div>
         <div className="pb-rail-sub">Webes rendelés, ígért munka és kész várakozás egy sávban</div>
+        <div className="pb-chips">
+          <div className="pb-chip"><span className="d" style={{ background: "var(--info)" }} />Webes rendelés <b>{webOrders.length}</b></div>
+          <div className="pb-chip"><span className="d" style={{ background: "var(--primary)" }} />Ígért munka ma <b>{promisedToday.length}</b></div>
+          <div className="pb-chip"><span className="d" style={{ background: "#7C3AED" }} />Kész várakozás <b>{readyWaiting.length}</b></div>
+        </div>
         <div className="pb-rail-list">
           {attentionCount === 0 && <div className="pb-rail-empty">Nincs ma sürgős tétel.</div>}
 
@@ -93,6 +100,36 @@ export default function PultTab({
             </div>
           ))}
         </div>
+
+        {leaveSoon.length > 0 && (
+          <div className="pb-leave-banner">
+            <LeaveIcon width={15} height={15} />
+            {leaveSoon.length} kolléga szabadsága kezdődik a köv. {LEAVE_SOON_DAYS} napban
+          </div>
+        )}
+      </div>
+
+        <div className="pult-section">
+          <div className="pult-section-head"><NoteIcon width={16} height={16} />Cetlik{openNotes.length > 0 && <span className="cnt">{openNotes.length} nyitott</span>}</div>
+          <NoteComposer users={users} tickets={tickets} stock={stock} parts={parts} customersTable={customersTable} warranties={warranties} locName={locName} onSave={addNote} />
+          {openNotes.length === 0 ? <EmptyState icon={NoteIcon}>Nincs nyitott cetli.</EmptyState> : (
+            <div className="stk-grid">
+              {openNotes.map((n) => (
+                <NoteCard key={n.id} note={n} users={users} currentUserId={currentUserId} onComplete={() => completeNote(n.id)} onDelete={() => deleteNote(n.id)}
+                  onOpenLink={{ ticket: onOpenTicket, product: onOpenProduct, part: onOpenPart, customer: onOpenCustomer, warranty: onOpenWarranty }} />
+              ))}
+            </div>
+          )}
+          <div style={{ marginTop: 10 }}>
+            <HistorySection icon={NoteIcon} label="Elintézett cetlik" items={doneNotes} filterFn={(n, q) => n.body.toLowerCase().includes(q)}>
+              {(rows) => (
+                <div className="stk-grid" style={{ padding: 12 }}>
+                  {rows.map((n) => <NoteCard key={n.id} note={n} users={users} currentUserId={currentUserId} done onReopen={() => reopenNote(n.id)} />)}
+                </div>
+              )}
+            </HistorySection>
+          </div>
+        </div>
       </div>
 
       <div className="pb-side">
@@ -116,7 +153,7 @@ export default function PultTab({
 
           <div className="pult-section">
             <div className="pult-section-head"><CustomersIcon width={16} height={16} />Ügyfél-kérések{customerRequests.length > 0 && <span className="cnt">{customerRequests.length}</span>}</div>
-            {customerRequests.length === 0 ? <EmptyState icon={CustomersIcon}>Nincs nyitott ügyfél-kérés.</EmptyState> : (
+            {customerRequests.length === 0 ? <div className="pult-empty-slim">Nincs nyitott ügyfél-kérés.</div> : (
               <div className="tw">
                 {customerRequests.map((r) => (
                   <div key={r.id} className="dp-row" style={{ padding: "10px 14px" }}>
@@ -134,72 +171,29 @@ export default function PultTab({
           </div>
 
           <div className="pult-section">
-            <div className="pult-section-head"><LeaveIcon width={16} height={16} />Közelgő szabadság{leaveSoon.length > 0 && <span className="cnt">{leaveSoon.length}</span>}</div>
-            {leaveSoon.length === 0 ? <EmptyState icon={LeaveIcon}>Nincs közelgő szabadság a következő {LEAVE_SOON_DAYS} napban.</EmptyState> : (
-              <div className="tw">
-                {leaveSoon.map((r) => {
-                  const reqUser = users.find((u) => u.id === r.userId);
-                  const lt = leaveTypes.find((t) => t.id === r.leaveTypeId);
-                  return (
-                    <div key={r.id} className="dp-row" style={{ padding: "10px 14px" }}>
-                      <span className="dp-key">
-                        <span style={{ fontWeight: 600 }}>{reqUser?.fullName || "?"}</span>
-                        <span className="leave-type-chip" style={{ marginLeft: 8 }}><span className="leave-type-dot" style={{ background: lt?.color || "#9CA3AF" }} />{lt?.name || "—"}</span>
-                        <div className="mono" style={{ marginTop: 3, fontSize: 11 }}>{r.startDate} – {r.endDate}</div>
-                      </span>
-                      <span className={LEAVE_STATUS_CLS[r.status] || "badge-loc"}>{r.status}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          <div className="pult-section">
-            <div className="pult-section-head">Ma összesen</div>
-            <div className="pb-mini-stats">
-              <div className="pb-mini-stat"><span className="n">{webOrders.length}</span><span className="l">Webes rendelés</span></div>
-              <div className="pb-mini-stat"><span className="n">{readyWaiting.length}</span><span className="l">Kész várakozás</span></div>
-              <div className="pb-mini-stat"><span className="n">{leaveSoon.length}</span><span className="l">Szabadság {LEAVE_SOON_DAYS} napon belül</span></div>
+            <div className="pult-section-head">Gyors indítás</div>
+            <div className="pb-quick-actions">
+              <button type="button" className="btn" onClick={() => setTicketModal("add")}>
+                <ServiceIcon width={15} height={15} />Új munkalap
+              </button>
+              <button type="button" className="btn sec" onClick={() => setStockModal("add")}>
+                <PhoneCaseIcon width={15} height={15} />Új termék
+              </button>
             </div>
           </div>
         </div>
 
-        <div className="pb-notes-row">
-          <div className="pult-section">
-            <div className="pult-section-head"><NoteIcon width={16} height={16} />Cetlik{openNotes.length > 0 && <span className="cnt">{openNotes.length} nyitott</span>}</div>
-            <NoteComposer users={users} tickets={tickets} stock={stock} parts={parts} customersTable={customersTable} warranties={warranties} locName={locName} onSave={addNote} />
-            {openNotes.length === 0 ? <EmptyState icon={NoteIcon}>Nincs nyitott cetli.</EmptyState> : (
-              <div className="stk-grid">
-                {openNotes.map((n) => (
-                  <NoteCard key={n.id} note={n} users={users} currentUserId={currentUserId} onComplete={() => completeNote(n.id)} onDelete={() => deleteNote(n.id)}
-                    onOpenLink={{ ticket: onOpenTicket, product: onOpenProduct, part: onOpenPart, customer: onOpenCustomer, warranty: onOpenWarranty }} />
-                ))}
-              </div>
+        <div className="pult-section">
+          <div className="pult-section-head"><PartsIcon width={16} height={16} />Várakozik valamire{activeWaiting.length > 0 && <span className="cnt">{activeWaiting.length}</span>}</div>
+          <WaitingList items={activeWaiting} customers={customersTable} onAdd={addWaitingItem} onAdvance={advanceWaiting} onDelete={deleteWaitingItem} />
+          <HistorySection icon={PartsIcon} label="Lezárt várakozások" items={closedWaiting} filterFn={(w, q) => [w.description, w.customerName].filter(Boolean).join(" ").toLowerCase().includes(q)}>
+            {(rows) => (
+              <table>
+                <thead><tr><th>Tétel</th><th>Kinek</th><th>Forrás</th></tr></thead>
+                <tbody>{rows.map((w) => <tr key={w.id}><td>{w.description}</td><td>{w.customerName || "—"}</td><td>{w.supplier || "—"}</td></tr>)}</tbody>
+              </table>
             )}
-            <div style={{ marginTop: 10 }}>
-              <HistorySection icon={NoteIcon} label="Elintézett cetlik" items={doneNotes} searchPlaceholder="Keresés..." filterFn={(n, q) => n.body.toLowerCase().includes(q)}>
-                {(rows) => (
-                  <div className="stk-grid" style={{ padding: 12 }}>
-                    {rows.map((n) => <NoteCard key={n.id} note={n} users={users} currentUserId={currentUserId} done onReopen={() => reopenNote(n.id)} />)}
-                  </div>
-                )}
-              </HistorySection>
-            </div>
-          </div>
-
-          <div className="pult-section">
-            <div className="pult-section-head"><PartsIcon width={16} height={16} />Várakozik valamire{activeWaiting.length > 0 && <span className="cnt">{activeWaiting.length}</span>}</div>
-            <WaitingList items={activeWaiting} customers={customersTable} onAdd={addWaitingItem} onAdvance={advanceWaiting} onDelete={deleteWaitingItem} />
-            <HistorySection icon={PartsIcon} label="Lezárt várakozások" items={closedWaiting} searchPlaceholder="Keresés..." filterFn={(w, q) => [w.description, w.customerName].filter(Boolean).join(" ").toLowerCase().includes(q)}>
-              {(rows) => (
-                <table>
-                  <thead><tr><th>Tétel</th><th>Kinek</th><th>Forrás</th></tr></thead>
-                  <tbody>{rows.map((w) => <tr key={w.id}><td>{w.description}</td><td>{w.customerName || "—"}</td><td>{w.supplier || "—"}</td></tr>)}</tbody>
-                </table>
-              )}
-            </HistorySection>
-          </div>
+          </HistorySection>
         </div>
       </div>
     </div>

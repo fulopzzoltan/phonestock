@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
 import { thumbPathOf } from "./lib/imageResize";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi, buybackOfferFromApi, loyaltyLedgerFromApi, loyaltyRewardFromApi, loyaltyRewardToApi, customerProfileFromApi, reviewFromApi, reviewToApi, employeeFromApi, payrollScheduleFromApi, payrollPaymentFromApi, companyTaxObligationFromApi, chatMessageFromApi, vaultCredentialFromApi, vaultAccessLogFromApi } from "./lib/mappers";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi, buybackOfferFromApi, loyaltyLedgerFromApi, loyaltyRewardFromApi, loyaltyRewardToApi, customerProfileFromApi, reviewFromApi, reviewToApi, employeeFromApi, payrollScheduleFromApi, payrollPaymentFromApi, companyTaxObligationFromApi, chatMessageFromApi, vaultCredentialFromApi } from "./lib/mappers";
 import { today, warrantyExpiry, isWarrantyActive, stripAccents, TRACKING_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, normalizeImei, money, ticketCode, cashPortion, cardPortion } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
@@ -33,14 +33,17 @@ import PartsTab from "./tabs/PartsTab";
 import CustomersTab from "./tabs/CustomersTab";
 import InboxTab from "./tabs/InboxTab";
 import VaultTab from "./tabs/VaultTab";
+import VaultCredentialModal from "./components/VaultCredentialModal";
 import WarrantyTab from "./tabs/WarrantyTab";
 import LeaveTab from "./tabs/LeaveTab";
 import BuybackTab from "./tabs/BuybackTab";
 import BuybackOfferDetailPanel from "./components/BuybackOfferDetailPanel";
 import RepairPricesTab from "./tabs/RepairPricesTab";
 import ReviewsTab from "./tabs/ReviewsTab";
+import ReviewModal from "./components/ReviewModal";
 import UsersTab from "./tabs/UsersTab";
 import TrashTab from "./tabs/TrashTab";
+import ConfirmDelete from "./components/ConfirmDelete";
 import SettingsTab from "./tabs/SettingsTab";
 import QuickSaleButtons from "./components/QuickSaleButtons";
 import TransactionQuickAdd from "./components/TransactionQuickAdd";
@@ -222,6 +225,9 @@ function AppShell() {
   const [customerKey, setCustomerKey] = useState(null);
   const [customerModal, setCustomerModal] = useState(null);
   const [customerMergeModal, setCustomerMergeModal] = useState(null); // null | primary customer object
+  const [vaultModal, setVaultModal] = useState(null); // null | "add" | credential obj
+  const [reviewModal, setReviewModal] = useState(null); // null | "add" | review obj
+  const [reviewBulkOpen, setReviewBulkOpen] = useState(false);
   const [printTicket, setPrintTicket] = useState(null);
   const [receiptTxId, setReceiptTxId] = useState(null);
   const [printReceipt, setPrintReceipt] = useState(null);
@@ -1398,11 +1404,6 @@ function AppShell() {
     const { data, error } = await supabase.rpc("reveal_vault_credential", { p_id: id });
     if (error) throw new Error(error.message || "Nem sikerült lekérni a jelszót.");
     return data;
-  }
-
-  async function loadVaultAccessLog(id) {
-    const r = unwrap(await supabase.from("vault_access_log").select("*").eq("credential_id", id).order("viewed_at", { ascending: false }));
-    return (r || []).map(vaultAccessLogFromApi);
   }
 
   // USERS (admin only)
@@ -2803,6 +2804,60 @@ function AppShell() {
               <span className="svc-spark s4" /><span className="svc-spark s5" /><span className="svc-spark s6" />
             </button>
           </>
+        ) : tab === "buyback" ? (
+          <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Felvásárlás</div>
+        ) : tab === "cash-settlement" ? (
+          <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Elszámolás</div>
+        ) : tab === "invoices" ? (
+          <>
+            <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Számlák</div>
+            <button className="btn" style={{ padding: "8px 14px" }} onClick={() => setIssueInvoiceModal(true)}>+ Kiállítás</button>
+          </>
+        ) : tab === "finance" ? (
+          <>
+            <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Bevételek &amp; Kiadások</div>
+            <button className="btn sec" style={{ padding: "8px 14px" }} disabled={busy} onClick={() => setPdfImportModal(true)}>+ Rendelés PDF-ből</button>
+          </>
+        ) : tab === "leave" ? (
+          <>
+            <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Szabadság</div>
+            <button className="btn" style={{ padding: "8px 14px" }} disabled={busy} onClick={() => setLeaveRequestModal(true)}>+ Szabadság kérése</button>
+          </>
+        ) : tab === "repair-prices" ? (
+          <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Szerviz árbecslő</div>
+        ) : tab === "settings" ? (
+          <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Beállítások</div>
+        ) : tab === "vault" ? (
+          <>
+            <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Belépések</div>
+            {isAdmin && <button className="btn" style={{ padding: "8px 14px" }} onClick={() => setVaultModal("add")}>+ Új belépés</button>}
+          </>
+        ) : tab === "reviews" ? (
+          <>
+            <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Vélemények</div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button type="button" className="btn sec" style={{ padding: "8px 14px" }} onClick={() => setReviewBulkOpen((v) => !v)}>{reviewBulkOpen ? "Tömeges felvitel bezárása" : "Tömeges felvitel"}</button>
+              <button type="button" className="btn" style={{ padding: "8px 14px" }} onClick={() => setReviewModal("add")}>+ Új vélemény</button>
+            </div>
+          </>
+        ) : tab === "trash" ? (
+          <>
+            <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Kuka</div>
+            {trash && (trash.products.length + trash.parts.length + trash.transactions.length + trash.tickets.length) > 0 && (
+              <ConfirmDelete
+                variant="full"
+                disabled={busy}
+                label="Kuka ürítése"
+                confirmLabel={`Biztos? ${trash.products.length + trash.parts.length + trash.transactions.length + trash.tickets.length} tétel véglegesen törlődik.`}
+                onConfirm={hardDeleteAllTrash}
+              />
+            )}
+          </>
+        ) : tab === "users" ? (
+          <>
+            <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Felhasználók</div>
+            <button className="btn" style={{ padding: "8px 14px" }} disabled={busy} onClick={() => { setInviteError(""); setInviteModal(true); }}>+ Új kolléga meghívása</button>
+          </>
         ) : null}
       />
       <div className="main">
@@ -2818,7 +2873,7 @@ function AppShell() {
             notes={notes} addNote={addNote} completeNote={completeNote} reopenNote={reopenNote} deleteNote={deleteNote}
             waitingItems={waitingItems} addWaitingItem={addWaitingItem} advanceWaiting={advanceWaiting} deleteWaitingItem={deleteWaitingItem}
             users={users} currentUserId={profile?.id} tickets={tickets} stock={stock} parts={parts} customersTable={customersTable} warranties={warranties}
-            upcomingLeave={upcomingLeave} leaveTypes={leaveTypes}
+            upcomingLeave={upcomingLeave}
             customerRequests={customerRequests} advanceCustomerRequest={advanceCustomerRequest}
             webOrders={webOrders} confirmWebOrder={confirmWebOrder} cancelWebOrder={cancelWebOrder} completeWebOrder={completeWebOrder}
             onOpenTicket={(id) => setDetailId(id)}
@@ -2826,6 +2881,7 @@ function AppShell() {
             onOpenPart={(id) => setPartDetailId(id)}
             onOpenCustomer={(id) => setCustomerKey(id)}
             onOpenWarranty={(id) => { setTab("warranty"); setWarrantyDetailKey(`manual-${id}`); }}
+            setTicketModal={setTicketModal} setStockModal={setStockModal}
           />
         )}
 
@@ -2863,14 +2919,13 @@ function AppShell() {
             dayCloses={dayCloses}
             closeDay={closeDay} reopenDay={reopenDay}
             isAdmin={isAdmin}
-            setPdfImportModal={setPdfImportModal}
           />
         )}
 
         {!noLocationAssigned && tab === "invoices" && (
           <InvoicesTab
             transactions={transactions} locName={locName} isAdmin={isAdmin}
-            setIssueInvoiceModal={setIssueInvoiceModal} retrySmartbillDocument={retrySmartbillDocument}
+            retrySmartbillDocument={retrySmartbillDocument}
             quickIssueDocument={quickIssueDocument} customers={customersTable}
             defaultLocId={defaultLocId} busy={busy}
           />
@@ -2931,10 +2986,10 @@ function AppShell() {
 
         {!noLocationAssigned && tab === "vault" && (
           <VaultTab
-            credentials={vaultCredentials} isAdmin={isAdmin} users={users}
-            onCreate={createVaultCredential} onUpdateMeta={updateVaultCredentialMeta}
-            onChangePassword={changeVaultCredentialPassword} onDelete={deleteVaultCredential}
-            onReveal={revealVaultCredential} onLoadAccessLog={loadVaultAccessLog}
+            credentials={vaultCredentials} isAdmin={isAdmin}
+            modal={vaultModal} setModal={setVaultModal}
+            onDelete={deleteVaultCredential}
+            onReveal={revealVaultCredential}
           />
         )}
 
@@ -2949,7 +3004,7 @@ function AppShell() {
 
         {!noLocationAssigned && tab === "leave" && (
           <LeaveTab
-            leaveYear={leaveYear} busy={busy} setLeaveRequestModal={setLeaveRequestModal} coverageWarnings={coverageWarnings}
+            leaveYear={leaveYear} busy={busy} coverageWarnings={coverageWarnings}
             locName={locName} users={users} leaveBalanceByUser={leaveBalanceByUser} isAdmin={isAdmin}
             setLeaveBalanceModal={setLeaveBalanceModal} upcomingLeave={upcomingLeave} leaveTypes={leaveTypes} user={user}
             decideLeaveRequest={decideLeaveRequest} revokeLeaveRequest={revokeLeaveRequest}
@@ -2986,14 +3041,16 @@ function AppShell() {
 
         {!noLocationAssigned && isAdmin && tab === "reviews" && (
           <ReviewsTab
-            reviews={reviews} locations={allowedLocations} locName={locName} busy={busy}
-            addReview={addReview} editReview={editReview} deleteReview={deleteReview} bulkImportReviews={bulkImportReviews}
+            reviews={reviews} locName={locName} busy={busy}
+            editReview={editReview} deleteReview={deleteReview}
+            modal={reviewModal} setModal={setReviewModal}
+            bulkOpen={reviewBulkOpen} setBulkOpen={setReviewBulkOpen} bulkImportReviews={bulkImportReviews}
           />
         )}
 
         {!noLocationAssigned && isAdmin && tab === "users" && (
           <UsersTab
-            busy={busy} setInviteError={setInviteError} setInviteModal={setInviteModal} loadingData={loadingData}
+            busy={busy} loadingData={loadingData}
             users={users} user={user} updateUserProfile={updateUserProfile} allowedLocations={allowedLocations}
             resetEmployeePassword={resetEmployeePassword} deleteEmployee={deleteEmployee}
           />
@@ -3004,7 +3061,6 @@ function AppShell() {
             trashLoading={trashLoading} trash={trash} busy={busy} restoreProduct={restoreProduct} hardDeleteProduct={hardDeleteProduct}
             restorePart={restorePart} hardDeletePart={hardDeletePart} restoreTransaction={restoreTransaction}
             hardDeleteTransaction={hardDeleteTransaction} restoreTicket={restoreTicket} hardDeleteTicket={hardDeleteTicket}
-            hardDeleteAllTrash={hardDeleteAllTrash}
           />
         )}
 
@@ -3210,6 +3266,37 @@ function AppShell() {
           busy={busy}
           onClose={() => setCustomerModal(null)}
           onSave={(data) => (customerModal === "add" ? createCustomer(data) : updateCustomer(customerModal.id, data))}
+        />
+      )}
+      {vaultModal && (
+        <VaultCredentialModal
+          credential={vaultModal === "add" ? null : vaultModal}
+          busy={busy}
+          onClose={() => setVaultModal(null)}
+          onSave={async (f) => {
+            setBusy(true);
+            try {
+              if (vaultModal === "add") await createVaultCredential(f);
+              else await updateVaultCredentialMeta(vaultModal.id, f);
+              setVaultModal(null);
+            } finally {
+              setBusy(false);
+            }
+          }}
+          onChangePassword={(pw) => changeVaultCredentialPassword(vaultModal.id, pw)}
+        />
+      )}
+      {reviewModal && (
+        <ReviewModal
+          review={reviewModal === "add" ? null : reviewModal}
+          locations={allowedLocations}
+          busy={busy}
+          onClose={() => setReviewModal(null)}
+          onSave={async (data) => {
+            if (reviewModal === "add") await addReview(data);
+            else await editReview(reviewModal.id, data);
+            setReviewModal(null);
+          }}
         />
       )}
       {customerMergeModal && (

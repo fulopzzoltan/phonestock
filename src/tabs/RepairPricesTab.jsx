@@ -11,10 +11,6 @@ export default function RepairPricesTab({
   const filteredLeads = repairLeads.filter((l) => repairLeadFilter === "Mind" || l.status === repairLeadFilter);
   return (
     <>
-      <div className="topbar">
-        <div><div className="page-title">Szerviz árbecslő</div></div>
-      </div>
-
       <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>Árazási mátrix</div>
       <div className="tw" style={{ marginBottom: 22 }}>
         <table className="keep-table-mobile">
