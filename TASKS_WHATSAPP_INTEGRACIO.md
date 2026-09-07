@@ -65,6 +65,25 @@ Email egyelőre **nincs** bekötve — az `info@telefonos.ro` jelenleg nem él, 
    `whatsapp-webhook` function egyelőre még fut, de a `chat-webhook` az, amit innentől
    karbantartunk — a kettő nem duplikálja egymást, mert csak az egyik van regisztrálva Metánál).
 
+## ÚJ, KÖTELEZŐ lépés — biztonsági javítás (`chat-webhook` aláírás-ellenőrzés)
+
+A `chat-webhook` eredetileg semmivel sem ellenőrizte, hogy a bejövő POST kérés tényleg
+Metától jön-e (csak a GET "verify handshake" volt védve) — bárki, aki ismerte ezt az URL-t,
+hamis "bejövő üzenetet" tudott volna beíratni a service role kulccsal a `chat_messages` /
+`customers` táblákba, és a Messenger-media letöltésen keresztül a szervert tetszőleges URL
+letöltésére tudta volna rávenni (SSRF). Ezt most javítottam: minden POST-on ellenőrzi Meta
+saját `X-Hub-Signature-256` aláírását, aláírás nélkül/hibás aláírással 401-et ad vissza, és a
+Messenger média-letöltés is csak Meta CDN-jéről (`*.fbcdn.net` / `*.fbsbx.com`, `https`) fogad el.
+
+10. **Új Supabase secret, ENÉLKÜL A WEBHOOK MINDEN POST-OT ELUTASÍT**: `META_APP_SECRET` — a
+    Meta App Dashboard → **Settings → Basic** oldalon található "App Secret" (ugyanaz az App,
+    amit a WhatsApp/Messenger integrációhoz használsz — app-szintű, nem termékenkénti titok,
+    mint a verify token). Project Settings → Edge Functions → Secrets alá kell felvinni,
+    ugyanúgy, mint a többi Supabase secretet — **ne chatben küldd el**.
+11. **Deploy**: a `chat-webhook` Edge Function frissített kódját ki kell tolni Supabase-ba
+    (`supabase functions deploy chat-webhook`), különben a régi, aláírás-ellenőrzés nélküli
+    verzió fut tovább élesben.
+
 ## Ellenőrzés, miután a fentiek megvannak
 
 - **WhatsApp**: nyiss egy próba munkalapot valós telefonszámmal, nézd meg hogy a `chat_messages`
