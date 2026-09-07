@@ -283,6 +283,28 @@ export const customerToApi = (c) => ({
   ...(c.leadSource !== undefined ? { lead_source: c.leadSource || null } : {}),
 });
 
+// vault_credentials — a "Belépések" (jelszókezelő) fül metaadatai. A jelszó SOSEM utazik
+// ezen a mapperen keresztül: csak a reveal_vault_credential RPC adja vissza, igény szerint.
+export const vaultCredentialFromApi = (r) => ({
+  id: r.id,
+  siteName: r.site_name,
+  siteUrl: r.site_url,
+  username: r.username,
+  notes: r.notes || "",
+  category: r.category || "",
+  visibility: r.visibility,
+  createdBy: r.created_by,
+  createdAt: r.created_at,
+  updatedBy: r.updated_by,
+  updatedAt: r.updated_at,
+});
+export const vaultAccessLogFromApi = (r) => ({
+  id: r.id,
+  credentialId: r.credential_id,
+  viewedBy: r.viewed_by,
+  viewedAt: r.viewed_at,
+});
+
 export const loyaltyLedgerFromApi = (r) => ({
   id: r.id,
   customerId: r.customer_id,

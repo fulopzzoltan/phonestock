@@ -295,6 +295,20 @@ tr:hover td{background:#FAFAFA}
 .badge-new{display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:#fff;color:#6D28D9;border:1px solid #DDD6FE}
 .badge-buyin{display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:#fff;color:#1D4ED8;border:1px solid #BFDBFE}
 .prob-pill{display:inline-flex;padding:2px 7px;border-radius:var(--radius-pill);font-size:10.5px;font-weight:500;background:#F3F4F6;color:#374151;margin:1px}
+
+/* ====== BELÉPÉSEK (jelszókezelő) ====== */
+.vault-list{display:flex;flex-direction:column;gap:10px}
+.vault-card{background:#fff;border:1px solid #E5E7EB;border-radius:14px;padding:14px 16px}
+.vault-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.vault-card-rows{display:flex;flex-direction:column;gap:6px}
+.vault-row{display:flex;align-items:center;gap:10px;font-size:12.5px}
+.vault-row-label{color:#9CA3AF;font-weight:600;width:76px;flex-shrink:0}
+.vault-row-value{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#111827}
+.vault-row-notes{font-size:11.5px;color:#6B7280;margin-top:2px;padding-top:6px;border-top:1px solid #F3F4F6}
+@media (max-width:640px){
+  .vault-row{flex-wrap:wrap}
+  .vault-row-label{width:auto}
+}
 .gar-pill{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:var(--radius-pill);font-size:10.5px;font-weight:500;background:var(--info-soft);color:var(--info)}
 .sla-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700}
 .sla-badge.sla-warn{background:#FEF3C7;color:#92400E}

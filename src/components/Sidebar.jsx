@@ -1,6 +1,6 @@
 import {
   DashboardIcon, ServiceIcon, PhoneCaseIcon, BoardIcon,
-  PartsIcon, FinanceIcon, CustomersIcon, WarrantyIcon, UsersNavIcon, TrashNavIcon, BuybackIcon, LeaveIcon, RepairPriceIcon, CashSettlementIcon, InvoiceIcon, ReviewsIcon, PayrollIcon, ChatIcon,
+  PartsIcon, FinanceIcon, CustomersIcon, WarrantyIcon, UsersNavIcon, TrashNavIcon, BuybackIcon, LeaveIcon, RepairPriceIcon, CashSettlementIcon, InvoiceIcon, ReviewsIcon, PayrollIcon, ChatIcon, LockIcon,
 } from "./icons";
 
 // Mobilon (<=640px) ez a teljes komponens el van rejtve — ott a BottomNav.jsx veszi át a
@@ -35,12 +35,15 @@ export default function Sidebar({
         <button className={`navbtn ${tab === "service" ? "active" : ""}`} onClick={() => go("service")}><ServiceIcon className="nav-ic" />Szerviz</button>
         <button className={`navbtn ${tab === "stock" ? "active" : ""}`} onClick={() => go("stock")}><PhoneCaseIcon className="nav-ic" />Telefonok</button>
         <button className={`navbtn ${tab === "parts" ? "active" : ""}`} onClick={() => go("parts")}><PartsIcon className="nav-ic" />Alkatrészek</button>
-        <button className={`navbtn ${tab === "customers" ? "active" : ""}`} onClick={() => go("customers")}><CustomersIcon className="nav-ic" />Kliensek</button>
+
+        <div className="nav-lbl">Ügyfelek</div>
         <button className={`navbtn ${tab === "inbox" ? "active" : ""}`} onClick={() => go("inbox")}>
-          <ChatIcon className="nav-ic" />Postaláda
+          <ChatIcon className="nav-ic" />Üzenetek
           {inboxUnreadCount > 0 && <span className="nav-pill-group"><span className="nav-pill blue">{inboxUnreadCount}</span></span>}
         </button>
+        <button className={`navbtn ${tab === "customers" ? "active" : ""}`} onClick={() => go("customers")}><CustomersIcon className="nav-ic" />Kliensek</button>
         <button className={`navbtn ${tab === "warranty" ? "active" : ""}`} onClick={() => go("warranty")}><WarrantyIcon className="nav-ic" />Garancia</button>
+        <button className={`navbtn ${tab === "vault" ? "active" : ""}`} onClick={() => go("vault")}><LockIcon className="nav-ic" />Belépések</button>
 
         <div className="nav-lbl">Pénzügyek</div>
         <button className={`navbtn ${tab === "finance" ? "active" : ""}`} onClick={() => go("finance")}><FinanceIcon className="nav-ic" />Bevételek és Kiadások</button>

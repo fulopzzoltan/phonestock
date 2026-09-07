@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   BoardIcon, ServiceIcon, PhoneCaseIcon, FinanceIcon, MoreIcon,
   PartsIcon, CustomersIcon, WarrantyIcon, CashSettlementIcon, InvoiceIcon, LeaveIcon,
-  DashboardIcon, UsersNavIcon, TrashNavIcon, BuybackIcon, RepairPriceIcon, ReviewsIcon, SettingsIcon, LogoutIcon, ChatIcon,
+  DashboardIcon, UsersNavIcon, TrashNavIcon, BuybackIcon, RepairPriceIcon, ReviewsIcon, SettingsIcon, LogoutIcon, ChatIcon, LockIcon,
 } from "./icons";
 import BottomSheet from "./BottomSheet";
 import { SITE_URL } from "../lib/utils";
@@ -48,12 +48,15 @@ export default function BottomNav({
       <BottomSheet open={moreOpen} onClose={() => setMoreOpen(false)}>
         <div className="nav-lbl" style={{ marginTop: 0 }}>Napi munka</div>
         <button className={`navbtn ${tab === "parts" ? "active" : ""}`} onClick={() => go("parts")}><PartsIcon className="nav-ic" />Alkatrészek</button>
-        <button className={`navbtn ${tab === "customers" ? "active" : ""}`} onClick={() => go("customers")}><CustomersIcon className="nav-ic" />Kliensek</button>
+
+        <div className="nav-lbl">Ügyfelek</div>
         <button className={`navbtn ${tab === "inbox" ? "active" : ""}`} onClick={() => go("inbox")}>
-          <ChatIcon className="nav-ic" />Postaláda
+          <ChatIcon className="nav-ic" />Üzenetek
           {inboxUnreadCount > 0 && <span className="nav-pill-group"><span className="nav-pill blue">{inboxUnreadCount}</span></span>}
         </button>
+        <button className={`navbtn ${tab === "customers" ? "active" : ""}`} onClick={() => go("customers")}><CustomersIcon className="nav-ic" />Kliensek</button>
         <button className={`navbtn ${tab === "warranty" ? "active" : ""}`} onClick={() => go("warranty")}><WarrantyIcon className="nav-ic" />Garancia</button>
+        <button className={`navbtn ${tab === "vault" ? "active" : ""}`} onClick={() => go("vault")}><LockIcon className="nav-ic" />Belépések</button>
 
         <div className="nav-lbl">Pénzügyek</div>
         {isAdmin && (

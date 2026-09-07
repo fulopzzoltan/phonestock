@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
 import { thumbPathOf } from "./lib/imageResize";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi, buybackOfferFromApi, loyaltyLedgerFromApi, loyaltyRewardFromApi, loyaltyRewardToApi, customerProfileFromApi, reviewFromApi, reviewToApi, employeeFromApi, payrollScheduleFromApi, payrollPaymentFromApi, companyTaxObligationFromApi, chatMessageFromApi } from "./lib/mappers";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi, buybackOfferFromApi, loyaltyLedgerFromApi, loyaltyRewardFromApi, loyaltyRewardToApi, customerProfileFromApi, reviewFromApi, reviewToApi, employeeFromApi, payrollScheduleFromApi, payrollPaymentFromApi, companyTaxObligationFromApi, chatMessageFromApi, vaultCredentialFromApi, vaultAccessLogFromApi } from "./lib/mappers";
 import { today, warrantyExpiry, isWarrantyActive, stripAccents, TRACKING_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, normalizeImei, money, ticketCode, cashPortion, cardPortion } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
@@ -32,6 +32,7 @@ import ServiceTab from "./tabs/ServiceTab";
 import PartsTab from "./tabs/PartsTab";
 import CustomersTab from "./tabs/CustomersTab";
 import InboxTab from "./tabs/InboxTab";
+import VaultTab from "./tabs/VaultTab";
 import WarrantyTab from "./tabs/WarrantyTab";
 import LeaveTab from "./tabs/LeaveTab";
 import BuybackTab from "./tabs/BuybackTab";
@@ -180,6 +181,9 @@ function AppShell() {
   // Közös postaláda (WhatsApp + Messenger) — "inbox", nem "chat", mert a `chatMessages`
   // nevet lent már a belső (kolléga-kolléga) csevegés hook-ja foglalja.
   const [inboxMessages, setInboxMessages] = useState([]);
+  // "Belépések" (jelszókezelő) — csak metaadat kerül ide, a jelszó sosem; azt a
+  // reveal_vault_credential RPC adja vissza, igény szerint, külön hívással.
+  const [vaultCredentials, setVaultCredentials] = useState([]);
   const [customerProfiles, setCustomerProfiles] = useState([]);
   const [loyaltyRewards, setLoyaltyRewards] = useState([]);
   const [loyaltyLedger, setLoyaltyLedger] = useState([]);
@@ -317,7 +321,7 @@ function AppShell() {
   async function loadAll({ silent = false } = {}) {
     if (!silent) setLoadingData(true);
     try {
-      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, bbOffers, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds, prodAcqs, dClosesR, loyRewards, loyLedger, custProfiles, revs, emps, paySched, payPays, coTax, wappMsgs] = await Promise.all([
+      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, bbOffers, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds, prodAcqs, dClosesR, loyRewards, loyLedger, custProfiles, revs, emps, paySched, payPays, coTax, wappMsgs, vaultCreds] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         fetchAllRows(() => supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false })),
         fetchAllRows(() => supabase.from("transactions").select("*, smartbill_documents(*), signatures(*)").is("deleted_at", null).order("date", { ascending: false })),
@@ -355,6 +359,7 @@ function AppShell() {
         supabase.from("payroll_payments").select("*").order("due_date", { ascending: true }),
         supabase.from("company_tax_obligations").select("*").order("due_date", { ascending: true }),
         fetchAllRows(() => supabase.from("chat_messages").select("*").order("created_at", { ascending: true })),
+        supabase.from("vault_credentials").select("*").order("site_name", { ascending: true }),
       ]);
       setLocations(unwrap(locs) || []);
       const prodRows = unwrap(prods) || [];
@@ -387,6 +392,7 @@ function AppShell() {
       setPayrollPayments((unwrap(payPays) || []).map(payrollPaymentFromApi));
       setCompanyTaxObligations((unwrap(coTax) || []).map(companyTaxObligationFromApi));
       setInboxMessages((unwrap(wappMsgs) || []).map(chatMessageFromApi));
+      setVaultCredentials((unwrap(vaultCreds) || []).map(vaultCredentialFromApi));
       setLeaveTypes((unwrap(lTypes) || []).map(leaveTypeFromApi));
       setLeaveBalances((unwrap(lBalances) || []).map(leaveBalanceFromApi));
       setLeaveRequests((unwrap(lRequests) || []).map(leaveRequestFromApi));
@@ -1350,6 +1356,53 @@ function AppShell() {
     apiPatch.lead_updated_at = new Date().toISOString();
     const r = unwrap(await supabase.from("customers").update(apiPatch).eq("id", customerId).select());
     if (r?.[0]) setCustomersTable((prev) => prev.map((c) => (c.id === customerId ? customerFromApi(r[0]) : c)));
+  }
+
+  // BELÉPÉSEK (jelszókezelő) — minden művelet SECURITY DEFINER RPC-n megy át, a jelszó
+  // sosem kerül a normál customers/products-mintájú REST-lekérésekbe. A reveal minden
+  // hívásnál újra lekéri és naplózza a szervert (ld. vault_credentials_password_manager
+  // migráció) — szándékosan nem cache-eljük hosszú távra a kliensen.
+  async function createVaultCredential(f) {
+    const { data, error } = await supabase.rpc("create_vault_credential", {
+      p_site_name: f.siteName, p_site_url: f.siteUrl || null, p_username: f.username || null,
+      p_password: f.password, p_notes: f.notes || null, p_category: f.category || null, p_visibility: f.visibility,
+    });
+    if (error) throw error;
+    const r = unwrap(await supabase.from("vault_credentials").select("*").eq("id", data).single());
+    if (r) setVaultCredentials((prev) => [...prev, vaultCredentialFromApi(r)].sort((a, b) => a.siteName.localeCompare(b.siteName)));
+  }
+
+  async function updateVaultCredentialMeta(id, f) {
+    const { error } = await supabase.rpc("update_vault_credential", {
+      p_id: id, p_site_name: f.siteName, p_site_url: f.siteUrl || null, p_username: f.username || null,
+      p_notes: f.notes || null, p_category: f.category || null, p_visibility: f.visibility,
+    });
+    if (error) throw error;
+    setVaultCredentials((prev) => prev.map((c) => (c.id === id ? {
+      ...c, siteName: f.siteName, siteUrl: f.siteUrl, username: f.username, notes: f.notes, category: f.category, visibility: f.visibility,
+    } : c)));
+  }
+
+  async function changeVaultCredentialPassword(id, newPassword) {
+    const { error } = await supabase.rpc("update_vault_credential_password", { p_id: id, p_new_password: newPassword });
+    if (error) throw error;
+  }
+
+  async function deleteVaultCredential(id) {
+    const { error } = await supabase.rpc("delete_vault_credential", { p_id: id });
+    if (error) throw error;
+    setVaultCredentials((prev) => prev.filter((c) => c.id !== id));
+  }
+
+  async function revealVaultCredential(id) {
+    const { data, error } = await supabase.rpc("reveal_vault_credential", { p_id: id });
+    if (error) throw new Error(error.message || "Nem sikerült lekérni a jelszót.");
+    return data;
+  }
+
+  async function loadVaultAccessLog(id) {
+    const r = unwrap(await supabase.from("vault_access_log").select("*").eq("credential_id", id).order("viewed_at", { ascending: false }));
+    return (r || []).map(vaultAccessLogFromApi);
   }
 
   // USERS (admin only)
@@ -2716,6 +2769,16 @@ function AppShell() {
           </>
         ) : tab === "payroll" ? (
           <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Bérek &amp; Adók</div>
+        ) : tab === "customers" ? (
+          <>
+            <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Kliensek</div>
+            <button className="btn" style={{ padding: "8px 14px" }} disabled={busy} onClick={() => setCustomerModal("add")}>+ Új ügyfél</button>
+          </>
+        ) : tab === "warranty" ? (
+          <>
+            <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Garancia</div>
+            <button className="btn" style={{ padding: "8px 14px" }} disabled={busy} onClick={() => setWarrantyModal("add")}>+ Garancia felvétele</button>
+          </>
         ) : tab === "dashboard" ? (
           <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Áttekintés</div>
         ) : tab === "service" ? (
@@ -2863,6 +2926,15 @@ function AppShell() {
           <InboxTab
             messages={inboxMessages} customers={customersTable} onSend={sendInboxReply} onOpenCustomer={setCustomerKey}
             onMarkRead={markInboxRead} onUpdateLead={updateLead}
+          />
+        )}
+
+        {!noLocationAssigned && tab === "vault" && (
+          <VaultTab
+            credentials={vaultCredentials} isAdmin={isAdmin} users={users}
+            onCreate={createVaultCredential} onUpdateMeta={updateVaultCredentialMeta}
+            onChangePassword={changeVaultCredentialPassword} onDelete={deleteVaultCredential}
+            onReveal={revealVaultCredential} onLoadAccessLog={loadVaultAccessLog}
           />
         )}
 
