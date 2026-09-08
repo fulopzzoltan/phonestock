@@ -145,7 +145,7 @@ export default function FinanceTab({
         <div className={`statrow c${Math.min(Math.max(cashByLocation.length, 1), 6)}`} style={{ marginTop: 16, marginBottom: 22 }}>
           {cashByLocation.map((c) => (
             <div key={c.id} className="statcard accent">
-              <div className="lbl">Cash {c.name}</div>
+              <div className="lbl">{c.name}</div>
               <div className="val">{money(c.expected)}</div>
             </div>
           ))}

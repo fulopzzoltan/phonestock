@@ -65,9 +65,10 @@ import BuybackRuleModal from "./components/BuybackRuleModal";
 import LeaveRequestModal from "./components/LeaveRequestModal";
 import LeaveBalanceModal from "./components/LeaveBalanceModal";
 import RepairPriceModal from "./components/RepairPriceModal";
-import { CloseIcon, ChatIcon, ServiceIcon } from "./components/icons";
+import { CloseIcon, ServiceIcon } from "./components/icons";
 import Sidebar from "./components/Sidebar";
 import BottomNav from "./components/BottomNav";
+import MobileTopbar from "./components/MobileTopbar";
 import TeamChatPanel from "./components/TeamChatPanel";
 import ContentTopbar from "./components/ContentTopbar";
 import InviteEmployeeModal from "./components/InviteEmployeeModal";
@@ -1362,6 +1363,24 @@ function AppShell() {
     apiPatch.lead_updated_at = new Date().toISOString();
     const r = unwrap(await supabase.from("customers").update(apiPatch).eq("id", customerId).select());
     if (r?.[0]) setCustomersTable((prev) => prev.map((c) => (c.id === customerId ? customerFromApi(r[0]) : c)));
+  }
+
+  // Postaláda: ha egy WhatsApp/Messenger beszélgetéshez még nincs ügyfél/lead-rekord
+  // (vadonatúj megkeresés, amit a webhook nem tudott automatikusan párosítani), itt hozzuk
+  // létre a beviteli pillanatban — pl. amikor valaki státuszt állít rajta. A telefonszámot
+  // vagy Messenger-PSID-et a szálból vesszük át, hogy a buildThreads (InboxTab.jsx) utólag
+  // automatikusan hozzá tudja rendelni ezt az új rekordot ugyanahhoz a beszélgetéshez.
+  async function createLeadFromThread(thread, patch) {
+    await withBusy(async () => {
+      const data = {
+        name: thread.customer?.name || null,
+        phone: thread.phoneNorm || null,
+        messengerPsid: thread.senderPsid || null,
+        ...patch,
+      };
+      const r = unwrap(await supabase.from("customers").insert(customerToApi(data)).select());
+      if (r?.[0]) setCustomersTable((prev) => [...prev, customerFromApi(r[0])]);
+    });
   }
 
   // BELÉPÉSEK (jelszókezelő) — minden művelet SECURITY DEFINER RPC-n megy át, a jelszó
@@ -2742,9 +2761,13 @@ function AppShell() {
         inboxUnreadCount={inboxUnreadCount}
       />
       <BottomNav
-        tab={tab} setTab={setTab} isAdmin={isAdmin} locFilter={locFilter} setLocFilter={setLocFilter}
-        allowedLocations={allowedLocations} myLocationId={myLocationId} locName={locName} profile={profile} user={user}
-        signOut={signOut} pultPendingCounts={pultPendingCounts} inboxUnreadCount={inboxUnreadCount}
+        tab={tab} setTab={setTab} isAdmin={isAdmin} pultPendingCounts={pultPendingCounts} inboxUnreadCount={inboxUnreadCount}
+        chatOpen={chatOpen} setChatOpen={setChatOpen} chatUnread={chatUnread} markChatRead={markChatRead}
+      />
+      <MobileTopbar
+        isAdmin={isAdmin} locFilter={locFilter} setLocFilter={setLocFilter}
+        allowedLocations={allowedLocations} myLocationId={myLocationId} locName={locName}
+        profile={profile} user={user} signOut={signOut} setTab={setTab}
       />
 
       <div className="content-col">
@@ -2978,8 +3001,8 @@ function AppShell() {
 
         {!noLocationAssigned && tab === "inbox" && (
           <InboxTab
-            messages={inboxMessages} customers={customersTable} onSend={sendInboxReply} onOpenCustomer={setCustomerKey}
-            onMarkRead={markInboxRead} onUpdateLead={updateLead}
+            messages={inboxMessages} customers={customersTable} tickets={tickets} onSend={sendInboxReply} onOpenCustomer={setCustomerKey}
+            onMarkRead={markInboxRead} onUpdateLead={updateLead} onCreateLead={createLeadFromThread} onOpenTicket={(id) => setDetailId(id)}
           />
         )}
 
@@ -3417,14 +3440,6 @@ function AppShell() {
           onInvite={inviteEmployee}
         />
       )}
-      <button
-        type="button"
-        className="chat-fab"
-        onClick={() => { setChatOpen((o) => !o); if (!chatOpen) markChatRead(); }}
-      >
-        <ChatIcon width={22} height={22} />
-        {chatUnread > 0 && <span className="chat-fab-badge">{chatUnread > 9 ? "9+" : chatUnread}</span>}
-      </button>
       {chatOpen && (
         <TeamChatPanel
           messages={chatMessages}

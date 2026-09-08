@@ -2,24 +2,27 @@ import { useState } from "react";
 import {
   BoardIcon, ServiceIcon, PhoneCaseIcon, FinanceIcon, MoreIcon,
   PartsIcon, CustomersIcon, WarrantyIcon, CashSettlementIcon, InvoiceIcon, LeaveIcon,
-  DashboardIcon, UsersNavIcon, TrashNavIcon, BuybackIcon, RepairPriceIcon, ReviewsIcon, SettingsIcon, LogoutIcon, ChatIcon, LockIcon,
+  DashboardIcon, UsersNavIcon, TrashNavIcon, BuybackIcon, RepairPriceIcon, ReviewsIcon, PayrollIcon, ChatIcon, LockIcon,
 } from "./icons";
 import BottomSheet from "./BottomSheet";
-import { SITE_URL } from "../lib/utils";
 
-const FIXED = [
+// A "Telefonok" korábban itt volt fix tab, de a csapat-chat gyakoribb napi művelet mobilon
+// (a ContentTopbar, ahol desktopon nyílik, mobilon el van rejtve) — ezért a chat vette át a
+// helyét a fix sávban, a Telefonok pedig lejjebb, a "Több" lap Napi munka szekciójába költözött.
+const FIXED_LEFT = [
   { key: "pult", label: "Pult", Icon: BoardIcon },
   { key: "service", label: "Szerviz", Icon: ServiceIcon },
-  { key: "stock", label: "Telefonok", Icon: PhoneCaseIcon },
+];
+const FIXED_RIGHT = [
   { key: "finance", label: "Bevétel", Icon: FinanceIcon },
 ];
 
 export default function BottomNav({
-  tab, setTab, isAdmin, locFilter, setLocFilter, allowedLocations,
-  myLocationId, locName, profile, user, signOut, pultPendingCounts, inboxUnreadCount,
+  tab, setTab, isAdmin, pultPendingCounts, inboxUnreadCount,
+  chatOpen, setChatOpen, chatUnread, markChatRead,
 }) {
   const [moreOpen, setMoreOpen] = useState(false);
-  const fixedKeys = FIXED.map((f) => f.key);
+  const fixedKeys = [...FIXED_LEFT, ...FIXED_RIGHT].map((f) => f.key);
   const isMoreActive = !fixedKeys.includes(tab);
   const pultTotal = pultPendingCounts ? pultPendingCounts.webOrders + pultPendingCounts.waiting + pultPendingCounts.notes : 0;
 
@@ -28,18 +31,34 @@ export default function BottomNav({
     setMoreOpen(false);
   }
 
+  function renderFixed({ key, label, Icon }) {
+    return (
+      <button key={key} type="button" className={`bnav-btn${tab === key ? " active" : ""}`} onClick={() => go(key)}>
+        <span className="bnav-ic-wrap">
+          <Icon className="bnav-ic" />
+          {key === "pult" && pultTotal > 0 && <span className="bnav-badge">{pultTotal}</span>}
+        </span>
+        <span>{label}</span>
+      </button>
+    );
+  }
+
   return (
     <>
       <nav className="bottom-nav">
-        {FIXED.map(({ key, label, Icon }) => (
-          <button key={key} type="button" className={`bnav-btn${tab === key ? " active" : ""}`} onClick={() => go(key)}>
-            <span className="bnav-ic-wrap">
-              <Icon className="bnav-ic" />
-              {key === "pult" && pultTotal > 0 && <span className="bnav-badge">{pultTotal}</span>}
-            </span>
-            <span>{label}</span>
-          </button>
-        ))}
+        {FIXED_LEFT.map(renderFixed)}
+        <button
+          type="button"
+          className={`bnav-btn${chatOpen ? " active" : ""}`}
+          onClick={() => { setChatOpen((o) => !o); if (!chatOpen) markChatRead(); }}
+        >
+          <span className="bnav-ic-wrap">
+            <ChatIcon className="bnav-ic" />
+            {chatUnread > 0 && <span className="bnav-badge">{chatUnread > 9 ? "9+" : chatUnread}</span>}
+          </span>
+          <span>Chat</span>
+        </button>
+        {FIXED_RIGHT.map(renderFixed)}
         <button type="button" className={`bnav-btn${moreOpen || isMoreActive ? " active" : ""}`} onClick={() => setMoreOpen(true)}>
           <MoreIcon className="bnav-ic" /><span>Több</span>
         </button>
@@ -47,6 +66,7 @@ export default function BottomNav({
 
       <BottomSheet open={moreOpen} onClose={() => setMoreOpen(false)}>
         <div className="nav-lbl" style={{ marginTop: 0 }}>Napi munka</div>
+        <button className={`navbtn ${tab === "stock" ? "active" : ""}`} onClick={() => go("stock")}><PhoneCaseIcon className="nav-ic" />Telefonok</button>
         <button className={`navbtn ${tab === "parts" ? "active" : ""}`} onClick={() => go("parts")}><PartsIcon className="nav-ic" />Alkatrészek</button>
         {!isAdmin && (
           <button className={`navbtn ${tab === "vault" ? "active" : ""}`} onClick={() => go("vault")}><LockIcon className="nav-ic" />Belépések</button>
@@ -63,6 +83,9 @@ export default function BottomNav({
         <div className="nav-lbl">Pénzügyek</div>
         {isAdmin && (
           <button className={`navbtn ${tab === "cash-settlement" ? "active" : ""}`} onClick={() => go("cash-settlement")}><CashSettlementIcon className="nav-ic" />Elszámolás</button>
+        )}
+        {isAdmin && (
+          <button className={`navbtn ${tab === "payroll" ? "active" : ""}`} onClick={() => go("payroll")}><PayrollIcon className="nav-ic" />Bérek &amp; Adók</button>
         )}
         <button className={`navbtn ${tab === "invoices" ? "active" : ""}`} onClick={() => go("invoices")}><InvoiceIcon className="nav-ic" />Számlák</button>
         {!isAdmin && (
@@ -84,32 +107,6 @@ export default function BottomNav({
             <button className={`navbtn ${tab === "reviews" ? "active" : ""}`} onClick={() => go("reviews")}><ReviewsIcon className="nav-ic" />Vélemények</button>
           </>
         )}
-
-        <div className="nav-lbl">Fiók</div>
-        <a className="shop-preview-link" href={SITE_URL} target="_blank" rel="noopener noreferrer">Webshop megtekintése ↗</a>
-        {isAdmin ? (
-          <div className="loc-sw" style={{ marginTop: 8 }}>
-            <button className={`loc-btn ${locFilter === "all" ? "active" : ""}`} onClick={() => setLocFilter("all")}>Mind</button>
-            {allowedLocations.map((l) => (
-              <button key={l.id} className={`loc-btn ${locFilter === l.id ? "active" : ""}`} onClick={() => setLocFilter(l.id)}>{l.name}</button>
-            ))}
-          </div>
-        ) : (
-          <div className="loc-static" style={{ marginTop: 8 }}>{myLocationId ? locName(myLocationId) : "Nincs helyszín"}</div>
-        )}
-        <div className="user-row" style={{ marginTop: 8 }}>
-          <div className="user-avatar">{(profile?.fullName || user?.email || "?").slice(0, 1).toUpperCase()}</div>
-          <div className="user-meta">
-            <div className="user-name">{profile?.fullName || user?.email}</div>
-            <div className="user-role">{isAdmin ? "Admin" : "Alkalmazott"}</div>
-          </div>
-          <button className={`logout-btn ${tab === "settings" ? "active" : ""}`} title="Beállítások" onClick={() => go("settings")}>
-            <SettingsIcon />
-          </button>
-          <button className="logout-btn" title="Kijelentkezés" onClick={signOut}>
-            <LogoutIcon />
-          </button>
-        </div>
       </BottomSheet>
     </>
   );

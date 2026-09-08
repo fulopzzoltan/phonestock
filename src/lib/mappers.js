@@ -281,6 +281,7 @@ export const customerToApi = (c) => ({
   ...(c.referredByCustomerId !== undefined ? { referred_by_customer_id: c.referredByCustomerId || null } : {}),
   ...(c.leadStage !== undefined ? { lead_stage: c.leadStage || null } : {}),
   ...(c.leadSource !== undefined ? { lead_source: c.leadSource || null } : {}),
+  ...(c.messengerPsid !== undefined ? { messenger_psid: c.messengerPsid || null } : {}),
 });
 
 // vault_credentials — a "Belépések" (jelszókezelő) fül metaadatai. A jelszó SOSEM utazik
