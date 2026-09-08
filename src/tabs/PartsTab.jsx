@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { money, PART_CATEGORIES, partCode, ticketCode } from "../lib/utils";
-import { SearchIcon, EditIcon, PartsIcon } from "../components/icons";
+import { SearchIcon, EditIcon, PartsIcon, ScanIcon } from "../components/icons";
 import ConfirmDelete from "../components/ConfirmDelete";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import HistorySection from "../components/HistorySection";
@@ -22,7 +22,7 @@ const UseIcon = (props) => (
 );
 
 export default function PartsTab({
-  busy, partSearch, setPartSearch, loadingData, filteredParts, setPartDetailId, deletePart,
+  busy, partSearch, setPartSearch, onScan, loadingData, filteredParts, setPartDetailId, deletePart,
   allUsedParts = [], locName, setDetailId, onUsePart,
 }) {
   const [catFilter, setCatFilter] = useState("all");
@@ -38,6 +38,7 @@ export default function PartsTab({
 
       <div className="filter-row">
         <div className="searchbar"><SearchIcon /><input value={partSearch} onChange={(e) => setPartSearch(e.target.value)} /></div>
+        {onScan && <button type="button" className="btn sec scan-trigger" onClick={onScan} title="QR/vonalkód szkennelése"><ScanIcon width={16} height={16} /></button>}
         <div className="status-seg">
           <button className={catFilter === "all" ? "active" : ""} onClick={() => setCatFilter("all")}>
             <span className="dot" style={{ background: "#9CA3AF" }} />Mind <span className="cnt">{filteredParts.length}</span>

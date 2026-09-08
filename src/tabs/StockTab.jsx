@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { money, displayName, phoneCode, daysOnShelf, isSlowMoving, stockStatusLabel, conditionGradeLabel, exportToCsv, today } from "../lib/utils";
-import { SearchIcon, PhoneCaseIcon, ChevronDownIcon, WarrantyIcon, ServiceIcon, CartIcon } from "../components/icons";
+import { SearchIcon, PhoneCaseIcon, ChevronDownIcon, WarrantyIcon, ServiceIcon, CartIcon, ScanIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import HistorySection from "../components/HistorySection";
 import ResponsiveTable from "../components/ResponsiveTable";
@@ -19,7 +19,7 @@ function sortItems(items) {
 
 
 export default function StockTab({
-  effectiveLocFilter, locName, busy, search, setSearch, loadingData, filteredStock,
+  effectiveLocFilter, locName, busy, search, setSearch, onScan, loadingData, filteredStock,
   locations, reserveLocId, setProductDetailId, setSellModal,
   soldStock, isAdmin = true, myLocationId = null,
 }) {
@@ -53,6 +53,7 @@ export default function StockTab({
     <>
       <div className="filter-row">
         <div className="searchbar"><SearchIcon /><input value={search} onChange={(e) => setSearch(e.target.value)} /></div>
+        {onScan && <button type="button" className="btn sec scan-trigger" onClick={onScan} title="QR/vonalkód szkennelése"><ScanIcon width={16} height={16} /></button>}
         <div className="status-seg">
           <button className={condFilter === "all" ? "active" : ""} onClick={() => setCondFilter("all")}>
             <span className="dot" style={{ background: "#9CA3AF" }} />Mind <span className="cnt">{filteredStock.length}</span>

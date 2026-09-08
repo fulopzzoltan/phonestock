@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { money, STATUSES, SUB_STATUSES, statusLabel, statusCls, subStatusCls, subStatusLabel, displayName, ticketCode, daysOnShelf, slaInfo, isStaleReady } from "../lib/utils";
-import { SearchIcon, ServiceIcon, ClockIcon, WarrantyIcon, ChevronRightIcon, CheckIcon } from "../components/icons";
+import { SearchIcon, ServiceIcon, ClockIcon, WarrantyIcon, ChevronRightIcon, CheckIcon, ScanIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import HistorySection from "../components/HistorySection";
 import ResponsiveTable from "../components/ResponsiveTable";
@@ -20,7 +20,7 @@ function nextActionOf(t) {
 }
 
 export default function ServiceTab({
-  effectiveLocFilter, locName, busy, setTicketModal, svcSearch, setSvcSearch,
+  effectiveLocFilter, locName, busy, setTicketModal, svcSearch, setSvcSearch, onScan,
   loadingData, activeTickets, setDetailId, handedOverTickets, onStatusChange,
 }) {
   const [listStatus, setListStatus] = useState(STATUSES[0].key);
@@ -38,6 +38,7 @@ export default function ServiceTab({
     <>
       <div className="filter-row">
         <div className="searchbar"><SearchIcon /><input value={svcSearch} onChange={(e) => setSvcSearch(e.target.value)} /></div>
+        {onScan && <button type="button" className="btn sec scan-trigger" onClick={onScan} title="QR/vonalkód szkennelése"><ScanIcon width={16} height={16} /></button>}
         <div className="status-seg">
           {STATUSES.map((col) => {
             const count = activeTickets.filter((t) => t.status === col.key).length;

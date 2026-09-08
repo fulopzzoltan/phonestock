@@ -561,6 +561,20 @@ tr:hover td{background:#FAFAFA}
 .errbar{background:#FEF2F2;border:1px solid #FECACA;color:#B91C1C;padding:10px 15px;border-radius:12px;font-size:12.5px;margin-bottom:14px}
 .field-hint{font-size:11px;color:#9CA3AF;margin-top:4px}
 
+/* QR/vonalkód-szkennelés — ld. QR_SZKENNELES_ES_NYOMTATO_JAVASLAT.md. Sötét, teli-képernyős
+   kameranézet (nem a sima .modal fehér-kártya minta), mert a kamerakép önmagában ad kontrasztot. */
+.scan-trigger{flex-shrink:0;padding:0 12px}
+.scan-overlay{position:fixed;inset:0;background:rgba(10,10,12,.92);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px}
+.scan-modal{width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px}
+.scan-head{display:flex;align-items:center;justify-content:space-between;color:#fff;font-size:14px;font-weight:700}
+.scan-close{background:rgba(255,255,255,.12);border:none;color:#fff;border-radius:9px;padding:6px;display:flex;cursor:pointer}
+.scan-close:hover{background:rgba(255,255,255,.2)}
+.scan-video-wrap{position:relative;width:100%;aspect-ratio:1;border-radius:18px;overflow:hidden;background:#000}
+.scan-video{width:100%;height:100%;object-fit:cover}
+.scan-frame{position:absolute;inset:12%;border:2.5px solid rgba(255,255,255,.85);border-radius:16px;box-shadow:0 0 0 2000px rgba(0,0,0,.35)}
+.scan-hint{color:rgba(255,255,255,.7);font-size:12.5px;text-align:center}
+.scan-error{background:rgba(255,255,255,.08);color:#FCA5A5;font-size:13px;padding:20px;border-radius:14px;text-align:center;line-height:1.5}
+
 /* Szakaszolt (számozott) űrlap-modal — nagyobb, több lépéses adatfelvitelekhez (munkalap, telefon) */
 .modal.wf{max-width:660px}
 .wf-sec{margin-bottom:8px}

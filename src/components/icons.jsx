@@ -207,6 +207,13 @@ export const CameraIcon = (props) => (
   </svg>
 );
 
+export const ScanIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M3 8V5a2 2 0 012-2h3M21 8V5a2 2 0 00-2-2h-3M3 16v3a2 2 0 002 2h3M21 16v3a2 2 0 01-2 2h-3" />
+    <path d="M4 12h16" />
+  </svg>
+);
+
 export const ChevronDownIcon = (props) => (
   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" {...props}>
     <polyline points="6 9 12 15 18 9" />

@@ -3,7 +3,7 @@ import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
 import { thumbPathOf } from "./lib/imageResize";
 import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi, buybackOfferFromApi, loyaltyLedgerFromApi, loyaltyRewardFromApi, loyaltyRewardToApi, customerProfileFromApi, reviewFromApi, reviewToApi, employeeFromApi, payrollScheduleFromApi, payrollPaymentFromApi, companyTaxObligationFromApi, chatMessageFromApi, vaultCredentialFromApi } from "./lib/mappers";
-import { today, warrantyExpiry, isWarrantyActive, stripAccents, TRACKING_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, normalizeImei, money, ticketCode, cashPortion, cardPortion } from "./lib/utils";
+import { today, warrantyExpiry, isWarrantyActive, stripAccents, TRACKING_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, partCode, normalizeImei, money, ticketCode, cashPortion, cardPortion } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
 import PublicHeader from "./components/PublicHeader";
@@ -69,6 +69,7 @@ import { CloseIcon, ServiceIcon } from "./components/icons";
 import Sidebar from "./components/Sidebar";
 import BottomNav from "./components/BottomNav";
 import MobileTopbar from "./components/MobileTopbar";
+import ScannerModal from "./components/ScannerModal";
 import TeamChatPanel from "./components/TeamChatPanel";
 import ContentTopbar from "./components/ContentTopbar";
 import InviteEmployeeModal from "./components/InviteEmployeeModal";
@@ -198,6 +199,7 @@ function AppShell() {
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [chatOpen, setChatOpen] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
   const [inviteModal, setInviteModal] = useState(false);
   const [inviteError, setInviteError] = useState("");
   const [changePasswordModal, setChangePasswordModal] = useState(false);
@@ -630,6 +632,38 @@ function AppShell() {
   }
 
   const locName = (id) => locations.find((l) => l.id === id)?.name || "—";
+
+  // QR/vonalkód-szkennelés eredményének feloldása — ld. QR_SZKENNELES_ES_NYOMTATO_JAVASLAT.md.
+  // A kód formátuma maga elárulja, mi az (a helyszín-előtaggal záruló "S" a munkalap, a "-T" a
+  // telefon, a "-A" az alkatrész saját azonosítója), úgyhogy egyetlen szkenner-gomb elég
+  // mindhárom fülön — nem kell tudnia, melyikről nyitották.
+  function handleScanResult(raw) {
+    const code = raw.trim();
+    setScannerOpen(false);
+    if (/^https?:\/\//i.test(code)) {
+      window.open(code, "_blank", "noopener,noreferrer");
+      return;
+    }
+    const ticketMatch = code.match(/^\d+-[A-Za-z]+S$/i);
+    if (ticketMatch) {
+      const t = tickets.find((t) => (ticketCode(t.ticketNo, locName(t.intakeLocationId)) || "").toUpperCase() === code.toUpperCase());
+      if (t) { setDetailId(t.id); return; }
+    }
+    if (/^\d+-T$/i.test(code)) {
+      const p = stock.find((p) => (phoneCode(p.productNo) || "").toUpperCase() === code.toUpperCase());
+      if (p) { setProductDetailId(p.id); return; }
+    }
+    if (/^\d+-A$/i.test(code)) {
+      const a = parts.find((a) => (partCode(a.partNo) || "").toUpperCase() === code.toUpperCase());
+      if (a) { setPartDetailId(a.id); return; }
+    }
+    // Nincs pontos találat — a nyers kódot berakjuk mindhárom keresőmezőbe, hátha a normál
+    // fuzzy kereső még mindig megtalálja (pl. csak a szám egyezik, az előtag nem).
+    setSvcSearch(code);
+    setSearch(code);
+    setPartSearch(code);
+    setInfo(`Nincs pontos találat "${code}" kódra — a keresőbe bemásoltuk.`);
+  }
   const stockLocations = isAdmin ? locations : locations.filter((l) => l.id === myLocationId);
   const allowedLocations = stockLocations.filter((l) => l.name !== "Tartalék");
   const effectiveLocFilter = isAdmin ? locFilter : (myLocationId || "none");
@@ -2923,7 +2957,7 @@ function AppShell() {
         {!noLocationAssigned && tab === "stock" && (
           <StockTab
             effectiveLocFilter={stockLocFilter} locName={locName} busy={busy} setStockModal={setStockModal}
-            search={search} setSearch={setSearch} loadingData={loadingData} filteredStock={filteredStock}
+            search={search} setSearch={setSearch} onScan={() => setScannerOpen(true)} loadingData={loadingData} filteredStock={filteredStock}
             locations={locations} reserveLocId={reserveLocId} setProductDetailId={setProductDetailId}
             setSellModal={setSellModal}
             soldStock={soldStock}
@@ -2976,7 +3010,7 @@ function AppShell() {
         {!noLocationAssigned && tab === "service" && (
           <ServiceTab
             effectiveLocFilter={effectiveLocFilter} locName={locName} busy={busy} setTicketModal={setTicketModal}
-            svcSearch={svcSearch} setSvcSearch={setSvcSearch}
+            svcSearch={svcSearch} setSvcSearch={setSvcSearch} onScan={() => setScannerOpen(true)}
             loadingData={loadingData} activeTickets={activeTickets} setDetailId={setDetailId}
             handedOverTickets={handedOverTickets} onStatusChange={setTicketStatus}
           />
@@ -2984,7 +3018,7 @@ function AppShell() {
 
         {!noLocationAssigned && tab === "parts" && (
           <PartsTab
-            busy={busy} partSearch={partSearch} setPartSearch={setPartSearch}
+            busy={busy} partSearch={partSearch} setPartSearch={setPartSearch} onScan={() => setScannerOpen(true)}
             loadingData={loadingData} filteredParts={filteredParts} setPartDetailId={setPartDetailId} deletePart={deletePartGroup}
             partsStats={partsStats} allUsedParts={allUsedParts} locName={locName} setDetailId={setDetailId}
             onUsePart={openPartUsageModal}
@@ -3440,6 +3474,7 @@ function AppShell() {
           onInvite={inviteEmployee}
         />
       )}
+      <ScannerModal open={scannerOpen} onClose={() => setScannerOpen(false)} onDetect={handleScanResult} />
       {chatOpen && (
         <TeamChatPanel
           messages={chatMessages}
