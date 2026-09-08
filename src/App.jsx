@@ -68,6 +68,7 @@ import LeaveBalanceModal from "./components/LeaveBalanceModal";
 import RepairPriceModal from "./components/RepairPriceModal";
 import { CloseIcon, ServiceIcon } from "./components/icons";
 import Sidebar from "./components/Sidebar";
+import MacDock from "./components/MacDock";
 import BottomNav from "./components/BottomNav";
 import MobileTopbar from "./components/MobileTopbar";
 import ScannerModal from "./components/ScannerModal";
@@ -2904,12 +2905,16 @@ function AppShell() {
   ).size;
 
   return (
-    <div className="shell">
-      <Sidebar
-        tab={tab} setTab={setTab} setTicketModal={setTicketModal} isAdmin={isAdmin}
-        lastActiveLocationId={lastActiveLocationId} pultPendingCounts={pultPendingCounts}
-        inboxUnreadCount={inboxUnreadCount} refurbCount={refurbCount}
-      />
+    <div className={`shell${tab === "pult" ? " mac-pult" : ""}`}>
+      {tab === "pult" ? (
+        <MacDock tab={tab} setTab={setTab} isAdmin={isAdmin} inboxUnreadCount={inboxUnreadCount} refurbCount={refurbCount} />
+      ) : (
+        <Sidebar
+          tab={tab} setTab={setTab} setTicketModal={setTicketModal} isAdmin={isAdmin}
+          lastActiveLocationId={lastActiveLocationId} pultPendingCounts={pultPendingCounts}
+          inboxUnreadCount={inboxUnreadCount} refurbCount={refurbCount}
+        />
+      )}
       <BottomNav
         tab={tab} setTab={setTab} isAdmin={isAdmin} pultPendingCounts={pultPendingCounts} inboxUnreadCount={inboxUnreadCount}
         refurbCount={refurbCount}
@@ -3036,7 +3041,7 @@ function AppShell() {
           </>
         ) : null}
       />
-      <div className="main">
+      <div className={`main${tab === "pult" ? " mac-pult-content" : ""}`}>
         {error && <div className="errbar">{error}</div>}
         {info && <div className="banner ok">{info} <button type="button" className="banner-close" onClick={() => setInfo("")}><CloseIcon width={12} height={12} /></button></div>}
         {noLocationAssigned && (

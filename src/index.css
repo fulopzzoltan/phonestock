@@ -1586,3 +1586,65 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .leave-type-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#374151}
 .leave-type-dot{width:8px;height:8px;border-radius:50%;flex:none}
 @media (max-width:640px){.bb-grid{grid-template-columns:1fr}}
+
+/* ============================================================
+   Mac-dokk irány (Pult oldal) — a jóváhagyott design-canvas
+   A-verziója (lásd Pult — Mac Dokk Irányok artifact). Csak a
+   "pult" fülön aktív (App.jsx: .shell.mac-pult / .mac-pult-content).
+   ============================================================ */
+.shell.mac-pult{
+  display:block;height:100vh;overflow:hidden;
+  background:
+    radial-gradient(1200px 700px at 18% -8%, #dfe9ff 0%, transparent 60%),
+    radial-gradient(1000px 600px at 100% 100%, #ffe9e0 0%, transparent 55%),
+    linear-gradient(160deg,#eef1f6 0%,#e4e7ee 100%);
+}
+.shell.mac-pult .content-col{
+  flex:none;width:calc(100% - 48px);max-width:1360px;margin:24px auto;
+  background:#fff;border-radius:20px;border:1px solid rgba(255,255,255,.6);
+  box-shadow:0 40px 90px rgba(20,20,25,.28), 0 2px 8px rgba(20,20,25,.08);
+  overflow:hidden;height:calc(100vh - 48px);display:flex;flex-direction:column;
+}
+.shell.mac-pult .content-topbar{
+  height:52px;padding:0 20px;border-bottom:1px solid rgba(0,0,0,.08);
+  background:linear-gradient(#fafafb,#f5f5f7);
+}
+.shell.mac-pult .content-topbar .ctb-search-wrap{margin:0 auto}
+
+.mac-pult-content{background:#f6f7f9;padding:26px 30px 150px;scrollbar-width:none}
+.mac-pult-content::-webkit-scrollbar{display:none}
+.mac-pult-content .pult-section{border-radius:14px;border-color:rgba(0,0,0,.08);box-shadow:0 1px 2px rgba(16,24,40,.04), 0 10px 24px rgba(16,24,40,.05)}
+.mac-pult-content .pb-rail{background:linear-gradient(155deg,#17171a,#000);border-radius:14px}
+.mac-pult-content .pb-rail-btn:hover{background:var(--primary-soft);color:var(--primary-ink)}
+.mac-pult-content .dp-row{padding:11px 0}
+
+/* --- lebegő üveg-dokk --- */
+.md-wrap{position:fixed;left:0;right:0;bottom:56px;display:flex;justify-content:center;pointer-events:none;z-index:40}
+.md-dock{pointer-events:auto;display:flex;align-items:flex-end;gap:10px;padding:17px 20px;border-radius:26px;
+  background:rgba(255,255,255,.72);backdrop-filter:blur(20px) saturate(1.6);-webkit-backdrop-filter:blur(20px) saturate(1.6);
+  border:1px solid rgba(255,255,255,.6);box-shadow:0 18px 45px rgba(20,20,25,.22), 0 2px 10px rgba(20,20,25,.08)}
+.md-sep{width:1px;align-self:stretch;background:rgba(0,0,0,.1);margin:6px 6px}
+.md-item{position:relative;width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;
+  background:#fff;border:1px solid rgba(0,0,0,.05);box-shadow:0 1px 2px rgba(16,24,40,.06);
+  color:#1d1d1f;transition:transform .12s ease;cursor:pointer;padding:0;font-family:inherit}
+.md-item svg{width:22px;height:22px;flex-shrink:0}
+.md-item:hover{transform:translateY(-6px) scale(1.06)}
+.md-item .md-dot{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:999px;background:#1DB954;opacity:0}
+.md-item.active .md-dot{opacity:1}
+.md-item .md-badge{position:absolute;top:-4px;right:-4px;min-width:15px;height:15px;padding:0 3px;border-radius:999px;
+  background:#ff3b30;color:#fff;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,.9)}
+.md-item .md-label{position:absolute;left:50%;top:-28px;transform:translateX(-50%);white-space:nowrap;
+  background:rgba(29,29,31,.92);color:#fff;font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:7px;
+  opacity:0;pointer-events:none;transition:opacity .1s}
+.md-item:hover .md-label{opacity:1}
+
+.md-cluster .md-flyout{position:absolute;left:50%;bottom:60px;transform:translateX(-50%) translateY(6px);
+  display:flex;gap:6px;padding:8px;border-radius:16px;background:rgba(255,255,255,.72);
+  backdrop-filter:blur(20px) saturate(1.6);-webkit-backdrop-filter:blur(20px) saturate(1.6);
+  border:1px solid rgba(255,255,255,.6);box-shadow:0 18px 45px rgba(20,20,25,.22), 0 2px 10px rgba(20,20,25,.08);
+  opacity:0;pointer-events:none;transition:opacity .14s ease, transform .14s ease;z-index:5}
+.md-cluster:hover .md-flyout{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
+.md-cluster .md-flyout .md-item{width:44px;height:44px}
+
+@media (max-width:640px){.md-wrap{display:none}}
+@media (max-width:1100px){.shell.mac-pult .content-col{width:calc(100% - 32px)}}
