@@ -313,6 +313,119 @@ export const BUYBACK_CONDITION_QUESTIONS = [
   },
 ];
 
+// Felújítás — saját telefonok tesztelő/kategorizáló kérdőíve. Külön a felvásárlási
+// kérdésektől (BUYBACK_CONDITION_QUESTIONS), mert itt nem árlevonás a cél, hanem hogy
+// eldöntsük a viszonteladási Grade-et (A/B/C) és a garanciát. A `blocking: true` jelzésű
+// válaszok azt jelentik, hogy a telefon még nem sorolható be, előbb meg kell javítani.
+export const REFURB_INSPECTION_QUESTIONS = [
+  {
+    key: "powers_on",
+    question: "Bekapcsol és stabilan fut?",
+    options: [
+      { key: "yes", label: "Igen, hibátlanul" },
+      { key: "no", label: "Nem, vagy hibásan", blocking: true },
+    ],
+  },
+  {
+    key: "screen_cosmetic",
+    question: "Kijelző kozmetikai állapota",
+    options: [
+      { key: "good", label: "Kifogástalan" },
+      { key: "micro", label: "Apró, mikroszkopikus karcok" },
+      { key: "visible", label: "Látható karcok" },
+      { key: "cracked", label: "Repedt / törött", blocking: true },
+    ],
+  },
+  {
+    key: "back_cosmetic",
+    question: "Hátlap / keret kozmetikai állapota",
+    options: [
+      { key: "good", label: "Kifogástalan" },
+      { key: "micro", label: "Apró karcok" },
+      { key: "worn", label: "Kopott" },
+      { key: "damaged", label: "Horpadt / sérült", blocking: true },
+    ],
+  },
+  {
+    key: "battery_health",
+    question: "Akkuegészség",
+    options: [
+      { key: "above_90", label: "90% felett" },
+      { key: "between_80_90", label: "80–90%" },
+      { key: "below_80", label: "80% alatt" },
+      { key: "unknown", label: "Nem tudom / nem mértem" },
+    ],
+  },
+  {
+    key: "camera_ok",
+    question: "Kamera(k) tiszta képet adnak, működnek?",
+    options: [
+      { key: "yes", label: "Igen" },
+      { key: "no", label: "Nem, van vele probléma", blocking: true },
+    ],
+  },
+  {
+    key: "buttons_ok",
+    question: "Gombok, töltőcsatlakozó, hangszóró rendben?",
+    options: [
+      { key: "yes", label: "Igen" },
+      { key: "no", label: "Nem, van vele probléma", blocking: true },
+    ],
+  },
+  {
+    key: "biometrics",
+    question: "Ujjlenyomat / Face ID működik?",
+    options: [
+      { key: "yes", label: "Igen" },
+      { key: "no", label: "Nem működik" },
+      { key: "na", label: "Nincs ilyen a modellen" },
+    ],
+  },
+  {
+    key: "network_lock",
+    question: "Hálózatfüggetlen?",
+    options: [
+      { key: "yes", label: "Igen" },
+      { key: "no", label: "Nem, egy szolgáltatóhoz kötött" },
+    ],
+  },
+];
+
+// A válaszokból javasol egy Grade-et (A/B/C) + garanciát — ezt a Felújítás oldal a
+// tesztelés végén felkínálja, de az admin bármikor felülírhatja mentés előtt.
+// `gradeable: false` esetén valamelyik blokkoló hiba miatt a telefon még nem adható el,
+// előbb meg kell javítani (ilyenkor nincs grade/garancia javaslat).
+export function computeSuggestedGrade(answers) {
+  const blockers = [];
+  for (const question of REFURB_INSPECTION_QUESTIONS) {
+    const ans = answers[question.key];
+    const opt = question.options.find((o) => o.key === ans);
+    if (opt?.blocking) blockers.push(question.question);
+  }
+  if (blockers.length > 0) {
+    return { gradeable: false, blockers };
+  }
+  let score = 0;
+  if (answers.screen_cosmetic === "micro") score += 1;
+  else if (answers.screen_cosmetic === "visible") score += 2;
+  if (answers.back_cosmetic === "micro") score += 1;
+  else if (answers.back_cosmetic === "worn") score += 2;
+  if (answers.battery_health === "between_80_90" || answers.battery_health === "unknown") score += 1;
+  else if (answers.battery_health === "below_80") score += 2;
+  if (answers.camera_ok === "no") score += 2;
+  if (answers.buttons_ok === "no") score += 2;
+  if (answers.biometrics === "no") score += 1;
+
+  let grade, warranty;
+  if (score <= 1) { grade = "A"; warranty = "6 hó"; }
+  else if (score <= 3) { grade = "B"; warranty = "3 hó"; }
+  else { grade = "C"; warranty = "1 hó"; }
+
+  const batteryPct = answers.battery_health === "above_90" ? 95 : answers.battery_health === "between_80_90" ? 85 : answers.battery_health === "below_80" ? 70 : null;
+
+  return { gradeable: true, grade, warranty, batteryHealth: batteryPct };
+}
+
 export function countWorkdays(startStr, endStr) {
   const start = new Date(startStr + "T00:00:00");
   const end = new Date(endStr + "T00:00:00");

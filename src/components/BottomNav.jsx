@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   BoardIcon, ServiceIcon, PhoneCaseIcon, FinanceIcon, MoreIcon,
   PartsIcon, CustomersIcon, WarrantyIcon, CashSettlementIcon, InvoiceIcon, LeaveIcon,
-  DashboardIcon, UsersNavIcon, TrashNavIcon, BuybackIcon, RepairPriceIcon, ReviewsIcon, PayrollIcon, ChatIcon, LockIcon,
+  DashboardIcon, UsersNavIcon, TrashNavIcon, BuybackIcon, RepairPriceIcon, ReviewsIcon, PayrollIcon, ChatIcon, LockIcon, RefurbIcon,
 } from "./icons";
 import BottomSheet from "./BottomSheet";
 
@@ -18,7 +18,7 @@ const FIXED_RIGHT = [
 ];
 
 export default function BottomNav({
-  tab, setTab, isAdmin, pultPendingCounts, inboxUnreadCount,
+  tab, setTab, isAdmin, pultPendingCounts, inboxUnreadCount, refurbCount,
   chatOpen, setChatOpen, chatUnread, markChatRead,
 }) {
   const [moreOpen, setMoreOpen] = useState(false);
@@ -68,6 +68,10 @@ export default function BottomNav({
         <div className="nav-lbl" style={{ marginTop: 0 }}>Napi munka</div>
         <button className={`navbtn ${tab === "stock" ? "active" : ""}`} onClick={() => go("stock")}><PhoneCaseIcon className="nav-ic" />Telefonok</button>
         <button className={`navbtn ${tab === "parts" ? "active" : ""}`} onClick={() => go("parts")}><PartsIcon className="nav-ic" />Alkatrészek</button>
+        <button className={`navbtn ${tab === "refurb" ? "active" : ""}`} onClick={() => go("refurb")}>
+          <RefurbIcon className="nav-ic" />Felújítás
+          {refurbCount > 0 && <span className="nav-pill-group"><span className="nav-pill amber">{refurbCount}</span></span>}
+        </button>
         {!isAdmin && (
           <button className={`navbtn ${tab === "vault" ? "active" : ""}`} onClick={() => go("vault")}><LockIcon className="nav-ic" />Belépések</button>
         )}

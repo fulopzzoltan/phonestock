@@ -561,6 +561,43 @@ tr:hover td{background:#FAFAFA}
 .errbar{background:#FEF2F2;border:1px solid #FECACA;color:#B91C1C;padding:10px 15px;border-radius:12px;font-size:12.5px;margin-bottom:14px}
 .field-hint{font-size:11px;color:#9CA3AF;margin-top:4px}
 
+/* ====== FELÚJÍTÁS — saját telefonok javítás-menedzsmentje ====== */
+.rf-intro{font-size:12.5px;color:#6B7280;margin-bottom:16px;max-width:760px;line-height:1.5}
+.rf-list{display:flex;flex-direction:column;gap:14px}
+.rf-card{background:#fff;border:1px solid #EEF0F2;border-radius:var(--radius-lg);box-shadow:var(--shadow-card);overflow:hidden}
+.rf-card-head{display:flex;align-items:center;gap:14px;padding:16px 18px;border-bottom:1px solid #F3F4F6;flex-wrap:wrap}
+.rf-rank-ctrl{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0}
+.rf-rank-btn{background:#F3F4F6;border:none;border-radius:7px;width:24px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6B7280}
+.rf-rank-btn:disabled{opacity:.35;cursor:default}
+.rf-rank-btn:not(:disabled):hover{background:#E5E7EB}
+.rf-rank-num{font-size:12px;font-weight:800;color:#111827;padding:1px 0}
+.rf-card-title{flex:1;min-width:180px}
+.rf-name{font-size:15px;font-weight:800;color:#111827}
+.rf-meta{display:flex;gap:6px;flex-wrap:wrap;font-size:11.5px;color:#9CA3AF;margin-top:2px}
+.rf-cost-summary{text-align:right;flex-shrink:0}
+.rf-cost-amount{font-size:16px;font-weight:800;color:#B91C1C}
+.rf-cost-label{font-size:11px;color:#9CA3AF;margin-top:1px}
+.rf-card-body{padding:14px 18px;display:flex;flex-direction:column;gap:14px}
+.rf-empty-hint{font-size:12px;color:#9CA3AF;font-style:italic;padding:6px 0}
+.rft-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F9FAFB}
+.rft-row-kesz{opacity:.55}
+.rft-row-kesz .rft-desc{text-decoration:line-through}
+.rft-desc{flex:1;min-width:0;font-size:13px;font-weight:600;color:#111827}
+.rft-cost{font-size:12.5px;font-weight:700;color:#6B7280;white-space:nowrap}
+.rft-status-seg{display:flex;gap:2px;background:#EEF0F2;border-radius:9px;padding:2px;flex-shrink:0}
+.rft-status-seg button{border:none;background:none;font-family:inherit;font-size:11px;font-weight:600;color:#6B7280;padding:5px 9px;border-radius:7px;cursor:pointer;white-space:nowrap}
+.rft-status-seg button.active{background:#fff;color:#111827;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.rft-add-row{display:flex;gap:8px;margin-top:4px}
+.rft-add-row input{flex:1;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:9px;padding:8px 10px;font-family:inherit;font-size:12.5px}
+.rf-parts-section{border-top:1px solid #F3F4F6;padding-top:12px}
+.rf-parts-toggle{background:none;border:none;font-family:inherit;font-size:12.5px;font-weight:700;color:#374151;cursor:pointer;padding:0}
+.rf-card-actions{display:flex;align-items:center;justify-content:flex-end;gap:12px;padding:12px 18px;background:#FAFAFA;border-top:1px solid #F3F4F6}
+.rf-inspected-note{font-size:11.5px;color:#9CA3AF}
+.rf-inspect-questions{display:flex;flex-direction:column;gap:2px}
+.rf-inspect-blocked{background:#FEF2F2;border:1px solid #FECACA;color:#B91C1C;padding:10px 14px;border-radius:12px;font-size:12.5px;margin-top:10px}
+.rf-inspect-decision{background:#F9FAFB;border:1px solid #EEF0F2;border-radius:14px;padding:14px;margin-top:12px}
+.rf-inspect-suggested{font-size:12.5px;color:#374151;margin-bottom:10px;line-height:1.5}
+
 /* QR/vonalkód-szkennelés — ld. QR_SZKENNELES_ES_NYOMTATO_JAVASLAT.md. Sötét, teli-képernyős
    kameranézet (nem a sima .modal fehér-kártya minta), mert a kamerakép önmagában ad kontrasztot. */
 .scan-trigger{flex-shrink:0;height:33.5px;padding:0 12px}

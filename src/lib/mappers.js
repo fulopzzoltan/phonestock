@@ -28,6 +28,9 @@ export const pFromApi = (r) => ({
   productNo: r.product_no,
   dateAdded: r.date_added,
   isFeaturePhone: !!r.is_feature_phone,
+  repairRank: r.repair_rank,
+  inspectionAnswers: r.inspection_answers,
+  inspectionCompletedAt: r.inspection_completed_at,
 });
 
 export const pToApi = (p, locId) => ({
@@ -48,6 +51,25 @@ export const pToApi = (p, locId) => ({
   location_id: locId,
   new_price: p.newPrice === "" || p.newPrice == null ? null : Number(p.newPrice),
   stock_status: p.stockStatus || "polcon",
+});
+
+// Külön, kis patch-objektumok a Felújítás oldalhoz — nem az egész `pToApi`-n mennek át,
+// hogy ne írjuk felül véletlenül a többi mezőt egy rangsor- vagy tesztelés-mentésnél.
+export const refurbTaskFromApi = (r) => ({
+  id: r.id,
+  productId: r.product_id,
+  description: r.description,
+  estCost: r.est_cost,
+  status: r.status,
+  createdAt: r.created_at,
+  completedAt: r.completed_at,
+});
+
+export const refurbTaskToApi = (t, productId) => ({
+  product_id: productId,
+  description: t.description,
+  est_cost: Number(t.estCost) || 0,
+  status: t.status || "kell",
 });
 
 export const sbDocFromApi = (r) => ({

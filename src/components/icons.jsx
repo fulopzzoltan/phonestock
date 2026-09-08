@@ -214,6 +214,12 @@ export const ScanIcon = (props) => (
   </svg>
 );
 
+export const RefurbIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M14.7 6.3a4 4 0 00-5.4 5.1L3 18l3 3 6.6-6.3a4 4 0 005.1-5.4l-2.65 2.65a1.5 1.5 0 01-2.12 0l-.86-.86a1.5 1.5 0 010-2.12z" />
+  </svg>
+);
+
 export const ChevronDownIcon = (props) => (
   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" {...props}>
     <polyline points="6 9 12 15 18 9" />

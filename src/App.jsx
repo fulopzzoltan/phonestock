@@ -2,8 +2,8 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
 import { thumbPathOf } from "./lib/imageResize";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi, buybackOfferFromApi, loyaltyLedgerFromApi, loyaltyRewardFromApi, loyaltyRewardToApi, customerProfileFromApi, reviewFromApi, reviewToApi, employeeFromApi, payrollScheduleFromApi, payrollPaymentFromApi, companyTaxObligationFromApi, chatMessageFromApi, vaultCredentialFromApi } from "./lib/mappers";
-import { today, warrantyExpiry, isWarrantyActive, stripAccents, TRACKING_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, partCode, normalizeImei, money, ticketCode, cashPortion, cardPortion } from "./lib/utils";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi, buybackOfferFromApi, loyaltyLedgerFromApi, loyaltyRewardFromApi, loyaltyRewardToApi, customerProfileFromApi, reviewFromApi, reviewToApi, employeeFromApi, payrollScheduleFromApi, payrollPaymentFromApi, companyTaxObligationFromApi, chatMessageFromApi, vaultCredentialFromApi, refurbTaskFromApi, refurbTaskToApi } from "./lib/mappers";
+import { today, warrantyExpiry, isWarrantyActive, stripAccents, TRACKING_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, partCode, normalizeImei, money, ticketCode, cashPortion, cardPortion, computeSuggestedGrade } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
 import PublicHeader from "./components/PublicHeader";
@@ -30,6 +30,7 @@ import CashSettlementTab from "./tabs/CashSettlementTab";
 import PayrollTab from "./tabs/PayrollTab";
 import ServiceTab from "./tabs/ServiceTab";
 import PartsTab from "./tabs/PartsTab";
+import RefurbTab from "./tabs/RefurbTab";
 import CustomersTab from "./tabs/CustomersTab";
 import InboxTab from "./tabs/InboxTab";
 import VaultTab from "./tabs/VaultTab";
@@ -181,6 +182,11 @@ function AppShell() {
   const [transactions, setTransactions] = useState([]);
   const [tickets, setTickets] = useState([]);
   const [parts, setParts] = useState([]);
+  // Felújítás — saját (nem ügyfél-) telefonok javítás-menedzsmentje, szándékosan külön a
+  // service_tickets/service_parts-tól (ld. TASKS_FELUJITAS.md), csak a "mit kell hozzá,
+  // kb. mennyibe kerül" feladatlistát tárolja itt; a tényleges alkatrész-felhasználás
+  // változatlanul a meglévő "Saját készlet - előkészítés" munkalapon megy.
+  const [refurbTasks, setRefurbTasks] = useState([]);
   const [users, setUsers] = useState([]);
   const [customersTable, setCustomersTable] = useState([]);
   // Közös postaláda (WhatsApp + Messenger) — "inbox", nem "chat", mert a `chatMessages`
@@ -330,7 +336,7 @@ function AppShell() {
   async function loadAll({ silent = false } = {}) {
     if (!silent) setLoadingData(true);
     try {
-      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, bbOffers, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds, prodAcqs, dClosesR, loyRewards, loyLedger, custProfiles, revs, emps, paySched, payPays, coTax, wappMsgs, vaultCreds] = await Promise.all([
+      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, bbOffers, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds, prodAcqs, dClosesR, loyRewards, loyLedger, custProfiles, revs, emps, paySched, payPays, coTax, wappMsgs, vaultCreds, refurbTsk] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         fetchAllRows(() => supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false })),
         fetchAllRows(() => supabase.from("transactions").select("*, smartbill_documents(*), signatures(*)").is("deleted_at", null).order("date", { ascending: false })),
@@ -369,6 +375,7 @@ function AppShell() {
         supabase.from("company_tax_obligations").select("*").order("due_date", { ascending: true }),
         fetchAllRows(() => supabase.from("chat_messages").select("*").order("created_at", { ascending: true })),
         supabase.from("vault_credentials").select("*").order("site_name", { ascending: true }),
+        supabase.from("refurb_tasks").select("*").order("created_at", { ascending: true }),
       ]);
       setLocations(unwrap(locs) || []);
       const prodRows = unwrap(prods) || [];
@@ -402,6 +409,7 @@ function AppShell() {
       setCompanyTaxObligations((unwrap(coTax) || []).map(companyTaxObligationFromApi));
       setInboxMessages((unwrap(wappMsgs) || []).map(chatMessageFromApi));
       setVaultCredentials((unwrap(vaultCreds) || []).map(vaultCredentialFromApi));
+      setRefurbTasks((unwrap(refurbTsk) || []).map(refurbTaskFromApi));
       setLeaveTypes((unwrap(lTypes) || []).map(leaveTypeFromApi));
       setLeaveBalances((unwrap(lBalances) || []).map(leaveBalanceFromApi));
       setLeaveRequests((unwrap(lRequests) || []).map(leaveRequestFromApi));
@@ -2253,6 +2261,82 @@ function AppShell() {
     }
   }
 
+  // FELÚJÍTÁS — a service_tickets/service_parts-tól szándékosan külön tartott, egyszerű
+  // "mit kell hozzá, kb. mennyibe kerül" feladatlista a javítandó saját telefonokhoz.
+  // A tényleges alkatrész-felhasználás (raktárkészlet levonása) továbbra is a meglévő
+  // "Saját készlet - előkészítés" munkalapon megy, ld. usePartForProduct fent.
+  function activeOwnTicketFor(productId) {
+    return tickets.find((t) => t.productId === productId && t.ticketKind !== "Ügyfél" && t.subStatus !== "Átadva") || null;
+  }
+  async function addRefurbTask(productId, { description, estCost }) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("refurb_tasks").insert(refurbTaskToApi({ description, estCost }, productId)).select());
+      setRefurbTasks((prev) => [...prev, refurbTaskFromApi(r[0])]);
+    });
+  }
+  async function updateRefurbTaskStatus(taskId, status) {
+    await withBusy(async () => {
+      const completedAt = status === "kesz" ? new Date().toISOString() : null;
+      unwrap(await supabase.from("refurb_tasks").update({ status, completed_at: completedAt }).eq("id", taskId));
+      setRefurbTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, status, completedAt } : t)));
+    });
+  }
+  async function deleteRefurbTask(taskId) {
+    await withBusy(async () => {
+      unwrap(await supabase.from("refurb_tasks").delete().eq("id", taskId));
+      setRefurbTasks((prev) => prev.filter((t) => t.id !== taskId));
+    });
+  }
+  // Rangsor mozgatás — a szomszédos telefonnal cseréli fel a repair_rank értéket (nincs
+  // drag-and-drop, csak fel/le nyilak, ugyanaz az egyszerű minta, mint a loyalty_rewards
+  // sort_order-jénél). Ha még egyiknek sincs rangja, 10-es lépésekkel osztjuk ki most.
+  async function moveRefurbRank(productId, direction) {
+    const ordered = refurbPhones;
+    const idx = ordered.findIndex((p) => p.id === productId);
+    const swapIdx = idx + direction;
+    if (idx < 0 || swapIdx < 0 || swapIdx >= ordered.length) return;
+    const a = ordered[idx], b = ordered[swapIdx];
+    const ranks = ordered.map((p, i) => p.repairRank ?? (i + 1) * 10);
+    const rankA = ranks[swapIdx], rankB = ranks[idx];
+    await withBusy(async () => {
+      unwrap(await supabase.from("products").update({ repair_rank: rankA }).eq("id", a.id));
+      unwrap(await supabase.from("products").update({ repair_rank: rankB }).eq("id", b.id));
+      setStock((prev) => prev.map((p) => {
+        if (p.id === a.id) return { ...p, repairRank: rankA };
+        if (p.id === b.id) return { ...p, repairRank: rankB };
+        return p;
+      }));
+    });
+  }
+  // A tesztelő/kategorizáló varázsló mentése — a nyers válaszokat auditcélra eltesszük,
+  // de a döntés (condition/grade/warranty/battery) a normál products-mezőkbe kerül, hogy
+  // minden más (StockTab, vitrin, garanciajegy) változtatás nélkül ugyanúgy működjön.
+  // `decision` lehet null — ha a kérdőív blokkoló hibát talált (pl. repedt kijelző), a
+  // válaszokat így is elmentjük audit-nyomnak, de a minőség/garancia döntést és a polcra-
+  // küldést nem engedjük, amíg a hiba nincs javítva.
+  async function saveRefurbInspection(productId, decision, answers, markReady) {
+    await withBusy(async () => {
+      const patch = {
+        inspection_answers: answers,
+        inspection_completed_at: new Date().toISOString(),
+        ...(decision ? {
+          condition: decision.condition,
+          grade: decision.condition === "New" ? null : decision.grade,
+          warranty: decision.warranty || null,
+          battery_health: decision.batteryHealth === "" || decision.batteryHealth == null ? null : Number(decision.batteryHealth),
+        } : {}),
+        ...(markReady ? { stock_status: "polcon", repair_rank: null } : {}),
+      };
+      unwrap(await supabase.from("products").update(patch).eq("id", productId));
+      setStock((prev) => prev.map((p) => (p.id === productId ? {
+        ...p,
+        ...(decision ? { condition: patch.condition, grade: patch.grade, warranty: patch.warranty, batteryHealth: patch.battery_health } : {}),
+        inspectionAnswers: answers, inspectionCompletedAt: patch.inspection_completed_at,
+        ...(markReady ? { stockStatus: "polcon", repairRank: null } : {}),
+      } : p)));
+    });
+  }
+
   // FILTERED DATA
   // A Telefonok fülön az alkalmazottak is lássák mindkét helyszín készletét (csak megtekintés) —
   // ezért ez a szűrő admin esetén a locFilter-t követi, alkalmazottnál mindig "all".
@@ -2285,6 +2369,24 @@ function AppShell() {
     const withTx = s.map((i) => ({ ...i, saleTx: txByProductId.get(i.id) || null }));
     return withTx.sort((a, b) => (b.saleTx?.date || "").localeCompare(a.saleTx?.date || ""));
   }, [stock, stockLocFilter, search, reserveLocId, txByProductId]);
+
+  // FELÚJÍTÁS — a "Javítandó" raktár-állapotú saját telefonok, kézi rangsor szerint
+  // rendezve (repairRank hiánya esetén a lista végére kerül, dátum szerint másodlagosan).
+  const refurbTasksByProduct = useMemo(() => {
+    const m = new Map();
+    for (const t of refurbTasks) (m.get(t.productId) || m.set(t.productId, []).get(t.productId)).push(t);
+    return m;
+  }, [refurbTasks]);
+  const refurbPhones = useMemo(() => {
+    let s = stock.filter((i) => i.status === "in_stock" && i.stockStatus === "javitando");
+    if (stockLocFilter !== "all") s = s.filter((i) => i.locationId === stockLocFilter || i.locationId === reserveLocId);
+    return [...s].sort((a, b) => {
+      const ra = a.repairRank ?? 999999, rb = b.repairRank ?? 999999;
+      if (ra !== rb) return ra - rb;
+      return (a.dateAdded || "").localeCompare(b.dateAdded || "");
+    });
+  }, [stock, stockLocFilter, reserveLocId]);
+  const refurbCount = refurbPhones.length;
 
   const filteredTransactions = useMemo(() => {
     if (effectiveLocFilter === "all") return transactions;
@@ -2792,10 +2894,11 @@ function AppShell() {
       <Sidebar
         tab={tab} setTab={setTab} setTicketModal={setTicketModal} isAdmin={isAdmin}
         lastActiveLocationId={lastActiveLocationId} pultPendingCounts={pultPendingCounts}
-        inboxUnreadCount={inboxUnreadCount}
+        inboxUnreadCount={inboxUnreadCount} refurbCount={refurbCount}
       />
       <BottomNav
         tab={tab} setTab={setTab} isAdmin={isAdmin} pultPendingCounts={pultPendingCounts} inboxUnreadCount={inboxUnreadCount}
+        refurbCount={refurbCount}
         chatOpen={chatOpen} setChatOpen={setChatOpen} chatUnread={chatUnread} markChatRead={markChatRead}
       />
       <MobileTopbar
@@ -2825,6 +2928,8 @@ function AppShell() {
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Alkatrész raktár</div>
             <button className="btn" style={{ padding: "8px 14px" }} disabled={busy} onClick={() => setPartModal("add")}>+ Új alkatrész</button>
           </>
+        ) : tab === "refurb" ? (
+          <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Felújítás</div>
         ) : tab === "payroll" ? (
           <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Bérek &amp; Adók</div>
         ) : tab === "customers" ? (
@@ -3022,6 +3127,17 @@ function AppShell() {
             loadingData={loadingData} filteredParts={filteredParts} setPartDetailId={setPartDetailId} deletePart={deletePartGroup}
             partsStats={partsStats} allUsedParts={allUsedParts} locName={locName} setDetailId={setDetailId}
             onUsePart={openPartUsageModal}
+          />
+        )}
+
+        {!noLocationAssigned && tab === "refurb" && (
+          <RefurbTab
+            loadingData={loadingData} refurbPhones={refurbPhones} refurbTasksByProduct={refurbTasksByProduct}
+            busy={busy} locName={locName}
+            moveRefurbRank={moveRefurbRank} addRefurbTask={addRefurbTask} updateRefurbTaskStatus={updateRefurbTaskStatus}
+            deleteRefurbTask={deleteRefurbTask} saveRefurbInspection={saveRefurbInspection}
+            activeOwnTicketFor={activeOwnTicketFor} parts={parts} usePartForProduct={usePartForProduct}
+            removePartFromTicket={removePartFromTicket} openOwnServiceModal={openOwnServiceModal} onOpenTicket={setDetailId}
           />
         )}
 

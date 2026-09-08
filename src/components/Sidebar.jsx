@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   DashboardIcon, ServiceIcon, PhoneCaseIcon, BoardIcon,
-  PartsIcon, FinanceIcon, CustomersIcon, WarrantyIcon, UsersNavIcon, TrashNavIcon, BuybackIcon, LeaveIcon, RepairPriceIcon, CashSettlementIcon, InvoiceIcon, ReviewsIcon, PayrollIcon, ChatIcon, LockIcon, ChevronDownIcon,
+  PartsIcon, FinanceIcon, CustomersIcon, WarrantyIcon, UsersNavIcon, TrashNavIcon, BuybackIcon, LeaveIcon, RepairPriceIcon, CashSettlementIcon, InvoiceIcon, ReviewsIcon, PayrollIcon, ChatIcon, LockIcon, ChevronDownIcon, RefurbIcon,
 } from "./icons";
 
 const WEBSHOP_TABS = ["buyback", "repair-prices", "reviews"];
@@ -11,7 +11,7 @@ const ADMIN_TABS = ["dashboard", "leave", "users", "vault", "trash"];
 // navigáció szerepét (alsó sáv + "Több" bottom sheet), hogy applikáció-szerű legyen a felület.
 // A helyszín-választó, webshop-link, chat és felhasználói menü a ContentTopbar-ban van.
 export default function Sidebar({
-  tab, setTab, isAdmin, lastActiveLocationId, pultPendingCounts, inboxUnreadCount,
+  tab, setTab, isAdmin, lastActiveLocationId, pultPendingCounts, inboxUnreadCount, refurbCount,
 }) {
   // A csoportok alapból le vannak csukva, de ha épp az aktív fül egy becsukott
   // csoportban van (pl. frissítés után a Kukán állunk), akkor automatikusan kinyílik,
@@ -47,6 +47,10 @@ export default function Sidebar({
         <button className={`navbtn ${tab === "service" ? "active" : ""}`} onClick={() => go("service")}><ServiceIcon className="nav-ic" />Szerviz</button>
         <button className={`navbtn ${tab === "stock" ? "active" : ""}`} onClick={() => go("stock")}><PhoneCaseIcon className="nav-ic" />Telefonok</button>
         <button className={`navbtn ${tab === "parts" ? "active" : ""}`} onClick={() => go("parts")}><PartsIcon className="nav-ic" />Alkatrészek</button>
+        <button className={`navbtn ${tab === "refurb" ? "active" : ""}`} onClick={() => go("refurb")}>
+          <RefurbIcon className="nav-ic" />Felújítás
+          {refurbCount > 0 && <span className="nav-pill-group"><span className="nav-pill amber">{refurbCount}</span></span>}
+        </button>
         {!isAdmin && (
           <button className={`navbtn ${tab === "vault" ? "active" : ""}`} onClick={() => go("vault")}><LockIcon className="nav-ic" />Belépések</button>
         )}
