@@ -87,14 +87,22 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
 .logout-btn:hover{color:#DC2626;background:#FEF2F2}
 .logout-btn.active{color:var(--primary)}
 
-/* BOTTOM NAV — csak mobilon (lásd media query), applikáció-szerű alsó sáv */
-.bottom-nav{display:none;position:fixed;left:0;right:0;bottom:0;z-index:40;background:#fff;border-top:1px solid #E8EAEF;padding:6px 4px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -2px 10px rgba(16,24,40,.06)}
-.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:none;color:var(--sidebar-text-dim);font-family:inherit;padding:6px 2px;border-radius:10px;cursor:pointer;min-height:48px}
+/* BOTTOM NAV — csak mobilon (lásd media query), lebegő, iOS/eMag-stílusú tabsáv,
+   ugyanaz a vizuális nyelv mint a publikus .pub-bottom-nav-nél (lásd lejjebb):
+   a képernyő szélétől elemelt, lekerekített, blur-ös "pill", nem él-től élig érő sáv. */
+.bottom-nav{
+  display:none;position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:40;
+  background:rgba(255,255,255,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-radius:22px;padding:8px 6px;
+  box-shadow:0 8px 24px rgba(16,24,40,.16),0 1px 2px rgba(16,24,40,.06);
+}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:none;color:var(--sidebar-text-dim);font-family:inherit;padding:6px 2px 5px;border-radius:14px;cursor:pointer;min-height:48px;-webkit-tap-highlight-color:transparent;transition:color .15s}
 .bnav-btn span{font-size:10.5px;font-weight:600}
-.bnav-ic{width:21px;height:21px}
+.bnav-ic{width:21px;height:21px;transition:transform .15s}
 .bnav-btn.active{color:var(--sidebar-accent-text)}
+.bnav-btn.active .bnav-ic{transform:translateY(-1px) scale(1.05)}
 .bnav-ic-wrap{position:relative;display:inline-flex}
-.bnav-badge{position:absolute;top:-5px;right:-8px;min-width:15px;height:15px;padding:0 4px;border-radius:999px;background:#DC2626;color:#fff;font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1}
+.bnav-badge{position:absolute;top:-5px;right:-8px;min-width:15px;height:15px;padding:0 4px;border-radius:999px;background:#DC2626;color:#fff;font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1;border:1.5px solid #fff}
 
 /* BOTTOM SHEET — "Több" panel + mobilon a modalok is ezt a mintát követik (lásd media query) */
 .bsheet-overlay{position:fixed;inset:0;background:rgba(17,24,39,.4);z-index:200;display:flex;align-items:flex-end}
@@ -653,7 +661,7 @@ tr:hover td{background:#FAFAFA}
   .shell{flex-direction:column}
   .sidebar{display:none}
   .content-topbar{display:none}
-  .chat-panel{top:auto;bottom:86px}
+  .chat-panel{top:auto;bottom:calc(92px + env(safe-area-inset-bottom))}
   .row2,.row3{grid-template-columns:1fr}
   .statrow.c3,.statrow.c4,.statrow.c5,.statrow.c6{grid-template-columns:1fr 1fr}
   .tw table{display:none}
@@ -665,7 +673,7 @@ tr:hover td{background:#FAFAFA}
   /* Mobilon a .main saját belső görgetése helyett a teljes body görögjön —
      nested scroll container + position:fixed alsó sáv iOS Safarin "úszik"/együtt mozog
      a tartalommal, ha a görgetés nem a document szintjén történik. */
-  .main{padding-bottom:82px;overflow-y:visible}
+  .main{padding-bottom:calc(96px + env(safe-area-inset-bottom));overflow-y:visible}
   .bottom-nav{display:flex}
 
   /* MODAL — alulról felcsúszó, teli szélességű lap, nem középre igazított kártya */
@@ -1129,8 +1137,8 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .chat-panel-input input{flex:1;border:1px solid #E5E7EB;border-radius:10px;padding:9px 11px;font-size:12.5px;font-family:inherit}
 .chat-panel-input .btn{padding:9px 14px;font-size:12px}
 @media (max-width:640px){
-  .chat-panel{right:12px;left:12px;width:auto;bottom:calc(72px + env(safe-area-inset-bottom));height:min(460px,calc(100vh - 140px))}
-  .chat-fab{right:16px;bottom:calc(72px + env(safe-area-inset-bottom))}
+  .chat-panel{right:12px;left:12px;width:auto;bottom:calc(92px + env(safe-area-inset-bottom));height:min(460px,calc(100vh - 160px))}
+  .chat-fab{right:16px;bottom:calc(92px + env(safe-area-inset-bottom))}
 }
 
 .pub-anchor{display:flex;align-items:baseline;gap:8px;margin-bottom:2px}
