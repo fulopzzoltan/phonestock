@@ -1148,6 +1148,18 @@ function AppShell() {
       setCompanyTaxObligations((prev) => [...prev, companyTaxObligationFromApi(r[0])]);
     });
   }
+  async function updatePayrollAmount(paymentId, amount) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("payroll_payments").update({ computed_amount: amount }).eq("id", paymentId).select());
+      setPayrollPayments((prev) => prev.map((x) => (x.id === paymentId ? payrollPaymentFromApi(r[0]) : x)));
+    });
+  }
+  async function updateTaxAmount(taxId, amount) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("company_tax_obligations").update({ amount }).eq("id", taxId).select());
+      setCompanyTaxObligations((prev) => prev.map((x) => (x.id === taxId ? companyTaxObligationFromApi(r[0]) : x)));
+    });
+  }
   async function markPayrollPaid(paymentId, payment, amount) {
     await withBusy(async () => {
       const p = payrollPayments.find((x) => x.id === paymentId);
@@ -2933,7 +2945,7 @@ function AppShell() {
         ) : tab === "refurb" ? (
           <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Felújítás</div>
         ) : tab === "payroll" ? (
-          <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Bérek &amp; Adók</div>
+          <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Költségek</div>
         ) : tab === "customers" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Kliensek</div>
@@ -2979,7 +2991,7 @@ function AppShell() {
           </>
         ) : tab === "finance" ? (
           <>
-            <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Bevételek &amp; Kiadások</div>
+            <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Cashflow</div>
             <button className="btn sec" style={{ padding: "8px 14px" }} disabled={busy} onClick={() => setPdfImportModal(true)}>+ Rendelés PDF-ből</button>
           </>
         ) : tab === "leave" ? (
@@ -3111,6 +3123,7 @@ function AppShell() {
             ensurePayrollPeriod={ensurePayrollPeriod} ensureCompanyTaxPeriod={ensureCompanyTaxPeriod}
             markPayrollPaid={markPayrollPaid} unmarkPayrollPaid={unmarkPayrollPaid}
             markTaxPaid={markTaxPaid} unmarkTaxPaid={unmarkTaxPaid} addCompanyTaxObligation={addCompanyTaxObligation}
+            updatePayrollAmount={updatePayrollAmount} updateTaxAmount={updateTaxAmount}
           />
         )}
 

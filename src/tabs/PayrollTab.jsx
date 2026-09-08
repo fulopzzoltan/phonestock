@@ -24,13 +24,13 @@ function AddTaxModal({ locations, period, onClose, onSave, busy }) {
   return (
     <div className="overlay">
       <div className="modal" style={{ maxWidth: 360 }} onClick={(e) => e.stopPropagation()}>
-        <h2>Új adótétel <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
+        <h2>Új költség <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
         <div className="field"><label>Cég / helyszín</label>
           <select value={locationId} onChange={(e) => setLocationId(e.target.value)}>
             {locations.map((l) => <option key={l.id} value={l.id}>{l.company_name || l.name}</option>)}
           </select>
         </div>
-        <div className="field"><label>Adónem</label><input value={taxType} onChange={(e) => setTaxType(e.target.value)} placeholder="pl. ÁFA" /></div>
+        <div className="field"><label>Megnevezés</label><input value={taxType} onChange={(e) => setTaxType(e.target.value)} placeholder="pl. Áram, Telefonszámla, ÁFA" /></div>
         <div className="field"><label>Összeg (Lej)</label><input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} /></div>
         <div className="modal-actions">
           <button className="btn sec" onClick={onClose}>Mégse</button>
@@ -41,9 +41,51 @@ function AddTaxModal({ locations, period, onClose, onSave, busy }) {
   );
 }
 
+// Kattintásra szerkeszthető összeg — kifizetés előtt bármelyik tétel (bér vagy költség)
+// összege módosítható, ha az induló (számolt vagy kézzel felvitt) érték már nem pontos.
+function EditableAmount({ value, disabled, onSave }) {
+  const [editing, setEditing] = useState(false);
+  const [val, setVal] = useState("");
+
+  function start() {
+    if (disabled) return;
+    setVal(String(value));
+    setEditing(true);
+  }
+  function save() {
+    const n = Number(val);
+    if (!Number.isNaN(n) && n !== value) onSave(n);
+    setEditing(false);
+  }
+
+  if (editing) {
+    return (
+      <input
+        type="number"
+        autoFocus
+        className="pay-amount-edit"
+        value={val}
+        onChange={(e) => setVal(e.target.value)}
+        onBlur={save}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") save();
+          if (e.key === "Escape") setEditing(false);
+        }}
+        onClick={(e) => e.stopPropagation()}
+      />
+    );
+  }
+  return (
+    <div className={`pay-amount${disabled ? "" : " editable"}`} onClick={start} title={disabled ? undefined : "Kattints a szerkesztéshez"}>
+      {money(value)}
+    </div>
+  );
+}
+
 export default function PayrollTab({
   busy, employees, payrollSchedule, payrollPayments, companyTaxObligations, locations,
   ensurePayrollPeriod, ensureCompanyTaxPeriod, markPayrollPaid, unmarkPayrollPaid, markTaxPaid, unmarkTaxPaid, addCompanyTaxObligation,
+  updatePayrollAmount, updateTaxAmount,
 }) {
   const [period, setPeriod] = useState(periodOf(new Date()));
   const [filter, setFilter] = useState("all");
@@ -65,8 +107,8 @@ export default function PayrollTab({
         const amount = p.paid ? (p.paidAmount ?? p.computedAmount ?? 0) : (p.computedAmount ?? 0);
         return {
           kind: "payroll", id: p.id, day: dayOf(p.dueDate), title: p.label,
-          sub: sched?.commissionPct ? `${money(sched.baseAmount)} + ${sched.commissionPct}% × ${sched.commissionBasis || "előző havi árbevétel"}` : (employeesLocName(emp, locations)),
-          amount, paid: p.paid, tagLabel: emp?.fullName?.split(" ")[0] || "?", tagKind: "emp",
+          sub: employeesLocName(emp, locations),
+          amount, paid: p.paid, tagLabel: emp?.fullName?.trim().split(/\s+/).pop() || "?", tagKind: "emp",
         };
       });
     const taxRows = companyTaxObligations
@@ -76,7 +118,7 @@ export default function PayrollTab({
         return {
           kind: "tax", id: t.id, day: dayOf(t.dueDate), title: t.taxType,
           sub: `${loc?.company_name || loc?.name || ""}`,
-          amount: t.amount ?? 0, paid: t.paid, tagLabel: "Cég-adó", tagKind: "co",
+          amount: t.amount ?? 0, paid: t.paid, tagLabel: "Költség", tagKind: "co",
         };
       });
     const all = [...payrollRows, ...taxRows].sort((a, b) => (a.day || 99) - (b.day || 99));
@@ -114,20 +156,20 @@ export default function PayrollTab({
           <span style={{ fontSize: 13, fontWeight: 700, minWidth: 130, textAlign: "center", textTransform: "capitalize" }}>{periodLabel(period)}</span>
           <button type="button" className="iconbtn" onClick={() => setPeriod((p) => shiftPeriod(p, 1))}><ChevronRightIcon width={13} height={13} /></button>
         </div>
-        <button className="btn sec sm" disabled={busy} onClick={() => setAddTax(true)}>+ Új adótétel</button>
+        <button className="btn sec sm" disabled={busy} onClick={() => setAddTax(true)}>+ Új költség</button>
       </div>
 
       <div className="statrow c4" style={{ marginBottom: 18 }}>
-        <div className="statcard"><div className="lbl">E havi teljes kötelezettség</div><div className="val">{money(totals.total)}</div></div>
+        <div className="statcard"><div className="lbl">Teljes kötelezettség</div><div className="val">{money(totals.total)}</div></div>
         <div className="statcard accent"><div className="lbl">Ebből kifizetve</div><div className="val">{money(totals.paid)}</div></div>
         <div className="statcard warn"><div className="lbl">Hátralévő ez hónapban</div><div className="val">{money(totals.remaining)}</div></div>
-        <div className="statcard"><div className="lbl">Ebből cég-adó</div><div className="val">{money(totals.taxTotal)}</div></div>
+        <div className="statcard"><div className="lbl">Ebből költség</div><div className="val">{money(totals.taxTotal)}</div></div>
       </div>
 
       <div className="seg" style={{ marginBottom: 12 }}>
         <button className={filter === "all" ? "active" : ""} onClick={() => setFilter("all")}>Mind</button>
         <button className={filter === "payroll" ? "active" : ""} onClick={() => setFilter("payroll")}>Bérek</button>
-        <button className={filter === "tax" ? "active" : ""} onClick={() => setFilter("tax")}>Cég-adók</button>
+        <button className={filter === "tax" ? "active" : ""} onClick={() => setFilter("tax")}>Költségek</button>
       </div>
 
       {rows.length === 0 ? (
@@ -142,7 +184,11 @@ export default function PayrollTab({
                 <div className="pay-title">{r.title}</div>
                 {r.sub && <div className="pay-sub">{r.sub}</div>}
               </div>
-              <div className="pay-amount">{money(r.amount)}</div>
+              <EditableAmount
+                value={r.amount}
+                disabled={r.paid}
+                onSave={(v) => (r.kind === "payroll" ? updatePayrollAmount(r.id, v) : updateTaxAmount(r.id, v))}
+              />
               <button
                 type="button"
                 className={`paid-toggle${r.paid ? " done" : ""}`}

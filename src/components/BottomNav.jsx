@@ -14,7 +14,7 @@ const FIXED_LEFT = [
   { key: "service", label: "Szerviz", Icon: ServiceIcon },
 ];
 const FIXED_RIGHT = [
-  { key: "finance", label: "Bevétel", Icon: FinanceIcon },
+  { key: "finance", label: "Cashflow", Icon: FinanceIcon },
 ];
 
 export default function BottomNav({
@@ -89,7 +89,7 @@ export default function BottomNav({
           <button className={`navbtn ${tab === "cash-settlement" ? "active" : ""}`} onClick={() => go("cash-settlement")}><CashSettlementIcon className="nav-ic" />Elszámolás</button>
         )}
         {isAdmin && (
-          <button className={`navbtn ${tab === "payroll" ? "active" : ""}`} onClick={() => go("payroll")}><PayrollIcon className="nav-ic" />Bérek &amp; Adók</button>
+          <button className={`navbtn ${tab === "payroll" ? "active" : ""}`} onClick={() => go("payroll")}><PayrollIcon className="nav-ic" />Költségek</button>
         )}
         <button className={`navbtn ${tab === "invoices" ? "active" : ""}`} onClick={() => go("invoices")}><InvoiceIcon className="nav-ic" />Számlák</button>
         {!isAdmin && (

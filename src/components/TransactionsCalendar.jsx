@@ -156,6 +156,9 @@ export default function TransactionsCalendar({
   const selectedRows = selectedDay ? (txByDay.get(selectedDay) || []).sort((a, b) => (a.createdAt || "").localeCompare(b.createdAt || "")) : [];
   const selectedStats = selectedDay ? dayStats(selectedRows) : null;
 
+  const monthPrefix = `${viewY}-${pad(viewM + 1)}`;
+  const monthStats = useMemo(() => dayStats(transactions.filter((t) => t.date.startsWith(monthPrefix))), [transactions, monthPrefix]);
+
   const archiveMonths = useMemo(() => {
     if (!isAdmin) return [];
     const byMonth = {};
@@ -172,11 +175,20 @@ export default function TransactionsCalendar({
 
   return (
     <div>
-      <div className="tw" style={{ padding: 16 }}>
+      <div className="tw" style={{ padding: 16, display: "flex", gap: 24, alignItems: "flex-start", flexWrap: "wrap" }}>
         <MonthGrid
           viewY={viewY} viewM={viewM} onGoMonth={goMonth} todayStr={todayStr} oldestAllowedDate={oldestAllowedDate} isAdmin={isAdmin}
           txByDay={txByDay} closedDaysSet={closedDaysSet} selectedDay={selectedDay} onSelectDay={selectDay}
         />
+        <div style={{ flex: 1, minWidth: 160, alignSelf: "center" }}>
+          <div className="lbl" style={{ fontSize: 10, fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 6 }}>
+            {monthLabel(viewY, viewM)} — teljes árulás
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: "#111827" }}>{money(monthStats.incomeCash + monthStats.incomeCard)}</div>
+          <div style={{ fontSize: 12, color: "#9CA3AF", marginTop: 4 }}>
+            {money(monthStats.incomeCash)} készpénz · {money(monthStats.incomeCard)} kártya
+          </div>
+        </div>
       </div>
 
       {selectedDay && (
