@@ -37,10 +37,8 @@ export default function PartsTab({
     <>
 
       <div className="filter-row">
-        <div className="search-scan-row">
-          <div className="searchbar"><SearchIcon /><input value={partSearch} onChange={(e) => setPartSearch(e.target.value)} /></div>
-          {onScan && <button type="button" className="btn sec scan-trigger" onClick={onScan} title="QR/vonalkód szkennelése"><ScanIcon width={16} height={16} /></button>}
-        </div>
+        <div className="searchbar"><SearchIcon /><input value={partSearch} onChange={(e) => setPartSearch(e.target.value)} /></div>
+        {onScan && <button type="button" className="btn sec scan-trigger" onClick={onScan} title="QR/vonalkód szkennelése"><ScanIcon width={16} height={16} /></button>}
         <div className="status-seg">
           <button className={catFilter === "all" ? "active" : ""} onClick={() => setCatFilter("all")}>
             <span className="dot" style={{ background: "#9CA3AF" }} />Mind <span className="cnt">{filteredParts.length}</span>

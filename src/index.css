@@ -563,9 +563,7 @@ tr:hover td{background:#FAFAFA}
 
 /* QR/vonalkód-szkennelés — ld. QR_SZKENNELES_ES_NYOMTATO_JAVASLAT.md. Sötét, teli-képernyős
    kameranézet (nem a sima .modal fehér-kártya minta), mert a kamerakép önmagában ad kontrasztot. */
-.search-scan-row{display:flex;gap:8px;flex-wrap:wrap}
-.search-scan-row .searchbar{width:300px;max-width:100%}
-.scan-trigger{width:300px;max-width:100%;justify-content:center;padding:0 12px}
+.scan-trigger{flex-shrink:0;height:33.5px;padding:0 12px}
 .scan-overlay{position:fixed;inset:0;background:rgba(10,10,12,.92);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px}
 .scan-modal{width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px}
 .scan-head{display:flex;align-items:center;justify-content:space-between;color:#fff;font-size:14px;font-weight:700}
