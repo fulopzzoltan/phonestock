@@ -66,7 +66,7 @@ export default function MacDock({ tab, setTab, isAdmin, inboxUnreadCount, refurb
 
         <div className="md-sep" />
 
-        <DockItem label="Cashflow" icon={<TrendCard />} active={tab === "finance"} onClick={go("finance")} />
+        <DockItem label="Árulás" icon={<TrendCard />} active={tab === "finance"} onClick={go("finance")} />
         {isAdmin && <DockItem label="Elszámolás" icon={<ClipboardCheck />} active={tab === "cash-settlement"} onClick={go("cash-settlement")} />}
         {isAdmin && <DockItem label="Költségek" icon={<Wallet />} active={tab === "payroll"} onClick={go("payroll")} />}
         <DockItem label="Számlák" icon={<Invoice />} active={tab === "invoices"} onClick={go("invoices")} />
