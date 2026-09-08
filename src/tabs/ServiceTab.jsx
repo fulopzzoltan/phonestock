@@ -37,8 +37,10 @@ export default function ServiceTab({
   return (
     <>
       <div className="filter-row">
-        <div className="searchbar"><SearchIcon /><input value={svcSearch} onChange={(e) => setSvcSearch(e.target.value)} /></div>
-        {onScan && <button type="button" className="btn sec scan-trigger" onClick={onScan} title="QR/vonalkód szkennelése"><ScanIcon width={16} height={16} /></button>}
+        <div className="search-scan-row">
+          <div className="searchbar"><SearchIcon /><input value={svcSearch} onChange={(e) => setSvcSearch(e.target.value)} /></div>
+          {onScan && <button type="button" className="btn sec scan-trigger" onClick={onScan} title="QR/vonalkód szkennelése"><ScanIcon width={16} height={16} /></button>}
+        </div>
         <div className="status-seg">
           {STATUSES.map((col) => {
             const count = activeTickets.filter((t) => t.status === col.key).length;
