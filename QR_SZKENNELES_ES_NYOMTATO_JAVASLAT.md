@@ -45,39 +45,44 @@ talál egy kódot → beírja a keresőmezőbe / megnyitja a munkalapot-alkatré
 komponens újrahasználható mindhárom helyen (szerviz keresés, telefon keresés, alkatrész
 raktárkivét).
 
-## 3. Nyomtató
+## 3. Nyomtató — már van GK420D, nem kell újat venni
 
-A címkéket a webes appból, sima `window.print()`-tel tudjuk kinyomtatni — **pontosan úgy, ahogy
-ma is megy a `PrintSlip.jsx`/`PrintReceiptSlip.jsx`** (`#print-slip-root` + `@media print`
-trükk), csak a `@page` méretét kell átállítani a címke méretére (pl. 40×30mm vagy 50×30mm) egy
-külön nyomtatási módra. Nincs szükség driverhez/SDK-hoz írt egyedi kódra, **ha olyan
-címkenyomtatót veszünk, ami sima Windows/Mac nyomtatóként települ** — akkor a böngésző
-nyomtatási párbeszédablaka simán ráküldi.
+Van már **Zebra GK420D** (203 dpi, direkt termál, USB) — ez pont jó erre, nem kell másikat
+venni. Zebra már nem gyártja/árulja újonnan (2024 óta kivezetett modell), de a meglévő darab
+teljesen jól működik, a szoftveroldal is támogatott. Két útja van a webes appból való
+nyomtatásnak, sorrendben ajánlva:
 
-Két opciót néztem meg (mai eMAG árak, 2026 szeptember):
+- **A) Egyszerű út — sima `window.print()`, ugyanaz a minta mint a `PrintSlip.jsx`-nél.**
+  A GK420D-hez telepített Windows/Mac nyomtató-driver (Zebra Setup Utilities /
+  ZebraDesigner driver) simán rendes rendszer-nyomtatóként jelenik meg, tehát a böngésző
+  nyomtatási párbeszédablaka minden extra nélkül ráküldi. Csak egy új `@media print` szakasz
+  kell címke-méretre állított `@page`-dzsel (pl. 50×30mm — nézd meg, milyen tekercs van/lesz
+  betöltve). Ez a gyorsabb, kevesebb munkával járó megoldás, de böngészőnként/OS-enként lehet
+  1-2mm-es margó-eltérés, mert a nyomtatási párbeszédablak skálázza a HTML-t.
+- **B) Pontosabb út — Zebra Browser Print (ingyenes Zebra-szoftver) + ZPL.**
+  Ez egy kis háttérben futó program (telepíteni kell a pult-gépre), ami helyi HTTP-n keresztül
+  engedi, hogy a weblapból közvetlenül, pixel-pontosan (nyomtatási dialógus és
+  böngésző-skálázás nélkül) küldjünk nyers ZPL-parancsot a nyomtatóra. Ez a "rendes",
+  professzionális módszer — ezt használják boltok/futárcégek is GK420D-vel. Cserébe kell
+  hozzá egy pár sornyi ZPL-sablon (QR + vonalkód + szöveg pozicionálva), és a Browser Print
+  appot fel kell telepíteni minden gépre, ahonnan nyomtatni akarunk.
 
-- **Xprinter XP-420B** — USB + Bluetooth, 203 dpi, kifejezetten címkenyomtatásra, ~**1.142 Lei**.
-  Ez a "rendes" opció: driveres, stabil, ipari kategóriájú kis nyomtató, ilyet használnak boltok
-  tömegesen. Ha mindkét helyszínen (Gyimes + Szentgyörgy) akarunk egyet-egyet, az kb.
-  2×1.142 Lei.
-- **Olcsóbb Bluetooth címkenyomtató** (pl. "VITTALIST 100×150mm AWB", Windows/Mac/iOS/Android
-  kompatibilis, 203 dpi) — ~**529 Lei**. Jóval olcsóbb, de ezeknél mindig meg kell nézni
-  konkrétan **van-e Windows nyomtató-driverük** (van olyan modell, ami csak saját telefon-app-on
-  keresztül nyomtat Bluetooth-tal, azt a böngészős `window.print()` NEM éri el) — vásárlás előtt
-  ezt a leírásban/eladónál rá kell kérdezni.
+**Javaslat:** kezdjük A)-val (nulla extra telepítés, gyorsan kipróbálható), és ha az élesben
+zavaró a margó-pontatlanság vagy lassú a böngésző nyomtatási dialógusa a pultnál, ugorjunk
+B)-re.
 
-**Javaslat:** ha ez üzletileg megéri (gyorsabb pult, kevesebb elgépelés), a Xprinter XP-420B a
-biztosabb választás, mert driveres — nem kell app-integráció, egyből megy a mostani
-nyomtatási mintával. A címke mérete 40×30mm elég QR+vonalkód+szöveghez, azt kell nézni, hogy az
-adott nyomtatóhoz kapható-e ilyen méretű tekercs (a fentiek 40-58mm szélességig mennek, bőven
-elég).
+Ha a másik helyszínen (Szentgyörgy vagy Csíkmadaras) nincs másik GK420D, azt a franchise-
+partnerrel/helyszínnel kell tisztázni — vagy oda is kell egy nyomtató (ugyanaz vagy egy olcsóbb
+modell is jó, ha driveres), vagy egyelőre csak ott tesztelitek a szkennelést papíralapú
+munkalapon lévő kóddal, nyomtatás nélkül.
 
 ## Megvalósítási sorrend (ha mész vele tovább)
 
 1. QR-generálás a meglévő `PrintSlip.jsx`/`PrintReceiptSlip.jsx`-be (kliens-oldali JS lib, pl.
-   `qrcode` npm csomag) + Code128 (pl. `jsbarcode`) — új `@media print` szakasz címke-méretben.
-2. Egy nyomtató beszerzése, kipróbálás: tényleg megy-e rá a böngésző nyomtatási
-   párbeszédablakából driverként.
+   `qrcode` npm csomag) + Code128 (pl. `jsbarcode`) — új `@media print` szakasz címke-méretben,
+   A) út szerint, a meglévő GK420D-re tesztelve.
+2. Ha kell a pontosabb nyomtatás: Zebra Browser Print telepítése a pult-gépre + ZPL-sablon
+   elkészítése (B) út.
 3. "Szkennelés" komponens (`barcode-detector` csomaggal) + gomb a Pult/Szerviz/Alkatrészek
    keresőmezők mellé.
 
