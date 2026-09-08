@@ -562,23 +562,26 @@ tr:hover td{background:#FAFAFA}
 .field-hint{font-size:11px;color:#9CA3AF;margin-top:4px}
 
 /* ====== FELÚJÍTÁS — saját telefonok javítás-menedzsmentje ====== */
-.rf-intro{font-size:12.5px;color:#6B7280;margin-bottom:16px;max-width:760px;line-height:1.5}
-.rf-list{display:flex;flex-direction:column;gap:14px}
-.rf-card{background:#fff;border:1px solid #EEF0F2;border-radius:var(--radius-lg);box-shadow:var(--shadow-card);overflow:hidden}
-.rf-card-head{display:flex;align-items:center;gap:14px;padding:16px 18px;border-bottom:1px solid #F3F4F6;flex-wrap:wrap}
+.rf-list{display:flex;flex-direction:column;gap:8px}
+.rfr{background:#fff;border:1px solid #EEF0F2;border-radius:14px;box-shadow:var(--shadow-card);overflow:hidden}
+.rfr-head{display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer}
+.rfr-head:hover{background:#FAFAFA}
 .rf-rank-ctrl{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0}
 .rf-rank-btn{background:#F3F4F6;border:none;border-radius:7px;width:24px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6B7280}
 .rf-rank-btn:disabled{opacity:.35;cursor:default}
 .rf-rank-btn:not(:disabled):hover{background:#E5E7EB}
 .rf-rank-num{font-size:12px;font-weight:800;color:#111827;padding:1px 0}
-.rf-card-title{flex:1;min-width:180px}
-.rf-name{font-size:15px;font-weight:800;color:#111827}
-.rf-meta{display:flex;gap:6px;flex-wrap:wrap;font-size:11.5px;color:#9CA3AF;margin-top:2px}
-.rf-cost-summary{text-align:right;flex-shrink:0}
-.rf-cost-amount{font-size:16px;font-weight:800;color:#B91C1C}
-.rf-cost-label{font-size:11px;color:#9CA3AF;margin-top:1px}
-.rf-card-body{padding:14px 18px;display:flex;flex-direction:column;gap:14px}
-.rf-empty-hint{font-size:12px;color:#9CA3AF;font-style:italic;padding:6px 0}
+.rfr-title{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.rfr-name{font-size:13.5px;font-weight:700;color:#111827}
+.rfr-meta{font-size:11.5px;color:#9CA3AF;margin-left:8px}
+.rfr-add-badge{display:inline-flex;align-items:center;gap:3px;border:1px dashed #D1D5DB;color:#9CA3AF;border-radius:999px;padding:3px 9px 3px 7px;font-size:11px;font-weight:700;flex-shrink:0;white-space:nowrap}
+.rfr-add-badge .d{font-size:13px;line-height:1}
+.rfr-done-badge{background:#DCFCE7;color:#15803D;border-radius:999px;padding:3px 10px;font-size:10.5px;font-weight:800;flex-shrink:0}
+.rfr-cost-badge{font-family:'Roboto Mono',monospace;font-size:13px;font-weight:800;color:#B91C1C;flex-shrink:0;white-space:nowrap}
+.rfr-chev{color:#9CA3AF;flex-shrink:0;transition:transform .15s}
+.rfr-body{padding:4px 16px 14px 52px;border-top:1px solid #F3F4F6;display:flex;flex-direction:column;gap:14px}
+.rfr-actions{display:flex;align-items:center;justify-content:flex-end;gap:12px}
+.rf-parts-cost{font-size:11.5px;color:#6B7280;margin-top:8px}
 .rft-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F9FAFB}
 .rft-row-kesz{opacity:.55}
 .rft-row-kesz .rft-desc{text-decoration:line-through}
@@ -591,7 +594,6 @@ tr:hover td{background:#FAFAFA}
 .rft-add-row input{flex:1;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:9px;padding:8px 10px;font-family:inherit;font-size:12.5px}
 .rf-parts-section{border-top:1px solid #F3F4F6;padding-top:12px}
 .rf-parts-toggle{background:none;border:none;font-family:inherit;font-size:12.5px;font-weight:700;color:#374151;cursor:pointer;padding:0}
-.rf-card-actions{display:flex;align-items:center;justify-content:flex-end;gap:12px;padding:12px 18px;background:#FAFAFA;border-top:1px solid #F3F4F6}
 .rf-inspected-note{font-size:11.5px;color:#9CA3AF}
 .rf-inspect-questions{display:flex;flex-direction:column;gap:2px}
 .rf-inspect-blocked{background:#FEF2F2;border:1px solid #FECACA;color:#B91C1C;padding:10px 14px;border-radius:12px;font-size:12.5px;margin-top:10px}
@@ -1479,7 +1481,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .bb-main{max-width:560px;margin:0 auto;padding:24px 20px 100px}
 .bb-progress{display:flex;align-items:center;gap:10px;margin-bottom:18px}
 .bb-progress-track{flex:1;height:6px;border-radius:3px;background:var(--pub-line);overflow:hidden}
-.bb-progress-fill{height:100%;background:var(--pub-accent);border-radius:3px;transition:width .2s}
+.bb-progress-fill{height:100%;width:100%;background:var(--pub-accent);border-radius:3px;transform-origin:left;transform:scaleX(var(--bb-progress,0));transition:transform .2s}
 .bb-progress-label{font-size:11.5px;font-weight:700;color:var(--pub-ink-soft);white-space:nowrap}
 .bb-card{background:var(--pub-paper-raised);border:1px solid var(--pub-line);border-radius:var(--radius-lg);padding:26px 22px;box-shadow:var(--shadow-card)}
 .bb-h1{font-size:20px;font-weight:800;margin:0 0 18px;line-height:1.3}

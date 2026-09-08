@@ -7,13 +7,13 @@
         "rule": "overused-font",
         "value": "inter",
         "createdAt": "2026-09-07T17:44:09.755Z",
-        "reason": "Pre-existing app typography (Inter/Nunito/Roboto Mono) established across the whole PhoneStock codebase long before this session; not introduced now, core brand identity for this real business app"
+        "reason": "Pre-existing app-wide choice: Inter is the established body font across the entire PhoneStock codebase, not introduced this session"
       },
       {
         "rule": "overused-font",
         "value": "roboto",
         "createdAt": "2026-09-07T17:44:16.644Z",
-        "reason": "Pre-existing app typography (Roboto Mono for numeric/mono values) established across the whole PhoneStock codebase long before this session; not introduced now"
+        "reason": "Pre-existing app-wide choice: Roboto Mono is the established monospace/numeric font across the entire PhoneStock codebase, not introduced this session"
       },
       {
         "rule": "side-tab",

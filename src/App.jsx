@@ -215,6 +215,7 @@ function AppShell() {
   const [svcSearch, setSvcSearch] = useState("");
   const [svcAddFiring, setSvcAddFiring] = useState(false);
   const [partSearch, setPartSearch] = useState("");
+  const [refurbSearch, setRefurbSearch] = useState("");
   const [custSearch, setCustSearch] = useState("");
 
   const [stockModal, setStockModal] = useState(null); // null | "add" | product obj (edit)
@@ -670,6 +671,7 @@ function AppShell() {
     setSvcSearch(code);
     setSearch(code);
     setPartSearch(code);
+    setRefurbSearch(code);
     setInfo(`Nincs pontos találat "${code}" kódra — a keresőbe bemásoltuk.`);
   }
   const stockLocations = isAdmin ? locations : locations.filter((l) => l.id === myLocationId);
@@ -3134,6 +3136,7 @@ function AppShell() {
           <RefurbTab
             loadingData={loadingData} refurbPhones={refurbPhones} refurbTasksByProduct={refurbTasksByProduct}
             busy={busy} locName={locName}
+            refurbSearch={refurbSearch} setRefurbSearch={setRefurbSearch} onScan={() => setScannerOpen(true)}
             moveRefurbRank={moveRefurbRank} addRefurbTask={addRefurbTask} updateRefurbTaskStatus={updateRefurbTaskStatus}
             deleteRefurbTask={deleteRefurbTask} saveRefurbInspection={saveRefurbInspection}
             activeOwnTicketFor={activeOwnTicketFor} parts={parts} usePartForProduct={usePartForProduct}

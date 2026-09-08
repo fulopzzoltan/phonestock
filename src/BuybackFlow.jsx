@@ -269,7 +269,7 @@ export default function BuybackFlow() {
         )}
 
         <div className="bb-progress">
-          <div className="bb-progress-track"><div className="bb-progress-fill" style={{ width: `${((stepIndex + 1) / totalSteps) * 100}%` }} /></div>
+          <div className="bb-progress-track"><div className="bb-progress-fill" style={{ "--bb-progress": (stepIndex + 1) / totalSteps }} /></div>
           <span className="bb-progress-label">{stepIndex + 1}/{totalSteps}</span>
         </div>
         {stepIndex > 0 && <button type="button" className="pub-back-link" style={{ border: "none", background: "none", cursor: "pointer" }} onClick={goBack}>← Vissza</button>}
