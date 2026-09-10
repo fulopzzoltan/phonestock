@@ -52,6 +52,7 @@ export default function ServiceTab({
         </div>
       </div>
 
+      <div className="tw tw-apple">
       {loadingData ? <LoadingState /> : (
         (() => {
           const items = activeTickets.filter((t) => t.status === listStatus);
@@ -70,7 +71,7 @@ export default function ServiceTab({
           const daysOf = (t) => {
             const n = daysOnShelf(t.dateIn);
             if (n == null) return <span className="svc-days">—</span>;
-            if (n <= 0) return <span className="svc-days today">Ma</span>;
+            if (n <= 0) return <span className="svc-days today">{n}<span className="svc-days-lbl">napja</span></span>;
             return <span className="svc-days">{n}<span className="svc-days-lbl">napja</span></span>;
           };
           const kliensOf = (t) => {
@@ -89,7 +90,7 @@ export default function ServiceTab({
           ));
           return (
             <ResponsiveTable
-              className="tw-apple"
+              wrap={false}
               columns={[
                 { key: "n", label: "Sorszám", className: "col-serial" }, { key: "d", label: "Eszköz", className: "col-device" }, { key: "c", label: "Kliens" }, { key: "i", label: "Bejött" },
                 { key: "p", label: "Probléma", className: "col-grow" }, { key: "s", label: "Státusz", className: "col-status" }, { key: "a", label: "Ár", className: "num-col" }, { key: "x", label: "" },
@@ -190,7 +191,7 @@ export default function ServiceTab({
         })()
       )}
       <HistorySection
-        className="tw-apple"
+        attached
         icon={ServiceIcon}
         label="Átadott munkalapok"
         items={handedOverTickets}
@@ -219,6 +220,7 @@ export default function ServiceTab({
           </table>
         )}
       </HistorySection>
+      </div>
       {handoverPrompt && (
         <HandoverPaymentModal
           ticket={handoverPrompt}
