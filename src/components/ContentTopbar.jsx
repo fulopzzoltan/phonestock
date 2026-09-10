@@ -83,7 +83,7 @@ function GlobalSearch({ stock, tickets, customersTable, parts, warranties, onOpe
           value={query}
           onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
           onFocus={() => setOpen(true)}
-          placeholder="Keresés — ügyfél, IMEI, munkalap, termék..."
+          placeholder="Keresés..."
         />
       </div>
       {open && query.trim().length >= 2 && (

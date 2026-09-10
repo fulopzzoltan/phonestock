@@ -13,12 +13,24 @@ function Refresh(p) { return <svg viewBox="0 0 24 24" fill="none" stroke="curren
 function Bubble(p) { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M21 11.5a8.4 8.4 0 0 1-8.9 8.4 8.6 8.6 0 0 1-3.3-.7L3 20l1-4.9A8.3 8.3 0 0 1 3 11.5 8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5Z" /></svg>; }
 function People(p) { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" {...p}><circle cx="12" cy="8" r="3.6" /><path d="M5 20c0-3.3 3.1-5.5 7-5.5s7 2.2 7 5.5" /></svg>; }
 function Shield(p) { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M12 3 4 6v6c0 5 3.4 8.7 8 9.9 4.6-1.2 8-4.9 8-9.9V6l-8-3Z" /><path d="m9 12 2 2 4-4" /></svg>; }
-function Wallet(p) { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" {...p}><rect x="3" y="7" width="18" height="13" rx="2.5" /><path d="M3 10h18" /><circle cx="16.5" cy="14.3" r="1.3" /></svg>; }
+function Wallet(p) { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M20 8.5V6.8a2 2 0 0 0-2-2H6a2 2 0 0 0 0 4h14v3.2" /><path d="M4 6v13a2 2 0 0 0 2 2h14v-5" /><path d="M17 12.2a2 2 0 0 0 0 4h4v-4Z" /></svg>; }
 function TrendCard(p) { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" {...p}><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M7 15l3.5-4 3 2.5L18 8" /></svg>; }
 function ClipboardCheck(p) { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M9 11.2 11.2 13.5 15.5 8.5" /><rect x="3" y="4" width="18" height="16" rx="2.5" /></svg>; }
 function Invoice(p) { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" {...p}><rect x="4" y="3" width="16" height="18" rx="2.5" /><path d="M8 9h8M8 13h8M8 17h5" /></svg>; }
 function Bag(p) { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" /><path d="M3 6h18" /><path d="M16 10a4 4 0 0 1-8 0" /></svg>; }
 function Lock(p) { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" {...p}><rect x="5" y="11" width="14" height="9" rx="2.2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /><circle cx="12" cy="15" r="1.1" /><path d="M12 16.1v1.4" /></svg>; }
+
+// Színes, "valódi app-ikon" jellegű változat a dokk fő ikonjaihoz — ugyanazokat a
+// már bevált vonal-glyph alakokat használja fehér színben (ne rajzoljunk újakat,
+// ld. korábbi tanulság: az újrarajzolt ikonok inkonzisztensek lettek), csak egy
+// színes, gradiens négyzet-alapra ültetve, mint a Figmából behúzott Üzenetek/Árulás ikon.
+function AppIcon({ from, to, angle = 135, children }) {
+  return (
+    <span className="md-item-appicon" style={{ background: `linear-gradient(${angle}deg, ${from}, ${to})`, color: "#fff" }}>
+      {children}
+    </span>
+  );
+}
 
 function DockItem({ label, icon, active, badge, onClick }) {
   return (
@@ -51,41 +63,41 @@ export default function MacDock({ tab, setTab, isAdmin, inboxUnreadCount, refurb
   return (
     <div className="md-wrap">
       <div className="md-dock">
-        <DockItem label="Pult" icon={<Home />} active={tab === "pult"} onClick={go("pult")} />
-        <DockItem label="Szerviz" icon={<Wrench />} active={tab === "service"} onClick={go("service")} />
-        <DockItem label="Telefonok" icon={<Phone />} active={tab === "stock"} onClick={go("stock")} />
-        <DockItem label="Alkatrészek" icon={<Chip />} active={tab === "parts"} onClick={go("parts")} />
-        <DockItem label="Felújítás" icon={<Refresh />} active={tab === "refurb"} badge={refurbCount} onClick={go("refurb")} />
-        {!isAdmin && <DockItem label="Belépések" icon={<Lock />} active={tab === "vault"} onClick={go("vault")} />}
+        <DockItem label="Pult" icon={<AppIcon from="#60A5FA" to="#2563EB"><Home stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "pult"} onClick={go("pult")} />
+        <DockItem label="Szerviz" icon={<AppIcon from="#FB923C" to="#EA580C"><Wrench stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "service"} onClick={go("service")} />
+        <DockItem label="Telefonok" icon={<AppIcon from="#22D3EE" to="#0891B2"><Phone stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "stock"} onClick={go("stock")} />
+        <DockItem label="Alkatrészek" icon={<AppIcon from="#A78BFA" to="#7C3AED"><Chip stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "parts"} onClick={go("parts")} />
+        <DockItem label="Felújítás" icon={<AppIcon from="#4ADE80" to="#16A34A"><Refresh stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "refurb"} badge={refurbCount} onClick={go("refurb")} />
+        {!isAdmin && <DockItem label="Belépések" icon={<AppIcon from="#94A3B8" to="#1E293B"><Lock stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "vault"} onClick={go("vault")} />}
 
         <div className="md-sep" />
 
-        <DockItem label="Üzenetek" icon={<Bubble />} active={tab === "inbox"} badge={inboxUnreadCount} onClick={go("inbox")} />
-        <DockItem label="Kliensek" icon={<People />} active={tab === "customers"} onClick={go("customers")} />
-        <DockItem label="Garancia" icon={<Shield />} active={tab === "warranty"} onClick={go("warranty")} />
+        <DockItem label="Üzenetek" icon={<AppIcon from="#34D399" to="#047857"><Bubble stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "inbox"} badge={inboxUnreadCount} onClick={go("inbox")} />
+        <DockItem label="Kliensek" icon={<AppIcon from="#F472B6" to="#DB2777"><People stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "customers"} onClick={go("customers")} />
+        <DockItem label="Garancia" icon={<AppIcon from="#818CF8" to="#4F46E5"><Shield stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "warranty"} onClick={go("warranty")} />
 
         <div className="md-sep" />
 
-        <DockItem label="Árulás" icon={<TrendCard />} active={tab === "finance"} onClick={go("finance")} />
-        {isAdmin && <DockItem label="Elszámolás" icon={<ClipboardCheck />} active={tab === "cash-settlement"} onClick={go("cash-settlement")} />}
-        {isAdmin && <DockItem label="Költségek" icon={<Wallet />} active={tab === "payroll"} onClick={go("payroll")} />}
-        <DockItem label="Számlák" icon={<Invoice />} active={tab === "invoices"} onClick={go("invoices")} />
-        {!isAdmin && <DockItem label="Szabadság" icon={<LeaveIcon />} active={tab === "leave"} onClick={go("leave")} />}
+        <DockItem label="Árulás" icon={<AppIcon from="#4B5563" to="#111827"><TrendCard stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "finance"} onClick={go("finance")} />
+        {isAdmin && <DockItem label="Elszámolás" icon={<AppIcon from="#FBBF24" to="#D97706"><ClipboardCheck stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "cash-settlement"} onClick={go("cash-settlement")} />}
+        {isAdmin && <DockItem label="Költségek" icon={<AppIcon from="#FCD34D" to="#B45309"><Wallet stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "payroll"} onClick={go("payroll")} />}
+        <DockItem label="Számlák" icon={<AppIcon from="#94A3B8" to="#475569"><Invoice stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "invoices"} onClick={go("invoices")} />
+        {!isAdmin && <DockItem label="Szabadság" icon={<AppIcon from="#2DD4BF" to="#0D9488"><LeaveIcon stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "leave"} onClick={go("leave")} />}
 
         {isAdmin && (
           <>
             <div className="md-sep" />
-            <DockCluster label="Webshop" icon={<Bag />} active={WEBSHOP_TABS.includes(tab)}>
-              <DockItem label="Felvásárlás" icon={<BuybackIcon />} active={tab === "buyback"} onClick={go("buyback")} />
-              <DockItem label="Szerviz árbecslő" icon={<RepairPriceIcon />} active={tab === "repair-prices"} onClick={go("repair-prices")} />
-              <DockItem label="Vélemények" icon={<ReviewsIcon />} active={tab === "reviews"} onClick={go("reviews")} />
+            <DockCluster label="Webshop" icon={<AppIcon from="#FB7185" to="#E11D48"><Bag stroke="#fff" width={22} height={22} /></AppIcon>} active={WEBSHOP_TABS.includes(tab)}>
+              <DockItem label="Felvásárlás" icon={<AppIcon from="#2DD4BF" to="#0D9488"><BuybackIcon stroke="#fff" width={20} height={20} /></AppIcon>} active={tab === "buyback"} onClick={go("buyback")} />
+              <DockItem label="Szerviz árbecslő" icon={<AppIcon from="#FB923C" to="#C2410C"><RepairPriceIcon stroke="#fff" width={20} height={20} /></AppIcon>} active={tab === "repair-prices"} onClick={go("repair-prices")} />
+              <DockItem label="Vélemények" icon={<AppIcon from="#FDE047" to="#CA8A04"><ReviewsIcon stroke="#fff" width={20} height={20} /></AppIcon>} active={tab === "reviews"} onClick={go("reviews")} />
             </DockCluster>
-            <DockCluster label="Admin" icon={<Lock />} active={ADMIN_TABS.includes(tab)}>
-              <DockItem label="Áttekintés" icon={<DashboardIcon />} active={tab === "dashboard"} onClick={go("dashboard")} />
-              <DockItem label="Szabadság" icon={<LeaveIcon />} active={tab === "leave"} onClick={go("leave")} />
-              <DockItem label="Felhasználók" icon={<UsersNavIcon />} active={tab === "users"} onClick={go("users")} />
-              <DockItem label="Belépések" icon={<LockIcon />} active={tab === "vault"} onClick={go("vault")} />
-              <DockItem label="Kuka" icon={<TrashNavIcon />} active={tab === "trash"} onClick={go("trash")} />
+            <DockCluster label="Admin" icon={<AppIcon from="#94A3B8" to="#1E293B"><Lock stroke="#fff" width={22} height={22} /></AppIcon>} active={ADMIN_TABS.includes(tab)}>
+              <DockItem label="Áttekintés" icon={<AppIcon from="#60A5FA" to="#2563EB"><DashboardIcon stroke="#fff" width={20} height={20} /></AppIcon>} active={tab === "dashboard"} onClick={go("dashboard")} />
+              <DockItem label="Szabadság" icon={<AppIcon from="#2DD4BF" to="#0D9488"><LeaveIcon stroke="#fff" width={20} height={20} /></AppIcon>} active={tab === "leave"} onClick={go("leave")} />
+              <DockItem label="Felhasználók" icon={<AppIcon from="#C084FC" to="#7E22CE"><UsersNavIcon stroke="#fff" width={20} height={20} /></AppIcon>} active={tab === "users"} onClick={go("users")} />
+              <DockItem label="Belépések" icon={<AppIcon from="#94A3B8" to="#1E293B"><LockIcon stroke="#fff" width={20} height={20} /></AppIcon>} active={tab === "vault"} onClick={go("vault")} />
+              <DockItem label="Kuka" icon={<AppIcon from="#F87171" to="#B91C1C"><TrashNavIcon stroke="#fff" width={20} height={20} /></AppIcon>} active={tab === "trash"} onClick={go("trash")} />
             </DockCluster>
           </>
         )}

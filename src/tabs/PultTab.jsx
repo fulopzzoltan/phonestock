@@ -1,36 +1,28 @@
-import { useMemo } from "react";
-import { today, phoneCode, displayName, money } from "../lib/utils";
-import { NoteIcon, PartsIcon, PhoneCaseIcon, LeaveIcon, CustomersIcon, ServiceIcon } from "../components/icons";
+import { useMemo, useState } from "react";
+import { today, displayName, money } from "../lib/utils";
+import { NoteIcon, LeaveIcon } from "../components/icons";
 import NoteComposer from "../components/NoteComposer";
 import NoteCard from "../components/NoteCard";
 import WaitingList from "../components/WaitingList";
-import HistorySection from "../components/HistorySection";
+import ClosedNotesPopover from "../components/ClosedNotesPopover";
 import { EmptyState } from "../components/EmptyState";
 
 const LEAVE_SOON_DAYS = 14;
-const REQUEST_TYPE_LABEL = { return: "Visszaküldés", warranty_claim: "Garancia-igény" };
-const REQUEST_STATUS_CLS = { uj: "st-alkatresz", attekintve: "st-garancialis" };
-const REQUEST_NEXT = { uj: "attekintve", attekintve: "lezarva" };
-const REQUEST_NEXT_LABEL = { uj: "Áttekintve", attekintve: "Lezárva" };
 
 export default function PultTab({
-  effectiveLocFilter, locName, filteredTickets, setDetailId,
-  notes, addNote, completeNote, reopenNote, deleteNote,
-  waitingItems, addWaitingItem, advanceWaiting, deleteWaitingItem,
-  users, currentUserId, tickets, stock, parts, customersTable, warranties,
-  upcomingLeave, customerRequests, advanceCustomerRequest,
+  effectiveLocFilter, filteredTickets, setDetailId,
+  notes, addNote, completeNote, deleteNote,
+  waitingItems, addWaitingItem, advanceWaiting,
+  users, currentUserId, tickets, stock, parts, customersTable, warranties, locName,
+  upcomingLeave,
   webOrders, confirmWebOrder, cancelWebOrder, completeWebOrder,
   onOpenTicket, onOpenProduct, onOpenPart, onOpenCustomer, onOpenWarranty,
-  setTicketModal, setStockModal,
 }) {
+  const [noteOpen, setNoteOpen] = useState(false);
   const promisedToday = useMemo(() => {
     const t0 = today();
     return filteredTickets.filter((t) => t.status !== "Átadásra" && (t.dueDate === t0 || t.handoverDate === t0));
   }, [filteredTickets]);
-
-  const reservedPhones = useMemo(() => {
-    return stock.filter((i) => i.status === "in_stock" && i.stockStatus === "lefoglalt" && (effectiveLocFilter === "all" || i.locationId === effectiveLocFilter));
-  }, [stock, effectiveLocFilter]);
 
   const leaveSoon = useMemo(() => {
     const horizon = new Date();
@@ -51,150 +43,84 @@ export default function PultTab({
   const attentionCount = webOrders.length + promisedToday.length + readyWaiting.length;
 
   return (
-    <div className="pb-wrap">
-      <div className="pb-rail-col">
-      <div className="pb-rail">
-        <div className="pb-rail-hero"><span className="n">{attentionCount}</span><span className="l">tennivaló ma</span></div>
-        <div className="pb-rail-sub">Webes rendelés, ígért munka és kész várakozás egy sávban</div>
-        <div className="pb-chips">
-          <div className="pb-chip"><span className="d" style={{ background: "var(--info)" }} />Webes rendelés <b>{webOrders.length}</b></div>
-          <div className="pb-chip"><span className="d" style={{ background: "var(--primary)" }} />Ígért munka ma <b>{promisedToday.length}</b></div>
-          <div className="pb-chip"><span className="d" style={{ background: "#7C3AED" }} />Kész várakozás <b>{readyWaiting.length}</b></div>
+    <div className="pb-row3">
+      <div className="pult-section">
+        <div className="pb-stat-head">
+          <span className="pb-stat-n">{attentionCount}</span><span className="pb-stat-l">tennivaló ma</span>
         </div>
-        <div className="pb-rail-list">
-          {attentionCount === 0 && <div className="pb-rail-empty">Nincs ma sürgős tétel.</div>}
-
-          {webOrders.map((o) => (
-            <div key={`web-${o.id}`} className="pb-rail-row">
-              <div className="top">
-                <span className="name">#{o.orderNo} {o.guestName}</span>
-                <span className="amt">{money(o.totalAmount)}</span>
-              </div>
-              <div className="sub">{o.items.map((it) => [it.brand, it.model].filter(Boolean).join(" ")).join(", ")}</div>
-              <div className="sub">{o.guestPhone} · {o.locationName}</div>
-              <div className="actions">
-                {o.status === "fizetve" && <button type="button" className="pb-rail-btn" onClick={() => confirmWebOrder(o.id)}>Előkészítve</button>}
-                {o.status === "visszaigazolva" && <button type="button" className="pb-rail-btn" onClick={() => completeWebOrder(o.id)}>Átadva</button>}
-                <button type="button" className="pb-rail-btn" onClick={() => cancelWebOrder(o.id)}>Lemondás</button>
-              </div>
-            </div>
-          ))}
-
-          {promisedToday.map((t) => (
-            <div key={`job-${t.id}`} className="pb-rail-row job" onClick={() => setDetailId(t.id)}>
-              <div className="top">
-                <span className="name">{t.customerName}</span>
-                <span className="amt">{money(t.price)}</span>
-              </div>
-              <div className="sub">{displayName(t.brand, t.model) || "—"}</div>
-            </div>
-          ))}
-
-          {readyWaiting.map((w) => (
-            <div key={`ready-${w.id}`} className="pb-rail-row ready">
-              <div className="top"><span className="name">{w.description}</span></div>
-              <div className="sub">{w.customerName || "—"}{w.supplier ? ` · ${w.supplier}` : ""} — megérkezett</div>
-              <div className="actions">
-                <button type="button" className="pb-rail-btn" onClick={() => advanceWaiting(w.id, "ertesitve")}>Értesítettük</button>
-              </div>
-            </div>
-          ))}
+        <div className="pb-stat-chips">
+          <div className="pb-stat-chip"><span className="l"><span className="d" style={{ background: "var(--info)" }} />Webes rendelés</span><b>{webOrders.length}</b></div>
+          <div className="pb-stat-chip"><span className="l"><span className="d" style={{ background: "var(--primary)" }} />Ígért munka ma</span><b>{promisedToday.length}</b></div>
+          <div className="pb-stat-chip"><span className="l"><span className="d" style={{ background: "#7C3AED" }} />Kész várakozás</span><b>{readyWaiting.length}</b></div>
         </div>
+
+        {attentionCount === 0 ? (
+          <div className="pb-stat-empty">Nincs ma sürgős tétel.</div>
+        ) : (
+          <div className="pb-stat-list">
+            {webOrders.map((o) => (
+              <div key={`web-${o.id}`} className="pb-stat-row">
+                <div className="top">
+                  <span className="name">#{o.orderNo} {o.guestName}</span>
+                  <span className="amt">{money(o.totalAmount)}</span>
+                </div>
+                <div className="sub">{o.items.map((it) => [it.brand, it.model].filter(Boolean).join(" ")).join(", ")}</div>
+                <div className="sub">{o.guestPhone} · {o.locationName}</div>
+                <div className="actions">
+                  {o.status === "fizetve" && <button type="button" className="pb-stat-btn" onClick={() => confirmWebOrder(o.id)}>Előkészítve</button>}
+                  {o.status === "visszaigazolva" && <button type="button" className="pb-stat-btn" onClick={() => completeWebOrder(o.id)}>Átadva</button>}
+                  <button type="button" className="pb-stat-btn" onClick={() => cancelWebOrder(o.id)}>Lemondás</button>
+                </div>
+              </div>
+            ))}
+
+            {promisedToday.map((t) => (
+              <div key={`job-${t.id}`} className="pb-stat-row job" onClick={() => setDetailId(t.id)}>
+                <div className="top">
+                  <span className="name">{t.customerName}</span>
+                  <span className="amt">{money(t.price)}</span>
+                </div>
+                <div className="sub">{displayName(t.brand, t.model) || "—"}</div>
+              </div>
+            ))}
+
+            {readyWaiting.map((w) => (
+              <div key={`ready-${w.id}`} className="pb-stat-row ready">
+                <div className="top"><span className="name">{w.description}</span></div>
+                <div className="sub">{w.customerName || "—"}{w.supplier ? ` · ${w.supplier}` : ""} — megérkezett</div>
+                <div className="actions">
+                  <button type="button" className="pb-stat-btn" onClick={() => advanceWaiting(w.id, "ertesitve")}>Értesítettük</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {leaveSoon.length > 0 && (
-          <div className="pb-leave-banner">
-            <LeaveIcon width={15} height={15} />
+          <div className="pb-leave-note">
+            <LeaveIcon width={14} height={14} />
             {leaveSoon.length} kolléga szabadsága kezdődik a köv. {LEAVE_SOON_DAYS} napban
           </div>
         )}
       </div>
 
-        <div className="pult-section">
-          <div className="pult-section-head"><NoteIcon width={16} height={16} />Cetlik{openNotes.length > 0 && <span className="cnt">{openNotes.length} nyitott</span>}</div>
-          <NoteComposer users={users} tickets={tickets} stock={stock} parts={parts} customersTable={customersTable} warranties={warranties} locName={locName} onSave={addNote} />
-          {openNotes.length === 0 ? <EmptyState icon={NoteIcon}>Nincs nyitott cetli.</EmptyState> : (
-            <div className="stk-grid">
-              {openNotes.map((n) => (
-                <NoteCard key={n.id} note={n} users={users} currentUserId={currentUserId} onComplete={() => completeNote(n.id)} onDelete={() => deleteNote(n.id)}
-                  onOpenLink={{ ticket: onOpenTicket, product: onOpenProduct, part: onOpenPart, customer: onOpenCustomer, warranty: onOpenWarranty }} />
-              ))}
-            </div>
-          )}
-          <div style={{ marginTop: 10 }}>
-            <HistorySection icon={NoteIcon} label="Elintézett cetlik" items={doneNotes} filterFn={(n, q) => n.body.toLowerCase().includes(q)}>
-              {(rows) => (
-                <div className="stk-grid" style={{ padding: 12 }}>
-                  {rows.map((n) => <NoteCard key={n.id} note={n} users={users} currentUserId={currentUserId} done onReopen={() => reopenNote(n.id)} />)}
-                </div>
-              )}
-            </HistorySection>
+      <div className="pult-section">
+        {openNotes.length === 0 ? <EmptyState icon={NoteIcon}>Nincs nyitott cetli.</EmptyState> : (
+          <div className="stk-grid">
+            {openNotes.map((n) => (
+              <NoteCard key={n.id} note={n} users={users} currentUserId={currentUserId} onComplete={() => completeNote(n.id)} onDelete={() => deleteNote(n.id)}
+                onOpenLink={{ ticket: onOpenTicket, product: onOpenProduct, part: onOpenPart, customer: onOpenCustomer, warranty: onOpenWarranty }} />
+            ))}
           </div>
+        )}
+        <div className="wl-foot" style={{ marginTop: 10 }}>
+          {!noteOpen && <ClosedNotesPopover items={doneNotes} />}
+          <NoteComposer users={users} tickets={tickets} stock={stock} parts={parts} customersTable={customersTable} warranties={warranties} locName={locName} onSave={addNote} open={noteOpen} setOpen={setNoteOpen} />
         </div>
       </div>
 
-      <div className="pb-side">
-        <div className="pb-mini-grid">
-          <div className="pult-section">
-            <div className="pult-section-head"><PhoneCaseIcon width={16} height={16} />Lefoglalt telefonok{reservedPhones.length > 0 && <span className="cnt">{reservedPhones.length}</span>}</div>
-            {reservedPhones.length === 0 ? <EmptyState icon={PhoneCaseIcon}>Nincs lefoglalt telefon.</EmptyState> : (
-              <div className="tw">
-                {reservedPhones.map((i) => (
-                  <div key={i.id} className="dp-row" style={{ padding: "10px 14px", cursor: "pointer" }} onClick={() => onOpenProduct(i.id)}>
-                    <span className="dp-key">
-                      {displayName(i.brand, i.model)} <span style={{ color: "#9CA3AF" }}>· {phoneCode(i.productNo)}</span>
-                      {effectiveLocFilter === "all" && <span className="badge-loc" style={{ marginLeft: 8 }}>{locName(i.locationId)}</span>}
-                    </span>
-                    <span className="mono" style={{ fontWeight: 700 }}>{money(i.salePrice)}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="pult-section">
-            <div className="pult-section-head"><CustomersIcon width={16} height={16} />Ügyfél-kérések{customerRequests.length > 0 && <span className="cnt">{customerRequests.length}</span>}</div>
-            {customerRequests.length === 0 ? <div className="pult-empty-slim">Nincs nyitott ügyfél-kérés.</div> : (
-              <div className="tw">
-                {customerRequests.map((r) => (
-                  <div key={r.id} className="dp-row" style={{ padding: "10px 14px" }}>
-                    <span className="dp-key">
-                      <span className={`st ${REQUEST_STATUS_CLS[r.status] || "st-alkatresz"}`} style={{ marginRight: 8 }}>{REQUEST_TYPE_LABEL[r.type] || r.type}</span>
-                      {r.customerName}{r.customerPhone ? ` · ${r.customerPhone}` : ""} — {r.description}
-                    </span>
-                    <span style={{ display: "flex", gap: 6 }}>
-                      {REQUEST_NEXT[r.status] && <button type="button" className="btn sec sm" onClick={() => advanceCustomerRequest(r.id, REQUEST_NEXT[r.status])}>{REQUEST_NEXT_LABEL[r.status]}</button>}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="pult-section">
-            <div className="pult-section-head">Gyors indítás</div>
-            <div className="pb-quick-actions">
-              <button type="button" className="btn" onClick={() => setTicketModal("add")}>
-                <ServiceIcon width={15} height={15} />Új munkalap
-              </button>
-              <button type="button" className="btn sec" onClick={() => setStockModal("add")}>
-                <PhoneCaseIcon width={15} height={15} />Új termék
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="pult-section">
-          <div className="pult-section-head"><PartsIcon width={16} height={16} />Várakozik valamire{activeWaiting.length > 0 && <span className="cnt">{activeWaiting.length}</span>}</div>
-          <WaitingList items={activeWaiting} customers={customersTable} onAdd={addWaitingItem} onAdvance={advanceWaiting} onDelete={deleteWaitingItem} />
-          <HistorySection icon={PartsIcon} label="Lezárt várakozások" items={closedWaiting} filterFn={(w, q) => [w.description, w.customerName].filter(Boolean).join(" ").toLowerCase().includes(q)}>
-            {(rows) => (
-              <table>
-                <thead><tr><th>Tétel</th><th>Kinek</th><th>Forrás</th></tr></thead>
-                <tbody>{rows.map((w) => <tr key={w.id}><td>{w.description}</td><td>{w.customerName || "—"}</td><td>{w.supplier || "—"}</td></tr>)}</tbody>
-              </table>
-            )}
-          </HistorySection>
-        </div>
+      <div className="pult-section">
+        <WaitingList items={activeWaiting} closedItems={closedWaiting} customers={customersTable} onAdd={addWaitingItem} onAdvance={advanceWaiting} />
       </div>
     </div>
   );

@@ -1763,10 +1763,10 @@ function AppShell() {
   }
 
   // PULT: CETLIK
-  async function addNote(body, { assignedTo, dueScope, link }) {
+  async function addNote(body, { color, link }) {
     await withBusy(async () => {
       const r = unwrap(await supabase.from("board_notes").insert({
-        body, author_id: user.id, assigned_to_id: assignedTo, due_scope: dueScope || null,
+        body, author_id: user.id, color,
         linked_ticket_id: link?.type === "ticket" ? link.id : null,
         linked_product_id: link?.type === "product" ? link.id : null,
         linked_part_id: link?.type === "part" ? link.id : null,
@@ -2904,9 +2904,11 @@ function AppShell() {
     inboxMessages.filter((m) => m.direction === "in" && !m.readAt).map((m) => `${m.channel}:${m.phoneNorm || m.senderPsid}`)
   ).size;
 
+  const useMacDock = tab === "pult" || tab === "refurb";
+
   return (
-    <div className={`shell${tab === "pult" ? " mac-pult" : ""}`}>
-      {tab === "pult" ? (
+    <div className={`shell${useMacDock ? " mac-pult" : ""}`}>
+      {useMacDock ? (
         <MacDock tab={tab} setTab={setTab} isAdmin={isAdmin} inboxUnreadCount={inboxUnreadCount} refurbCount={refurbCount} />
       ) : (
         <Sidebar
@@ -3041,7 +3043,7 @@ function AppShell() {
           </>
         ) : null}
       />
-      <div className={`main${tab === "pult" ? " mac-pult-content" : ""}`}>
+      <div className={`main${useMacDock ? " mac-pult-content" : ""}`}>
         {error && <div className="errbar">{error}</div>}
         {info && <div className="banner ok">{info} <button type="button" className="banner-close" onClick={() => setInfo("")}><CloseIcon width={12} height={12} /></button></div>}
         {noLocationAssigned && (
@@ -3052,7 +3054,7 @@ function AppShell() {
           <PultTab
             effectiveLocFilter={effectiveLocFilter} locName={locName} filteredTickets={filteredTickets} setDetailId={setDetailId}
             notes={notes} addNote={addNote} completeNote={completeNote} reopenNote={reopenNote} deleteNote={deleteNote}
-            waitingItems={waitingItems} addWaitingItem={addWaitingItem} advanceWaiting={advanceWaiting} deleteWaitingItem={deleteWaitingItem}
+            waitingItems={waitingItems} addWaitingItem={addWaitingItem} advanceWaiting={advanceWaiting}
             users={users} currentUserId={profile?.id} tickets={tickets} stock={stock} parts={parts} customersTable={customersTable} warranties={warranties}
             upcomingLeave={upcomingLeave}
             customerRequests={customerRequests} advanceCustomerRequest={advanceCustomerRequest}
