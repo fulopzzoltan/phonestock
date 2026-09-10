@@ -215,6 +215,17 @@ td{padding:12px 16px;border-bottom:1px solid #F3F4F6;vertical-align:middle}
 .tw-apple th.num-col{text-align:right}
 .tw-apple .st{background:transparent;padding:0;gap:6px;font-size:11.5px}
 .tw-apple .st::before{content:"";width:7px;height:7px;border-radius:999px;background:currentColor;flex-shrink:0}
+
+.apple-page{font-family:-apple-system,BlinkMacSystemFont,'Inter','Helvetica Neue',Arial,sans-serif;letter-spacing:-.006em}
+.apple-page .tw{border-radius:12px}
+.apple-page .searchbar{border-radius:999px;height:36px;padding:0 15px;box-sizing:border-box;max-width:280px}
+.apple-page .scan-trigger{border-radius:999px;height:36px}
+.apple-page .status-seg{background:transparent;gap:8px;padding:0}
+.apple-page .status-seg button{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:999px;height:36px;padding:0 14px;color:#48484A}
+.apple-page .status-seg button .cnt{color:#86868B}
+.apple-page .status-seg button.active{background:#1D1D1F;color:#fff;box-shadow:none;border-color:#1D1D1F}
+.apple-page .status-seg button.active .cnt{color:rgba(255,255,255,.7)}
+.apple-page .history-toggle{border-radius:12px;height:44px;padding:0 16px}
 .num-col{text-align:right}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:#FAFAFA}
