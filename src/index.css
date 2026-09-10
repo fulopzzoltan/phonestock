@@ -1680,6 +1680,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 
 .mac-pult-content{background:#f6f7f9;padding:26px 30px 150px;scrollbar-width:none;border-bottom-left-radius:20px;border-bottom-right-radius:20px}
 .mac-pult-content::-webkit-scrollbar{display:none}
+.mac-pult-content > *{max-width:1400px;margin-left:auto;margin-right:auto}
 .mac-pult-content .pb-row3{max-width:1180px;margin-left:auto;margin-right:auto}
 .mac-pult-content .pult-section{border-radius:14px;border-color:rgba(0,0,0,.08);box-shadow:0 1px 2px rgba(16,24,40,.04), 0 10px 24px rgba(16,24,40,.05)}
 .mac-pult-content .dp-row{padding:11px 0}
