@@ -1,7 +1,7 @@
 // Közös, újrahasznosítható táblázat: desktopon <table>, 640px alatt automatikusan a már
 // bevált .mob-cards/.mob-row kártyás nézetre vált (ugyanaz a CSS-minta, mint a
 // TransactionsPeriodList.jsx-ben) — hogy mobilon ne kelljen oldalra görgetni egy táblát.
-export default function ResponsiveTable({ columns, rows, rowKey, renderRow, renderMobileRow, wrap = true }) {
+export default function ResponsiveTable({ columns, rows, rowKey, renderRow, renderMobileRow, wrap = true, className = "" }) {
   const content = (
     <>
       <table>
@@ -13,5 +13,5 @@ export default function ResponsiveTable({ columns, rows, rowKey, renderRow, rend
       </div>
     </>
   );
-  return wrap ? <div className="tw">{content}</div> : content;
+  return wrap ? <div className={`tw${className ? ` ${className}` : ""}`}>{content}</div> : content;
 }

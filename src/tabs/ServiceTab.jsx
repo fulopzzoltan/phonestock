@@ -89,6 +89,7 @@ export default function ServiceTab({
           ));
           return (
             <ResponsiveTable
+              className="tw-apple"
               columns={[
                 { key: "n", label: "Sorszám", className: "col-serial" }, { key: "d", label: "Eszköz", className: "col-device" }, { key: "c", label: "Kliens" }, { key: "i", label: "Bejött" },
                 { key: "p", label: "Probléma", className: "col-grow" }, { key: "s", label: "Státusz", className: "col-status" }, { key: "a", label: "Ár" }, { key: "x", label: "" },
