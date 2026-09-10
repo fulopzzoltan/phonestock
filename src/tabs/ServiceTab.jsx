@@ -2,7 +2,6 @@ import { useState } from "react";
 import { money, STATUSES, SUB_STATUSES, statusLabel, statusCls, subStatusCls, subStatusLabel, displayName, ticketCode, daysOnShelf, slaInfo, isStaleReady } from "../lib/utils";
 import { SearchIcon, ServiceIcon, ClockIcon, WarrantyIcon, ChevronRightIcon, CheckIcon, ScanIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
-import HistorySection from "../components/HistorySection";
 import ResponsiveTable from "../components/ResponsiveTable";
 import HandoverPaymentModal from "../components/HandoverPaymentModal";
 
@@ -25,6 +24,8 @@ export default function ServiceTab({
 }) {
   const [listStatus, setListStatus] = useState(STATUSES[0].key);
   const [handoverPrompt, setHandoverPrompt] = useState(null);
+  const [showHandedOver, setShowHandedOver] = useState(false);
+  const [handedOverQuery, setHandedOverQuery] = useState("");
 
   function runAction(t, na) {
     if (na.subStatus === "Átadva" && (Number(t.price) || 0) > 0) {
@@ -50,7 +51,51 @@ export default function ServiceTab({
             );
           })}
         </div>
+        <button type="button" className={`btn sec history-toolbar-btn${showHandedOver ? " active" : ""}`} onClick={() => setShowHandedOver((v) => !v)}>
+          <ServiceIcon width={14} height={14} />
+          Átadott munkalapok <span className="cnt">{handedOverTickets.length}</span>
+        </button>
       </div>
+
+      {showHandedOver && (
+        <div className="tw tw-apple" style={{ marginBottom: 16 }}>
+          <div style={{ padding: "10px 12px", borderBottom: "1px solid #F3F4F6" }}>
+            <div className="searchbar" style={{ margin: 0, maxWidth: "none" }}>
+              <SearchIcon width={13} height={13} />
+              <input value={handedOverQuery} onChange={(e) => setHandedOverQuery(e.target.value)} placeholder="Keresés..." autoFocus />
+            </div>
+          </div>
+          {(() => {
+            const q = handedOverQuery.trim().toLowerCase();
+            const rows = q
+              ? handedOverTickets.filter((t) => [t.customerName, t.brand, t.model, ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))].filter(Boolean).join(" ").toLowerCase().includes(q))
+              : handedOverTickets;
+            if (rows.length === 0) return <EmptyState icon={ServiceIcon}>Nincs találat.</EmptyState>;
+            return (
+              <table>
+                <thead><tr><th className="col-serial">Sorszám</th><th>Eszköz</th><th>Helyszín</th><th>Bejött</th><th>Átadva</th><th>Vevő</th><th className="num-col">Díj</th></tr></thead>
+                <tbody>
+                  {rows.map((t) => (
+                    <tr key={t.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
+                      <td className="mono col-serial" style={{ color: "#9CA3AF", whiteSpace: "nowrap" }}>{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</td>
+                      <td>
+                        <div className="stk-name">
+                          {displayName(t.brand, t.model) || "—"}
+                        </div>
+                      </td>
+                      <td><span className="badge-loc">{locName(t.locationId)}</span></td>
+                      <td className="mono">{t.dateIn}</td>
+                      <td className="mono">{t.dateOut || "—"}</td>
+                      <td>{t.customerName}</td>
+                      <td className="row-price">{money(t.price)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            );
+          })()}
+        </div>
+      )}
 
       <div className="tw tw-apple">
       {loadingData ? <LoadingState /> : (
@@ -190,36 +235,6 @@ export default function ServiceTab({
           );
         })()
       )}
-      <HistorySection
-        attached
-        icon={ServiceIcon}
-        label="Átadott munkalapok"
-        items={handedOverTickets}
-        filterFn={(t, q) => [t.customerName, t.brand, t.model, ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))].filter(Boolean).join(" ").toLowerCase().includes(q)}
-      >
-        {(rows) => (
-          <table>
-            <thead><tr><th className="col-serial">Sorszám</th><th>Eszköz</th><th>Helyszín</th><th>Bejött</th><th>Átadva</th><th>Vevő</th><th className="num-col">Díj</th></tr></thead>
-            <tbody>
-              {rows.map((t) => (
-                <tr key={t.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
-                  <td className="mono col-serial" style={{ color: "#9CA3AF", whiteSpace: "nowrap" }}>{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</td>
-                  <td>
-                    <div className="stk-name">
-                      {displayName(t.brand, t.model) || "—"}
-                    </div>
-                  </td>
-                  <td><span className="badge-loc">{locName(t.locationId)}</span></td>
-                  <td className="mono">{t.dateIn}</td>
-                  <td className="mono">{t.dateOut || "—"}</td>
-                  <td>{t.customerName}</td>
-                  <td className="row-price">{money(t.price)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </HistorySection>
       </div>
       {handoverPrompt && (
         <HandoverPaymentModal

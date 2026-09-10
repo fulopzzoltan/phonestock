@@ -151,34 +151,7 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
 .btn.sm{padding:7px 12px;font-size:12px}
 .btn.danger{background:#EF4444;box-shadow:0 4px 12px rgba(239,68,68,.25)}
 .btn.danger:hover{background:#DC2626}
-
-/* "Új munkalap" gomb — csavarkulcs meghúz hoverre, kattintásra szikrázva pörög */
-.svc-add-btn{position:relative;overflow:visible;transition:transform .18s ease,box-shadow .18s ease,background .15s}
-.svc-add-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 22px rgba(29,185,84,.38)}
-.svc-add-btn.firing{animation:svc-squish .5s ease}
-.svc-add-icon{display:flex;transform-origin:60% 55%}
-.svc-add-btn:hover:not(:disabled) .svc-add-icon{animation:svc-tighten .6s ease-in-out}
-.svc-add-btn.firing .svc-add-icon{animation:svc-spin-fast .5s ease}
-.svc-add-label-wrap{display:inline-grid}
-.svc-add-label-wrap>span{grid-area:1/1;white-space:nowrap;transition:opacity .22s ease}
-.svc-add-label-hover{opacity:0}
-.svc-add-btn:hover:not(:disabled) .svc-add-label-idle{opacity:0}
-.svc-add-btn:hover:not(:disabled) .svc-add-label-hover{opacity:1}
-.svc-add-btn.firing .svc-add-label-wrap{animation:svc-jitter .5s ease}
-.svc-spark{position:absolute;left:19px;top:50%;width:5px;height:5px;border-radius:50%;opacity:0;pointer-events:none}
-.svc-add-btn.firing .svc-spark{animation:svc-spark-fly .6s ease-out forwards}
-.svc-spark.s1{--dx:-22px;--dy:-16px;background:#FDE68A}
-.svc-spark.s2{--dx:2px;--dy:-26px;background:#FCA5A5}
-.svc-spark.s3{--dx:22px;--dy:-14px;background:#FDE68A}
-.svc-spark.s4{--dx:-18px;--dy:14px;background:#FCA5A5}
-.svc-spark.s5{--dx:0px;--dy:24px;background:#FDE68A}
-.svc-spark.s6{--dx:20px;--dy:16px;background:#FCA5A5}
-
-@keyframes svc-tighten{0%{transform:rotate(0deg)}30%{transform:rotate(-22deg)}60%{transform:rotate(14deg)}100%{transform:rotate(0deg)}}
-@keyframes svc-spin-fast{0%{transform:rotate(0deg) scale(1)}60%{transform:rotate(380deg) scale(1.15)}100%{transform:rotate(360deg) scale(1)}}
-@keyframes svc-squish{0%{transform:scale(1)}30%{transform:scale(.94)}60%{transform:scale(1.05)}100%{transform:scale(1)}}
-@keyframes svc-spark-fly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
-@keyframes svc-jitter{0%,100%{transform:translateX(0)}20%{transform:translateX(-1.5px)}40%{transform:translateX(1.5px)}60%{transform:translateX(-1px)}80%{transform:translateX(1px)}}
+.pill-btn{border-radius:999px;height:34px;padding:0 16px;box-sizing:border-box}
 
 /* STAT ROW */
 .statrow{display:grid;gap:14px;margin-bottom:22px}
@@ -225,7 +198,10 @@ td{padding:12px 16px;border-bottom:1px solid #F3F4F6;vertical-align:middle}
 .apple-page .status-seg button .cnt{color:#86868B}
 .apple-page .status-seg button.active{background:#1D1D1F;color:#fff;box-shadow:none;border-color:#1D1D1F}
 .apple-page .status-seg button.active .cnt{color:rgba(255,255,255,.7)}
-.apple-page .history-toggle{border-radius:12px;height:44px;padding:0 16px}
+.history-toolbar-btn{margin-left:auto;display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:999px;height:36px;padding:0 15px;color:#48484A;font-size:12.5px;font-weight:600;box-shadow:none}
+.history-toolbar-btn .cnt{color:#86868B;font-variant-numeric:tabular-nums}
+.history-toolbar-btn.active{background:#1D1D1F;color:#fff;border-color:#1D1D1F}
+.history-toolbar-btn.active .cnt{color:rgba(255,255,255,.7)}
 .num-col{text-align:right}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:#FAFAFA}
@@ -267,8 +243,6 @@ tr:hover td{background:#FAFAFA}
 .row-price-sub{font-family:'Inter',sans-serif;font-weight:600;font-size:10px;color:#9CA3AF;white-space:nowrap;margin-top:1px}
 .toggle-link:hover{color:var(--accent-dark)}
 .history-toggle{display:flex;align-items:center;gap:8px;width:100%;background:#fff;border:1px solid #EEF0F2;border-radius:14px;padding:12px 16px;font-family:inherit;font-size:13px;font-weight:600;color:#374151;cursor:pointer;box-shadow:var(--shadow-card)}
-.history-toggle-attached{background:transparent;border:none;box-shadow:none;border-radius:0;border-top:1px solid #F3F4F6;padding:12px 18px}
-.history-toggle-attached:last-child{border-radius:0 0 12px 12px}
 .history-toggle:hover{border-color:#D1D5DB}
 .quick-sale-btn{display:inline-flex;align-items:center;gap:6px;background:#F7F8FA;border:1px solid #E5E7EB;border-radius:12px;padding:9px 15px;font-family:inherit;font-size:12.5px;font-weight:600;color:#374151;cursor:pointer;transition:background .12s,border-color .12s,color .12s}
 .quick-sale-btn:hover{background:#F0FDF4;border-color:#BBF7D0;color:var(--accent-dark)}
@@ -689,6 +663,7 @@ tr:hover td{background:#FAFAFA}
 /* QR/vonalkód-szkennelés — ld. QR_SZKENNELES_ES_NYOMTATO_JAVASLAT.md. Sötét, teli-képernyős
    kameranézet (nem a sima .modal fehér-kártya minta), mert a kamerakép önmagában ad kontrasztot. */
 .scan-trigger{flex-shrink:0;height:33.5px;padding:0 12px}
+@media (min-width:641px){.scan-trigger{display:none}}
 .scan-overlay{position:fixed;inset:0;background:rgba(10,10,12,.92);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px}
 .scan-modal{width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px}
 .scan-head{display:flex;align-items:center;justify-content:space-between;color:#fff;font-size:14px;font-weight:700}

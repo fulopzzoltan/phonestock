@@ -214,7 +214,6 @@ function AppShell() {
   const { messages: chatMessages, unreadCount: chatUnread, send: sendChatMessage, markRead: markChatRead } = useInternalChat(profile);
   const [search, setSearch] = useState("");
   const [svcSearch, setSvcSearch] = useState("");
-  const [svcAddFiring, setSvcAddFiring] = useState(false);
   const [partSearch, setPartSearch] = useState("");
   const [refurbSearch, setRefurbSearch] = useState("");
   const [custSearch, setCustSearch] = useState("");
@@ -2942,7 +2941,7 @@ function AppShell() {
         pageHeader={tab === "stock" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Telefonok</div>
-            <button className="btn" style={{ padding: "8px 14px" }} disabled={busy} onClick={() => setStockModal("add")}>+ Új termék</button>
+            <button className="btn pill-btn" disabled={busy} onClick={() => setStockModal("add")}>+ Új termék</button>
           </>
         ) : tab === "parts" ? (
           <>
@@ -2968,23 +2967,8 @@ function AppShell() {
         ) : tab === "service" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Szerviz</div>
-            <button
-              className={`btn svc-add-btn${svcAddFiring ? " firing" : ""}`}
-              style={{ padding: "8px 14px" }}
-              disabled={busy}
-              onClick={() => {
-                setSvcAddFiring(true);
-                setTimeout(() => setSvcAddFiring(false), 650);
-                setTicketModal("add");
-              }}
-            >
-              <span className="svc-add-icon"><ServiceIcon width={14} height={14} /></span>
-              <span className="svc-add-label-wrap">
-                <span className="svc-add-label-idle">Új munkalap</span>
-                <span className="svc-add-label-hover">Javíts meg, te állat!</span>
-              </span>
-              <span className="svc-spark s1" /><span className="svc-spark s2" /><span className="svc-spark s3" />
-              <span className="svc-spark s4" /><span className="svc-spark s5" /><span className="svc-spark s6" />
+            <button type="button" className="btn pill-btn" disabled={busy} onClick={() => setTicketModal("add")}>
+              <ServiceIcon width={14} height={14} />Új munkalap
             </button>
           </>
         ) : tab === "buyback" ? (
