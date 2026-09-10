@@ -2904,7 +2904,7 @@ function AppShell() {
     inboxMessages.filter((m) => m.direction === "in" && !m.readAt).map((m) => `${m.channel}:${m.phoneNorm || m.senderPsid}`)
   ).size;
 
-  const useMacDock = tab === "pult" || tab === "refurb";
+  const useMacDock = true;
 
   return (
     <div className={`shell${useMacDock ? " mac-pult" : ""}`}>
