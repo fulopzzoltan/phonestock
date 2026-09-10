@@ -78,7 +78,7 @@ function GlobalSearch({ stock, tickets, customersTable, parts, warranties, onOpe
   return (
     <div className="ctb-search-wrap" ref={wrapRef}>
       <div className="ctb-search">
-        <SearchIcon width={13} height={13} />
+        <SearchIcon width={12} height={12} />
         <input
           value={query}
           onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
@@ -152,8 +152,8 @@ export default function ContentTopbar({
       {isAdmin ? (
         <div className="loc-drop-wrap" ref={locMenuRef}>
           <button type="button" className="loc-drop" onClick={() => setLocMenuOpen((v) => !v)}>
-            <span className="loc-drop-left"><PinIcon width={12} height={12} />{currentLocLabel}</span>
-            <ChevronDownIcon width={10} height={10} />
+            <span className="loc-drop-left"><PinIcon width={11} height={11} />{currentLocLabel}</span>
+            <ChevronDownIcon width={9} height={9} />
           </button>
           {locMenuOpen && (
             <div className="loc-drop-menu">
@@ -165,11 +165,11 @@ export default function ContentTopbar({
           )}
         </div>
       ) : (
-        <div className="loc-drop static"><span className="loc-drop-left"><PinIcon width={12} height={12} />{currentLocLabel}</span></div>
+        <div className="loc-drop static"><span className="loc-drop-left"><PinIcon width={11} height={11} />{currentLocLabel}</span></div>
       )}
 
       <a className="util-icon-btn" href={SITE_URL} target="_blank" rel="noopener noreferrer" title="Webshop megtekintése">
-        <ExternalLinkIcon width={14} height={14} />
+        <ExternalLinkIcon width={13} height={13} />
       </a>
 
       <button
@@ -178,7 +178,7 @@ export default function ContentTopbar({
         title="Csapat-chat"
         onClick={() => { setChatOpen((o) => !o); if (!chatOpen) markChatRead(); }}
       >
-        <ChatIcon width={15} height={15} />
+        <ChatIcon width={14} height={14} />
         {chatUnread > 0 && <span className="ctb-chat-badge">{chatUnread > 9 ? "9+" : chatUnread}</span>}
       </button>
 
@@ -189,7 +189,7 @@ export default function ContentTopbar({
             <div className="user-name">{profile?.fullName || user?.email}</div>
             <div className="user-role">{roleLabel}</div>
           </div>
-          <ChevronDownIcon width={10} height={10} />
+          <ChevronDownIcon width={9} height={9} />
         </button>
         {userMenuOpen && (
           <div className="loc-drop-menu user-chip-menu">
