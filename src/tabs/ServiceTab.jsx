@@ -92,7 +92,7 @@ export default function ServiceTab({
               className="tw-apple"
               columns={[
                 { key: "n", label: "Sorszám", className: "col-serial" }, { key: "d", label: "Eszköz", className: "col-device" }, { key: "c", label: "Kliens" }, { key: "i", label: "Bejött" },
-                { key: "p", label: "Probléma", className: "col-grow" }, { key: "s", label: "Státusz", className: "col-status" }, { key: "a", label: "Ár" }, { key: "x", label: "" },
+                { key: "p", label: "Probléma", className: "col-grow" }, { key: "s", label: "Státusz", className: "col-status" }, { key: "a", label: "Ár", className: "num-col" }, { key: "x", label: "" },
               ]}
               rows={items}
               rowKey={(t) => t.id}
@@ -190,6 +190,7 @@ export default function ServiceTab({
         })()
       )}
       <HistorySection
+        className="tw-apple"
         icon={ServiceIcon}
         label="Átadott munkalapok"
         items={handedOverTickets}
@@ -197,7 +198,7 @@ export default function ServiceTab({
       >
         {(rows) => (
           <table>
-            <thead><tr><th className="col-serial">Sorszám</th><th>Eszköz</th><th>Helyszín</th><th>Bejött</th><th>Átadva</th><th>Vevő</th><th>Díj</th></tr></thead>
+            <thead><tr><th className="col-serial">Sorszám</th><th>Eszköz</th><th>Helyszín</th><th>Bejött</th><th>Átadva</th><th>Vevő</th><th className="num-col">Díj</th></tr></thead>
             <tbody>
               {rows.map((t) => (
                 <tr key={t.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
@@ -211,7 +212,7 @@ export default function ServiceTab({
                   <td className="mono">{t.dateIn}</td>
                   <td className="mono">{t.dateOut || "—"}</td>
                   <td>{t.customerName}</td>
-                  <td className="mono" style={{ fontWeight: 700 }}>{money(t.price)}</td>
+                  <td className="row-price">{money(t.price)}</td>
                 </tr>
               ))}
             </tbody>

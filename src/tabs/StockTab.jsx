@@ -93,7 +93,7 @@ export default function StockTab({
               {collapsed ? null : (
                 <ResponsiveTable
                   className="tw-apple"
-                  columns={[{ key: "n", label: "Sorszám", className: "col-serial" },{ key: "p", label: "Termék", className: "col-device" }, { key: "s", label: "Specifikáció", className: "col-grow" }, { key: "a", label: "Ár" }, { key: "x", label: "" }]}
+                  columns={[{ key: "n", label: "Sorszám", className: "col-serial" },{ key: "p", label: "Termék", className: "col-device" }, { key: "s", label: "Specifikáció", className: "col-grow" }, { key: "a", label: "Ár", className: "num-col" }, { key: "x", label: "" }]}
                   rows={items}
                   rowKey={(i) => i.id}
                   renderRow={(i) => (
@@ -158,6 +158,7 @@ export default function StockTab({
       )}
 
       <HistorySection
+        className="tw-apple"
         icon={PhoneCaseIcon}
         label="Eladott telefonok"
         items={soldStock}
@@ -166,7 +167,7 @@ export default function StockTab({
         {(rows) => (
           <ResponsiveTable
             wrap={false}
-            columns={[{ key: "n", label: "Sorszám", className: "col-serial" },{ key: "p", label: "Termék" }, { key: "l", label: "Helyszín" }, { key: "d", label: "Eladva" }, { key: "c", label: "Vevő" }, { key: "a", label: "Ár" }]}
+            columns={[{ key: "n", label: "Sorszám", className: "col-serial" },{ key: "p", label: "Termék" }, { key: "l", label: "Helyszín" }, { key: "d", label: "Eladva" }, { key: "c", label: "Vevő" }, { key: "a", label: "Ár", className: "num-col" }]}
             rows={rows}
             rowKey={(i) => i.id}
             renderRow={(i) => (
@@ -181,7 +182,7 @@ export default function StockTab({
                 <td><span className="badge-loc">{locName(i.locationId)}</span></td>
                 <td className="mono">{i.saleTx?.date || "—"}</td>
                 <td>{i.saleTx?.customerName || "—"}</td>
-                <td className="mono" style={{ fontWeight: 700 }}>{money(i.salePrice)}</td>
+                <td className="row-price">{money(i.salePrice)}</td>
               </tr>
             )}
             renderMobileRow={(i) => (
