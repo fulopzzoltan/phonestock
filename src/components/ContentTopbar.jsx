@@ -138,6 +138,7 @@ export default function ContentTopbar({
 
   return (
     <div className="content-topbar">
+    <div className="ctb-inner">
       {pageHeader}
       <div className="ctb-spacer" />
 
@@ -201,6 +202,7 @@ export default function ContentTopbar({
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 }
