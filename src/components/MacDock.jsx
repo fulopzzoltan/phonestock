@@ -37,7 +37,7 @@ function DockItem({ label, icon, active, badge, onClick }) {
     <button type="button" className={`md-item${active ? " active" : ""}`} onClick={onClick} title={label}>
       <span className="md-label">{label}</span>
       {icon}
-      {badge > 0 && <span className="md-badge">{badge > 9 ? "9+" : badge}</span>}
+      {badge > 0 && <span className="md-badge">{badge}</span>}
       <span className="md-dot" />
     </button>
   );
@@ -48,7 +48,7 @@ function DockCluster({ label, icon, active, badge, children }) {
     <div className={`md-item md-cluster${active ? " active" : ""}`}>
       <span className="md-label">{label}</span>
       {icon}
-      {badge > 0 && <span className="md-badge">{badge > 9 ? "9+" : badge}</span>}
+      {badge > 0 && <span className="md-badge">{badge}</span>}
       <span className="md-dot" />
       <div className="md-flyout">{children}</div>
     </div>

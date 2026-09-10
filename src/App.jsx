@@ -2423,6 +2423,13 @@ function AppShell() {
     return t;
   }, [tickets, effectiveLocFilter, svcSearch]);
 
+  const attentionCount = useMemo(() => {
+    const t0 = today();
+    const promisedTodayCount = filteredTickets.filter((t) => t.status !== "Átadásra" && (t.dueDate === t0 || t.handoverDate === t0)).length;
+    const readyWaitingCount = waitingItems.filter((w) => w.status === "megerkezett").length;
+    return webOrders.length + promisedTodayCount + readyWaitingCount;
+  }, [filteredTickets, waitingItems, webOrders]);
+
   const stockStats = useMemo(() => ({
     count: filteredStock.length,
     value: filteredStock.reduce((s, i) => s + (Number(i.salePrice) || 0), 0),
@@ -2932,6 +2939,7 @@ function AppShell() {
         tab={tab} setTab={setTab} isAdmin={isAdmin} locFilter={locFilter} setLocFilter={setLocFilter}
         allowedLocations={allowedLocations} myLocationId={myLocationId} locName={locName} profile={profile} user={user}
         signOut={signOut} chatOpen={chatOpen} setChatOpen={setChatOpen} chatUnread={chatUnread} markChatRead={markChatRead}
+        attentionCount={attentionCount}
         stock={stock} tickets={tickets} customersTable={customersTable} parts={parts} warranties={activeWarranties}
         onOpenProduct={(id) => setProductDetailId(id)}
         onOpenTicket={(id) => setDetailId(id)}

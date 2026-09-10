@@ -74,13 +74,13 @@ export default function PartsTab({
         {(rows) => (
           <ResponsiveTable
             wrap={false}
-            columns={[{ key: "p", label: "Alkatrész" }, { key: "t", label: "Munkalap" }, { key: "c", label: "Vevő" }, { key: "q", label: "Menny." }, { key: "a", label: "Ár" }, { key: "d", label: "Dátum" }]}
+            columns={[{ key: "t", label: "Munkalap", className: "col-serial" }, { key: "p", label: "Alkatrész" }, { key: "c", label: "Vevő" }, { key: "q", label: "Menny." }, { key: "a", label: "Ár" }, { key: "d", label: "Dátum" }]}
             rows={rows}
             rowKey={(sp) => sp.id}
             renderRow={(sp) => (
               <tr key={sp.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(sp.ticket.id)}>
+                <td className="mono col-serial" style={{ color: "#9CA3AF", whiteSpace: "nowrap" }}>{ticketCode(sp.ticket.ticketNo, locName(sp.ticket.intakeLocationId || sp.ticket.locationId))}</td>
                 <td style={{ fontWeight: 600 }}>{sp.partName}</td>
-                <td>{ticketCode(sp.ticket.ticketNo, locName(sp.ticket.intakeLocationId || sp.ticket.locationId))}</td>
                 <td>{sp.ticket.customerName || "—"}</td>
                 <td style={{ fontWeight: 700 }}>{sp.quantity} db</td>
                 <td className="row-price">{money((sp.costPrice || 0) * sp.quantity)}</td>
@@ -90,11 +90,13 @@ export default function PartsTab({
             renderMobileRow={(sp) => (
               <div className="mob-row" onClick={() => setDetailId(sp.ticket.id)}>
                 <div className="mob-row-top">
-                  <div className="mob-row-main"><span>{sp.partName}</span></div>
+                  <div className="mob-row-main">
+                    <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{ticketCode(sp.ticket.ticketNo, locName(sp.ticket.intakeLocationId || sp.ticket.locationId))}</span>
+                    <span>{sp.partName}</span>
+                  </div>
                   <div className="mob-row-amount">{money((sp.costPrice || 0) * sp.quantity)}</div>
                 </div>
                 <div className="mob-row-sub">
-                  <span>{ticketCode(sp.ticket.ticketNo, locName(sp.ticket.intakeLocationId || sp.ticket.locationId))}</span>
                   <span>{sp.ticket.customerName || "—"}</span>
                   <span>{sp.quantity} db</span>
                   <span>{(sp.usedAt || "").slice(0, 10) || "—"}</span>

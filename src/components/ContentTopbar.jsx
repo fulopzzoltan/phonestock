@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { SettingsIcon, LogoutIcon, PinIcon, ChevronDownIcon, ExternalLinkIcon, ChatIcon, SearchIcon } from "./icons";
+import { SettingsIcon, LogoutIcon, PinIcon, ChevronDownIcon, ExternalLinkIcon, ChatIcon, BellIcon, SearchIcon } from "./icons";
 import { SITE_URL, displayName, phoneCode, ticketCode, partCode, normalizeImei, formatPhone } from "../lib/utils";
 
 // Globális kereső: egyszerre keres a Készlet, Szerviz, Ügyfelek, Alkatrészek és
@@ -107,7 +107,7 @@ function GlobalSearch({ stock, tickets, customersTable, parts, warranties, onOpe
 // ezek az elemek a tartalom-hasáb tetején, oldal-fejléc fölött legyenek elérhetők.
 export default function ContentTopbar({
   tab, setTab, isAdmin, locFilter, setLocFilter, allowedLocations, myLocationId, locName,
-  profile, user, signOut, chatOpen, setChatOpen, chatUnread, markChatRead, pageHeader,
+  profile, user, signOut, chatOpen, setChatOpen, chatUnread, markChatRead, pageHeader, attentionCount = 0,
   stock, tickets, customersTable, parts, warranties, onOpenProduct, onOpenTicket, onOpenCustomer, onOpenPart, onOpenWarranty,
 }) {
   const [locMenuOpen, setLocMenuOpen] = useState(false);
@@ -171,6 +171,13 @@ export default function ContentTopbar({
       <a className="util-icon-btn" href={SITE_URL} target="_blank" rel="noopener noreferrer" title="Webshop megtekintése">
         <ExternalLinkIcon width={13} height={13} />
       </a>
+
+      {attentionCount > 0 && (
+        <button type="button" className="util-icon-btn ctb-bell-btn" title="Mai tennivalók" onClick={() => setTab("pult")}>
+          <BellIcon width={14} height={14} />
+          <span className="ctb-chat-badge">{attentionCount > 9 ? "9+" : attentionCount}</span>
+        </button>
+      )}
 
       <button
         type="button"
