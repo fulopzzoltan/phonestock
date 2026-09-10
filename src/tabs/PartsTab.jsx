@@ -34,7 +34,7 @@ export default function PartsTab({
   }, [filteredParts, catFilter]);
 
   return (
-    <>
+    <div className="apple-page">
 
       <div className="filter-row">
         <div className="searchbar"><SearchIcon /><input value={partSearch} onChange={(e) => setPartSearch(e.target.value)} /></div>
@@ -56,7 +56,7 @@ export default function PartsTab({
         </div>
       </div>
 
-      {loadingData ? <div className="tw"><LoadingState /></div> : catFiltered.length === 0 ? <div className="tw"><EmptyState icon={PartsIcon}>Nincs találat.</EmptyState></div> : (
+      {loadingData ? <div className="tw tw-apple"><LoadingState /></div> : catFiltered.length === 0 ? <div className="tw tw-apple"><EmptyState icon={PartsIcon}>Nincs találat.</EmptyState></div> : (
         CATS.map((cat) => {
           const items = sortItems(cat === "Egyéb"
             ? catFiltered.filter((p) => !PART_CATEGORIES.includes(p.category))
@@ -70,6 +70,7 @@ export default function PartsTab({
                 </div>
               </div>
               <ResponsiveTable
+                className="tw-apple"
                 columns={[{ key: "n", label: "Sorszám", className: "col-serial" }, { key: "p", label: "Alkatrész", className: "col-grow" }, { key: "s", label: "Forrás" }, { key: "c", label: "Beérk. ár" }, { key: "x", label: "" }]}
                 rows={items}
                 rowKey={(p) => p.id}
@@ -112,6 +113,7 @@ export default function PartsTab({
       )}
 
       <HistorySection
+        className="tw-apple"
         icon={PartsIcon}
         label="Felhasznált alkatrészek"
         items={allUsedParts}
@@ -150,6 +152,6 @@ export default function PartsTab({
           />
         )}
       </HistorySection>
-    </>
+    </div>
   );
 }

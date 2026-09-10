@@ -2955,12 +2955,12 @@ function AppShell() {
         ) : tab === "customers" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Kliensek</div>
-            <button className="btn" style={{ padding: "8px 14px" }} disabled={busy} onClick={() => setCustomerModal("add")}>+ Új ügyfél</button>
+            <button className="btn pill-btn" disabled={busy} onClick={() => setCustomerModal("add")}>+ Új ügyfél</button>
           </>
         ) : tab === "warranty" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Garancia</div>
-            <button className="btn" style={{ padding: "8px 14px" }} disabled={busy} onClick={() => setWarrantyModal("add")}>+ Garancia felvétele</button>
+            <button className="btn pill-btn" disabled={busy} onClick={() => setWarrantyModal("add")}>+ Garancia felvétele</button>
           </>
         ) : tab === "dashboard" ? (
           <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Áttekintés</div>

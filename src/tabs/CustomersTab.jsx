@@ -6,16 +6,16 @@ export default function CustomersTab({
   effectiveLocFilter, locName, custSearch, setCustSearch, loadingData, customers, setCustomerKey,
 }) {
   return (
-    <>
+    <div className="apple-page">
       <div className="filter-row">
         <div className="searchbar"><SearchIcon /><input value={custSearch} onChange={(e) => setCustSearch(e.target.value)} /></div>
       </div>
 
-      <div className="tw">
+      <div className="tw tw-apple">
         {loadingData ? <LoadingState /> : customers.length === 0 ? <EmptyState icon={CustomersIcon}>Nincs ügyfél.</EmptyState> : (
           <>
             <table>
-              <thead><tr><th>Név</th><th className="col-grow">Telefonszám</th><th>Vásárlások</th><th>Szerviz</th><th style={{ textAlign: "right" }}>Utolsó aktivitás</th></tr></thead>
+              <thead><tr><th>Név</th><th className="col-grow">Telefonszám</th><th>Vásárlások</th><th>Szerviz</th><th>Utolsó aktivitás</th></tr></thead>
               <tbody>
                 {customers.map((c) => (
                   <tr key={c.key} style={{ cursor: "pointer" }} onClick={() => setCustomerKey(c.key)}>
@@ -28,7 +28,7 @@ export default function CustomersTab({
                     <td className="mono" style={{ whiteSpace: "nowrap" }}>{formatPhone(c.phone) || "—"}</td>
                     <td style={{ whiteSpace: "nowrap" }}>{c.purchases.length} db · <span className="mono">{money(c.purchaseTotal)}</span></td>
                     <td style={{ whiteSpace: "nowrap" }}>{c.tickets.length} db · <span className="mono">{money(c.ticketTotal)}</span></td>
-                    <td className="mono" style={{ color: "#6B7280", whiteSpace: "nowrap", textAlign: "right" }}>{c.lastActivity || "—"}</td>
+                    <td className="mono" style={{ color: "#6B7280", whiteSpace: "nowrap" }}>{c.lastActivity || "—"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -54,6 +54,6 @@ export default function CustomersTab({
           </>
         )}
       </div>
-    </>
+    </div>
   );
 }

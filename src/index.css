@@ -181,13 +181,13 @@ td{padding:12px 16px;border-bottom:1px solid #F3F4F6;vertical-align:middle}
 .tw-compact td{padding:7px 14px}
 .tw-apple table{font-family:-apple-system,BlinkMacSystemFont,'Inter','Helvetica Neue',Arial,sans-serif;letter-spacing:-.006em}
 .tw-apple th{padding:0 18px;height:34px;font-size:10.5px;color:#86868B;background:#fff;border-bottom:1px solid #F2F2F4;text-align:left}
-.tw-apple td{padding:17px 18px;font-size:13px;border-bottom:0.5px solid rgba(0,0,0,.07);vertical-align:top}
+.tw-apple td{padding:17px 18px;font-size:13px;border-bottom:0.5px solid rgba(0,0,0,.07);vertical-align:middle}
 .tw-apple .mono{font-family:-apple-system,BlinkMacSystemFont,'Inter','Helvetica Neue',Arial,sans-serif;font-variant-numeric:tabular-nums}
 .tw-apple .row-price{font-family:-apple-system,BlinkMacSystemFont,'Inter','Helvetica Neue',Arial,sans-serif;font-variant-numeric:tabular-nums;text-align:left}
 .tw-apple td.row-price,.tw-apple td.num-col{text-align:left}
 .tw-apple th.num-col{text-align:left}
 .tw-apple .col-serial{text-align:left;padding-right:18px}
-.tw-apple .st{background:transparent;padding:0;gap:6px;font-size:11.5px}
+.tw-apple .st{background:transparent;padding:0;gap:6px;font-size:11.5px;align-items:center}
 .tw-apple .st::before{content:"";width:7px;height:7px;border-radius:999px;background:currentColor;flex-shrink:0}
 
 .apple-page{font-family:-apple-system,BlinkMacSystemFont,'Inter','Helvetica Neue',Arial,sans-serif;letter-spacing:-.006em}
@@ -199,6 +199,9 @@ td{padding:12px 16px;border-bottom:1px solid #F3F4F6;vertical-align:middle}
 .apple-page .status-seg button .cnt{color:#86868B}
 .apple-page .status-seg button.active{background:#1D1D1F;color:#fff;box-shadow:none;border-color:#1D1D1F}
 .apple-page .status-seg button.active .cnt{color:rgba(255,255,255,.7)}
+.apple-page .seg{background:transparent;gap:8px;padding:0}
+.apple-page .seg button{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:999px;height:36px;padding:0 14px;color:#48484A}
+.apple-page .seg button.active{background:#1D1D1F;color:#fff}
 .history-toolbar-btn{margin-left:auto;display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:999px;height:36px;padding:0 15px;color:#48484A;font-size:12.5px;font-weight:600;box-shadow:none}
 .history-toolbar-btn .cnt{color:#86868B;font-variant-numeric:tabular-nums}
 .history-toolbar-btn.active{background:#1D1D1F;color:#fff;border-color:#1D1D1F}

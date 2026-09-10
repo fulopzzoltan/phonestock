@@ -18,7 +18,7 @@ export default function WarrantyTab({
   }, [filteredWarranties, search]);
 
   return (
-    <>
+    <div className="apple-page">
       <div className="filter-row">
         <div className="searchbar"><SearchIcon /><input value={search} onChange={(e) => setSearch(e.target.value)} /></div>
         <div className="seg">
@@ -28,7 +28,7 @@ export default function WarrantyTab({
         </div>
       </div>
 
-      <div className="tw">
+      <div className="tw tw-apple">
         {loadingData ? <LoadingState /> : rows.length === 0 ? <EmptyState icon={WarrantyIcon}>Nincs aktív garancia.</EmptyState> : (
           <>
             <table>
@@ -63,6 +63,7 @@ export default function WarrantyTab({
       </div>
 
       <HistorySection
+        className="tw-apple"
         icon={WarrantyIcon}
         label="Lejárt garanciák"
         items={expiredWarranties}
@@ -84,6 +85,6 @@ export default function WarrantyTab({
           </table>
         )}
       </HistorySection>
-    </>
+    </div>
   );
 }
