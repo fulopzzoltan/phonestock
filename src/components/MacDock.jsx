@@ -55,7 +55,7 @@ function DockCluster({ label, icon, active, badge, children }) {
   );
 }
 
-export default function MacDock({ tab, setTab, isAdmin, inboxUnreadCount, refurbCount }) {
+export default function MacDock({ tab, setTab, isAdmin, inboxUnreadCount, refurbCount, attentionCount }) {
   function go(t) { return () => setTab(t); }
   const WEBSHOP_TABS = ["buyback", "repair-prices", "reviews"];
   const ADMIN_TABS = ["dashboard", "leave", "users", "vault", "trash"];
@@ -63,7 +63,7 @@ export default function MacDock({ tab, setTab, isAdmin, inboxUnreadCount, refurb
   return (
     <div className="md-wrap">
       <div className="md-dock">
-        <DockItem label="Pult" icon={<AppIcon from="#60A5FA" to="#2563EB"><Home stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "pult"} onClick={go("pult")} />
+        <DockItem label="Pult" icon={<AppIcon from="#60A5FA" to="#2563EB"><Home stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "pult"} badge={attentionCount} onClick={go("pult")} />
         <DockItem label="Szerviz" icon={<AppIcon from="#FB923C" to="#EA580C"><Wrench stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "service"} onClick={go("service")} />
         <DockItem label="Telefonok" icon={<AppIcon from="#22D3EE" to="#0891B2"><Phone stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "stock"} onClick={go("stock")} />
         <DockItem label="Alkatrészek" icon={<AppIcon from="#A78BFA" to="#7C3AED"><Chip stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "parts"} onClick={go("parts")} />

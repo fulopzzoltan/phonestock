@@ -2915,7 +2915,7 @@ function AppShell() {
   return (
     <div className={`shell${useMacDock ? " mac-pult" : ""}`}>
       {useMacDock ? (
-        <MacDock tab={tab} setTab={setTab} isAdmin={isAdmin} inboxUnreadCount={inboxUnreadCount} refurbCount={refurbCount} />
+        <MacDock tab={tab} setTab={setTab} isAdmin={isAdmin} inboxUnreadCount={inboxUnreadCount} refurbCount={refurbCount} attentionCount={attentionCount} />
       ) : (
         <Sidebar
           tab={tab} setTab={setTab} setTicketModal={setTicketModal} isAdmin={isAdmin}
@@ -2939,7 +2939,6 @@ function AppShell() {
         tab={tab} setTab={setTab} isAdmin={isAdmin} locFilter={locFilter} setLocFilter={setLocFilter}
         allowedLocations={allowedLocations} myLocationId={myLocationId} locName={locName} profile={profile} user={user}
         signOut={signOut} chatOpen={chatOpen} setChatOpen={setChatOpen} chatUnread={chatUnread} markChatRead={markChatRead}
-        attentionCount={attentionCount}
         stock={stock} tickets={tickets} customersTable={customersTable} parts={parts} warranties={activeWarranties}
         onOpenProduct={(id) => setProductDetailId(id)}
         onOpenTicket={(id) => setDetailId(id)}
