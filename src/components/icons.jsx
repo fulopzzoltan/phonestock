@@ -114,6 +114,13 @@ export const WarrantyIcon = (props) => (
   </svg>
 );
 
+export const FoliaIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <rect x="5" y="3" width="14" height="18" rx="2.5" />
+    <path d="M8.5 6.5 15 17" opacity=".55" />
+  </svg>
+);
+
 export const UsersNavIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...props}>
     <circle cx="9" cy="8" r="3.2" />

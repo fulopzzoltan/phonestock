@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { money, STATUSES, SUB_STATUSES, statusLabel, statusCls, subStatusCls, subStatusLabel, displayName, ticketCode, daysOnShelf, slaInfo, isStaleReady } from "../lib/utils";
-import { SearchIcon, ServiceIcon, ClockIcon, WarrantyIcon, ChevronRightIcon, CheckIcon, ScanIcon } from "../components/icons";
+import { SearchIcon, ServiceIcon, ClockIcon, WarrantyIcon, FoliaIcon, ChevronRightIcon, CheckIcon, ScanIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import ResponsiveTable from "../components/ResponsiveTable";
 import HandoverPaymentModal from "../components/HandoverPaymentModal";
@@ -51,7 +51,7 @@ export default function ServiceTab({
             );
           })}
         </div>
-        <button type="button" className={`btn sec history-toolbar-btn${showHandedOver ? " active" : ""}`} onClick={() => setShowHandedOver((v) => !v)}>
+        <button type="button" className={`history-toolbar-btn${showHandedOver ? " active" : ""}`} onClick={() => setShowHandedOver((v) => !v)}>
           <ServiceIcon width={14} height={14} />
           Átadott munkalapok <span className="cnt">{handedOverTickets.length}</span>
         </button>
@@ -158,6 +158,11 @@ export default function ServiceTab({
                           <WarrantyIcon width={11} height={11} />
                         </span>
                       )}
+                      {t.folia && (
+                        <span className="t-folia" style={{ marginLeft: 6 }} title="Fólia felhelyezve">
+                          <FoliaIcon width={13} height={13} />
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td style={{ whiteSpace: "nowrap" }}>{kliensOf(t)}</td>
@@ -202,6 +207,11 @@ export default function ServiceTab({
                       {t.isWarranty && (
                         <span className="t-kind-pill" style={{ background: "#EDE9FE", color: "#6D28D9", marginLeft: 6, marginBottom: 0 }} title={t.warrantyKind === "termék" ? "Garanciális — termék" : "Garanciális — szerviz"}>
                           <WarrantyIcon width={11} height={11} />
+                        </span>
+                      )}
+                      {t.folia && (
+                        <span className="t-folia" style={{ marginLeft: 6 }} title="Fólia felhelyezve">
+                          <FoliaIcon width={13} height={13} />
                         </span>
                       )}
                     </div>

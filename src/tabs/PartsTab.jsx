@@ -26,6 +26,7 @@ export default function PartsTab({
   allUsedParts = [], locName, setDetailId, onUsePart,
 }) {
   const [catFilter, setCatFilter] = useState("all");
+  const [showUsed, setShowUsed] = useState(false);
 
   const catFiltered = useMemo(() => {
     if (catFilter === "all") return filteredParts;
@@ -54,7 +55,55 @@ export default function PartsTab({
             );
           })}
         </div>
+        <button type="button" className={`history-toolbar-btn${showUsed ? " active" : ""}`} onClick={() => setShowUsed((v) => !v)}>
+          <PartsIcon width={14} height={14} />
+          Felhasznált alkatrészek <span className="cnt">{allUsedParts.length}</span>
+        </button>
       </div>
+
+      <HistorySection
+        hideToggle
+        open={showUsed}
+        onToggle={setShowUsed}
+        className="tw-apple"
+        icon={PartsIcon}
+        label="Felhasznált alkatrészek"
+        items={allUsedParts}
+        filterFn={(sp, q) => [sp.partName, sp.ticket.customerName, sp.ticket.brand, sp.ticket.model, ticketCode(sp.ticket.ticketNo, locName(sp.ticket.intakeLocationId || sp.ticket.locationId))].filter(Boolean).join(" ").toLowerCase().includes(q)}
+      >
+        {(rows) => (
+          <ResponsiveTable
+            wrap={false}
+            columns={[{ key: "p", label: "Alkatrész" }, { key: "t", label: "Munkalap" }, { key: "c", label: "Vevő" }, { key: "q", label: "Menny." }, { key: "a", label: "Ár" }, { key: "d", label: "Dátum" }]}
+            rows={rows}
+            rowKey={(sp) => sp.id}
+            renderRow={(sp) => (
+              <tr key={sp.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(sp.ticket.id)}>
+                <td style={{ fontWeight: 600 }}>{sp.partName}</td>
+                <td>{ticketCode(sp.ticket.ticketNo, locName(sp.ticket.intakeLocationId || sp.ticket.locationId))}</td>
+                <td>{sp.ticket.customerName || "—"}</td>
+                <td style={{ fontWeight: 700 }}>{sp.quantity} db</td>
+                <td className="row-price">{money((sp.costPrice || 0) * sp.quantity)}</td>
+                <td className="mono" style={{ color: "#9CA3AF" }}>{(sp.usedAt || "").slice(0, 10) || "—"}</td>
+              </tr>
+            )}
+            renderMobileRow={(sp) => (
+              <div className="mob-row" onClick={() => setDetailId(sp.ticket.id)}>
+                <div className="mob-row-top">
+                  <div className="mob-row-main"><span>{sp.partName}</span></div>
+                  <div className="mob-row-amount">{money((sp.costPrice || 0) * sp.quantity)}</div>
+                </div>
+                <div className="mob-row-sub">
+                  <span>{ticketCode(sp.ticket.ticketNo, locName(sp.ticket.intakeLocationId || sp.ticket.locationId))}</span>
+                  <span>{sp.ticket.customerName || "—"}</span>
+                  <span>{sp.quantity} db</span>
+                  <span>{(sp.usedAt || "").slice(0, 10) || "—"}</span>
+                </div>
+              </div>
+            )}
+          />
+        )}
+      </HistorySection>
 
       {loadingData ? <div className="tw tw-apple"><LoadingState /></div> : catFiltered.length === 0 ? <div className="tw tw-apple"><EmptyState icon={PartsIcon}>Nincs találat.</EmptyState></div> : (
         CATS.map((cat) => {
@@ -111,47 +160,6 @@ export default function PartsTab({
           );
         })
       )}
-
-      <HistorySection
-        className="tw-apple"
-        icon={PartsIcon}
-        label="Felhasznált alkatrészek"
-        items={allUsedParts}
-        filterFn={(sp, q) => [sp.partName, sp.ticket.customerName, sp.ticket.brand, sp.ticket.model, ticketCode(sp.ticket.ticketNo, locName(sp.ticket.intakeLocationId || sp.ticket.locationId))].filter(Boolean).join(" ").toLowerCase().includes(q)}
-      >
-        {(rows) => (
-          <ResponsiveTable
-            wrap={false}
-            columns={[{ key: "p", label: "Alkatrész" }, { key: "t", label: "Munkalap" }, { key: "c", label: "Vevő" }, { key: "q", label: "Menny." }, { key: "a", label: "Ár" }, { key: "d", label: "Dátum" }]}
-            rows={rows}
-            rowKey={(sp) => sp.id}
-            renderRow={(sp) => (
-              <tr key={sp.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(sp.ticket.id)}>
-                <td style={{ fontWeight: 600 }}>{sp.partName}</td>
-                <td>{ticketCode(sp.ticket.ticketNo, locName(sp.ticket.intakeLocationId || sp.ticket.locationId))}</td>
-                <td>{sp.ticket.customerName || "—"}</td>
-                <td style={{ fontWeight: 700 }}>{sp.quantity} db</td>
-                <td className="mono" style={{ fontWeight: 700 }}>{money((sp.costPrice || 0) * sp.quantity)}</td>
-                <td className="mono" style={{ color: "#9CA3AF" }}>{(sp.usedAt || "").slice(0, 10) || "—"}</td>
-              </tr>
-            )}
-            renderMobileRow={(sp) => (
-              <div className="mob-row" onClick={() => setDetailId(sp.ticket.id)}>
-                <div className="mob-row-top">
-                  <div className="mob-row-main"><span>{sp.partName}</span></div>
-                  <div className="mob-row-amount">{money((sp.costPrice || 0) * sp.quantity)}</div>
-                </div>
-                <div className="mob-row-sub">
-                  <span>{ticketCode(sp.ticket.ticketNo, locName(sp.ticket.intakeLocationId || sp.ticket.locationId))}</span>
-                  <span>{sp.ticket.customerName || "—"}</span>
-                  <span>{sp.quantity} db</span>
-                  <span>{(sp.usedAt || "").slice(0, 10) || "—"}</span>
-                </div>
-              </div>
-            )}
-          />
-        )}
-      </HistorySection>
     </div>
   );
 }
