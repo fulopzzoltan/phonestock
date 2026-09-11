@@ -25,9 +25,25 @@ function KpiColumn({ loc, locTx, expected, showHeading }) {
   return (
     <div style={{ marginBottom: 18 }}>
       {showHeading && <div style={{ fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 8 }}>{loc.name}</div>}
-      <div className="statcard accent" style={{ marginBottom: 8 }}>
-        <div className="lbl">{loc.name}</div>
-        <div className="val">{money(expected)}</div>
+      <div className="statcard accent" style={{ marginBottom: 8, position: "relative", overflow: "hidden" }}>
+        {loc.name === "Gyimes" && (
+          <svg viewBox="0 0 200 100" preserveAspectRatio="none" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} aria-hidden="true">
+            <defs>
+              <radialGradient id="gyimes-glow" cx="72%" cy="18%" r="55%">
+                <stop offset="0%" stopColor="#F7B267" stopOpacity="0.5" />
+                <stop offset="100%" stopColor="#F7B267" stopOpacity="0" />
+              </radialGradient>
+            </defs>
+            <rect x="0" y="0" width="200" height="100" fill="url(#gyimes-glow)" />
+            <polygon points="0,100 22,52 45,72 70,30 95,64 122,38 150,66 175,44 200,60 200,100" fill="#8794AD" opacity="0.4" />
+            <polygon points="0,100 30,70 60,45 85,80 115,52 140,86 200,50 200,100" fill="#5B6784" opacity="0.55" />
+            <polygon points="12,68 25,48 38,68" fill="#fff" opacity="0.5" />
+            <polygon points="80,62 92,42 104,62" fill="#fff" opacity="0.4" />
+            <polygon points="0,100 35,78 65,92 95,58 125,84 155,66 200,88 200,100" fill="#2E3548" opacity="0.75" />
+          </svg>
+        )}
+        <div className="lbl" style={{ position: "relative" }}>{loc.name}</div>
+        <div className="val" style={{ position: "relative" }}>{money(expected)}</div>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         <div className="statcard"><div className="lbl">Készpénz</div><div className="val" style={{ color: "#15803D" }}>{money(stats.incomeCash)}</div></div>
@@ -67,7 +83,7 @@ function LocationRecordBox({
       )}
 
       {showBasket && (
-        <div className="tw tw-compact" style={{ padding: 16, marginBottom: 16, minHeight: 92 }}>
+        <div className="tw tw-compact" style={{ padding: 16, marginBottom: 16, minHeight: 92, display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <BasketBody bb={bb} defaultLocId={defaultLocId} busy={busy} />
         </div>
       )}

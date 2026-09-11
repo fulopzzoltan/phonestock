@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CloseIcon, PlusIcon, MinusIcon } from "./icons";
+import { CloseIcon, PlusIcon, MinusIcon, ArrowUpRightIcon, ArrowDownRightIcon } from "./icons";
 import { CATEGORIES, INCOME_CATEGORIES, PAYMENTS } from "../lib/utils";
 
 // Kosár/blokk-alapú gyors rögzítő — a QuickSaleButtons + TransactionQuickAdd párost váltja.
@@ -105,9 +105,13 @@ export function BasketTopBar({ bb, defaultLocId, busy, smartQuickItems, onImport
         {bb.mode === "expense" && onImportPdf && (
           <button type="button" className="btn sec sm" disabled={busy} onClick={onImportPdf}>+ PDF</button>
         )}
-        <div className="seg mode-seg">
-          <button type="button" className={`seg-expense${bb.mode === "expense" ? " active" : ""}`} onClick={() => bb.setMode("expense")}>Kiadás</button>
-          <button type="button" className={`seg-income${bb.mode === "income" ? " active" : ""}`} onClick={() => bb.setMode("income")}>Bevétel</button>
+        <div className="mode-pills">
+          <button type="button" className={`mode-pill expense${bb.mode === "expense" ? " active" : ""}`} onClick={() => bb.setMode("expense")}>
+            <ArrowDownRightIcon width={14} height={14} /> Kiadás
+          </button>
+          <button type="button" className={`mode-pill income${bb.mode === "income" ? " active" : ""}`} onClick={() => bb.setMode("income")}>
+            <ArrowUpRightIcon width={14} height={14} /> Bevétel
+          </button>
         </div>
       </div>
     </div>

@@ -16,6 +16,18 @@ export const MinusIcon = (props) => (
   </svg>
 );
 
+export const ArrowUpRightIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <line x1="7" y1="17" x2="17" y2="7" /><polyline points="8 7 17 7 17 16" />
+  </svg>
+);
+
+export const ArrowDownRightIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <line x1="7" y1="7" x2="17" y2="17" /><polyline points="17 8 17 17 8 17" />
+  </svg>
+);
+
 export const ExternalLinkIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
     <path d="M18 13v6a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h6" /><path d="M15 3h6v6" /><path d="M10 14L21 3" />
