@@ -32,49 +32,41 @@ function LocationStats({ loc, locTx, showHeading }) {
   );
 }
 
-function LocationRecordBox({
-  loc, locTx, todayStr, locName, busy, setTxModal, deleteTransaction, setReceiptTxId, productConditionById,
-  todayClose, closeDay, reopenDay, showHeading, showBasket, defaultLocId, smartQuickItems, checkoutBasket,
-}) {
+// A "Nap zárása" gomb és a hozzá tartozó megerősítő/frissítő panel — kiemelve, hogy a
+// FinanceTab a legfelső sorban, a helyszínenkénti egyenleg-kártyák alatt jelenítse meg,
+// ne a tranzakciólista dobozába rejtve, ahol könnyen elveszett a görgetésben.
+function DayCloseControl({ loc, locTx, todayStr, busy, todayClose, closeDay, reopenDay }) {
   const [confirmingClose, setConfirmingClose] = useState(false);
   const stats = dayStats(locTx);
   const closeStale = todayClose && locTx.length > (todayClose.snapshotTxCount ?? 0);
 
-  const closeControls = (
-    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-      {todayClose && (
-        <span className="badge-loc" style={{ color: closeStale ? "#B45309" : "#15803D" }}>
-          {closeStale ? "⚠ Elavult zárás" : "✓ Lezárva"} {new Date(todayClose.closedAt).toLocaleTimeString("hu-HU", { hour: "2-digit", minute: "2-digit" })}-kor
-        </span>
-      )}
-      {todayClose ? (
-        <button type="button" className="btn sec sm" disabled={busy} onClick={() => reopenDay(todayClose.id)}>Visszavonás</button>
-      ) : locTx.length > 0 && !confirmingClose ? (
-        <button type="button" className="btn sm" onClick={() => setConfirmingClose(true)}>Nap zárása</button>
-      ) : null}
-    </div>
-  );
-
   return (
-    <div className="tw tw-compact" style={{ padding: 16, marginTop: 16 }}>
-      {showBasket ? (
-        showHeading && <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>Ma — {loc.name}</div>
-      ) : (
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12, gap: 10, flexWrap: "wrap" }}>
-          {showHeading && <div style={{ fontSize: 14, fontWeight: 700 }}>Ma — {loc.name}</div>}
-          <div style={{ marginLeft: "auto" }}>{closeControls}</div>
+    <div className="dcc">
+      <div className="dcc-row">
+        <span className="dcc-loc">{loc.name}</span>
+        {todayClose && (
+          <span className="badge-loc" style={{ color: closeStale ? "#B45309" : "#15803D" }}>
+            {closeStale ? "⚠ Elavult zárás" : "✓ Lezárva"} {new Date(todayClose.closedAt).toLocaleTimeString("hu-HU", { hour: "2-digit", minute: "2-digit" })}-kor
+          </span>
+        )}
+        <div style={{ marginLeft: "auto" }}>
+          {todayClose ? (
+            <button type="button" className="btn sec sm" disabled={busy} onClick={() => reopenDay(todayClose.id)}>Visszavonás</button>
+          ) : locTx.length > 0 && !confirmingClose ? (
+            <button type="button" className="btn sm" onClick={() => setConfirmingClose(true)}>Nap zárása</button>
+          ) : null}
         </div>
-      )}
+      </div>
 
       {closeStale && (
-        <div style={{ fontSize: 12.5, color: "#92400E", background: "#FEF3C7", borderRadius: "var(--radius-sm)", padding: "8px 12px", marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
+        <div className="dcc-stale">
           <span>{locTx.length - todayClose.snapshotTxCount} új tétel érkezett a zárás óta — érdemes újranézni.</span>
           <button type="button" className="btn sec sm" disabled={busy} onClick={() => closeDay(todayStr, loc.id)}>Zárás frissítése</button>
         </div>
       )}
 
       {!todayClose && confirmingClose && (
-        <div style={{ marginBottom: 12, background: "#F9FAFB", border: "1px solid #EEF0F2", borderRadius: 12, padding: 12 }}>
+        <div className="dcc-confirm">
           <div style={{ fontSize: 13, color: "#374151", marginBottom: 10 }}>
             Mai nap lezárása ({loc.name}): <b style={{ color: "#15803D" }}>+{money(stats.income)}</b> bevétel, <b style={{ color: "#B91C1C" }}>-{money(stats.expense)}</b> kiadás.
             Ezután is szerkeszthető marad, csak jelezve lesz, hogy átnézted.
@@ -92,10 +84,21 @@ function LocationRecordBox({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function LocationRecordBox({
+  loc, locTx, locName, busy, setTxModal, deleteTransaction, setReceiptTxId, productConditionById,
+  showHeading, showBasket, defaultLocId, smartQuickItems, checkoutBasket,
+}) {
+  return (
+    <div className="tw tw-compact" style={{ padding: 16, marginTop: 16 }}>
+      {showHeading && <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>Ma — {loc.name}</div>}
 
       {showBasket && (
         <div style={{ borderBottom: "1px solid #F3F4F6", paddingBottom: 14, marginBottom: 14 }}>
-          <BasketBar defaultLocId={defaultLocId} busy={busy} smartQuickItems={smartQuickItems} onCheckout={checkoutBasket} headerExtra={closeControls} />
+          <BasketBar defaultLocId={defaultLocId} busy={busy} smartQuickItems={smartQuickItems} onCheckout={checkoutBasket} />
         </div>
       )}
 
@@ -142,7 +145,7 @@ export default function FinanceTab({
   return (
     <>
       {cashByLocation.length > 0 && (
-        <div className={`statrow c${Math.min(Math.max(cashByLocation.length, 1), 6)}`} style={{ marginTop: 16, marginBottom: 22 }}>
+        <div className={`statrow c${Math.min(Math.max(cashByLocation.length, 1), 6)}`} style={{ marginTop: 16, marginBottom: 12 }}>
           {cashByLocation.map((c) => (
             <div key={c.id} className="statcard accent">
               <div className="lbl">{c.name}</div>
@@ -151,6 +154,21 @@ export default function FinanceTab({
           ))}
         </div>
       )}
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 22 }}>
+        {locsToShow.map((loc) => (
+          <DayCloseControl
+            key={loc.id}
+            loc={loc}
+            locTx={locTxByLoc[loc.id]}
+            todayStr={todayStr}
+            busy={busy}
+            todayClose={todayCloseFor(loc.id)}
+            closeDay={closeDay}
+            reopenDay={reopenDay}
+          />
+        ))}
+      </div>
 
       {locsToShow.map((loc) => (
         <LocationStats key={loc.id} loc={loc} locTx={locTxByLoc[loc.id]} showHeading={isAll} />
@@ -161,16 +179,12 @@ export default function FinanceTab({
           key={loc.id}
           loc={loc}
           locTx={locTxByLoc[loc.id]}
-          todayStr={todayStr}
           locName={locName}
           busy={busy}
           setTxModal={setTxModal}
           deleteTransaction={deleteTransaction}
           setReceiptTxId={setReceiptTxId}
           productConditionById={productConditionById}
-          todayClose={todayCloseFor(loc.id)}
-          closeDay={closeDay}
-          reopenDay={reopenDay}
           showHeading={isAll}
           showBasket={loc.id === basketLocId}
           defaultLocId={basketLocId}

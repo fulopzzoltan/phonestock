@@ -89,7 +89,7 @@ export default function MacDock({ tab, setTab, isAdmin, inboxUnreadCount, attent
         <div className="md-sep" />
 
         <DockItem label="Árulás" icon={<AppIcon from="#4B5563" to="#111827"><TrendCard stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "finance"} onClick={go("finance")} />
-        {isAdmin && <DockItem label="Elszámolás" icon={<AppIcon from="#FBBF24" to="#D97706"><ClipboardCheck stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "cash-settlement"} onClick={go("cash-settlement")} />}
+        {isAdmin && <DockItem label="Árulás" icon={<AppIcon from="#FBBF24" to="#D97706"><ClipboardCheck stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "cash-settlement"} onClick={go("cash-settlement")} />}
         {isAdmin && <DockItem label="Költségek" icon={<AppIcon from="#FCD34D" to="#B45309"><Wallet stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "payroll"} onClick={go("payroll")} />}
         <DockItem label="Számlák" icon={<AppIcon from="#94A3B8" to="#475569"><Invoice stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "invoices"} onClick={go("invoices")} />
         {!isAdmin && <DockItem label="Szabadság" icon={<AppIcon from="#2DD4BF" to="#0D9488"><LeaveIcon stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "leave"} onClick={go("leave")} />}

@@ -37,7 +37,7 @@ const MORE_SECTIONS = [
   {
     label: "Pénzügyek",
     items: [
-      { key: "cash-settlement", label: "Elszámolás", from: "#FBBF24", to: "#D97706", Icon: ClipboardCheck, adminOnly: true },
+      { key: "cash-settlement", label: "Árulás", from: "#FBBF24", to: "#D97706", Icon: ClipboardCheck, adminOnly: true },
       { key: "payroll", label: "Költségek", from: "#FCD34D", to: "#B45309", Icon: Wallet, adminOnly: true },
       { key: "invoices", label: "Számlák", from: "#94A3B8", to: "#475569", Icon: Invoice },
       { key: "leave", label: "Szabadság", from: "#2DD4BF", to: "#0D9488", Icon: LeaveIcon, employeeOnly: true },

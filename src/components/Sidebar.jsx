@@ -66,7 +66,7 @@ export default function Sidebar({
         <div className="nav-lbl">Pénzügyek</div>
         <button className={`navbtn ${tab === "finance" ? "active" : ""}`} onClick={() => go("finance")}><FinanceIcon className="nav-ic" />Cashflow</button>
         {isAdmin && (
-          <button className={`navbtn ${tab === "cash-settlement" ? "active" : ""}`} onClick={() => go("cash-settlement")}><CashSettlementIcon className="nav-ic" />Elszámolás</button>
+          <button className={`navbtn ${tab === "cash-settlement" ? "active" : ""}`} onClick={() => go("cash-settlement")}><CashSettlementIcon className="nav-ic" />Árulás</button>
         )}
         {isAdmin && (
           <button className={`navbtn ${tab === "payroll" ? "active" : ""}`} onClick={() => go("payroll")}><PayrollIcon className="nav-ic" />Költségek</button>

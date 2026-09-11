@@ -251,7 +251,7 @@ export default function CashSettlementTab({
     const summaryLine = transfers.length === 0
       ? "Nincs teendő, egyenlőek."
       : transfers.map((tr) => `${tr.fromName} ad át ${tr.toName}-nak ${money(tr.amount)}-t`).join("; ");
-    if (!confirm(`Elszámolás rögzítése (${periodStart} – ${periodEnd}): ${summaryLine} Rögzíted?`)) return;
+    if (!confirm(`Árulás rögzítése (${periodStart} – ${periodEnd}): ${summaryLine} Rögzíted?`)) return;
     // Megvárjuk a mentést, mielőtt bármit visszaállítanánk — enélkül a mezők a mentés
     // BEFEJEZŐDÉSE ELŐTT nullázódtak, ami korábban megtévesztő, érvénytelen dátum-
     // tartományt (és ezzel látszólagos hibát) eredményezett egy amúgy sikeres mentés után.
@@ -273,7 +273,7 @@ export default function CashSettlementTab({
     <>
       {justSaved && (
         <div style={{ fontSize: 13, color: "#15803D", background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: "var(--radius-md)", padding: "10px 14px", marginBottom: 16 }}>
-          Az elszámolás rögzítve. Az alábbi új időszak a következő elszámoláshoz készült elő — csak akkor nyomd meg újra a "Rögzítés" gombot, ha ehhez is van elszámolnivaló.
+          Az árulás rögzítve. Az alábbi új időszak a következő rögzítéshez készült elő — csak akkor nyomd meg újra a "Rögzítés" gombot, ha ehhez is van rögzítenivaló.
         </div>
       )}
       <form className="pult-section" style={{ marginBottom: 16 }} onSubmit={handleSubmit}>
@@ -345,13 +345,13 @@ export default function CashSettlementTab({
             <span className="badge-income">Kártyás: {money(cardIncome)}</span>
             <span className="badge-income">Utalásos: {money(transferIncome)}</span>
           </div>
-          <button type="submit" className="btn" disabled={busy || !periodValid || withBalance.length === 0}>Elszámolás rögzítése</button>
+          <button type="submit" className="btn" disabled={busy || !periodValid || withBalance.length === 0}>Árulás rögzítése</button>
         </div>
       </form>
 
       <HistorySection
         icon={FinanceIcon}
-        label="Korábbi elszámolások"
+        label="Korábbi árulások"
         items={cashSettlements}
         filterFn={(s, q) => [s.periodStart, s.periodEnd, ...(s.locationBreakdown || []).map((l) => l.location_name)].filter(Boolean).join(" ").toLowerCase().includes(q)}
       >

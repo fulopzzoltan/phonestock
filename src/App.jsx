@@ -3001,7 +3001,7 @@ function AppShell() {
         ) : tab === "buyback" ? (
           <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Felvásárlás</div>
         ) : tab === "cash-settlement" ? (
-          <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Elszámolás</div>
+          <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Árulás</div>
         ) : tab === "invoices" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Számlák</div>
@@ -3010,7 +3010,7 @@ function AppShell() {
         ) : tab === "finance" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Cashflow</div>
-            <button className="btn sec" style={{ padding: "8px 14px" }} disabled={busy} onClick={() => setPdfImportModal(true)}>+ Rendelés PDF-ből</button>
+            <button className="btn sec" style={{ padding: "8px 14px" }} disabled={busy} onClick={() => setPdfImportModal(true)}>+ PDF</button>
           </>
         ) : tab === "leave" ? (
           <>
