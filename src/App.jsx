@@ -211,7 +211,7 @@ function AppShell() {
   const [inviteModal, setInviteModal] = useState(false);
   const [inviteError, setInviteError] = useState("");
   const [changePasswordModal, setChangePasswordModal] = useState(false);
-  const [settings, setSettings] = useState({ smsOnTicketCreate: false, smsOnTicketReady: true, loyaltyFollowupEnabled: false, loyaltyFollowupDays: 3 });
+  const [settings, setSettings] = useState({ smsOnTicketCreate: false, smsOnTicketReady: true, loyaltyFollowupEnabled: false, loyaltyFollowupDays: 3, reviewRequestEnabled: false, reviewRequestDelayDays: 2 });
   const { messages: chatMessages, unreadCount: chatUnread, send: sendChatMessage, markRead: markChatRead } = useInternalChat(profile);
   const [search, setSearch] = useState("");
   const [svcSearch, setSvcSearch] = useState("");
@@ -834,6 +834,13 @@ function AppShell() {
       setTransactions([...newTxs, ...transactions]);
       setSellModal(null);
       if (customerId) await refreshCustomerLoyalty(customerId);
+      // mainTxId-t használjuk forrás-azonosítónak (nem a productId-t), hogy egy később
+      // visszavett és újra eladott telefonnál ne ütközzön a review_requests unique
+      // (source_type, source_id) megkötésébe — minden eladási tranzakció egyedi.
+      await scheduleReviewRequest({
+        sourceType: "eladas", sourceId: mainTxId, locationId: locId,
+        customerName: txData.customerName, customerPhone: txData.customerPhone,
+      });
     });
     if (smartbillInvoice && mainTxId) {
       const { data, error: fnError } = await supabase.functions.invoke("smartbill-issue-document", {
@@ -1363,6 +1370,8 @@ function AppShell() {
       if ("smsOnTicketReady" in patch) apiPatch.sms_on_ticket_ready = patch.smsOnTicketReady;
       if ("loyaltyFollowupEnabled" in patch) apiPatch.loyalty_followup_enabled = patch.loyaltyFollowupEnabled;
       if ("loyaltyFollowupDays" in patch) apiPatch.loyalty_followup_days = patch.loyaltyFollowupDays;
+      if ("reviewRequestEnabled" in patch) apiPatch.review_request_enabled = patch.reviewRequestEnabled;
+      if ("reviewRequestDelayDays" in patch) apiPatch.review_request_delay_days = patch.reviewRequestDelayDays;
       if ("companyName" in patch) apiPatch.company_name = patch.companyName;
       if ("companyCui" in patch) apiPatch.company_cui = patch.companyCui;
       if ("companyAddress" in patch) apiPatch.company_address = patch.companyAddress;
@@ -1375,6 +1384,30 @@ function AppShell() {
       apiPatch.updated_by = user.id;
       const r = unwrap(await supabase.from("app_settings").update(apiPatch).eq("id", true).select());
       setSettings(settingsFromApi(r[0]));
+    });
+  }
+  async function editLocation(id, patch) {
+    await withBusy(async () => {
+      const apiPatch = {};
+      if ("googleReviewUrl" in patch) apiPatch.google_review_url = patch.googleReviewUrl || null;
+      const r = unwrap(await supabase.from("locations").update(apiPatch).eq("id", id).select());
+      setLocations((prev) => prev.map((l) => (l.id === id ? r[0] : l)));
+    });
+  }
+
+  // MARKETING — REVIEW-KÉRÉS: szerviz-átadás és telefon-eladás után X nappal (settings.
+  // reviewRequestDelayDays) egy sor kerül a review_requests táblába; a tényleges küldést
+  // (WhatsApp sablon, SMS fallback) egy napi pg_cron job + send-review-requests edge
+  // function végzi, itt csak beütemezzük. Az (source_type, source_id) unique constraint
+  // miatt ha véletlenül kétszer hívnánk (pl. státusz oda-vissza váltás), a második insert
+  // nem hoz létre duplikátumot — ezt csendben elnyeljük.
+  async function scheduleReviewRequest({ sourceType, sourceId, locationId, customerName, customerPhone }) {
+    if (!settings.reviewRequestEnabled || !customerPhone) return;
+    const delayDays = Number(settings.reviewRequestDelayDays) || 2;
+    const scheduledFor = new Date(Date.now() + delayDays * 24 * 60 * 60 * 1000).toISOString();
+    await supabase.from("review_requests").insert({
+      source_type: sourceType, source_id: sourceId, location_id: locationId || null,
+      customer_name: customerName || null, customer_phone: customerPhone, scheduled_for: scheduledFor,
     });
   }
 
@@ -1883,6 +1916,10 @@ function AppShell() {
       setTransactions((prev) => [...newTxs, ...prev]);
       setWebOrders((prev) => prev.filter((o) => o.id !== id));
       if (customerId) await refreshCustomerLoyalty(customerId);
+      await scheduleReviewRequest({
+        sourceType: "eladas", sourceId: id, locationId: order.locationId,
+        customerName: order.guestName, customerPhone: order.guestPhone,
+      });
     });
   }
 
@@ -2115,6 +2152,15 @@ function AppShell() {
           setTransactions((prev) => prev.filter((t) => !idsToDelete.includes(t.id)));
           if (ticket.customerId) await refreshCustomerLoyalty(ticket.customerId);
         }
+      }
+
+      // MARKETING — csak valódi ügyfél-munkalapoknál kérünk értékelést, a saját készletes
+      // (előkészítés/garanciális) munkalapok átadása nem egy ügyfélélmény vége, azt kihagyjuk.
+      if (subStatus === "Átadva" && ticket && ticket.ticketKind === "Ügyfél") {
+        await scheduleReviewRequest({
+          sourceType: "szerviz", sourceId: id, locationId: ticket.locationId,
+          customerName: ticket.customerName, customerPhone: ticket.customerPhone,
+        });
       }
 
       if (settings.smsOnTicketReady && becameReady && subStatus === null && ticket && ticket.customerPhone) {
@@ -3305,6 +3351,7 @@ function AppShell() {
             isAdmin={isAdmin} profile={profile} user={user} settings={settings} updateSettings={updateSettings}
             busy={busy} setChangePasswordModal={setChangePasswordModal} locations={locations}
             loyaltyRewards={loyaltyRewards} addLoyaltyReward={addLoyaltyReward} editLoyaltyReward={editLoyaltyReward}
+            editLocation={editLocation}
           />
         )}
       </div>

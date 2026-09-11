@@ -635,6 +635,8 @@ export const settingsFromApi = (r) => ({
   smsOnTicketReady: r.sms_on_ticket_ready,
   loyaltyFollowupEnabled: r.loyalty_followup_enabled,
   loyaltyFollowupDays: r.loyalty_followup_days,
+  reviewRequestEnabled: r.review_request_enabled,
+  reviewRequestDelayDays: r.review_request_delay_days,
   updatedAt: r.updated_at,
   companyName: r.company_name,
   companyCui: r.company_cui,

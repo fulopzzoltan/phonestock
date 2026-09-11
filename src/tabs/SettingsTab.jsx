@@ -130,6 +130,66 @@ function SmartBillSettings({ settings, updateSettings, busy, locations }) {
   );
 }
 
+function LocationReviewUrlRow({ loc, editLocation, busy }) {
+  const [value, setValue] = useState(loc.google_review_url || "");
+  const dirty = value !== (loc.google_review_url || "");
+  return (
+    <div className="settings-row" style={{ alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+      <div style={{ minWidth: 100, fontWeight: 600, fontSize: 12.5 }}>{loc.name}</div>
+      <input
+        value={value} onChange={(e) => setValue(e.target.value)}
+        placeholder="https://g.page/r/.../review" style={{ flex: 1, minWidth: 220 }}
+      />
+      <button type="button" className="btn sec sm" disabled={busy || !dirty} onClick={() => editLocation(loc.id, { googleReviewUrl: value.trim() })}>
+        Mentés
+      </button>
+    </div>
+  );
+}
+
+function ReviewRequestSettings({ settings, updateSettings, busy, locations, editLocation }) {
+  const realLocations = (locations || []).filter((l) => l.name !== "Tartalék");
+  return (
+    <div className="pult-section">
+      <div className="pult-section-head"><ChatIcon width={16} height={16} />Google-értékelés kérés</div>
+      <div className="settings-row">
+        <div>
+          <div className="settings-row-lbl">Automatikus értékelés-kérés</div>
+          <div className="settings-row-desc">
+            Néhány nappal egy szerviz-átadás vagy telefon-eladás után az ügyfél kap egy rövid
+            üzenetet (WhatsApp, ha be van állítva, egyébként SMS) egy Google-értékelés linkkel.
+            Nem érinti a saját készletes (előkészítés/garanciális) munkalapokat.
+          </div>
+        </div>
+        <Toggle checked={!!settings.reviewRequestEnabled} disabled={busy} onChange={(v) => updateSettings({ reviewRequestEnabled: v })} />
+      </div>
+      {settings.reviewRequestEnabled && (
+        <div className="settings-row">
+          <div>
+            <div className="settings-row-lbl">Hány nappal az átadás/eladás után menjen ki</div>
+            <div className="settings-row-desc">2-3 nap a szokásos — legyen ideje kipróbálni, de még friss legyen az élmény.</div>
+          </div>
+          <input
+            type="number" min={1} max={14} style={{ width: 64 }}
+            value={settings.reviewRequestDelayDays}
+            onChange={(e) => updateSettings({ reviewRequestDelayDays: Number(e.target.value) || 2 })}
+          />
+        </div>
+      )}
+      <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid #E5E7EB" }}>
+        <div className="settings-row-lbl" style={{ marginBottom: 8 }}>Google-értékelés link helyszínenként</div>
+        <div className="settings-row-desc" style={{ marginBottom: 10 }}>
+          A "Írjon értékelést" linket a Google Cégprofilból lehet kimásolni (Cégprofil kezelése → Vélemények kérése).
+          Amíg egy helyszínnek nincs beállítva, ott nem megy ki értékelés-kérés.
+        </div>
+        {realLocations.map((l) => (
+          <LocationReviewUrlRow key={l.id} loc={l} editLocation={editLocation} busy={busy} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function slugify(label) {
   return label.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "") || "jutalom";
 }
@@ -181,7 +241,7 @@ function LoyaltyRewardsSettings({ rewards, addLoyaltyReward, editLoyaltyReward, 
   );
 }
 
-export default function SettingsTab({ isAdmin, profile, user, settings, updateSettings, busy, setChangePasswordModal, locations, loyaltyRewards, addLoyaltyReward, editLoyaltyReward }) {
+export default function SettingsTab({ isAdmin, profile, user, settings, updateSettings, busy, setChangePasswordModal, locations, loyaltyRewards, addLoyaltyReward, editLoyaltyReward, editLocation }) {
   return (
     <>
       <div className="pult-grid">
@@ -247,6 +307,7 @@ export default function SettingsTab({ isAdmin, profile, user, settings, updateSe
           </div>
         )}
 
+        {isAdmin && <ReviewRequestSettings settings={settings} updateSettings={updateSettings} busy={busy} locations={locations} editLocation={editLocation} />}
         {isAdmin && <CompanySettings settings={settings} updateSettings={updateSettings} busy={busy} />}
         {isAdmin && <SmartBillSettings settings={settings} updateSettings={updateSettings} busy={busy} locations={locations} />}
         {isAdmin && <LoyaltyRewardsSettings rewards={loyaltyRewards} addLoyaltyReward={addLoyaltyReward} editLoyaltyReward={editLoyaltyReward} busy={busy} />}
