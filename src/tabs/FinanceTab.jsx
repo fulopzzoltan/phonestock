@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useBasketBar, BasketTopBar, BasketBody } from "../components/BasketBar";
 import { TransactionRowsTable } from "../components/TransactionsPeriodList";
-import TransactionsCalendar from "../components/TransactionsCalendar";
+import { useTransactionsCalendar, CalendarPicker, CalendarDetail } from "../components/TransactionsCalendar";
 import { EmptyState } from "../components/EmptyState";
 import { FinanceIcon } from "../components/icons";
 import { money, today, cashPortion, cardPortion } from "../lib/utils";
@@ -96,6 +96,7 @@ export default function FinanceTab({
   isAdmin, onImportPdf,
 }) {
   const [showHistory, setShowHistory] = useState(false);
+  const cal = useTransactionsCalendar({ transactions: filteredTransactions, dayCloses, allowedLocations, effectiveLocFilter, isAdmin });
   const todayStr = today();
   const isAll = effectiveLocFilter === "all";
   const locsToShow = isAll ? allowedLocations : allowedLocations.filter((l) => l.id === effectiveLocFilter);
@@ -130,46 +131,47 @@ export default function FinanceTab({
 
         {showHistory && !loadingData && (
           <div style={{ marginTop: 12 }}>
-            <TransactionsCalendar
-              transactions={filteredTransactions}
-              dayCloses={dayCloses}
-              allowedLocations={allowedLocations}
-              effectiveLocFilter={effectiveLocFilter}
-              isAdmin={isAdmin}
-              locName={locName}
-              onEdit={setTxModal}
-              onDelete={deleteTransaction}
-              onOpenReceipt={setReceiptTxId}
-              busy={busy}
-              productConditionById={productConditionById}
-            />
+            <CalendarPicker cal={cal} isAdmin={isAdmin} />
           </div>
         )}
       </div>
 
       <div style={{ flex: 1, minWidth: 0 }}>
-        {locsToShow.map((loc) => (
-          <LocationRecordBox
-            key={loc.id}
-            loc={loc}
-            locTx={locTxByLoc[loc.id]}
-            todayStr={todayStr}
+        {showHistory && cal.selectedDay ? (
+          <CalendarDetail
+            cal={cal}
             locName={locName}
+            onEdit={setTxModal}
+            onDelete={deleteTransaction}
+            onOpenReceipt={setReceiptTxId}
             busy={busy}
-            setTxModal={setTxModal}
-            deleteTransaction={deleteTransaction}
-            setReceiptTxId={setReceiptTxId}
             productConditionById={productConditionById}
-            todayClose={todayCloseFor(loc.id)}
-            closeDay={closeDay}
-            showHeading={isAll}
-            showBasket={loc.id === basketLocId}
-            defaultLocId={basketLocId}
-            smartQuickItems={smartQuickItems}
-            checkoutBasket={checkoutBasket}
-            onImportPdf={onImportPdf}
+            isAdmin={isAdmin}
           />
-        ))}
+        ) : (
+          locsToShow.map((loc) => (
+            <LocationRecordBox
+              key={loc.id}
+              loc={loc}
+              locTx={locTxByLoc[loc.id]}
+              todayStr={todayStr}
+              locName={locName}
+              busy={busy}
+              setTxModal={setTxModal}
+              deleteTransaction={deleteTransaction}
+              setReceiptTxId={setReceiptTxId}
+              productConditionById={productConditionById}
+              todayClose={todayCloseFor(loc.id)}
+              closeDay={closeDay}
+              showHeading={isAll}
+              showBasket={loc.id === basketLocId}
+              defaultLocId={basketLocId}
+              smartQuickItems={smartQuickItems}
+              checkoutBasket={checkoutBasket}
+              onImportPdf={onImportPdf}
+            />
+          ))
+        )}
       </div>
     </div>
   );

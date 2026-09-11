@@ -27,82 +27,11 @@ function dayStats(rows) {
   return { incomeCash, incomeCard, expenseCash, expense, margin, cashOnHand };
 }
 
-function MonthGrid({
-  viewY, viewM, onGoMonth, todayStr, oldestAllowedDate, isAdmin,
-  txByDay, closedDaysSet, selectedDay, onSelectDay,
-}) {
-  const daysInMonth = new Date(viewY, viewM + 1, 0).getDate();
-  const firstWeekday = (new Date(viewY, viewM, 1).getDay() + 6) % 7; // Monday=0
-  const cells = [];
-  for (let i = 0; i < firstWeekday; i++) cells.push(null);
-  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
-
-  const prevDisabled = !isAdmin && (() => {
-    const { y, m } = addMonths(viewY, viewM, -1);
-    const lastDay = new Date(y, m + 1, 0).getDate();
-    return dstr(y, m, lastDay) < oldestAllowedDate;
-  })();
-  const now = new Date();
-  const nextDisabled = viewY === now.getFullYear() && viewM === now.getMonth();
-
-  return (
-    <div style={{ maxWidth: 260, margin: "0 auto" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-        <button type="button" className="iconbtn" disabled={prevDisabled} onClick={() => onGoMonth(-1)} style={prevDisabled ? { opacity: 0.3, cursor: "default" } : undefined}>
-          <ChevronLeftIcon width={14} height={14} />
-        </button>
-        <div style={{ fontSize: 12.5, fontWeight: 700, textTransform: "capitalize" }}>{monthLabel(viewY, viewM)}</div>
-        <button type="button" className="iconbtn" disabled={nextDisabled} onClick={() => onGoMonth(1)} style={nextDisabled ? { opacity: 0.3, cursor: "default" } : undefined}>
-          <ChevronRightIcon width={14} height={14} />
-        </button>
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 2 }}>
-        {WEEKDAYS.map((w) => (
-          <div key={w} style={{ textAlign: "center", fontSize: 9.5, fontWeight: 700, color: "#9CA3AF", padding: "2px 0" }}>{w}</div>
-        ))}
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}>
-        {cells.map((d, i) => {
-          if (d === null) return <div key={`e${i}`} />;
-          const dateStr = dstr(viewY, viewM, d);
-          const hasData = txByDay.has(dateStr);
-          const isClosed = closedDaysSet.has(dateStr);
-          const isToday = dateStr === todayStr;
-          const isSelected = dateStr === selectedDay;
-          const isFuture = dateStr > todayStr;
-          const isTooOld = !isAdmin && dateStr < oldestAllowedDate;
-          const disabled = isFuture || isTooOld;
-          let bg = "transparent", border = "1px solid transparent", color = "#374151";
-          if (isClosed) { bg = "#DCFCE7"; color = "#15803D"; }
-          if (hasData && !isClosed) { border = "1px solid #D1D5DB"; }
-          if (isToday && !isSelected) { border = "1.5px solid var(--accent)"; }
-          if (isSelected) { bg = "var(--accent)"; color = "#fff"; border = "1.5px solid var(--accent)"; }
-          if (disabled) { color = "#D1D5DB"; bg = "transparent"; border = "1px solid transparent"; }
-          return (
-            <button
-              key={dateStr}
-              type="button"
-              disabled={disabled}
-              onClick={() => onSelectDay(dateStr)}
-              title={isTooOld ? "Csak admin láthatja a 30 napnál régebbi napokat" : undefined}
-              style={{
-                aspectRatio: "1", borderRadius: "50%", fontSize: 11, fontFamily: "inherit", fontWeight: isToday || isSelected ? 700 : 500,
-                background: bg, color, border, cursor: disabled ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0,
-              }}
-            >
-              {d}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-export default function TransactionsCalendar({
-  transactions, dayCloses, allowedLocations, effectiveLocFilter, isAdmin, locName,
-  onEdit, onDelete, onOpenReceipt, busy, productConditionById,
-}) {
+// A naptár állapota (hónap, kiválasztott nap, archívum) egy közös hookban él, mert a
+// tényleges rács a bal oldali sávban jelenik meg, a bővebb infó (hó-összesítő, kiválasztott
+// nap részletei, archív hónapok) pedig az árulás fő tartalmi részén — két külön DOM-helyen,
+// egy közös állapoton.
+export function useTransactionsCalendar({ transactions, dayCloses, allowedLocations, effectiveLocFilter, isAdmin }) {
   const todayStr = today();
   const now = new Date();
   const [viewY, setViewY] = useState(now.getFullYear());
@@ -173,26 +102,103 @@ export default function TransactionsCalendar({
     });
   }, [transactions, isAdmin, oldestAllowedDate]);
 
+  return {
+    todayStr, viewY, viewM, setViewY, setViewM, selectedDay, setSelectedDay, showArchive, setShowArchive,
+    oldestAllowedDate, isAll, txByDay, closedDaysSet, goMonth, selectDay,
+    selectedRows, selectedStats, monthStats, archiveMonths,
+  };
+}
+
+// A tényleges rács — ezt kell a bal oldali sávba tenni, a "Korábbi napok" gomb alá.
+export function CalendarPicker({ cal, isAdmin }) {
+  const { viewY, viewM, goMonth, todayStr, oldestAllowedDate, txByDay, closedDaysSet, selectedDay, selectDay } = cal;
+  const daysInMonth = new Date(viewY, viewM + 1, 0).getDate();
+  const firstWeekday = (new Date(viewY, viewM, 1).getDay() + 6) % 7; // Monday=0
+  const cells = [];
+  for (let i = 0; i < firstWeekday; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
+  const prevDisabled = !isAdmin && (() => {
+    const { y, m } = addMonths(viewY, viewM, -1);
+    const lastDay = new Date(y, m + 1, 0).getDate();
+    return dstr(y, m, lastDay) < oldestAllowedDate;
+  })();
+  const now = new Date();
+  const nextDisabled = viewY === now.getFullYear() && viewM === now.getMonth();
+
+  return (
+    <div className="tw tw-compact" style={{ padding: 12 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+        <button type="button" className="iconbtn" disabled={prevDisabled} onClick={() => goMonth(-1)} style={prevDisabled ? { opacity: 0.3, cursor: "default" } : undefined}>
+          <ChevronLeftIcon width={14} height={14} />
+        </button>
+        <div style={{ fontSize: 12, fontWeight: 700, textTransform: "capitalize" }}>{monthLabel(viewY, viewM)}</div>
+        <button type="button" className="iconbtn" disabled={nextDisabled} onClick={() => goMonth(1)} style={nextDisabled ? { opacity: 0.3, cursor: "default" } : undefined}>
+          <ChevronRightIcon width={14} height={14} />
+        </button>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 2 }}>
+        {WEEKDAYS.map((w) => (
+          <div key={w} style={{ textAlign: "center", fontSize: 9, fontWeight: 700, color: "#9CA3AF", padding: "2px 0" }}>{w}</div>
+        ))}
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}>
+        {cells.map((d, i) => {
+          if (d === null) return <div key={`e${i}`} />;
+          const dateStr = dstr(viewY, viewM, d);
+          const hasData = txByDay.has(dateStr);
+          const isClosed = closedDaysSet.has(dateStr);
+          const isToday = dateStr === todayStr;
+          const isSelected = dateStr === selectedDay;
+          const isFuture = dateStr > todayStr;
+          const isTooOld = !isAdmin && dateStr < oldestAllowedDate;
+          const disabled = isFuture || isTooOld;
+          let bg = "transparent", border = "1px solid transparent", color = "#374151";
+          if (isClosed) { bg = "#DCFCE7"; color = "#15803D"; }
+          if (hasData && !isClosed) { border = "1px solid #D1D5DB"; }
+          if (isToday && !isSelected) { border = "1.5px solid var(--accent)"; }
+          if (isSelected) { bg = "var(--accent)"; color = "#fff"; border = "1.5px solid var(--accent)"; }
+          if (disabled) { color = "#D1D5DB"; bg = "transparent"; border = "1px solid transparent"; }
+          return (
+            <button
+              key={dateStr}
+              type="button"
+              disabled={disabled}
+              onClick={() => selectDay(dateStr)}
+              title={isTooOld ? "Csak admin láthatja a 30 napnál régebbi napokat" : undefined}
+              style={{
+                aspectRatio: "1", borderRadius: "50%", fontSize: 10.5, fontFamily: "inherit", fontWeight: isToday || isSelected ? 700 : 500,
+                background: bg, color, border, cursor: disabled ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0,
+              }}
+            >
+              {d}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// A bővebb infó — a jelenlegi árulás-nézet helyén jelenik meg, amint kiválasztunk egy napot
+// (vagy admin esetén az archívumot nyitjuk meg).
+export function CalendarDetail({ cal, locName, onEdit, onDelete, onOpenReceipt, busy, productConditionById, isAdmin }) {
+  const { viewY, viewM, selectedDay, selectedRows, selectedStats, monthStats, closedDaysSet, archiveMonths, showArchive, setShowArchive, setViewY, setViewM, setSelectedDay } = cal;
+
   return (
     <div>
-      <div className="tw" style={{ padding: 16, display: "flex", gap: 24, alignItems: "flex-start", flexWrap: "wrap" }}>
-        <MonthGrid
-          viewY={viewY} viewM={viewM} onGoMonth={goMonth} todayStr={todayStr} oldestAllowedDate={oldestAllowedDate} isAdmin={isAdmin}
-          txByDay={txByDay} closedDaysSet={closedDaysSet} selectedDay={selectedDay} onSelectDay={selectDay}
-        />
-        <div style={{ flex: 1, minWidth: 160, alignSelf: "center" }}>
-          <div className="lbl" style={{ fontSize: 10, fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 6 }}>
-            {monthLabel(viewY, viewM)} — teljes árulás
-          </div>
-          <div style={{ fontSize: 24, fontWeight: 800, color: "#111827" }}>{money(monthStats.incomeCash + monthStats.incomeCard)}</div>
-          <div style={{ fontSize: 12, color: "#9CA3AF", marginTop: 4 }}>
-            {money(monthStats.incomeCash)} készpénz · {money(monthStats.incomeCard)} kártya
-          </div>
+      <div className="tw" style={{ padding: 16, marginBottom: 16 }}>
+        <div className="lbl" style={{ fontSize: 10, fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 6 }}>
+          {monthLabel(viewY, viewM)} — teljes árulás
+        </div>
+        <div style={{ fontSize: 24, fontWeight: 800, color: "#111827" }}>{money(monthStats.incomeCash + monthStats.incomeCard)}</div>
+        <div style={{ fontSize: 12, color: "#9CA3AF", marginTop: 4 }}>
+          {money(monthStats.incomeCash)} készpénz · {money(monthStats.incomeCard)} kártya
         </div>
       </div>
 
       {selectedDay && (
-        <div className="tw tw-compact" style={{ padding: 16, marginTop: 16 }}>
+        <div className="tw tw-compact" style={{ padding: 16, marginBottom: 16 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
             <div style={{ fontSize: 14, fontWeight: 700 }}>{selectedDay}</div>
             {closedDaysSet.has(selectedDay) && <span className="badge-loc" style={{ color: "#15803D" }}>✓ Lezárva</span>}
@@ -209,13 +215,13 @@ export default function TransactionsCalendar({
           {selectedRows.length === 0 ? (
             <EmptyState icon={FinanceIcon}>Nincs rögzített tranzakció ezen a napon.</EmptyState>
           ) : (
-            <TransactionRowsTable rows={selectedRows} locName={locName} onEdit={onEdit} onDelete={onDelete} onOpenReceipt={onOpenReceipt} busy={busy} productConditionById={productConditionById} showLocation={isAll} />
+            <TransactionRowsTable rows={selectedRows} locName={locName} onEdit={onEdit} onDelete={onDelete} onOpenReceipt={onOpenReceipt} busy={busy} productConditionById={productConditionById} showLocation={cal.isAll} />
           )}
         </div>
       )}
 
       {isAdmin && archiveMonths.length > 0 && (
-        <div style={{ marginTop: 18 }}>
+        <div>
           <span className="toggle-link" onClick={() => setShowArchive((v) => !v)}>
             {showArchive ? "Korábbi hónapok elrejtése" : `Korábbi hónapok megtekintése (${archiveMonths.length})`}
           </span>
@@ -232,7 +238,7 @@ export default function TransactionsCalendar({
                       <td className="num-col" style={{ color: "#B91C1C" }}>{money(mo.expense)}</td>
                       <td className="num-col">{money(mo.margin)}</td>
                       <td>
-                        <button type="button" className="toggle-link" style={{ margin: 0 }} onClick={() => { setViewY(mo.y); setViewM(mo.m); setSelectedDay(null); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+                        <button type="button" className="toggle-link" style={{ margin: 0 }} onClick={() => { setViewY(mo.y); setViewM(mo.m); setSelectedDay(null); }}>
                           Napi bontás
                         </button>
                       </td>

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { CloseIcon, PlusIcon, MinusIcon } from "./icons";
-import { CATEGORIES, PAYMENTS } from "../lib/utils";
+import { CATEGORIES, INCOME_CATEGORIES, PAYMENTS } from "../lib/utils";
 
 // Kosár/blokk-alapú gyors rögzítő — a QuickSaleButtons + TransactionQuickAdd párost váltja.
 // Bevételnél tételenként gyűjt a kosárba (egy fizetési móddal zárva), kiadásnál egytételes
@@ -36,7 +36,7 @@ export function useBasketBar({ defaultLocId, onCheckout }) {
   }
 
   function addQuickToBasket(item) {
-    setBasketItems((items) => [...items, { label: item.label, amount: Number(item.amount) || 0, cost: Number(item.cost) || 0, category: "Készlet", kind: "income" }]);
+    setBasketItems((items) => [...items, { label: item.label, amount: Number(item.amount) || 0, cost: Number(item.cost) || 0, category: "Tartozékok", kind: "income" }]);
   }
 
   function addFreeToBasket() {
@@ -138,7 +138,9 @@ export function BasketBody({ bb, defaultLocId, busy }) {
         )}
         <div className="field" style={{ margin: 0 }}>
           <select value={bb.category} onChange={(e) => bb.setCategory(e.target.value)}>
-            {CATEGORIES.map((c) => <option key={c} value={c}>{c === "Eszköz" ? "Eszköz (befektetés)" : c}</option>)}
+            {mode === "income"
+              ? INCOME_CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)
+              : CATEGORIES.map((c) => <option key={c} value={c}>{c === "Eszköz" ? "Eszköz (befektetés)" : c}</option>)}
           </select>
         </div>
         {mode === "income" && (

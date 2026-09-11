@@ -230,7 +230,16 @@ export const PHONE_COLORS = [
 ];
 export const SOURCES = ["Konszignáció", "Számla"];
 export const PAYMENTS = ["Készpénz", "Kártya", "Átutalás", "Vegyes"];
-export const CATEGORIES = ["Fix", "Készlet", "Marketing", "Eszköz", "Szerviz", "Bér", "Adó", "Hitel", "Egyéb"];
+export const CATEGORIES = ["Fix", "Készlet", "Marketing", "Eszköz", "Szerviz", "Bér", "Adó", "Hitel", "Tartozékok", "Egyéb"];
+
+// A bevételnek csak ez a négy típusa van — a "Telefon" címke a "Készlet" kategóriaértéket
+// jelöli (az isSale/eladás-jelvény logika erre az értékre épül), a másik három saját érték.
+export const INCOME_CATEGORIES = [
+  { value: "Készlet", label: "Telefon" },
+  { value: "Szerviz", label: "Szerviz" },
+  { value: "Tartozékok", label: "Tartozékok" },
+  { value: "Egyéb", label: "Egyéb" },
+];
 
 // "Vegyes" fizetésnél a tétel összege készpénz+kártya részre oszlik
 // (paymentCashAmount/paymentCardAmount) — ez a két helper adja vissza egy
