@@ -222,6 +222,7 @@ function AppShell() {
   const [sellModal, setSellModal] = useState(null);
   const [issueInvoiceModal, setIssueInvoiceModal] = useState(null); // null | true (nyitva, tranzakció-választás alatt)
   const [partModal, setPartModal] = useState(null); // null | "add" | part obj (edit)
+  const [refurbPickerOpen, setRefurbPickerOpen] = useState(false);
   const [txModal, setTxModal] = useState(null); // null | tx obj (edit)
   const [ticketModal, setTicketModal] = useState(null); // null | "add" | ticket obj (edit)
   const [depositModal, setDepositModal] = useState(null); // null | ticket obj
@@ -911,6 +912,12 @@ function AppShell() {
       const updatedAcq = acqFromApi(ur[0]);
       setProductAcquisitions((prev) => prev.map((a) => (a.id === acq.id ? updatedAcq : a)));
       setStock((prev) => prev.map((i) => (i.id === productId ? { ...i, acquisition: updatedAcq } : i)));
+    });
+  }
+  async function markProductForRefurb(productId) {
+    await withBusy(async () => {
+      unwrap(await supabase.from("products").update({ stock_status: "javitando" }).eq("id", productId));
+      setStock((prev) => prev.map((i) => (i.id === productId ? { ...i, stockStatus: "javitando" } : i)));
     });
   }
   async function returnProductToStock(productId, txId) {
@@ -2401,6 +2408,13 @@ function AppShell() {
     });
   }, [stock, stockLocFilter, reserveLocId]);
   const refurbCount = refurbPhones.length;
+  // A "+" gombbal a Felújítás fülön ide, a meglévő (még nem javítandó) raktárkészletből
+  // lehet átemelni egy tételt — ugyanaz a helyszín-szűrés, mint a refurbPhones listán.
+  const refurbPickable = useMemo(() => {
+    let s = stock.filter((i) => i.status === "in_stock" && i.stockStatus !== "javitando");
+    if (stockLocFilter !== "all") s = s.filter((i) => i.locationId === stockLocFilter || i.locationId === reserveLocId);
+    return s;
+  }, [stock, stockLocFilter, reserveLocId]);
 
   const filteredTransactions = useMemo(() => {
     if (effectiveLocFilter === "all") return transactions;
@@ -2961,7 +2975,10 @@ function AppShell() {
             <button type="button" className="btn header-add-btn" disabled={busy} title="Új alkatrész" onClick={() => setPartModal("add")}><span className="header-add-ring" /><span className="header-add-ring ring2" /><PlusIcon width={16} height={16} /></button>
           </>
         ) : tab === "refurb" ? (
-          <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Felújítás</div>
+          <>
+            <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Felújítás</div>
+            <button type="button" className="btn header-add-btn" disabled={busy} title="Telefon átemelése a raktárból" onClick={() => setRefurbPickerOpen(true)}><span className="header-add-ring" /><span className="header-add-ring ring2" /><PlusIcon width={16} height={16} /></button>
+          </>
         ) : tab === "payroll" ? (
           <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Költségek</div>
         ) : tab === "customers" ? (
@@ -3155,6 +3172,8 @@ function AppShell() {
             deleteRefurbTask={deleteRefurbTask} saveRefurbInspection={saveRefurbInspection}
             activeOwnTicketFor={activeOwnTicketFor} parts={parts} usePartForProduct={usePartForProduct}
             removePartFromTicket={removePartFromTicket} openOwnServiceModal={openOwnServiceModal} onOpenTicket={setDetailId}
+            refurbPickable={refurbPickable} onAddToRefurb={markProductForRefurb}
+            pickerOpen={refurbPickerOpen} onClosePicker={() => setRefurbPickerOpen(false)}
           />
         )}
 

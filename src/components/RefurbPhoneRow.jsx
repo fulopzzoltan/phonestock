@@ -60,19 +60,11 @@ export default function RefurbPhoneRow({
   return (
     <div className="rfr">
       <div className="rfr-head" style={expanded ? { background: "#FAFAFA" } : undefined} onClick={onToggle}>
-        <div className="rf-rank-ctrl" onClick={(e) => e.stopPropagation()}>
-          <button type="button" className="rf-rank-btn" disabled={!canMoveUp || busy} onClick={() => onMoveUp(product.id)} title="Előrébb">
-            <ChevronDownIcon style={{ transform: "rotate(180deg)" }} />
-          </button>
-          <span className="rf-rank-num">{rankPos}</span>
-          <button type="button" className="rf-rank-btn" disabled={!canMoveDown || busy} onClick={() => onMoveDown(product.id)} title="Hátrébb">
-            <ChevronDownIcon />
-          </button>
-        </div>
+        <span className="mono rfr-serial">{phoneCode(product.productNo) || "—"}</span>
         <div className="rfr-title">
           <span className="rfr-name">{product.brand} {product.model}</span>
           <span className="rfr-meta">
-            <span className="mono">{phoneCode(product.productNo)}</span> · {conditionGradeLabel(product.condition, product.grade)} · {locName(product.locationId)}
+            {conditionGradeLabel(product.condition, product.grade)} · {locName(product.locationId)}
           </span>
         </div>
         {tasks.length === 0 ? (
@@ -82,6 +74,15 @@ export default function RefurbPhoneRow({
         ) : (
           <span className="rfr-cost-badge">{money(openCost)}</span>
         )}
+        <div className="rf-rank-ctrl" onClick={(e) => e.stopPropagation()}>
+          <button type="button" className="rf-rank-btn" disabled={!canMoveUp || busy} onClick={() => onMoveUp(product.id)} title="Előrébb">
+            <ChevronDownIcon style={{ transform: "rotate(180deg)" }} />
+          </button>
+          <span className="rf-rank-num">{rankPos}</span>
+          <button type="button" className="rf-rank-btn" disabled={!canMoveDown || busy} onClick={() => onMoveDown(product.id)} title="Hátrébb">
+            <ChevronDownIcon />
+          </button>
+        </div>
         <ChevronDownIcon className="rfr-chev" style={expanded ? { transform: "rotate(180deg)" } : undefined} />
       </div>
 

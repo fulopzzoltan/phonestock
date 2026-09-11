@@ -1,8 +1,51 @@
 import { useState, useMemo } from "react";
+import { phoneCode, displayName, conditionGradeLabel } from "../lib/utils";
 import { EmptyState, LoadingState } from "../components/EmptyState";
-import { RefurbIcon, SearchIcon, ScanIcon } from "../components/icons";
+import { RefurbIcon, SearchIcon, ScanIcon, CloseIcon } from "../components/icons";
 import RefurbPhoneRow from "../components/RefurbPhoneRow";
 import RefurbInspectionModal from "../components/RefurbInspectionModal";
+
+// A "+" gombbal nyíló kereső-lista, amivel egy meglévő (még nem javítandó) raktári
+// telefont lehet átemelni a Felújítás listába — ugyanaz a kereső-mező + sor mintázat,
+// mint a többi fülön.
+function RefurbPickerModal({ items, busy, onPick, onClose }) {
+  const [q, setQ] = useState("");
+  const rows = useMemo(() => {
+    const qq = q.trim().toLowerCase();
+    if (!qq) return items;
+    return items.filter((p) => [p.brand, p.model, phoneCode(p.productNo)].filter(Boolean).join(" ").toLowerCase().includes(qq));
+  }, [items, q]);
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 480 }}>
+        <h2>Telefon átemelése a Felújításba <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
+        <div className="searchbar" style={{ margin: "0 0 12px 0" }}>
+          <SearchIcon /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Keresés..." autoFocus />
+        </div>
+        <div style={{ maxHeight: "50vh", overflowY: "auto", display: "flex", flexDirection: "column", gap: 4 }}>
+          {rows.length === 0 ? (
+            <EmptyState icon={RefurbIcon}>Nincs találat.</EmptyState>
+          ) : rows.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              className="btn sec"
+              disabled={busy}
+              style={{ justifyContent: "space-between", textAlign: "left", padding: "10px 14px" }}
+              onClick={() => onPick(p.id)}
+            >
+              <span>
+                <span className="mono" style={{ color: "#9CA3AF", marginRight: 8 }}>{phoneCode(p.productNo) || "—"}</span>
+                {displayName(p.brand, p.model)}
+              </span>
+              <span style={{ color: "#9CA3AF", fontWeight: 500 }}>{conditionGradeLabel(p.condition, p.grade)}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // Ugyanaz a váz, mint a Szerviz fülön (keresés + szkennelés + státusz-fülek pöttyel és
 // darabszámmal, alatta sűrű, kinyitható sorlista) — csak felújítás-specifikus
@@ -23,6 +66,7 @@ export default function RefurbTab({
   refurbSearch, setRefurbSearch, onScan,
   moveRefurbRank, addRefurbTask, updateRefurbTaskStatus, deleteRefurbTask, saveRefurbInspection,
   activeOwnTicketFor, parts = [], usePartForProduct, removePartFromTicket, openOwnServiceModal, onOpenTicket,
+  refurbPickable = [], onAddToRefurb, pickerOpen, onClosePicker,
 }) {
   const [inspectProduct, setInspectProduct] = useState(null);
   const [listStatus, setListStatus] = useState(REFURB_STATUSES[0].key);
@@ -44,7 +88,7 @@ export default function RefurbTab({
   }, [withStatus, listStatus, refurbSearch]);
 
   return (
-    <>
+    <div className="apple-page">
       <div className="filter-row">
         <div className="searchbar"><SearchIcon /><input value={refurbSearch} onChange={(e) => setRefurbSearch(e.target.value)} /></div>
         {onScan && <button type="button" className="btn sec scan-trigger" onClick={onScan} title="QR/vonalkód szkennelése"><ScanIcon width={16} height={16} /></button>}
@@ -59,16 +103,16 @@ export default function RefurbTab({
       </div>
 
       {loadingData ? (
-        <div className="tw"><LoadingState /></div>
+        <div className="tw tw-apple"><LoadingState /></div>
       ) : refurbPhones.length === 0 ? (
-        <div className="tw">
+        <div className="tw tw-apple">
           <EmptyState icon={RefurbIcon}>
-            Nincs javítandó telefon. A Telefonok fülön a szerkesztésnél állíts be egy tételt
-            "Javítandó" raktár-állapotra, és itt fog megjelenni.
+            Nincs javítandó telefon. A "+" gombbal emelhetsz át meglévő telefont a raktárból,
+            vagy a Telefonok fülön a szerkesztésnél állíts be egy tételt "Javítandó" állapotra.
           </EmptyState>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="tw"><EmptyState icon={RefurbIcon}>Nincs telefon ebben az állapotban.</EmptyState></div>
+        <div className="tw tw-apple"><EmptyState icon={RefurbIcon}>Nincs telefon ebben az állapotban.</EmptyState></div>
       ) : (
         <div className="rf-list">
           {filtered.map(({ product, tasks, rankPos }) => (
@@ -112,6 +156,15 @@ export default function RefurbTab({
           }}
         />
       )}
-    </>
+
+      {pickerOpen && (
+        <RefurbPickerModal
+          items={refurbPickable}
+          busy={busy}
+          onClose={onClosePicker}
+          onPick={async (id) => { await onAddToRefurb(id); onClosePicker(); }}
+        />
+      )}
+    </div>
   );
 }
