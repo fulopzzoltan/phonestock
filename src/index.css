@@ -1703,11 +1703,11 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
    ne éles vágással tűnjön el a dokk mögött, hanem egyre inkább elmosódva, a dokkhoz
    közeledve. Három egymásra rakott réteg, mindegyik más blur-erősséggel és magassággal —
    ez adja a "fokozatosan jobban blurozott" hatást tiszta CSS-ből (progresszív blur trükk). */
-.mac-pult-fade{position:absolute;left:0;right:0;bottom:0;height:150px;pointer-events:none;z-index:3;border-bottom-left-radius:20px;border-bottom-right-radius:20px;overflow:hidden}
+.mac-pult-fade{position:absolute;left:0;right:0;bottom:0;height:100px;pointer-events:none;z-index:3;border-bottom-left-radius:20px;border-bottom-right-radius:20px;overflow:hidden}
 .mac-pult-fade-1,.mac-pult-fade-2,.mac-pult-fade-3{position:absolute;left:0;right:0;bottom:0}
-.mac-pult-fade-1{height:150px;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);mask-image:linear-gradient(to top, #000 0%, #000 25%, transparent 100%);-webkit-mask-image:linear-gradient(to top, #000 0%, #000 25%, transparent 100%)}
-.mac-pult-fade-2{height:105px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);mask-image:linear-gradient(to top, #000 0%, #000 30%, transparent 100%);-webkit-mask-image:linear-gradient(to top, #000 0%, #000 30%, transparent 100%)}
-.mac-pult-fade-3{height:64px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);mask-image:linear-gradient(to top, #000 0%, #000 35%, transparent 100%);-webkit-mask-image:linear-gradient(to top, #000 0%, #000 35%, transparent 100%)}
+.mac-pult-fade-1{height:100px;backdrop-filter:blur(1.5px);-webkit-backdrop-filter:blur(1.5px);mask-image:linear-gradient(to top, #000 0%, transparent 100%);-webkit-mask-image:linear-gradient(to top, #000 0%, transparent 100%)}
+.mac-pult-fade-2{height:68px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);mask-image:linear-gradient(to top, #000 0%, transparent 100%);-webkit-mask-image:linear-gradient(to top, #000 0%, transparent 100%)}
+.mac-pult-fade-3{height:38px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);mask-image:linear-gradient(to top, #000 0%, transparent 100%);-webkit-mask-image:linear-gradient(to top, #000 0%, transparent 100%)}
 
 /* --- lebegő üveg-dokk --- */
 .md-wrap{position:fixed;left:0;right:0;bottom:56px;display:flex;justify-content:center;pointer-events:none;z-index:40}
