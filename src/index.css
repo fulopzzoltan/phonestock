@@ -1728,7 +1728,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .mac-pult-fade-8{height:12px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 
 /* --- lebegő üveg-dokk --- */
-.md-wrap{position:fixed;left:0;right:0;bottom:56px;display:flex;justify-content:center;pointer-events:none;z-index:40}
+.md-wrap{position:fixed;left:0;right:0;bottom:28px;display:flex;justify-content:center;pointer-events:none;z-index:40}
 .md-dock{pointer-events:auto;display:flex;align-items:flex-end;gap:10px;padding:17px 20px;border-radius:26px;
   background:rgba(255,255,255,.22);backdrop-filter:blur(34px) saturate(2.1);-webkit-backdrop-filter:blur(34px) saturate(2.1);
   border:1px solid rgba(255,255,255,.32);
