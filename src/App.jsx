@@ -2915,7 +2915,7 @@ function AppShell() {
   return (
     <div className={`shell${useMacDock ? " mac-pult" : ""}`}>
       {useMacDock ? (
-        <MacDock tab={tab} setTab={setTab} isAdmin={isAdmin} inboxUnreadCount={inboxUnreadCount} refurbCount={refurbCount} attentionCount={attentionCount} />
+        <MacDock tab={tab} setTab={setTab} isAdmin={isAdmin} inboxUnreadCount={inboxUnreadCount} attentionCount={attentionCount} />
       ) : (
         <Sidebar
           tab={tab} setTab={setTab} setTicketModal={setTicketModal} isAdmin={isAdmin}
