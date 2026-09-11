@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { money, displayName, phoneCode, daysOnShelf, isSlowMoving, stockStatusLabel, conditionGradeLabel, exportToCsv, today } from "../lib/utils";
-import { SearchIcon, PhoneCaseIcon, ServiceIcon, CartIcon, ScanIcon } from "../components/icons";
+import { SearchIcon, PhoneCaseIcon, ServiceIcon, CartIcon, ScanIcon, PrintIcon, CloseIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import HistorySection from "../components/HistorySection";
 import ResponsiveTable from "../components/ResponsiveTable";
@@ -21,12 +21,21 @@ function sortItems(items) {
 export default function StockTab({
   effectiveLocFilter, locName, busy, search, setSearch, onScan, loadingData, filteredStock,
   locations, reserveLocId, setProductDetailId, setSellModal,
-  soldStock, isAdmin = true, myLocationId = null,
+  soldStock, isAdmin = true, myLocationId = null, onPrintLabels,
 }) {
   const [condFilter, setCondFilter] = useState("all"); // all | New | Refurbished
   const reserveLoc = locations.find((l) => l.name === "Tartalék");
   const [showSold, setShowSold] = useState(false);
   const [showReserve, setShowReserve] = useState(false);
+  // Árcimke-nyomtatás: bepipálható telefonok, hogy egyszerre (pl. 4 új felvitel után)
+  // egy lapon lehessen kinyomtatni a címkéiket, ahelyett hogy egyesével mennénk.
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const toggleSelect = (id) => setSelectedIds((prev) => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+  const selectedItems = filteredStock.filter((i) => selectedIds.has(i.id));
   // Alkalmazott csak a saját helyszínén (és a közös Tartalékon) tud eladni/szerkeszteni —
   // a másik helyszín készletét csak megtekintheti.
   const canAct = (item) => isAdmin || item.locationId === myLocationId || item.locationId === reserveLocId;
@@ -42,11 +51,14 @@ export default function StockTab({
     return (
       <ResponsiveTable
         className="tw-apple"
-        columns={[{ key: "n", label: "Sorszám", className: "col-serial" },{ key: "p", label: "Termék", className: "col-device" }, { key: "s", label: "Specifikáció", className: "col-grow" }, { key: "f", label: "" }, { key: "a", label: "Ár", className: "num-col" }, { key: "x", label: "" }]}
+        columns={[{ key: "c", label: "" }, { key: "n", label: "Sorszám", className: "col-serial" },{ key: "p", label: "Termék", className: "col-device" }, { key: "s", label: "Specifikáció", className: "col-grow" }, { key: "f", label: "" }, { key: "a", label: "Ár", className: "num-col" }, { key: "x", label: "" }]}
         rows={items}
         rowKey={(i) => i.id}
         renderRow={(i) => (
           <tr key={i.id} style={{ cursor: "pointer" }} onClick={() => setProductDetailId(i.id)}>
+            <td onClick={(e) => e.stopPropagation()}>
+              <input type="checkbox" className="chk" checked={selectedIds.has(i.id)} onChange={() => toggleSelect(i.id)} title="Kijelölés címkenyomtatáshoz" />
+            </td>
             <td className="mono col-serial" style={{ color: "#9CA3AF", whiteSpace: "nowrap" }}>{phoneCode(i.productNo) || "—"}</td>
             <td style={{ whiteSpace: "nowrap" }}>
               <div className="stk-name" style={{ flexWrap: "nowrap" }}>
@@ -81,6 +93,10 @@ export default function StockTab({
           <div className="mob-row" onClick={() => setProductDetailId(i.id)}>
             <div className="mob-row-top">
               <div className="mob-row-main">
+                <input
+                  type="checkbox" className="chk" style={{ marginRight: 6 }} checked={selectedIds.has(i.id)}
+                  onClick={(e) => e.stopPropagation()} onChange={() => toggleSelect(i.id)} title="Kijelölés címkenyomtatáshoz"
+                />
                 <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{phoneCode(i.productNo) || "—"}</span>
                 <span>{displayName(i.brand, i.model)}</span>
                 <span className={`st st-fill ${i.condition === "New" ? "st-kesz" : "st-beveve"}`} style={{ marginLeft: 6 }}>{conditionGradeLabel(i.condition, i.grade)}</span>
@@ -121,6 +137,23 @@ export default function StockTab({
 
   return (
     <div className="apple-page">
+      {selectedIds.size > 0 && (
+        <div style={{
+          display: "flex", alignItems: "center", gap: 10, background: "var(--primary-soft)",
+          border: "1px solid var(--primary)", borderRadius: 12, padding: "8px 12px", marginBottom: 10,
+        }}>
+          <span style={{ fontWeight: 700, fontSize: 12.5, color: "var(--primary-ink)" }}>{selectedIds.size} telefon kiválasztva</span>
+          <button
+            type="button" className="btn sec sm" style={{ marginLeft: "auto" }}
+            onClick={() => { onPrintLabels?.(selectedItems); setSelectedIds(new Set()); }}
+          >
+            <PrintIcon width={13} height={13} /> Címkék nyomtatása
+          </button>
+          <button type="button" className="btn sec sm icon-only" title="Kijelölés törlése" onClick={() => setSelectedIds(new Set())}>
+            <CloseIcon width={13} height={13} />
+          </button>
+        </div>
+      )}
       <div className="filter-row">
         <div className="searchbar"><SearchIcon /><input value={search} onChange={(e) => setSearch(e.target.value)} /></div>
         {onScan && <button type="button" className="btn sec scan-trigger" onClick={onScan} title="QR/vonalkód szkennelése"><ScanIcon width={16} height={16} /></button>}

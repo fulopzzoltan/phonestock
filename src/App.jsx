@@ -58,6 +58,7 @@ import PrintSlip from "./components/PrintSlip";
 import SaleReceiptPanel from "./components/SaleReceiptPanel";
 import PrintReceiptSlip from "./components/PrintReceiptSlip";
 import PrintConsignmentDocs from "./components/PrintConsignmentDocs";
+import PrintPriceLabels from "./components/PrintPriceLabels";
 import PrintPurchaseDocs from "./components/PrintPurchaseDocs";
 import WarrantyDetailPanel from "./components/WarrantyDetailPanel";
 import WarrantyModal from "./components/WarrantyModal";
@@ -245,6 +246,7 @@ function AppShell() {
   const [printReceipt, setPrintReceipt] = useState(null);
   const [printConsignment, setPrintConsignment] = useState(null);
   const [printPurchase, setPrintPurchase] = useState(null);
+  const [printPriceLabels, setPrintPriceLabels] = useState(null);
   const [acquisitionPrintPrompt, setAcquisitionPrintPrompt] = useState(null);
   const [warranties, setWarranties] = useState([]);
   const [notes, setNotes] = useState([]);
@@ -294,6 +296,7 @@ function AppShell() {
     setPrintWarranty(null);
     setPrintConsignment(null);
     setPrintPurchase(null);
+    setPrintPriceLabels(null);
   }
   function printTicketSlip(ticket) {
     clearAllPrints();
@@ -313,6 +316,13 @@ function AppShell() {
     clearAllPrints();
     setPrintConsignment({ product, acquisition });
     setAcquisitionPrintPrompt(null);
+    requestAnimationFrame(() => {
+      window.print();
+    });
+  }
+  function printPriceLabelsDocs(items) {
+    clearAllPrints();
+    setPrintPriceLabels({ items });
     requestAnimationFrame(() => {
       window.print();
     });
@@ -3172,6 +3182,7 @@ function AppShell() {
             setSellModal={setSellModal}
             soldStock={soldStock}
             isAdmin={isAdmin} myLocationId={myLocationId}
+            onPrintLabels={printPriceLabelsDocs}
           />
         )}
 
@@ -3680,6 +3691,7 @@ function AppShell() {
         {printWarranty && <PrintWarrantySlip w={printWarranty} location={locations.find((l) => l.id === printWarranty.locationId)} />}
         {printConsignment && <PrintConsignmentDocs product={printConsignment.product} acquisition={printConsignment.acquisition} settings={settings} location={locations.find((l) => l.id === printConsignment.product.locationId)} />}
         {printPurchase && <PrintPurchaseDocs product={printPurchase.product} acquisition={printPurchase.acquisition} settings={settings} location={locations.find((l) => l.id === printPurchase.product.locationId)} />}
+        {printPriceLabels && <PrintPriceLabels items={printPriceLabels.items} />}
       </div>
       {acquisitionPrintPrompt && (
         <div className="overlay">
