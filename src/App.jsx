@@ -3263,6 +3263,8 @@ function AppShell() {
           <div className="mac-pult-fade-1" />
           <div className="mac-pult-fade-2" />
           <div className="mac-pult-fade-3" />
+          <div className="mac-pult-fade-4" />
+          <div className="mac-pult-fade-5" />
         </div>
       )}
       </div>
