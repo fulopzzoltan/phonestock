@@ -17,14 +17,21 @@ function dayStats(tx) {
   return { incomeCash, incomeCard, expenseReal, margin, income, expense };
 }
 
-function LocationStats({ loc, locTx, showHeading }) {
+// A KPI-kártyák (egyenleg + bevétel/kiadás/árrés) egy bal oldali, függőleges sávban
+// gyűlnek össze helyszínenként — nem a tartalom fölött, vízszintes sorban, hanem mellette,
+// hogy a tényleges rögzítés/lista mindig a fő figyelem maradjon.
+function KpiColumn({ loc, locTx, expected, showHeading }) {
   const stats = dayStats(locTx);
   return (
-    <div className="tw" style={{ padding: 16, marginTop: 16 }}>
-      {showHeading && <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>{loc.name}</div>}
-      <div className="statrow c4" style={{ marginBottom: 0 }}>
-        <div className="statcard"><div className="lbl">Bevétel (készpénz)</div><div className="val" style={{ color: "#15803D" }}>{money(stats.incomeCash)}</div></div>
-        <div className="statcard"><div className="lbl">Bevétel (kártya)</div><div className="val" style={{ color: "#15803D" }}>{money(stats.incomeCard)}</div></div>
+    <div style={{ marginBottom: 18 }}>
+      {showHeading && <div style={{ fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 8 }}>{loc.name}</div>}
+      <div className="statcard accent" style={{ marginBottom: 8 }}>
+        <div className="lbl">{loc.name}</div>
+        <div className="val">{money(expected)}</div>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div className="statcard"><div className="lbl">Készpénz</div><div className="val" style={{ color: "#15803D" }}>{money(stats.incomeCash)}</div></div>
+        <div className="statcard"><div className="lbl">Kártya</div><div className="val" style={{ color: "#15803D" }}>{money(stats.incomeCard)}</div></div>
         <div className="statcard"><div className="lbl">Kiadás</div><div className="val" style={{ color: "#B91C1C" }}>{money(stats.expenseReal)}</div></div>
         <div className="statcard"><div className="lbl">Árrés</div><div className="val">{money(stats.margin)}</div></div>
       </div>
@@ -88,12 +95,12 @@ export default function FinanceTab({
     return dayCloses.find((d) => d.date === todayStr && d.locationId === locId && !d.reopenedAt);
   }
 
-  const cashByLocation = allowedLocations.map((l) => {
+  const expectedByLoc = Object.fromEntries(allowedLocations.map((l) => {
     const locTx = transactions.filter((t) => t.locationId === l.id && t.date === todayStr);
     const income = locTx.filter((t) => t.type === "income").reduce((s, t) => s + cashPortion(t), 0);
     const expense = locTx.filter((t) => t.type === "expense").reduce((s, t) => s + cashPortion(t), 0);
-    return { id: l.id, name: l.name, expected: income - expense };
-  });
+    return [l.id, income - expense];
+  }));
 
   const basketLocId = locsToShow.some((l) => l.id === defaultLocId) ? defaultLocId : locsToShow[0]?.id;
 
@@ -103,64 +110,57 @@ export default function FinanceTab({
   ]));
 
   return (
-    <>
-      {cashByLocation.length > 0 && (
-        <div className={`statrow c${Math.min(Math.max(cashByLocation.length, 1), 6)}`} style={{ marginTop: 16, marginBottom: 22 }}>
-          {cashByLocation.map((c) => (
-            <div key={c.id} className="statcard accent">
-              <div className="lbl">{c.name}</div>
-              <div className="val">{money(c.expected)}</div>
-            </div>
-          ))}
-        </div>
-      )}
+    <div style={{ display: "flex", gap: 18, alignItems: "flex-start" }}>
+      <div style={{ width: 168, flexShrink: 0 }}>
+        {locsToShow.map((loc) => (
+          <KpiColumn key={loc.id} loc={loc} locTx={locTxByLoc[loc.id]} expected={expectedByLoc[loc.id]} showHeading={isAll} />
+        ))}
+      </div>
 
-      {locsToShow.map((loc) => (
-        <LocationStats key={loc.id} loc={loc} locTx={locTxByLoc[loc.id]} showHeading={isAll} />
-      ))}
-
-      {locsToShow.map((loc) => (
-        <LocationRecordBox
-          key={loc.id}
-          loc={loc}
-          locTx={locTxByLoc[loc.id]}
-          todayStr={todayStr}
-          locName={locName}
-          busy={busy}
-          setTxModal={setTxModal}
-          deleteTransaction={deleteTransaction}
-          setReceiptTxId={setReceiptTxId}
-          productConditionById={productConditionById}
-          todayClose={todayCloseFor(loc.id)}
-          closeDay={closeDay}
-          showHeading={isAll}
-          showBasket={loc.id === basketLocId}
-          defaultLocId={basketLocId}
-          smartQuickItems={smartQuickItems}
-          checkoutBasket={checkoutBasket}
-        />
-      ))}
-
-      <button type="button" className="btn sec sm" style={{ marginTop: 18 }} onClick={() => setShowHistory((v) => !v)}>
-        {showHistory ? "Korábbi napok elrejtése" : "Korábbi napok megtekintése"}
-      </button>
-      {showHistory && !loadingData && (
-        <div style={{ marginTop: 12 }}>
-          <TransactionsCalendar
-            transactions={filteredTransactions}
-            dayCloses={dayCloses}
-            allowedLocations={allowedLocations}
-            effectiveLocFilter={effectiveLocFilter}
-            isAdmin={isAdmin}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {locsToShow.map((loc) => (
+          <LocationRecordBox
+            key={loc.id}
+            loc={loc}
+            locTx={locTxByLoc[loc.id]}
+            todayStr={todayStr}
             locName={locName}
-            onEdit={setTxModal}
-            onDelete={deleteTransaction}
-            onOpenReceipt={setReceiptTxId}
             busy={busy}
+            setTxModal={setTxModal}
+            deleteTransaction={deleteTransaction}
+            setReceiptTxId={setReceiptTxId}
             productConditionById={productConditionById}
+            todayClose={todayCloseFor(loc.id)}
+            closeDay={closeDay}
+            showHeading={isAll}
+            showBasket={loc.id === basketLocId}
+            defaultLocId={basketLocId}
+            smartQuickItems={smartQuickItems}
+            checkoutBasket={checkoutBasket}
           />
-        </div>
-      )}
-    </>
+        ))}
+
+        <button type="button" className="btn sec sm" style={{ marginTop: 18 }} onClick={() => setShowHistory((v) => !v)}>
+          {showHistory ? "Korábbi napok elrejtése" : "Korábbi napok megtekintése"}
+        </button>
+        {showHistory && !loadingData && (
+          <div style={{ marginTop: 12 }}>
+            <TransactionsCalendar
+              transactions={filteredTransactions}
+              dayCloses={dayCloses}
+              allowedLocations={allowedLocations}
+              effectiveLocFilter={effectiveLocFilter}
+              isAdmin={isAdmin}
+              locName={locName}
+              onEdit={setTxModal}
+              onDelete={deleteTransaction}
+              onOpenReceipt={setReceiptTxId}
+              busy={busy}
+              productConditionById={productConditionById}
+            />
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

@@ -3,8 +3,9 @@ import LocationField from "./LocationField";
 import { CloseIcon } from "./icons";
 import { CATEGORIES, PAYMENTS, today } from "../lib/utils";
 import CustomerAutocomplete from "./CustomerAutocomplete";
+import ConfirmDelete from "./ConfirmDelete";
 
-export default function TransactionModal({ tx, locations, customers = [], defaultLocId, onClose, onSave, busy }) {
+export default function TransactionModal({ tx, locations, customers = [], defaultLocId, onClose, onSave, onDelete, busy }) {
   const [f, setF] = useState({
     type: tx.type,
     description: tx.description || "",
@@ -90,9 +91,12 @@ export default function TransactionModal({ tx, locations, customers = [], defaul
           <div className="field"><label>Telefonszám</label><input value={f.customerPhone} onChange={set("customerPhone")} placeholder="Opcionális" /></div>
         </div>
         <LocationField locations={locations} value={locId} onChange={setLocId} />
-        <div className="modal-actions">
-          <button className="btn sec" onClick={onClose}>Mégse</button>
-          <button className="btn" disabled={!valid || busy} onClick={() => valid && onSave({ ...f, productId: tx.productId, costPrice: f.type === "income" ? (f.costPrice || 0) : 0 }, locId)}>{busy ? "Mentés..." : "Mentés"}</button>
+        <div className="modal-actions" style={{ justifyContent: "space-between" }}>
+          {onDelete && <ConfirmDelete disabled={busy} onConfirm={onDelete} />}
+          <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
+            <button className="btn sec" onClick={onClose}>Mégse</button>
+            <button className="btn" disabled={!valid || busy} onClick={() => valid && onSave({ ...f, productId: tx.productId, costPrice: f.type === "income" ? (f.costPrice || 0) : 0 }, locId)}>{busy ? "Mentés..." : "Mentés"}</button>
+          </div>
         </div>
       </div>
     </div>

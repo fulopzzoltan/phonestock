@@ -3366,6 +3366,7 @@ function AppShell() {
           onClose={() => setTxModal(null)}
           busy={busy}
           onSave={(data, locId) => editTransaction(txModal.id, data, locId)}
+          onDelete={() => { deleteTransaction(txModal.id); setTxModal(null); }}
         />
       )}
       {ticketModal && (
