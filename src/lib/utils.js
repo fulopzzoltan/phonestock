@@ -75,7 +75,10 @@ export function brandColor(brand) {
 // "Apple iPhone 11" helyett elég csak "iPhone 11" — a brand adat marad "Apple", ez csak megjelenítés.
 // Terméknél és szerviz munkalapnál is ugyanaz a brand/model pár, ezért közös helyen.
 export function displayName(brand, model) {
-  if (brand === "Apple" && (model || "").toLowerCase().startsWith("iphone")) return model;
+  if (brand === "Apple") {
+    if ((model || "").toLowerCase().startsWith("iphone")) return model;
+    return ["iPhone", model].filter(Boolean).join(" ");
+  }
   return [brand, model].filter(Boolean).join(" ");
 }
 

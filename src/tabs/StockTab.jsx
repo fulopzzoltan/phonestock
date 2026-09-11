@@ -42,7 +42,7 @@ export default function StockTab({
     return (
       <ResponsiveTable
         className="tw-apple"
-        columns={[{ key: "n", label: "Sorszám", className: "col-serial" },{ key: "p", label: "Termék", className: "col-device" }, { key: "s", label: "Specifikáció", className: "col-grow" }, { key: "a", label: "Ár", className: "num-col" }, { key: "x", label: "" }]}
+        columns={[{ key: "n", label: "Sorszám", className: "col-serial" },{ key: "p", label: "Termék", className: "col-device" }, { key: "s", label: "Specifikáció", className: "col-grow" }, { key: "f", label: "" }, { key: "a", label: "Ár", className: "num-col" }, { key: "x", label: "" }]}
         rows={items}
         rowKey={(i) => i.id}
         renderRow={(i) => (
@@ -52,18 +52,24 @@ export default function StockTab({
               <div className="stk-name" style={{ flexWrap: "nowrap" }}>
                 {displayName(i.brand, i.model)}
                 {i.acquisition?.acquisitionType === "consignment" && <span className="badge-loc">Bizomány</span>}
-                {i.stockStatus === "javitando" && <span className="stk-repair-badge" title="Javítandó — nem látszik a webshopban"><ServiceIcon width={11} height={11} /></span>}
                 {i.stockStatus === "lefoglalt" && <span style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }} title="Nem látszik a webshopban">{stockStatusLabel(i.stockStatus)}</span>}
-                {isSlowMoving(i, reserveLocId) && <span className="stk-day-pill" title={`${daysOnShelf(i.dateAdded)} napja a polcon`}>{daysOnShelf(i.dateAdded)}</span>}
               </div>
             </td>
             <td style={{ whiteSpace: "nowrap" }}>
               <div className="stk-badges" style={{ flexWrap: "nowrap" }}>
-                <span className={`st ${i.condition === "New" ? "st-kesz" : "st-beveve"}`}>{conditionGradeLabel(i.condition, i.grade)}</span>
+                <span className={`st st-flat ${i.condition === "New" ? "st-kesz" : "st-beveve"}`}>{conditionGradeLabel(i.condition, i.grade)}</span>
                 {i.storage && <span className="stk-sub" style={{ marginTop: 0 }}>{i.storage}</span>}
-                {i.ram && <span className="stk-sub" style={{ marginTop: 0 }}>{i.ram} RAM</span>}
+                {i.brand !== "Apple" && i.ram && <span className="stk-sub" style={{ marginTop: 0 }}>{i.ram} RAM</span>}
+                {i.color && <span className="stk-sub" style={{ marginTop: 0 }}>{i.color}</span>}
+                {i.brand === "Apple" && i.batteryHealth != null && <span className="stk-sub" style={{ marginTop: 0 }}>{i.batteryHealth}% akku</span>}
                 {i.warranty && <span className="gar-pill"><WarrantyIcon width={10} height={10} />{i.warranty}</span>}
               </div>
+            </td>
+            <td style={{ whiteSpace: "nowrap" }}>
+              <span className="svc-flags">
+                {i.stockStatus === "javitando" && <span className="stk-repair-badge" title="Javítandó — nem látszik a webshopban"><ServiceIcon width={11} height={11} /></span>}
+                {isSlowMoving(i, reserveLocId) && <span className="stk-day-pill" title={`${daysOnShelf(i.dateAdded)} napja a polcon`}>{daysOnShelf(i.dateAdded)}</span>}
+              </span>
             </td>
             <td className="row-price" title={`Beszerzési ár: ${money(i.costPrice)}`}>{money(i.salePrice)}</td>
             <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
@@ -84,8 +90,10 @@ export default function StockTab({
             </div>
             <div className="mob-row-sub">
               {i.storage && <span>{i.storage}</span>}
-              {i.ram && <span>{i.ram} RAM</span>}
-              <span className={`st ${i.condition === "New" ? "st-kesz" : "st-beveve"}`}>{conditionGradeLabel(i.condition, i.grade)}</span>
+              {i.brand !== "Apple" && i.ram && <span>{i.ram} RAM</span>}
+              {i.color && <span>{i.color}</span>}
+              {i.brand === "Apple" && i.batteryHealth != null && <span>{i.batteryHealth}% akku</span>}
+              <span className={`st st-flat ${i.condition === "New" ? "st-kesz" : "st-beveve"}`}>{conditionGradeLabel(i.condition, i.grade)}</span>
               {i.warranty && <span className="gar-pill"><WarrantyIcon width={10} height={10} />{i.warranty}</span>}
               {i.acquisition?.acquisitionType === "consignment" && <span className="badge-loc">Bizomány</span>}
               {i.stockStatus === "javitando" && <span className="tag" style={{ background: "var(--danger-soft)", color: "var(--danger-ink)", fontWeight: 700 }}>Javítandó</span>}
