@@ -1701,15 +1701,20 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 
 /* Fokozatos elmosás a lebegő dokk fölött — hosszú listáknál (pl. Telefonok) a tartalom
    ne éles vágással tűnjön el a dokk mögött, hanem egyre inkább elmosódva, a dokkhoz
-   közeledve. Három egymásra rakott réteg, mindegyik más blur-erősséggel és magassággal —
-   ez adja a "fokozatosan jobban blurozott" hatást tiszta CSS-ből (progresszív blur trükk). */
+   közeledve. A CSS backdrop-filter egy rétegen belül csak EGY fix blur-erősséget tud
+   felvenni (nincs natívan folytonosan változó blur), ezért sok, vékony, egymásra
+   rakott réteggel közelítjük — minél több és vékonyabb réteg, annál kevésbé látszik
+   a rétegek közti határ, és annál inkább egy sima, folytonos átmenetnek tűnik. */
 .mac-pult-fade{position:absolute;left:0;right:0;bottom:0;height:100px;pointer-events:none;z-index:3;border-bottom-left-radius:20px;border-bottom-right-radius:20px;overflow:hidden}
-.mac-pult-fade-1,.mac-pult-fade-2,.mac-pult-fade-3,.mac-pult-fade-4,.mac-pult-fade-5{position:absolute;left:0;right:0;bottom:0;mask-image:linear-gradient(to top, #000 0%, transparent 100%);-webkit-mask-image:linear-gradient(to top, #000 0%, transparent 100%)}
-.mac-pult-fade-1{height:100px;backdrop-filter:blur(.75px);-webkit-backdrop-filter:blur(.75px)}
-.mac-pult-fade-2{height:82px;backdrop-filter:blur(1.5px);-webkit-backdrop-filter:blur(1.5px)}
-.mac-pult-fade-3{height:64px;backdrop-filter:blur(2.75px);-webkit-backdrop-filter:blur(2.75px)}
-.mac-pult-fade-4{height:44px;backdrop-filter:blur(4.5px);-webkit-backdrop-filter:blur(4.5px)}
-.mac-pult-fade-5{height:22px;backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+.mac-pult-fade-1,.mac-pult-fade-2,.mac-pult-fade-3,.mac-pult-fade-4,.mac-pult-fade-5,.mac-pult-fade-6,.mac-pult-fade-7,.mac-pult-fade-8{position:absolute;left:0;right:0;bottom:0;mask-image:linear-gradient(to top, #000 0%, transparent 100%);-webkit-mask-image:linear-gradient(to top, #000 0%, transparent 100%)}
+.mac-pult-fade-1{height:100px;backdrop-filter:blur(.4px);-webkit-backdrop-filter:blur(.4px)}
+.mac-pult-fade-2{height:88px;backdrop-filter:blur(.8px);-webkit-backdrop-filter:blur(.8px)}
+.mac-pult-fade-3{height:76px;backdrop-filter:blur(1.4px);-webkit-backdrop-filter:blur(1.4px)}
+.mac-pult-fade-4{height:63px;backdrop-filter:blur(2.2px);-webkit-backdrop-filter:blur(2.2px)}
+.mac-pult-fade-5{height:50px;backdrop-filter:blur(3.2px);-webkit-backdrop-filter:blur(3.2px)}
+.mac-pult-fade-6{height:37px;backdrop-filter:blur(4.5px);-webkit-backdrop-filter:blur(4.5px)}
+.mac-pult-fade-7{height:24px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.mac-pult-fade-8{height:12px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 
 /* --- lebegő üveg-dokk --- */
 .md-wrap{position:fixed;left:0;right:0;bottom:56px;display:flex;justify-content:center;pointer-events:none;z-index:40}
