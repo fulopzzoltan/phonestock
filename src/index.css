@@ -267,6 +267,8 @@ tr:hover td{background:#FAFAFA}
 .status-seg button .cnt{font-size:10px;font-weight:700;color:#9CA3AF}
 .status-seg button.active{background:#fff;color:#111827;box-shadow:0 1px 3px rgba(0,0,0,.1)}
 .status-seg button.active .cnt{color:#111827}
+.quick-add-seg button:hover:not(:disabled){background:#fff;color:var(--accent-dark);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.quick-add-seg button:disabled{opacity:.6;cursor:default}
 
 .svc-days{font-weight:600;color:#111827;white-space:nowrap}
 .svc-days.today{color:#111827}
@@ -365,6 +367,7 @@ tr:hover td{background:#FAFAFA}
 .badge-refurb{display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:#fff;color:#C2410C;border:1px solid #FDBA74}
 .badge-new{display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:#fff;color:#6D28D9;border:1px solid #DDD6FE}
 .badge-buyin{display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:#fff;color:#1D4ED8;border:1px solid #BFDBFE}
+.badge-service{display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:#fff;color:#EA580C;border:1px solid #FED7AA}
 .prob-pill{display:inline-flex;padding:2px 7px;border-radius:var(--radius-pill);font-size:10.5px;font-weight:500;background:#F3F4F6;color:#374151;margin:1px}
 
 /* ====== BELÉPÉSEK (jelszókezelő) ====== */

@@ -2126,7 +2126,7 @@ function AppShell() {
           ...txToApi({
             type: "income",
             category: "Szerviz",
-            description: `Szerviz: ${ticket.customerName} — ${[ticket.brand, ticket.model].filter(Boolean).join(" ")}${depositNote}`,
+            description: `${[ticket.brand, ticket.model].filter(Boolean).join(" ")}${depositNote}`,
             amount: remainingAtHandover,
             payment,
             paymentCashAmount: payment === "Vegyes" ? paymentCashAmount : null,

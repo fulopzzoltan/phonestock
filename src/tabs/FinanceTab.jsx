@@ -61,8 +61,14 @@ function LocationRecordBox({
   return (
     <>
       {showBasket && (
-        <div style={{ marginBottom: 12 }}>
+        <div style={{ marginBottom: 14 }}>
           <BasketTopBar bb={bb} defaultLocId={defaultLocId} busy={busy} smartQuickItems={smartQuickItems} />
+        </div>
+      )}
+
+      {showBasket && (
+        <div className="tw tw-compact" style={{ padding: 16, marginBottom: 16, minHeight: 168 }}>
+          <BasketBody bb={bb} defaultLocId={defaultLocId} busy={busy} />
         </div>
       )}
 
@@ -70,12 +76,6 @@ function LocationRecordBox({
         {showHeading && <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>Ma — {loc.name}</div>}
 
         <CloseStaleBanner loc={loc} locTx={locTx} todayStr={todayStr} busy={busy} todayClose={todayClose} closeDay={closeDay} />
-
-        {showBasket && (
-          <div style={{ borderBottom: "1px solid #F3F4F6", paddingBottom: 14, marginBottom: 14 }}>
-            <BasketBody bb={bb} defaultLocId={defaultLocId} busy={busy} />
-          </div>
-        )}
 
         {locTx.length === 0 ? (
           <EmptyState icon={FinanceIcon}>Ma még nincs rögzített tranzakció.</EmptyState>
@@ -125,7 +125,7 @@ export default function FinanceTab({
           <KpiColumn key={loc.id} loc={loc} locTx={locTxByLoc[loc.id]} expected={expectedByLoc[loc.id]} showHeading={isAll} />
         ))}
         <button type="button" className="btn sec sm" style={{ width: "100%" }} onClick={() => setShowHistory((v) => !v)}>
-          {showHistory ? "Korábbi napok elrejtése" : "Korábbi napok megtekintése"}
+          Korábbi napok
         </button>
       </div>
 

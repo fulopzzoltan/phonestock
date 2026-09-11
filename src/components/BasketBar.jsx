@@ -109,10 +109,10 @@ export function BasketTopBar({ bb, defaultLocId, busy, smartQuickItems }) {
   }
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
-      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
+      <div className="status-seg quick-add-seg">
         {bb.mode === "income" && smartQuickItems.map((item) => (
-          <button key={item.label} type="button" className="quick-sale-btn" disabled={busy} onClick={() => bb.addQuickToBasket(item)}>
-            {item.label} · {item.amount} Lei
+          <button key={item.label} type="button" disabled={busy} onClick={() => bb.addQuickToBasket(item)}>
+            {item.label} <span className="cnt">{item.amount} Lei</span>
           </button>
         ))}
       </div>

@@ -80,6 +80,7 @@ function KindBadge({ t, productConditionById }) {
     if (info?.condition === "Refurbished") return <span className="badge-refurb">Felújított</span>;
     if (info?.condition === "New") return <span className="badge-new">Új</span>;
   }
+  if (t.type === "income" && t.category === "Szerviz") return <span className="badge-service">Szerviz</span>;
   return null;
 }
 
