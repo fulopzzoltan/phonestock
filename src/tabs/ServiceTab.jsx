@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { money, STATUSES, SUB_STATUSES, statusLabel, statusCls, subStatusCls, subStatusLabel, displayName, ticketCode, daysOnShelf, slaInfo, isStaleReady } from "../lib/utils";
-import { SearchIcon, ServiceIcon, ClockIcon, WarrantyIcon, FoliaIcon, ChevronRightIcon, CheckIcon, ScanIcon } from "../components/icons";
+import { SearchIcon, ServiceIcon, ClockIcon, WarrantyIcon, FoliaIcon, DropletIcon, ChevronRightIcon, CheckIcon, ScanIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import ResponsiveTable from "../components/ResponsiveTable";
 import HandoverPaymentModal from "../components/HandoverPaymentModal";
@@ -104,14 +104,36 @@ export default function ServiceTab({
           if (listStatus === "Átadásra") items.sort((a, b) => (daysOnShelf(a.dateIn) ?? -1) - (daysOnShelf(b.dateIn) ?? -1));
           if (items.length === 0) return <EmptyState icon={ServiceIcon}>Nincs munkalap ebben az állapotban.</EmptyState>;
           const probsOf = (t) => (t.issue || "").split(",").map((p) => p.trim()).filter(Boolean);
-          // Sürgősség: csak akkor jelezzük, ha VAN vállalt határidő (dueDate) — ha nincs ígéret,
-          // nincs mihez képest "sürgős" legyen. A 90+ napja átvehető, de el nem vitt munkalapokat
-          // is ide soroljuk, mert azok is azonnali odafigyelést igényelnek.
-          const urgencyOf = (t) => {
-            const sla = slaInfo(t);
-            if (sla && (sla.level === "warn" || sla.level === "overdue")) return sla;
-            if (isStaleReady(t)) return { level: "overdue", label: "90+ napja várja az átvételt" };
-            return null;
+          // Állapotsáv (Probléma és Státusz között): beázás, garanciális, fólia, ígért határidő —
+          // egységes színes ikonokkal, hogy egy pillantásra látszódjon minden munkalapon. A 90+
+          // napja átvehető, de el nem vitt munkalapokat is az "ígért határidő" jelzésbe soroljuk,
+          // mert azok is azonnali odafigyelést igényelnek.
+          const flagsOf = (t) => {
+            const sla = slaInfo(t) || (isStaleReady(t) ? { level: "overdue", label: "90+ napja várja az átvételt" } : null);
+            return (
+              <span className="svc-flags">
+                {probsOf(t).includes("Beázás") && (
+                  <span className="svc-flag svc-flag-water" title="Beázott készülék">
+                    <DropletIcon width={11} height={11} />
+                  </span>
+                )}
+                {t.isWarranty && (
+                  <span className="svc-flag svc-flag-warranty" title={t.warrantyKind === "termék" ? "Garanciális — termék" : "Garanciális — szerviz"}>
+                    <WarrantyIcon width={11} height={11} />
+                  </span>
+                )}
+                {t.folia && (
+                  <span className="t-folia" title="Fólia felhelyezve">
+                    <FoliaIcon width={12} height={12} />
+                  </span>
+                )}
+                {sla && (
+                  <span className={`svc-flag svc-flag-due-${sla.level}`} title={sla.label}>
+                    <ClockIcon width={11} height={11} />
+                  </span>
+                )}
+              </span>
+            );
           };
           const daysOf = (t) => {
             const n = daysOnShelf(t.dateIn);
@@ -138,7 +160,7 @@ export default function ServiceTab({
               wrap={false}
               columns={[
                 { key: "n", label: "Sorszám", className: "col-serial" }, { key: "d", label: "Eszköz", className: "col-device" }, { key: "c", label: "Kliens" }, { key: "i", label: "Bejött" },
-                { key: "p", label: "Probléma", className: "col-grow" }, { key: "s", label: "Státusz", className: "col-status" }, { key: "a", label: "Ár", className: "num-col" }, { key: "x", label: "" },
+                { key: "p", label: "Probléma", className: "col-grow" }, { key: "f", label: "" }, { key: "s", label: "Státusz", className: "col-status" }, { key: "a", label: "Ár", className: "num-col" }, { key: "x", label: "" },
               ]}
               rows={items}
               rowKey={(t) => t.id}
@@ -148,21 +170,6 @@ export default function ServiceTab({
                   <td style={{ whiteSpace: "nowrap" }}>
                     <div className="stk-name" style={{ flexWrap: "nowrap" }}>
                       {displayName(t.brand, t.model) || "—"}
-                      {urgencyOf(t) && (
-                        <span className={`sla-badge sla-${urgencyOf(t).level}`} style={{ marginLeft: 6 }} title={urgencyOf(t).label}>
-                          <ClockIcon width={11} height={11} />
-                        </span>
-                      )}
-                      {t.isWarranty && (
-                        <span className="t-kind-pill" style={{ background: "#EDE9FE", color: "#6D28D9", marginLeft: 6, marginBottom: 0 }} title={t.warrantyKind === "termék" ? "Garanciális — termék" : "Garanciális — szerviz"}>
-                          <WarrantyIcon width={11} height={11} />
-                        </span>
-                      )}
-                      {t.folia && (
-                        <span className="t-folia" style={{ marginLeft: 6 }} title="Fólia felhelyezve">
-                          <FoliaIcon width={13} height={13} />
-                        </span>
-                      )}
                     </div>
                   </td>
                   <td style={{ whiteSpace: "nowrap" }}>{kliensOf(t)}</td>
@@ -172,6 +179,7 @@ export default function ServiceTab({
                       {probsOf(t).length > 0 ? probsOf(t).map((p, i) => <span key={i} className="prob-pill">{p}</span>) : "—"}
                     </div>
                   </td>
+                  <td style={{ whiteSpace: "nowrap" }}>{flagsOf(t)}</td>
                   <td className="col-status" style={{ whiteSpace: "nowrap" }}>{statusPill(t)}</td>
                   <td className="row-price">
                     {(Number(t.depositPaid) || 0) > 0 ? (
@@ -199,21 +207,6 @@ export default function ServiceTab({
                     <div className="mob-row-main">
                       <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</span>
                       <span>{displayName(t.brand, t.model) || "—"}</span>
-                      {urgencyOf(t) && (
-                        <span className={`sla-badge sla-${urgencyOf(t).level}`} style={{ marginLeft: 6 }} title={urgencyOf(t).label}>
-                          <ClockIcon width={11} height={11} />
-                        </span>
-                      )}
-                      {t.isWarranty && (
-                        <span className="t-kind-pill" style={{ background: "#EDE9FE", color: "#6D28D9", marginLeft: 6, marginBottom: 0 }} title={t.warrantyKind === "termék" ? "Garanciális — termék" : "Garanciális — szerviz"}>
-                          <WarrantyIcon width={11} height={11} />
-                        </span>
-                      )}
-                      {t.folia && (
-                        <span className="t-folia" style={{ marginLeft: 6 }} title="Fólia felhelyezve">
-                          <FoliaIcon width={13} height={13} />
-                        </span>
-                      )}
                     </div>
                     <div className="mob-row-amount">
                       {(Number(t.depositPaid) || 0) > 0 ? money(t.price - t.depositPaid) : money(t.price)}
@@ -223,6 +216,7 @@ export default function ServiceTab({
                     <span>{kliensOf(t)}</span>
                     {daysOf(t)}
                     {statusPill(t)}
+                    {flagsOf(t)}
                   </div>
                   {probsOf(t).length > 0 && (
                     <div className="svc-probs" style={{ marginTop: 6, flexWrap: "wrap" }}>

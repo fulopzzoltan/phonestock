@@ -331,6 +331,16 @@ tr:hover td{background:#FAFAFA}
 .sla-badge.sla-warn{background:#FEF3C7;color:#92400E}
 .sla-badge.sla-overdue{background:#FEE2E2;color:#B91C1C}
 
+/* Szerviz állapotsáv (Probléma/Státusz között) — egységes, kitöltött színes körök,
+   soronként max 4: Beázás, Garanciális, Fólia (.t-folia), Ígért határidő. */
+.svc-flags{display:flex;align-items:center;gap:5px}
+.svc-flag{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:999px;color:#fff;flex-shrink:0}
+.svc-flag-water{background:#0EA5E9}
+.svc-flag-warranty{background:#7C3AED}
+.svc-flag-due-ok{background:#60A5FA}
+.svc-flag-due-warn{background:#F59E0B}
+.svc-flag-due-overdue{background:#DC2626}
+
 /* STOCK TAB — redesigned rows/cards */
 .stk-row{display:flex;align-items:center;gap:11px}
 .stk-thumb{width:36px;height:36px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11.5px;font-weight:700;overflow:hidden}
