@@ -33,6 +33,17 @@ function RouteFallback() {
 // hogy a személyzeti bejelentkezés session-je sose kerülhessen a publikus webshop originjébe.
 const ADMIN_ONLY = import.meta.env.VITE_ADMIN_ONLY === "true";
 
+// Umami látogatottság-mérés — csak a nyilvános oldalakon (webshop, nyomon követés, felvásárlás
+// stb.), a személyzeti admin-felületen SOSEM, hogy a saját kollégák napi használata ne
+// keveredjen bele az ügyfél-forgalom számaiba. Cookie-mentes, nem kell hozzá elfogadó sáv.
+if (!ADMIN_ONLY) {
+  const umamiScript = document.createElement("script");
+  umamiScript.defer = true;
+  umamiScript.src = "https://cloud.umami.is/script.js";
+  umamiScript.setAttribute("data-website-id", "b9002b14-6133-4c4d-a542-83681fab3583");
+  document.head.appendChild(umamiScript);
+}
+
 // A "csak nyomonkövetés" origin (nyomonkovetes.telefonos.ro) — amíg a többi publikus
 // funkció (webshop, felvásárlás stb.) nincs kész az éles indulásra, ezen a külön
 // Netlify site-on/aldomain-en szándékosan CSAK a /status és /receipt önkiszolgáló
