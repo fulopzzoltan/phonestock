@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { CloseIcon } from "./icons";
 import { CATEGORIES, PAYMENTS } from "../lib/utils";
-import AmountKeypad from "./AmountKeypad";
 
 // Kosár/blokk-alapú gyors rögzítő — a QuickSaleButtons + TransactionQuickAdd párost váltja.
 // Bevételnél tételenként gyűjt a kosárba (egy fizetési móddal zárva), kiadásnál egytételes
@@ -24,28 +23,14 @@ export function useBasketBar({ defaultLocId, onCheckout }) {
   const [category, setCategory] = useState("Készlet");
   const [stockKind, setStockKind] = useState("Egyéb"); // Telefon | Alkatrész | Egyéb
   const [err, setErr] = useState("");
-  const [keypadOpen, setKeypadOpen] = useState(false);
-  const amountFieldRef = useRef(null);
-
-  useEffect(() => {
-    setCategory(mode === "income" ? "Készlet" : "Egyéb");
-  }, [mode]);
-
-  useEffect(() => {
-    if (!keypadOpen) return;
-    function onDocMouseDown(e) {
-      if (amountFieldRef.current && !amountFieldRef.current.contains(e.target)) setKeypadOpen(false);
-    }
-    document.addEventListener("mousedown", onDocMouseDown);
-    return () => document.removeEventListener("mousedown", onDocMouseDown);
-  }, [keypadOpen]);
 
   function resetFree() {
-    setDescription(""); setAmount(""); setCostPrice(""); setStockKind("Egyéb"); setKeypadOpen(false);
+    setDescription(""); setAmount(""); setCostPrice(""); setStockKind("Egyéb");
   }
 
   function setMode(next) {
     setModeRaw(next);
+    setCategory(next === "income" ? "Készlet" : "Egyéb");
     setBasketItems([]);
     resetFree();
   }
@@ -96,7 +81,7 @@ export function useBasketBar({ defaultLocId, onCheckout }) {
     mode, setMode, basketItems, basketPayment, setBasketPayment,
     description, setDescription, amount, setAmount,
     costPrice, setCostPrice, category, setCategory, stockKind, setStockKind,
-    err, keypadOpen, setKeypadOpen, amountFieldRef,
+    err,
     resetFree, addQuickToBasket, addFreeToBasket, removeItem, handleCheckout, handleDirectExpense, total,
   };
 }
@@ -109,7 +94,7 @@ export function BasketTopBar({ bb, defaultLocId, busy, smartQuickItems }) {
   }
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
-      <div className="status-seg quick-add-seg">
+      <div className="quick-add-seg">
         {bb.mode === "income" && smartQuickItems.map((item) => (
           <button key={item.label} type="button" disabled={busy} onClick={() => bb.addQuickToBasket(item)}>
             {item.label} <span className="cnt">{item.amount} Lei</span>
@@ -139,14 +124,9 @@ export function BasketBody({ bb, defaultLocId, busy }) {
           <label>Leírás</label>
           <input value={bb.description} onChange={(e) => bb.setDescription(e.target.value)} placeholder="pl. tok eladás, hirdetés..." />
         </div>
-        <div className="field" style={{ margin: 0, position: "relative" }} ref={bb.amountFieldRef}>
+        <div className="field" style={{ margin: 0 }}>
           <label>Összeg (Lei)</label>
-          <input type="number" value={bb.amount} onChange={(e) => bb.setAmount(e.target.value)} onFocus={() => bb.setKeypadOpen(true)} placeholder="0" />
-          {bb.keypadOpen && (
-            <div style={{ position: "absolute", top: "100%", left: 0, zIndex: 20, width: 220 }}>
-              <AmountKeypad value={bb.amount} onChange={bb.setAmount} onDone={() => bb.setKeypadOpen(false)} />
-            </div>
-          )}
+          <input type="number" value={bb.amount} onChange={(e) => bb.setAmount(e.target.value)} placeholder="0" />
         </div>
         {mode === "income" && (
           <div className="field" style={{ margin: 0 }}>
@@ -173,8 +153,7 @@ export function BasketBody({ bb, defaultLocId, busy }) {
         </div>
       )}
 
-      <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-        <button type="button" className="btn sec sm" onClick={bb.resetFree}>Mezők törlése</button>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 10 }}>
         {mode === "income" && <button type="button" className="btn sec sm" onClick={bb.addFreeToBasket}>Hozzáadás a kosárhoz</button>}
         {mode === "expense" && basketItems.length === 0 && (
           <button type="button" className="btn sm" disabled={busy} onClick={bb.handleDirectExpense}>Rögzítés</button>

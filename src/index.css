@@ -267,7 +267,11 @@ tr:hover td{background:#FAFAFA}
 .status-seg button .cnt{font-size:10px;font-weight:700;color:#9CA3AF}
 .status-seg button.active{background:#fff;color:#111827;box-shadow:0 1px 3px rgba(0,0,0,.1)}
 .status-seg button.active .cnt{color:#111827}
-.quick-add-seg button:hover:not(:disabled){background:#fff;color:var(--accent-dark);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.quick-add-seg{display:flex;gap:8px;flex-wrap:wrap}
+.quick-add-seg button{display:flex;align-items:center;gap:6px;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:999px;height:36px;padding:0 14px;color:#48484A;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+.quick-add-seg button .cnt{font-size:10px;font-weight:700;color:#86868B}
+.quick-add-seg button:hover:not(:disabled){border-color:#BBF7D0;background:#F0FDF4;color:var(--accent-dark)}
+.quick-add-seg button:hover:not(:disabled) .cnt{color:var(--accent-dark)}
 .quick-add-seg button:disabled{opacity:.6;cursor:default}
 
 .svc-days{font-weight:600;color:#111827;white-space:nowrap}
