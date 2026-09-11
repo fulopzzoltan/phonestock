@@ -32,6 +32,12 @@
         ],
         "createdAt": "2026-09-07T17:45:01.221Z",
         "reason": "bb-progress-fill: single small 6px progress-bar fill in the public Buyback wizard, transitions only on step change — negligible layout-thrash risk, pre-existing and not introduced this session"
+      },
+      {
+        "rule": "bounce-easing",
+        "value": "cubic-bezier(.34, 1.56, .64, 1)",
+        "createdAt": "2026-09-11T12:56:41.070Z",
+        "reason": "user asked to replicate bencho.dev liquid-toggle's spring/overshoot bounce for the Nap zárása switch; the overshoot is the intended 'liquid' effect, not accidental easing"
       }
     ]
   }

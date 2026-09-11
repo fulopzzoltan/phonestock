@@ -1,5 +1,5 @@
 import { useState } from "react";
-import BasketBar from "../components/BasketBar";
+import { useBasketBar, BasketTopBar, BasketBody } from "../components/BasketBar";
 import { TransactionRowsTable } from "../components/TransactionsPeriodList";
 import TransactionsCalendar from "../components/TransactionsCalendar";
 import { EmptyState } from "../components/EmptyState";
@@ -57,24 +57,33 @@ function LocationRecordBox({
   loc, locTx, todayStr, locName, busy, setTxModal, deleteTransaction, setReceiptTxId, productConditionById,
   todayClose, closeDay, showHeading, showBasket, defaultLocId, smartQuickItems, checkoutBasket,
 }) {
+  const bb = useBasketBar({ defaultLocId, onCheckout: checkoutBasket });
   return (
-    <div className="tw tw-compact" style={{ padding: 16, marginTop: 16 }}>
-      {showHeading && <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>Ma — {loc.name}</div>}
-
-      <CloseStaleBanner loc={loc} locTx={locTx} todayStr={todayStr} busy={busy} todayClose={todayClose} closeDay={closeDay} />
-
+    <>
       {showBasket && (
-        <div style={{ borderBottom: "1px solid #F3F4F6", paddingBottom: 14, marginBottom: 14 }}>
-          <BasketBar defaultLocId={defaultLocId} busy={busy} smartQuickItems={smartQuickItems} onCheckout={checkoutBasket} />
+        <div style={{ marginBottom: 12 }}>
+          <BasketTopBar bb={bb} defaultLocId={defaultLocId} busy={busy} smartQuickItems={smartQuickItems} />
         </div>
       )}
 
-      {locTx.length === 0 ? (
-        <EmptyState icon={FinanceIcon}>Ma még nincs rögzített tranzakció.</EmptyState>
-      ) : (
-        <TransactionRowsTable rows={locTx} locName={locName} onEdit={setTxModal} onDelete={deleteTransaction} onOpenReceipt={setReceiptTxId} busy={busy} productConditionById={productConditionById} showLocation={false} />
-      )}
-    </div>
+      <div className="tw tw-compact" style={{ padding: 16, marginTop: 16 }}>
+        {showHeading && <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>Ma — {loc.name}</div>}
+
+        <CloseStaleBanner loc={loc} locTx={locTx} todayStr={todayStr} busy={busy} todayClose={todayClose} closeDay={closeDay} />
+
+        {showBasket && (
+          <div style={{ borderBottom: "1px solid #F3F4F6", paddingBottom: 14, marginBottom: 14 }}>
+            <BasketBody bb={bb} defaultLocId={defaultLocId} busy={busy} />
+          </div>
+        )}
+
+        {locTx.length === 0 ? (
+          <EmptyState icon={FinanceIcon}>Ma még nincs rögzített tranzakció.</EmptyState>
+        ) : (
+          <TransactionRowsTable rows={locTx} locName={locName} onEdit={setTxModal} onDelete={deleteTransaction} onOpenReceipt={setReceiptTxId} busy={busy} productConditionById={productConditionById} showLocation={false} />
+        )}
+      </div>
+    </>
   );
 }
 
@@ -115,6 +124,9 @@ export default function FinanceTab({
         {locsToShow.map((loc) => (
           <KpiColumn key={loc.id} loc={loc} locTx={locTxByLoc[loc.id]} expected={expectedByLoc[loc.id]} showHeading={isAll} />
         ))}
+        <button type="button" className="btn sec sm" style={{ width: "100%" }} onClick={() => setShowHistory((v) => !v)}>
+          {showHistory ? "Korábbi napok elrejtése" : "Korábbi napok megtekintése"}
+        </button>
       </div>
 
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -140,9 +152,6 @@ export default function FinanceTab({
           />
         ))}
 
-        <button type="button" className="btn sec sm" style={{ marginTop: 18 }} onClick={() => setShowHistory((v) => !v)}>
-          {showHistory ? "Korábbi napok elrejtése" : "Korábbi napok megtekintése"}
-        </button>
         {showHistory && !loadingData && (
           <div style={{ marginTop: 12 }}>
             <TransactionsCalendar

@@ -337,6 +337,9 @@ tr:hover td{background:#FAFAFA}
 .st-eredeti{--pill-bg:#DCFCE7;--pill-fg:#15803D}
 .st-utangyartott{--pill-bg:#F3F4F6;--pill-fg:#6B7280}
 .st-felujitott{--pill-bg:#FFEDD5;--pill-fg:#C2410C}
+.st-keszpenz{background:#F3F4F6;color:#6B7280;padding:2px 7px;font-size:10.5px;font-weight:500}
+.st-kartya{background:var(--info-soft);color:var(--info-ink);padding:2px 7px;font-size:10.5px;font-weight:500}
+.st-atutalas{background:#FEF3C7;color:#92400E;padding:2px 7px;font-size:10.5px;font-weight:500}
 /* Kitöltött, színes pill-változat (mint az Alkatrészek Kategória-oszlopa) — a .tw-apple
    .st{background:transparent} felülírásához nagyobb specificitású szabály kell, a
    tényleges színt pedig a --pill-bg/--pill-fg (fenti .st-* osztályokon) adja. */

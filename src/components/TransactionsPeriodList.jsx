@@ -1,20 +1,15 @@
 import { useState } from "react";
 import { money, adaptivePeriodBucket, periodLabel, today, cashPortion, cardPortion } from "../lib/utils";
-import { FinanceIcon, CashIcon, CardIcon, TransferIcon } from "./icons";
+import { FinanceIcon } from "./icons";
 import { EmptyState } from "./EmptyState";
 
 const num = (n) => Math.round(Number(n) || 0).toLocaleString("hu-HU");
 
-function PaymentIcon({ payment, t }) {
-  const common = { width: 15, height: 15 };
-  const wrap = (title, icon) => <span title={title} style={{ color: "#6B7280", display: "inline-flex" }}>{icon}</span>;
-  if (payment === "Készpénz") return wrap("Készpénz", <CashIcon {...common} />);
-  if (payment === "Kártya") return wrap("Kártya", <CardIcon {...common} />);
-  if (payment === "Átutalás") return wrap("Átutalás", <TransferIcon {...common} />);
-  if (payment === "Vegyes") {
-    return wrap(`Vegyes — készpénz: ${num(cashPortion(t))} Lei, kártya: ${num(cardPortion(t))} Lei`, <CardIcon {...common} />);
-  }
-  return <span title="Nincs megadva" style={{ color: "#D1D5DB" }}>—</span>;
+const PAYMENT_PILL_CLS = { "Készpénz": "st-keszpenz", "Kártya": "st-kartya", "Átutalás": "st-atutalas", "Vegyes": "st-kartya" };
+
+function PaymentPill({ payment }) {
+  if (!payment || !PAYMENT_PILL_CLS[payment]) return null;
+  return <span className={`st st-fill ${PAYMENT_PILL_CLS[payment]}`}>{payment}</span>;
 }
 
 function PaymentSplitLabel({ t }) {
@@ -102,8 +97,8 @@ export function TransactionRowsTable({ rows, locName, onEdit, onDelete, onOpenRe
               <tr key={t.id} className={entry.inBasket ? "basket-item-tr" : undefined} style={{ cursor: "pointer" }} onClick={() => (isSale ? onOpenReceipt(t.id) : onEdit(t))}>
                 <td style={{ fontWeight: 500, color: "#111827" }}>
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                    <PaymentIcon payment={t.payment} t={t} />
                     {t.description}
+                    <PaymentPill payment={t.payment} />
                     <KindBadge t={t} productConditionById={productConditionById} />
                     {t.smartbillDoc && <SmartBillBadge doc={t.smartbillDoc} />}
                   </span>
@@ -129,7 +124,7 @@ export function TransactionRowsTable({ rows, locName, onEdit, onDelete, onOpenRe
           return (
             <div key={t.id} className={`mob-row${entry.inBasket ? " basket-item-mob" : ""}`} onClick={() => (isSale ? onOpenReceipt(t.id) : onEdit(t))}>
               <div className="mob-row-top">
-                <div className="mob-row-main"><PaymentIcon payment={t.payment} t={t} /><span>{t.description}</span><KindBadge t={t} productConditionById={productConditionById} />{t.smartbillDoc && <SmartBillBadge doc={t.smartbillDoc} />}</div>
+                <div className="mob-row-main"><span>{t.description}</span><PaymentPill payment={t.payment} /><KindBadge t={t} productConditionById={productConditionById} />{t.smartbillDoc && <SmartBillBadge doc={t.smartbillDoc} />}</div>
                 <span className="mob-row-amount" style={{ color: t.type === "income" ? "#15803D" : "#B91C1C" }}>
                   {t.type === "income" ? "+" : "-"}{num(t.amount)}
                 </span>

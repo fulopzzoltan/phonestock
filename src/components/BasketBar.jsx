@@ -8,12 +8,16 @@ import AmountKeypad from "./AmountKeypad";
 // gyors rögzítést is enged kosarazás nélkül. A helyszín kizárólag a sidebar-ból jön
 // (defaultLocId) — nincs itt saját, második helyszín-választó, hogy ne legyen két hely,
 // ahol ugyanazt kell eldönteni.
-export default function BasketBar({ defaultLocId, busy, smartQuickItems, onCheckout, headerExtra }) {
-  const [mode, setMode] = useState("income"); // income | expense
+//
+// A state egy hookban él (useBasketBar), mert a felső sáv (mód-váltó + gyorsgombok) a
+// kártyán KÍVÜL, fölötte jelenik meg, a többi (szabad tétel form, kosár) pedig a kártyán
+// belül — két külön DOM-helyen, de egy közös állapoton. Nincs külön "+ Egyéb tétel" nyitó
+// gomb — maga a Bevétel/Kiadás mód-váltó egyben a szabad tétel mezőit is megnyitja.
+export function useBasketBar({ defaultLocId, onCheckout }) {
+  const [mode, setModeRaw] = useState("income"); // income | expense
   const [basketItems, setBasketItems] = useState([]);
   const [basketPayment, setBasketPayment] = useState("Készpénz");
 
-  const [freeOpen, setFreeOpen] = useState(false);
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [costPrice, setCostPrice] = useState("");
@@ -37,7 +41,13 @@ export default function BasketBar({ defaultLocId, busy, smartQuickItems, onCheck
   }, [keypadOpen]);
 
   function resetFree() {
-    setDescription(""); setAmount(""); setCostPrice(""); setStockKind("Egyéb"); setFreeOpen(false); setKeypadOpen(false);
+    setDescription(""); setAmount(""); setCostPrice(""); setStockKind("Egyéb"); setKeypadOpen(false);
+  }
+
+  function setMode(next) {
+    setModeRaw(next);
+    setBasketItems([]);
+    resetFree();
   }
 
   function addQuickToBasket(item) {
@@ -82,101 +92,104 @@ export default function BasketBar({ defaultLocId, busy, smartQuickItems, onCheck
 
   const total = basketItems.reduce((s, it) => s + (it.kind === "income" ? it.amount : -it.amount), 0);
 
-  if (!defaultLocId) {
-    return (
-      <div>
-        <div style={{ fontSize: 12.5, color: "#B91C1C" }}>Válassz helyszínt a bal oldali sávban a rögzítéshez.</div>
-      </div>
-    );
-  }
+  return {
+    mode, setMode, basketItems, basketPayment, setBasketPayment,
+    description, setDescription, amount, setAmount,
+    costPrice, setCostPrice, category, setCategory, stockKind, setStockKind,
+    err, keypadOpen, setKeypadOpen, amountFieldRef,
+    resetFree, addQuickToBasket, addFreeToBasket, removeItem, handleCheckout, handleDirectExpense, total,
+  };
+}
 
+// Felső sáv: mód-váltó (Kiadás | Bevétel, jobb felső sarokban a Bevétel) balra a
+// gyorsgombokkal — ez a kártyán KÍVÜL, fölötte ül.
+export function BasketTopBar({ bb, defaultLocId, busy, smartQuickItems }) {
+  if (!defaultLocId) {
+    return <div style={{ fontSize: 12.5, color: "#B91C1C" }}>Válassz helyszínt a bal oldali sávban a rögzítéshez.</div>;
+  }
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
+        {bb.mode === "income" && smartQuickItems.map((item) => (
+          <button key={item.label} type="button" className="quick-sale-btn" disabled={busy} onClick={() => bb.addQuickToBasket(item)}>
+            {item.label} · {item.amount} Lei
+          </button>
+        ))}
+      </div>
+      <div className="seg">
+        <button type="button" className={bb.mode === "expense" ? "active" : ""} onClick={() => bb.setMode("expense")}>Kiadás</button>
+        <button type="button" className={bb.mode === "income" ? "active" : ""} onClick={() => bb.setMode("income")}>Bevétel</button>
+      </div>
+    </div>
+  );
+}
+
+// A form/kosár rész — a hívó a kártyán BELÜL helyezi el, közvetlenül a felső sáv alatt.
+// A szabad tétel mezői mindig látszanak (nincs külön nyitó gomb): a Bevétel/Kiadás
+// gomb már maga az "indítás".
+export function BasketBody({ bb, defaultLocId, busy }) {
+  if (!defaultLocId) return null;
+  const { mode, basketItems, total } = bb;
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap", marginBottom: 18 }}>
-        <div className="seg">
-          <button type="button" className={mode === "income" ? "active" : ""} onClick={() => { setMode("income"); setBasketItems([]); resetFree(); }}>Bevétel</button>
-          <button type="button" className={mode === "expense" ? "active" : ""} onClick={() => { setMode("expense"); setBasketItems([]); resetFree(); }}>Kiadás</button>
+      {bb.err && <div className="errbar">{bb.err}</div>}
+
+      <div style={{ display: "grid", gridTemplateColumns: mode === "income" ? "1.6fr 1fr 1fr 1fr" : "2fr 1fr 1fr", gap: 8, alignItems: "flex-end" }}>
+        <div className="field" style={{ margin: 0 }}>
+          <label>Leírás</label>
+          <input value={bb.description} onChange={(e) => bb.setDescription(e.target.value)} placeholder="pl. tok eladás, hirdetés..." />
         </div>
-        {headerExtra}
-      </div>
-
-      {err && <div className="errbar">{err}</div>}
-
-      {mode === "income" && (
-        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, marginBottom: freeOpen ? 10 : 0 }}>
-          {!freeOpen && <button type="button" className="btn sm" onClick={() => setFreeOpen(true)}>+ Egyéb tétel</button>}
-          <div style={{ width: 1, alignSelf: "stretch", background: "#E5E7EB" }} />
-          {smartQuickItems.map((item) => (
-            <button key={item.label} type="button" className="quick-sale-btn" disabled={busy} onClick={() => addQuickToBasket(item)}>
-              {item.label} · {item.amount} Lei
-            </button>
-          ))}
-        </div>
-      )}
-      {mode === "expense" && !freeOpen && (
-        <button type="button" className="btn sm" onClick={() => setFreeOpen(true)}>+ Kiadás felvétele</button>
-      )}
-
-      {freeOpen && (
-        <>
-          <div style={{ display: "grid", gridTemplateColumns: mode === "income" ? "1.6fr 1fr 1fr 1fr" : "2fr 1fr 1fr", gap: 8, alignItems: "flex-end", marginTop: mode === "income" ? 10 : 0 }}>
-            <div className="field" style={{ margin: 0 }}>
-              <label>Leírás</label>
-              <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="pl. tok eladás, hirdetés..." autoFocus />
-            </div>
-            <div className="field" style={{ margin: 0, position: "relative" }} ref={amountFieldRef}>
-              <label>Összeg (Lei)</label>
-              <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} onFocus={() => setKeypadOpen(true)} placeholder="0" />
-              {keypadOpen && (
-                <div style={{ position: "absolute", top: "100%", left: 0, zIndex: 20, width: 220 }}>
-                  <AmountKeypad value={amount} onChange={setAmount} onDone={() => setKeypadOpen(false)} />
-                </div>
-              )}
-            </div>
-            {mode === "income" && (
-              <div className="field" style={{ margin: 0 }}>
-                <label>Besz. ár (Lei)</label>
-                <input type="number" value={costPrice} onChange={(e) => setCostPrice(e.target.value)} placeholder="0" />
-              </div>
-            )}
-            <div className="field" style={{ margin: 0 }}>
-              <label>Kategória</label>
-              <select value={category} onChange={(e) => setCategory(e.target.value)}>
-                {CATEGORIES.map((c) => <option key={c} value={c}>{c === "Eszköz" ? "Eszköz (befektetés)" : c}</option>)}
-              </select>
-            </div>
-          </div>
-
-          {mode === "expense" && category === "Készlet" && (
-            <div className="field" style={{ margin: "10px 0 0" }}>
-              <label>Mi érkezett?</label>
-              <div className="seg">
-                {["Telefon", "Alkatrész", "Egyéb"].map((k) => (
-                  <button key={k} type="button" className={stockKind === k ? "active" : ""} onClick={() => setStockKind(k)}>{k}</button>
-                ))}
-              </div>
+        <div className="field" style={{ margin: 0, position: "relative" }} ref={bb.amountFieldRef}>
+          <label>Összeg (Lei)</label>
+          <input type="number" value={bb.amount} onChange={(e) => bb.setAmount(e.target.value)} onFocus={() => bb.setKeypadOpen(true)} placeholder="0" />
+          {bb.keypadOpen && (
+            <div style={{ position: "absolute", top: "100%", left: 0, zIndex: 20, width: 220 }}>
+              <AmountKeypad value={bb.amount} onChange={bb.setAmount} onDone={() => bb.setKeypadOpen(false)} />
             </div>
           )}
-
-          <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-            <button type="button" className="btn sec sm" onClick={resetFree}>Mégse</button>
-            <button type="button" className="btn sec sm" onClick={addFreeToBasket}>Hozzáadás a kosárhoz</button>
-            {mode === "expense" && basketItems.length === 0 && (
-              <button type="button" className="btn sm" disabled={busy} onClick={handleDirectExpense}>Rögzítés</button>
-            )}
+        </div>
+        {mode === "income" && (
+          <div className="field" style={{ margin: 0 }}>
+            <label>Besz. ár (Lei)</label>
+            <input type="number" value={bb.costPrice} onChange={(e) => bb.setCostPrice(e.target.value)} placeholder="0" />
           </div>
-        </>
+        )}
+        <div className="field" style={{ margin: 0 }}>
+          <label>Kategória</label>
+          <select value={bb.category} onChange={(e) => bb.setCategory(e.target.value)}>
+            {CATEGORIES.map((c) => <option key={c} value={c}>{c === "Eszköz" ? "Eszköz (befektetés)" : c}</option>)}
+          </select>
+        </div>
+      </div>
+
+      {mode === "expense" && bb.category === "Készlet" && (
+        <div className="field" style={{ margin: "10px 0 0" }}>
+          <label>Mi érkezett?</label>
+          <div className="seg">
+            {["Telefon", "Alkatrész", "Egyéb"].map((k) => (
+              <button key={k} type="button" className={bb.stockKind === k ? "active" : ""} onClick={() => bb.setStockKind(k)}>{k}</button>
+            ))}
+          </div>
+        </div>
       )}
+
+      <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+        <button type="button" className="btn sec sm" onClick={bb.resetFree}>Mezők törlése</button>
+        {mode === "income" && <button type="button" className="btn sec sm" onClick={bb.addFreeToBasket}>Hozzáadás a kosárhoz</button>}
+        {mode === "expense" && basketItems.length === 0 && (
+          <button type="button" className="btn sm" disabled={busy} onClick={bb.handleDirectExpense}>Rögzítés</button>
+        )}
+      </div>
 
       {basketItems.length > 0 && (
         <>
-          <div className="basket-items" style={{ marginTop: freeOpen ? 12 : 10 }}>
+          <div className="basket-items" style={{ marginTop: 12 }}>
             {basketItems.map((it, i) => (
               <div key={i} className="basket-item-row">
                 <span>{it.label}{it.stockKind && it.stockKind !== "Egyéb" ? ` (${it.stockKind})` : ""}</span>
                 <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span className="mono">{it.kind === "income" ? "+" : "-"}{it.amount} Lei</span>
-                  <button type="button" className="basket-item-remove" onClick={() => removeItem(i)}><CloseIcon width={12} height={12} /></button>
+                  <button type="button" className="basket-item-remove" onClick={() => bb.removeItem(i)}><CloseIcon width={12} height={12} /></button>
                 </span>
               </div>
             ))}
@@ -186,14 +199,14 @@ export default function BasketBar({ defaultLocId, busy, smartQuickItems, onCheck
               <label>Fizetés</label>
               <div className="seg">
                 {PAYMENTS.map((p) => (
-                  <button key={p} type="button" className={basketPayment === p ? "active" : ""} onClick={() => setBasketPayment(p)}>{p}</button>
+                  <button key={p} type="button" className={bb.basketPayment === p ? "active" : ""} onClick={() => bb.setBasketPayment(p)}>{p}</button>
                 ))}
               </div>
             </div>
             <div style={{ flex: 1, textAlign: "right", fontWeight: 700, fontSize: 13, color: total >= 0 ? "#15803D" : "#B91C1C" }}>
               Összesen: {total >= 0 ? "+" : ""}{total} Lei
             </div>
-            <button type="button" className="btn" disabled={busy} onClick={handleCheckout}>Blokk lezárása</button>
+            <button type="button" className="btn" disabled={busy} onClick={bb.handleCheckout}>Blokk lezárása</button>
           </div>
         </>
       )}
