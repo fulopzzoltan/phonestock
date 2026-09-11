@@ -3013,7 +3013,7 @@ function AppShell() {
         ) : tab === "buyback" ? (
           <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Felvásárlás</div>
         ) : tab === "cash-settlement" ? (
-          <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Árulás</div>
+          <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Elszámolás</div>
         ) : tab === "invoices" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Számlák</div>
