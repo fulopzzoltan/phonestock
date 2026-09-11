@@ -61,7 +61,6 @@ export default function StockTab({
                 {i.storage && <span className="stk-sub" style={{ marginTop: 0 }}>{i.storage}</span>}
                 {i.brand !== "Apple" && i.ram && <span className="stk-sub" style={{ marginTop: 0 }}>{i.ram} RAM</span>}
                 {i.color && <span className="stk-sub" style={{ marginTop: 0 }}>{i.color}</span>}
-                {i.brand === "Apple" && i.batteryHealth != null && <span className="stk-sub" style={{ marginTop: 0 }}>{i.batteryHealth}% akku</span>}
                 {i.warranty && <span className="gar-pill"><WarrantyIcon width={10} height={10} />{i.warranty}</span>}
               </div>
             </td>
@@ -92,7 +91,6 @@ export default function StockTab({
               {i.storage && <span>{i.storage}</span>}
               {i.brand !== "Apple" && i.ram && <span>{i.ram} RAM</span>}
               {i.color && <span>{i.color}</span>}
-              {i.brand === "Apple" && i.batteryHealth != null && <span>{i.batteryHealth}% akku</span>}
               <span className={`st st-flat ${i.condition === "New" ? "st-kesz" : "st-beveve"}`}>{conditionGradeLabel(i.condition, i.grade)}</span>
               {i.warranty && <span className="gar-pill"><WarrantyIcon width={10} height={10} />{i.warranty}</span>}
               {i.acquisition?.acquisitionType === "consignment" && <span className="badge-loc">Bizomány</span>}
