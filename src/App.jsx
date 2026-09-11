@@ -2084,6 +2084,9 @@ function AppShell() {
       const patch = { status, sub_status: subStatus };
       if (subStatus === "Átadva") patch.date_out = today();
       if (shouldReverseHandover) patch.date_out = null;
+      // Átadáskor a feloldó kód/minta már nem kell — a készülék visszakerült a vevőhöz,
+      // nincs értelme (és biztonsági szempontból sem jó) tovább tárolni.
+      if (subStatus === "Átadva") { patch.unlock_type = null; patch.unlock_code = null; }
       if (becameReady) patch.ready_at = new Date().toISOString();
       if (shouldRecordMaterial) patch.handover_material_recorded = true;
       if (shouldReverseHandover) {
@@ -2096,6 +2099,8 @@ function AppShell() {
       setTickets(tickets.map((t) => (t.id === id ? {
         ...t, status, subStatus,
         dateOut: subStatus === "Átadva" ? today() : (shouldReverseHandover ? null : t.dateOut),
+        unlockType: subStatus === "Átadva" ? null : t.unlockType,
+        unlockCode: subStatus === "Átadva" ? null : t.unlockCode,
         readyAt: becameReady ? patch.ready_at : t.readyAt,
         handoverIncomeRecorded: shouldReverseHandover ? false : t.handoverIncomeRecorded,
         handoverMaterialRecorded: shouldReverseHandover ? false : (shouldRecordMaterial ? true : t.handoverMaterialRecorded),
