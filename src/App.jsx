@@ -3258,6 +3258,13 @@ function AppShell() {
           />
         )}
       </div>
+      {useMacDock && (
+        <div className="mac-pult-fade" aria-hidden="true">
+          <div className="mac-pult-fade-1" />
+          <div className="mac-pult-fade-2" />
+          <div className="mac-pult-fade-3" />
+        </div>
+      )}
       </div>
 
       {stockModal && (

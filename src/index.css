@@ -1671,6 +1671,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
     linear-gradient(160deg,#eef1f6 0%,#e4e7ee 100%);
 }
 .shell.mac-pult .content-col{
+  position:relative;
   flex:none;width:calc(100% - 48px);max-width:1360px;margin:24px auto;
   background:#fff;border-radius:20px;border:1px solid rgba(255,255,255,.6);
   box-shadow:0 40px 90px rgba(20,20,25,.28), 0 2px 8px rgba(20,20,25,.08);
@@ -1697,6 +1698,16 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .mac-pult-content > *{max-width:1400px;margin-left:auto;margin-right:auto}
 .mac-pult-content .pult-section{border-radius:14px;border-color:rgba(0,0,0,.08);box-shadow:0 1px 2px rgba(16,24,40,.04), 0 10px 24px rgba(16,24,40,.05)}
 .mac-pult-content .dp-row{padding:11px 0}
+
+/* Fokozatos elmosás a lebegő dokk fölött — hosszú listáknál (pl. Telefonok) a tartalom
+   ne éles vágással tűnjön el a dokk mögött, hanem egyre inkább elmosódva, a dokkhoz
+   közeledve. Három egymásra rakott réteg, mindegyik más blur-erősséggel és magassággal —
+   ez adja a "fokozatosan jobban blurozott" hatást tiszta CSS-ből (progresszív blur trükk). */
+.mac-pult-fade{position:absolute;left:0;right:0;bottom:0;height:150px;pointer-events:none;z-index:3;border-bottom-left-radius:20px;border-bottom-right-radius:20px;overflow:hidden}
+.mac-pult-fade-1,.mac-pult-fade-2,.mac-pult-fade-3{position:absolute;left:0;right:0;bottom:0}
+.mac-pult-fade-1{height:150px;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);mask-image:linear-gradient(to top, #000 0%, #000 25%, transparent 100%);-webkit-mask-image:linear-gradient(to top, #000 0%, #000 25%, transparent 100%)}
+.mac-pult-fade-2{height:105px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);mask-image:linear-gradient(to top, #000 0%, #000 30%, transparent 100%);-webkit-mask-image:linear-gradient(to top, #000 0%, #000 30%, transparent 100%)}
+.mac-pult-fade-3{height:64px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);mask-image:linear-gradient(to top, #000 0%, #000 35%, transparent 100%);-webkit-mask-image:linear-gradient(to top, #000 0%, #000 35%, transparent 100%)}
 
 /* --- lebegő üveg-dokk --- */
 .md-wrap{position:fixed;left:0;right:0;bottom:56px;display:flex;justify-content:center;pointer-events:none;z-index:40}
