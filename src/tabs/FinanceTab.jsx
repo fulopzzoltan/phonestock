@@ -127,6 +127,24 @@ export default function FinanceTab({
         <button type="button" className="btn sec sm" style={{ width: "100%" }} onClick={() => setShowHistory((v) => !v)}>
           Korábbi napok
         </button>
+
+        {showHistory && !loadingData && (
+          <div style={{ marginTop: 12 }}>
+            <TransactionsCalendar
+              transactions={filteredTransactions}
+              dayCloses={dayCloses}
+              allowedLocations={allowedLocations}
+              effectiveLocFilter={effectiveLocFilter}
+              isAdmin={isAdmin}
+              locName={locName}
+              onEdit={setTxModal}
+              onDelete={deleteTransaction}
+              onOpenReceipt={setReceiptTxId}
+              busy={busy}
+              productConditionById={productConditionById}
+            />
+          </div>
+        )}
       </div>
 
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -152,24 +170,6 @@ export default function FinanceTab({
             onImportPdf={onImportPdf}
           />
         ))}
-
-        {showHistory && !loadingData && (
-          <div style={{ marginTop: 12 }}>
-            <TransactionsCalendar
-              transactions={filteredTransactions}
-              dayCloses={dayCloses}
-              allowedLocations={allowedLocations}
-              effectiveLocFilter={effectiveLocFilter}
-              isAdmin={isAdmin}
-              locName={locName}
-              onEdit={setTxModal}
-              onDelete={deleteTransaction}
-              onOpenReceipt={setReceiptTxId}
-              busy={busy}
-              productConditionById={productConditionById}
-            />
-          </div>
-        )}
       </div>
     </div>
   );

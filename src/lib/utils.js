@@ -448,6 +448,8 @@ export const QUICK_SALES = [
   { label: "Üvegfólia", amount: 49, cost: 7 },
   { label: "Töltőkábel", amount: 25, cost: 4 },
   { label: "Tok", amount: 49, cost: 10 },
+  { label: "Kábel", amount: 79, cost: 20 },
+  { label: "Töltőfej", amount: 89, cost: 35 },
 ];
 
 export const SERVICE_WARRANTY_TERMS = `Szerviz Garancia Feltételek és a Javítás Menete
