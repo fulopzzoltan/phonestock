@@ -153,8 +153,15 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
 .btn.danger:hover{background:#DC2626}
 .pill-btn{border-radius:999px;height:34px;padding:0 16px;box-sizing:border-box;transition:background .15s ease,box-shadow .15s ease,transform .15s ease}
 .pill-btn:hover:not(:disabled){box-shadow:0 6px 16px rgba(29,185,84,.32);transform:translateY(-1px)}
-.header-add-btn{width:34px;height:34px;border-radius:999px;padding:0;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s ease,box-shadow .15s ease,transform .15s ease}
-.header-add-btn:hover:not(:disabled){box-shadow:0 6px 16px rgba(29,185,84,.32);transform:translateY(-1px)}
+.header-add-btn{position:relative;width:34px;height:34px;border-radius:999px;padding:0;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s ease,box-shadow .15s ease,transform .15s ease}
+.header-add-btn:hover:not(:disabled){box-shadow:0 6px 16px rgba(29,185,84,.32);transform:scale(1.06)}
+.header-add-ring{position:absolute;left:50%;top:50%;width:34px;height:34px;border-radius:999px;transform:translate(-50%,-50%) scale(1);border:1.5px solid var(--accent);pointer-events:none;opacity:0}
+.header-add-btn:hover:not(:disabled) .header-add-ring{animation:header-add-pulse 1.15s ease-out infinite}
+.header-add-btn:hover:not(:disabled) .header-add-ring.ring2{animation-delay:.4s}
+@keyframes header-add-pulse{
+  0%{opacity:.55;transform:translate(-50%,-50%) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(2.1)}
+}
 
 /* STAT ROW */
 .statrow{display:grid;gap:14px;margin-bottom:22px}

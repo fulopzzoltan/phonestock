@@ -2948,12 +2948,12 @@ function AppShell() {
         pageHeader={tab === "stock" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Telefonok</div>
-            <button type="button" className="btn header-add-btn" disabled={busy} title="Új termék" onClick={() => setStockModal("add")}><PlusIcon width={16} height={16} /></button>
+            <button type="button" className="btn header-add-btn" disabled={busy} title="Új termék" onClick={() => setStockModal("add")}><span className="header-add-ring" /><span className="header-add-ring ring2" /><PlusIcon width={16} height={16} /></button>
           </>
         ) : tab === "parts" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Alkatrész raktár</div>
-            <button type="button" className="btn header-add-btn" disabled={busy} title="Új alkatrész" onClick={() => setPartModal("add")}><PlusIcon width={16} height={16} /></button>
+            <button type="button" className="btn header-add-btn" disabled={busy} title="Új alkatrész" onClick={() => setPartModal("add")}><span className="header-add-ring" /><span className="header-add-ring ring2" /><PlusIcon width={16} height={16} /></button>
           </>
         ) : tab === "refurb" ? (
           <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Felújítás</div>
@@ -2962,19 +2962,19 @@ function AppShell() {
         ) : tab === "customers" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Kliensek</div>
-            <button type="button" className="btn header-add-btn" disabled={busy} title="Új ügyfél" onClick={() => setCustomerModal("add")}><PlusIcon width={16} height={16} /></button>
+            <button type="button" className="btn header-add-btn" disabled={busy} title="Új ügyfél" onClick={() => setCustomerModal("add")}><span className="header-add-ring" /><span className="header-add-ring ring2" /><PlusIcon width={16} height={16} /></button>
           </>
         ) : tab === "warranty" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Garancia</div>
-            <button type="button" className="btn header-add-btn" disabled={busy} title="Garancia felvétele" onClick={() => setWarrantyModal("add")}><PlusIcon width={16} height={16} /></button>
+            <button type="button" className="btn header-add-btn" disabled={busy} title="Garancia felvétele" onClick={() => setWarrantyModal("add")}><span className="header-add-ring" /><span className="header-add-ring ring2" /><PlusIcon width={16} height={16} /></button>
           </>
         ) : tab === "dashboard" ? (
           <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Áttekintés</div>
         ) : tab === "service" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Szerviz</div>
-            <button type="button" className="btn header-add-btn" disabled={busy} title="Új munkalap" onClick={() => setTicketModal("add")}><PlusIcon width={16} height={16} /></button>
+            <button type="button" className="btn header-add-btn" disabled={busy} title="Új munkalap" onClick={() => setTicketModal("add")}><span className="header-add-ring" /><span className="header-add-ring ring2" /><PlusIcon width={16} height={16} /></button>
           </>
         ) : tab === "buyback" ? (
           <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Felvásárlás</div>
@@ -3028,7 +3028,7 @@ function AppShell() {
         ) : tab === "users" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Felhasználók</div>
-            <button type="button" className="btn header-add-btn" disabled={busy} title="Új kolléga meghívása" onClick={() => { setInviteError(""); setInviteModal(true); }}><PlusIcon width={16} height={16} /></button>
+            <button type="button" className="btn header-add-btn" disabled={busy} title="Új kolléga meghívása" onClick={() => { setInviteError(""); setInviteModal(true); }}><span className="header-add-ring" /><span className="header-add-ring ring2" /><PlusIcon width={16} height={16} /></button>
           </>
         ) : null}
       />
