@@ -35,6 +35,134 @@ export default function ServiceTab({
     }
   }
 
+  const probsOf = (t) => (t.issue || "").split(",").map((p) => p.trim()).filter(Boolean);
+  // Állapotsáv (Probléma és Státusz között): beázás, garanciális, fólia, ígért határidő —
+  // egységes színes ikonokkal, hogy egy pillantásra látszódjon minden munkalapon. A 90+
+  // napja átvehető, de el nem vitt munkalapokat is az "ígért határidő" jelzésbe soroljuk,
+  // mert azok is azonnali odafigyelést igényelnek.
+  const flagsOf = (t) => {
+    const sla = slaInfo(t) || (isStaleReady(t) ? { level: "overdue", label: "90+ napja várja az átvételt" } : null);
+    return (
+      <span className="svc-flags">
+        {probsOf(t).includes("Beázás") && (
+          <span className="svc-flag svc-flag-water" title="Beázott készülék">
+            <DropletIcon width={11} height={11} />
+          </span>
+        )}
+        {t.isWarranty && (
+          <span className="svc-flag svc-flag-warranty" title={t.warrantyKind === "termék" ? "Garanciális — termék" : "Garanciális — szerviz"}>
+            <WarrantyIcon width={11} height={11} />
+          </span>
+        )}
+        {t.folia && (
+          <span className="t-folia" title="Fólia felhelyezve">
+            <FoliaIcon width={12} height={12} />
+          </span>
+        )}
+        {sla && (
+          <span className={`svc-flag svc-flag-due-${sla.level}`} title={sla.label}>
+            <ClockIcon width={11} height={11} />
+          </span>
+        )}
+      </span>
+    );
+  };
+  const daysOf = (t) => {
+    const n = daysOnShelf(t.dateIn);
+    if (n == null) return <span className="svc-days">—</span>;
+    if (n <= 0) return <span className="svc-days today">{n}<span className="svc-days-lbl">napja</span></span>;
+    return <span className="svc-days">{n}<span className="svc-days-lbl">napja</span></span>;
+  };
+  const kliensOf = (t) => {
+    if (t.ticketKind === "Saját készlet - előkészítés") {
+      return <span className="t-kind-pill" style={{ background: "#F1F5F9", color: "#475569" }}><ServiceIcon width={11} height={11} />Saját — előkészítés</span>;
+    }
+    if (t.ticketKind === "Saját készlet - garanciális") {
+      return <span className="t-kind-pill" style={{ background: "#FCE7F3", color: "#BE185D" }}><WarrantyIcon width={11} height={11} />Saját — garanciális</span>;
+    }
+    return t.customerName || "—";
+  };
+  const statusPill = (t) => (t.subStatus ? (
+    <span className={`st ${subStatusCls(t.status, t.subStatus)}`}>{subStatusLabel(t.status, t.subStatus)}</span>
+  ) : (
+    <span className={`st ${statusCls(t.status)}`}>{statusLabel(t.status)}</span>
+  ));
+  const TICKET_COLUMNS = [
+    { key: "n", label: "Sorszám", className: "col-serial" }, { key: "d", label: "Eszköz", className: "col-device" }, { key: "c", label: "Kliens" }, { key: "i", label: "Bejött" },
+    { key: "p", label: "Probléma", className: "col-grow" }, { key: "f", label: "" }, { key: "s", label: "Státusz", className: "col-status" }, { key: "a", label: "Ár", className: "num-col" }, { key: "x", label: "" },
+  ];
+  const renderTicketRow = (t) => (
+    <tr key={t.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
+      <td className="mono col-serial" style={{ color: "#9CA3AF", whiteSpace: "nowrap" }}>{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</td>
+      <td style={{ whiteSpace: "nowrap" }}>
+        <div className="stk-name" style={{ flexWrap: "nowrap" }}>
+          {displayName(t.brand, t.model) || "—"}
+        </div>
+      </td>
+      <td style={{ whiteSpace: "nowrap" }}>{kliensOf(t)}</td>
+      <td>{daysOf(t)}</td>
+      <td>
+        <div className="svc-probs">
+          {probsOf(t).length > 0 ? probsOf(t).map((p, i) => <span key={i} className="prob-pill">{p}</span>) : "—"}
+        </div>
+      </td>
+      <td style={{ whiteSpace: "nowrap" }}>{flagsOf(t)}</td>
+      <td className="col-status" style={{ whiteSpace: "nowrap" }}>{statusPill(t)}</td>
+      <td className="row-price">
+        {(Number(t.depositPaid) || 0) > 0 ? (
+          <>
+            {money(t.price - t.depositPaid)}
+            <div className="row-price-sub">-{money(t.depositPaid)} előleg</div>
+          </>
+        ) : money(t.price)}
+      </td>
+      <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
+        {nextActionOf(t) && (() => {
+          const na = nextActionOf(t);
+          return (
+            <button className="btn sec sm icon-only" disabled={busy} title={na.title} onClick={() => runAction(t, na)}>
+              <na.icon width={13} height={13} />
+            </button>
+          );
+        })()}
+      </td>
+    </tr>
+  );
+  const renderTicketMobileRow = (t) => (
+    <div className="mob-row" onClick={() => setDetailId(t.id)}>
+      <div className="mob-row-top">
+        <div className="mob-row-main">
+          <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</span>
+          <span>{displayName(t.brand, t.model) || "—"}</span>
+        </div>
+        <div className="mob-row-amount">
+          {(Number(t.depositPaid) || 0) > 0 ? money(t.price - t.depositPaid) : money(t.price)}
+        </div>
+      </div>
+      <div className="mob-row-sub">
+        <span>{kliensOf(t)}</span>
+        {daysOf(t)}
+        {statusPill(t)}
+        {flagsOf(t)}
+      </div>
+      {probsOf(t).length > 0 && (
+        <div className="svc-probs" style={{ marginTop: 6, flexWrap: "wrap" }}>
+          {probsOf(t).map((p, i) => <span key={i} className="prob-pill">{p}</span>)}
+        </div>
+      )}
+      {nextActionOf(t) && (() => {
+        const na = nextActionOf(t);
+        return (
+          <div className="mob-row-sub" style={{ marginTop: 8 }} onClick={(e) => e.stopPropagation()}>
+            <button className="btn sec sm icon-only" disabled={busy} title={na.title} onClick={() => runAction(t, na)}>
+              <na.icon width={13} height={13} />
+            </button>
+          </div>
+        );
+      })()}
+    </div>
+  );
+
   return (
     <div className="apple-page">
       <div className="filter-row">
@@ -71,26 +199,14 @@ export default function ServiceTab({
               : handedOverTickets;
             if (rows.length === 0) return <EmptyState icon={ServiceIcon}>Nincs találat.</EmptyState>;
             return (
-              <table>
-                <thead><tr><th className="col-serial">Sorszám</th><th>Eszköz</th><th>Helyszín</th><th>Bejött</th><th>Átadva</th><th>Vevő</th><th className="num-col">Díj</th></tr></thead>
-                <tbody>
-                  {rows.map((t) => (
-                    <tr key={t.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
-                      <td className="mono col-serial" style={{ color: "#9CA3AF", whiteSpace: "nowrap" }}>{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</td>
-                      <td>
-                        <div className="stk-name">
-                          {displayName(t.brand, t.model) || "—"}
-                        </div>
-                      </td>
-                      <td><span className="badge-loc">{locName(t.locationId)}</span></td>
-                      <td className="mono">{t.dateIn}</td>
-                      <td className="mono">{t.dateOut || "—"}</td>
-                      <td>{t.customerName}</td>
-                      <td className="row-price">{money(t.price)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <ResponsiveTable
+                wrap={false}
+                columns={TICKET_COLUMNS}
+                rows={rows}
+                rowKey={(t) => t.id}
+                renderRow={renderTicketRow}
+                renderMobileRow={renderTicketMobileRow}
+              />
             );
           })()}
         </div>
@@ -102,138 +218,14 @@ export default function ServiceTab({
           const items = activeTickets.filter((t) => t.status === listStatus);
           if (listStatus === "Átadásra") items.sort((a, b) => (daysOnShelf(a.dateIn) ?? -1) - (daysOnShelf(b.dateIn) ?? -1));
           if (items.length === 0) return <EmptyState icon={ServiceIcon}>Nincs munkalap ebben az állapotban.</EmptyState>;
-          const probsOf = (t) => (t.issue || "").split(",").map((p) => p.trim()).filter(Boolean);
-          // Állapotsáv (Probléma és Státusz között): beázás, garanciális, fólia, ígért határidő —
-          // egységes színes ikonokkal, hogy egy pillantásra látszódjon minden munkalapon. A 90+
-          // napja átvehető, de el nem vitt munkalapokat is az "ígért határidő" jelzésbe soroljuk,
-          // mert azok is azonnali odafigyelést igényelnek.
-          const flagsOf = (t) => {
-            const sla = slaInfo(t) || (isStaleReady(t) ? { level: "overdue", label: "90+ napja várja az átvételt" } : null);
-            return (
-              <span className="svc-flags">
-                {probsOf(t).includes("Beázás") && (
-                  <span className="svc-flag svc-flag-water" title="Beázott készülék">
-                    <DropletIcon width={11} height={11} />
-                  </span>
-                )}
-                {t.isWarranty && (
-                  <span className="svc-flag svc-flag-warranty" title={t.warrantyKind === "termék" ? "Garanciális — termék" : "Garanciális — szerviz"}>
-                    <WarrantyIcon width={11} height={11} />
-                  </span>
-                )}
-                {t.folia && (
-                  <span className="t-folia" title="Fólia felhelyezve">
-                    <FoliaIcon width={12} height={12} />
-                  </span>
-                )}
-                {sla && (
-                  <span className={`svc-flag svc-flag-due-${sla.level}`} title={sla.label}>
-                    <ClockIcon width={11} height={11} />
-                  </span>
-                )}
-              </span>
-            );
-          };
-          const daysOf = (t) => {
-            const n = daysOnShelf(t.dateIn);
-            if (n == null) return <span className="svc-days">—</span>;
-            if (n <= 0) return <span className="svc-days today">{n}<span className="svc-days-lbl">napja</span></span>;
-            return <span className="svc-days">{n}<span className="svc-days-lbl">napja</span></span>;
-          };
-          const kliensOf = (t) => {
-            if (t.ticketKind === "Saját készlet - előkészítés") {
-              return <span className="t-kind-pill" style={{ background: "#F1F5F9", color: "#475569" }}><ServiceIcon width={11} height={11} />Saját — előkészítés</span>;
-            }
-            if (t.ticketKind === "Saját készlet - garanciális") {
-              return <span className="t-kind-pill" style={{ background: "#FCE7F3", color: "#BE185D" }}><WarrantyIcon width={11} height={11} />Saját — garanciális</span>;
-            }
-            return t.customerName || "—";
-          };
-          const statusPill = (t) => (t.subStatus ? (
-            <span className={`st ${subStatusCls(t.status, t.subStatus)}`}>{subStatusLabel(t.status, t.subStatus)}</span>
-          ) : (
-            <span className={`st ${statusCls(t.status)}`}>{statusLabel(t.status)}</span>
-          ));
           return (
             <ResponsiveTable
               wrap={false}
-              columns={[
-                { key: "n", label: "Sorszám", className: "col-serial" }, { key: "d", label: "Eszköz", className: "col-device" }, { key: "c", label: "Kliens" }, { key: "i", label: "Bejött" },
-                { key: "p", label: "Probléma", className: "col-grow" }, { key: "f", label: "" }, { key: "s", label: "Státusz", className: "col-status" }, { key: "a", label: "Ár", className: "num-col" }, { key: "x", label: "" },
-              ]}
+              columns={TICKET_COLUMNS}
               rows={items}
               rowKey={(t) => t.id}
-              renderRow={(t) => (
-                <tr key={t.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
-                  <td className="mono col-serial" style={{ color: "#9CA3AF", whiteSpace: "nowrap" }}>{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</td>
-                  <td style={{ whiteSpace: "nowrap" }}>
-                    <div className="stk-name" style={{ flexWrap: "nowrap" }}>
-                      {displayName(t.brand, t.model) || "—"}
-                    </div>
-                  </td>
-                  <td style={{ whiteSpace: "nowrap" }}>{kliensOf(t)}</td>
-                  <td>{daysOf(t)}</td>
-                  <td>
-                    <div className="svc-probs">
-                      {probsOf(t).length > 0 ? probsOf(t).map((p, i) => <span key={i} className="prob-pill">{p}</span>) : "—"}
-                    </div>
-                  </td>
-                  <td style={{ whiteSpace: "nowrap" }}>{flagsOf(t)}</td>
-                  <td className="col-status" style={{ whiteSpace: "nowrap" }}>{statusPill(t)}</td>
-                  <td className="row-price">
-                    {(Number(t.depositPaid) || 0) > 0 ? (
-                      <>
-                        {money(t.price - t.depositPaid)}
-                        <div className="row-price-sub">-{money(t.depositPaid)} előleg</div>
-                      </>
-                    ) : money(t.price)}
-                  </td>
-                  <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
-                    {nextActionOf(t) && (() => {
-                      const na = nextActionOf(t);
-                      return (
-                        <button className="btn sec sm icon-only" disabled={busy} title={na.title} onClick={() => runAction(t, na)}>
-                          <na.icon width={13} height={13} />
-                        </button>
-                      );
-                    })()}
-                  </td>
-                </tr>
-              )}
-              renderMobileRow={(t) => (
-                <div className="mob-row" onClick={() => setDetailId(t.id)}>
-                  <div className="mob-row-top">
-                    <div className="mob-row-main">
-                      <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</span>
-                      <span>{displayName(t.brand, t.model) || "—"}</span>
-                    </div>
-                    <div className="mob-row-amount">
-                      {(Number(t.depositPaid) || 0) > 0 ? money(t.price - t.depositPaid) : money(t.price)}
-                    </div>
-                  </div>
-                  <div className="mob-row-sub">
-                    <span>{kliensOf(t)}</span>
-                    {daysOf(t)}
-                    {statusPill(t)}
-                    {flagsOf(t)}
-                  </div>
-                  {probsOf(t).length > 0 && (
-                    <div className="svc-probs" style={{ marginTop: 6, flexWrap: "wrap" }}>
-                      {probsOf(t).map((p, i) => <span key={i} className="prob-pill">{p}</span>)}
-                    </div>
-                  )}
-                  {nextActionOf(t) && (() => {
-                    const na = nextActionOf(t);
-                    return (
-                      <div className="mob-row-sub" style={{ marginTop: 8 }} onClick={(e) => e.stopPropagation()}>
-                        <button className="btn sec sm icon-only" disabled={busy} title={na.title} onClick={() => runAction(t, na)}>
-                          <na.icon width={13} height={13} />
-                        </button>
-                      </div>
-                    );
-                  })()}
-                </div>
-              )}
+              renderRow={renderTicketRow}
+              renderMobileRow={renderTicketMobileRow}
             />
           );
         })()
