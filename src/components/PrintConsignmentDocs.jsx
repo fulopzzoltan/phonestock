@@ -85,7 +85,7 @@ export default function PrintConsignmentDocs({ product, acquisition, settings, l
   const sellerPhone = acquisition.sellerPhone || "";
   const sellerAddress = acquisition.sellerAddress || "";
   const sellerCnp = acquisition.sellerCnp || acquisition.sellerIdDoc || "";
-  const deviceDescription = [product.brand, product.model, product.storage, product.color].filter(Boolean).join(" ");
+  const deviceDescription = [product.brand, product.model, product.storage].filter(Boolean).join(" ");
   const payoutAmount = Number(acquisition.consignorPayoutAmount) || 0;
   const salePrice = Number(product.salePrice) || 0;
   const commission = salePrice - payoutAmount;
