@@ -111,7 +111,7 @@ export default function FinanceTab({
   loadingData, transactions, filteredTransactions, setTxModal, deleteTransaction, setReceiptTxId,
   productConditionById,
   smartQuickItems, checkoutBasket,
-  dayCloses, closeDay,
+  dayCloses, closeDay, reopenDay,
   isAdmin, onImportPdf,
 }) {
   const [showHistory, setShowHistory] = useState(false);
@@ -166,6 +166,12 @@ export default function FinanceTab({
             busy={busy}
             productConditionById={productConditionById}
             isAdmin={isAdmin}
+            dayCloses={dayCloses}
+            closeDay={closeDay}
+            reopenDay={reopenDay}
+            defaultLocId={basketLocId}
+            smartQuickItems={smartQuickItems}
+            checkoutBasket={checkoutBasket}
           />
         ) : (
           locsToShow.map((loc) => (

@@ -1932,7 +1932,7 @@ function AppShell() {
   // üríti a kosarat — a felhasználó újra megnyomhatja a gombot, amint helyreállt a net.
   // Emellett egy helyi (localStorage) másolat is készül a sikertelen kosárról, hogy egy
   // véletlen frissítés/lap-bezárás után se vesszen el nyomtalanul.
-  async function checkoutBasket(items, payment, locId) {
+  async function checkoutBasket(items, payment, locId, date) {
     setBusy(true);
     try {
       const basketId = items.length > 1 ? crypto.randomUUID() : null;
@@ -1944,7 +1944,7 @@ function AppShell() {
         if (item === stockItem || item === partItem) continue;
         await addTransactionRaw({
           type: item.kind, description: item.label, amount: item.amount,
-          costPrice: item.cost || 0, category: item.category, payment, basketId,
+          costPrice: item.cost || 0, category: item.category, payment, basketId, date,
         }, locId);
       }
       if (stockItem) setStockModal({ costPrice: stockItem.amount, locationId: locId });

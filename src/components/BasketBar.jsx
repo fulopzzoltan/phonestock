@@ -12,7 +12,7 @@ import { CATEGORIES, INCOME_CATEGORIES, PAYMENTS } from "../lib/utils";
 // kártyán KÍVÜL, fölötte jelenik meg, a többi (szabad tétel form, kosár) pedig a kártyán
 // belül — két külön DOM-helyen, de egy közös állapoton. Nincs külön "+ Egyéb tétel" nyitó
 // gomb — maga a Bevétel/Kiadás mód-váltó egyben a szabad tétel mezőit is megnyitja.
-export function useBasketBar({ defaultLocId, onCheckout }) {
+export function useBasketBar({ defaultLocId, onCheckout, date }) {
   const [mode, setModeRaw] = useState("income"); // income | expense
   const [basketItems, setBasketItems] = useState([]);
   const [basketPayment, setBasketPayment] = useState("Készpénz");
@@ -59,7 +59,7 @@ export function useBasketBar({ defaultLocId, onCheckout }) {
   async function handleCheckout() {
     if (basketItems.length === 0 || !defaultLocId) return;
     setErr("");
-    const ok = await onCheckout(basketItems, basketPayment, defaultLocId);
+    const ok = await onCheckout(basketItems, basketPayment, defaultLocId, date);
     if (ok) setBasketItems([]);
     else setErr("Nem sikerült rögzíteni (lehet, hogy elakadt a net) — a kosár tartalma megmaradt, próbáld újra.");
   }
@@ -70,7 +70,7 @@ export function useBasketBar({ defaultLocId, onCheckout }) {
     const ok = await onCheckout([{
       label: description.trim(), amount: Number(amount) || 0, cost: 0, category, kind: "expense",
       stockKind: category === "Készlet" ? stockKind : undefined,
-    }], basketPayment, defaultLocId);
+    }], basketPayment, defaultLocId, date);
     if (ok) resetFree();
     else setErr("Nem sikerült rögzíteni (lehet, hogy elakadt a net) — az adatok megmaradtak, próbáld újra.");
   }

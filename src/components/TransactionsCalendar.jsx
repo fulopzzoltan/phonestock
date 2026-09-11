@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { TransactionRowsTable } from "./TransactionsPeriodList";
+import { useBasketBar, BasketTopBar, BasketBody } from "./BasketBar";
 import { money, today, cashPortion, cardPortion } from "../lib/utils";
 import { EmptyState } from "./EmptyState";
 import { FinanceIcon, ChevronLeftIcon, ChevronRightIcon } from "./icons";
@@ -105,7 +106,7 @@ export function useTransactionsCalendar({ transactions, dayCloses, allowedLocati
   return {
     todayStr, viewY, viewM, setViewY, setViewM, selectedDay, setSelectedDay, showArchive, setShowArchive,
     oldestAllowedDate, isAll, txByDay, closedDaysSet, goMonth, selectDay,
-    selectedRows, selectedStats, monthStats, archiveMonths,
+    selectedRows, selectedStats, monthStats, archiveMonths, relevantLocs,
   };
 }
 
@@ -182,8 +183,12 @@ export function CalendarPicker({ cal, isAdmin }) {
 
 // A bővebb infó — a jelenlegi árulás-nézet helyén jelenik meg, amint kiválasztunk egy napot
 // (vagy admin esetén az archívumot nyitjuk meg).
-export function CalendarDetail({ cal, locName, onEdit, onDelete, onOpenReceipt, busy, productConditionById, isAdmin }) {
-  const { viewY, viewM, selectedDay, selectedRows, selectedStats, monthStats, closedDaysSet, archiveMonths, showArchive, setShowArchive, setViewY, setViewM, setSelectedDay } = cal;
+export function CalendarDetail({
+  cal, locName, onEdit, onDelete, onOpenReceipt, busy, productConditionById, isAdmin, dayCloses, closeDay, reopenDay,
+  defaultLocId, smartQuickItems, checkoutBasket,
+}) {
+  const { viewY, viewM, selectedDay, selectedRows, selectedStats, monthStats, closedDaysSet, archiveMonths, showArchive, setShowArchive, setViewY, setViewM, setSelectedDay, relevantLocs } = cal;
+  const bb = useBasketBar({ defaultLocId, onCheckout: checkoutBasket, date: selectedDay });
 
   return (
     <div>
@@ -199,10 +204,38 @@ export function CalendarDetail({ cal, locName, onEdit, onDelete, onOpenReceipt, 
 
       {selectedDay && (
         <div className="tw tw-compact" style={{ padding: 16, marginBottom: 16 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 10 }}>
             <div style={{ fontSize: 14, fontWeight: 700 }}>{selectedDay}</div>
-            {closedDaysSet.has(selectedDay) && <span className="badge-loc" style={{ color: "#15803D" }}>✓ Lezárva</span>}
+            {closeDay && reopenDay && dayCloses && (
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {relevantLocs.map((loc) => {
+                  const dc = dayCloses.find((d) => d.date === selectedDay && d.locationId === loc.id && !d.reopenedAt);
+                  return (
+                    <button
+                      key={loc.id}
+                      type="button"
+                      className="btn sec sm"
+                      disabled={busy}
+                      style={dc ? { background: "#DCFCE7", borderColor: "#86EFAC", color: "#15803D" } : undefined}
+                      onClick={() => (dc ? reopenDay(dc.id) : closeDay(selectedDay, loc.id))}
+                    >
+                      {loc.name}: {dc ? "✓ Lezárva" : "Lezárás"}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
+
+          {checkoutBasket && defaultLocId && (
+            <div style={{ marginBottom: 14 }}>
+              <BasketTopBar bb={bb} defaultLocId={defaultLocId} busy={busy} smartQuickItems={smartQuickItems || []} />
+              <div style={{ marginTop: 10, background: "#F9FAFB", border: "1px solid #EEF0F2", borderRadius: 12, padding: 12 }}>
+                <BasketBody bb={bb} defaultLocId={defaultLocId} busy={busy} />
+              </div>
+            </div>
+          )}
+
           {selectedStats && (
             <div className="statrow c5" style={{ marginBottom: 14 }}>
               <div className="statcard"><div className="lbl">Bevétel (készpénz)</div><div className="val" style={{ color: "#15803D" }}>{money(selectedStats.incomeCash)}</div></div>
