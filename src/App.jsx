@@ -2580,11 +2580,16 @@ function AppShell() {
     value: partGroups.reduce((a, g) => a + (Number(g.costPrice) || 0) * g.quantity, 0),
   }), [partGroups]);
 
+  // A listán minden egyedi tétel (saját sorszámmal) a saját sorában jelenik meg — nem
+  // vonjuk össze a raktáron lévő darabokat, mint a Telefonoknál sem. A csoportosítás
+  // (partGroups) csak a részletnézetnél/szerkesztésnél él tovább, azonos testvér-tételek
+  // együtt kezelésére.
   const filteredParts = useMemo(() => {
     const q = partSearch.trim().toLowerCase();
-    if (!q) return partGroups;
-    return partGroups.filter((p) => [p.name, p.brand, p.modelFit, p.category, p.source].join(" ").toLowerCase().includes(q));
-  }, [partGroups, partSearch]);
+    const units = parts.filter((p) => p.status === "raktáron");
+    if (!q) return units;
+    return units.filter((p) => [p.name, p.brand, p.modelFit, p.category, p.source].join(" ").toLowerCase().includes(q));
+  }, [parts, partSearch]);
 
   const activeTickets = useMemo(() => filteredTickets.filter((t) => t.subStatus !== "Átadva"), [filteredTickets]);
   const handedOverTickets = useMemo(

@@ -21,7 +21,7 @@ export default function PartModal({ part, prefill, locations = [], defaultLocId,
   const [locId, setLocId] = useState(defaultLocId || "");
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const qtyNum = Number(f.quantity) || 0;
-  const valid = isEdit ? f.name.trim() : f.name.trim() && f.quantity !== "" && qtyNum >= 1;
+  const valid = isEdit ? f.name.trim() : f.name.trim() && f.brand.trim() && f.quantity !== "" && qtyNum >= 1;
   return (
     <div className="overlay">
       <div className="modal" onClick={(e) => e.stopPropagation()}>

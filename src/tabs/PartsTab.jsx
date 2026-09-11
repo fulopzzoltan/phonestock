@@ -12,6 +12,12 @@ function sortItems(items) {
   return arr;
 }
 
+// A részletnézet (PartDetailPanel) a testvér-tételeket (azonos megnevezés/kategória/márka/
+// típus/forrás) csoportban mutatja — ugyanígy kell azonosítani a csoportot innen kattintva is.
+function groupKeyOf(p) {
+  return [p.name, p.category, p.brand, p.modelFit, p.source].join("|");
+}
+
 const CATS = [...PART_CATEGORIES, "Egyéb"];
 
 const UseIcon = (props) => (
@@ -121,7 +127,7 @@ export default function PartsTab({
                 rows={items}
                 rowKey={(p) => p.id}
                 renderRow={(p) => (
-                  <tr key={p.id} style={{ cursor: "pointer" }} onClick={() => setPartDetailId(p.id)}>
+                  <tr key={p.id} style={{ cursor: "pointer" }} onClick={() => setPartDetailId(groupKeyOf(p))}>
                     <td className="mono col-serial" style={{ color: "#9CA3AF", whiteSpace: "nowrap" }}>{partCode(p.partNo) || "—"}</td>
                     <td>
                       <div className="stk-name" style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
@@ -136,7 +142,7 @@ export default function PartsTab({
                   </tr>
                 )}
                 renderMobileRow={(p) => (
-                  <div className="mob-row" onClick={() => setPartDetailId(p.id)}>
+                  <div className="mob-row" onClick={() => setPartDetailId(groupKeyOf(p))}>
                     <div className="mob-row-top">
                       <div className="mob-row-main" style={{ minWidth: 0 }}>
                         <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
