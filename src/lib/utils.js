@@ -207,7 +207,7 @@ export const PROBLEM_TAGS = [
   "Bevizsgálás", "FRP zárolás", "Egyéb",
 ];
 export const PART_CATEGORIES = ["Kijelző", "Akkumulátor", "Hátlap"];
-export const PART_ORIGINS = ["OEM", "Utángyártott"];
+export const PART_ORIGINS = ["Eredeti", "Utángyártott", "Felújított"];
 export const WARRANTIES = ["1 hó", "3 hó", "6 hó", "1 év", "2 év"];
 
 // Választólista a márka mezőhöz — élő adatban feltárt elírás/szóródás ellen (pl. "Samsung"

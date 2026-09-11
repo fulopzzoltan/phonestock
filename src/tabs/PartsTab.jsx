@@ -18,6 +18,14 @@ function groupKeyOf(p) {
   return [p.name, p.category, p.brand, p.modelFit, p.source].join("|");
 }
 
+// A sor címkéje a Szerviznél megszokott "eszköz márkája és típusa" mintát követi
+// (a szabad szöveges Megnevezés helyett), az eredet (Eredeti/Utángyártott/Felújított)
+// pedig utána, mint egy státuszjelző.
+function partLabel(p) {
+  const device = [p.brand, p.modelFit].filter(Boolean).join(" ") || p.name || "—";
+  return p.origin ? `${device} — ${p.origin}` : device;
+}
+
 const CATS = [...PART_CATEGORIES, "Egyéb"];
 
 const UseIcon = (props) => (
@@ -131,7 +139,7 @@ export default function PartsTab({
                     <td className="mono col-serial" style={{ color: "#9CA3AF", whiteSpace: "nowrap" }}>{partCode(p.partNo) || "—"}</td>
                     <td>
                       <div className="stk-name" style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                        {p.name}{[p.brand, p.modelFit].filter(Boolean).length > 0 ? ` — ${[p.brand, p.modelFit].filter(Boolean).join(", ")}` : ""}
+                        {partLabel(p)}
                       </div>
                     </td>
                     <td style={{ color: "#6B7280", fontSize: 12, whiteSpace: "nowrap" }}>{p.source || "—"}</td>
@@ -147,7 +155,7 @@ export default function PartsTab({
                       <div className="mob-row-main" style={{ minWidth: 0 }}>
                         <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                           <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{partCode(p.partNo) || "—"}</span>
-                          {p.name}{[p.brand, p.modelFit].filter(Boolean).length > 0 ? ` — ${[p.brand, p.modelFit].filter(Boolean).join(", ")}` : ""}
+                          {partLabel(p)}
                         </span>
                       </div>
                       <div className="mob-row-amount">{money(p.costPrice)}</div>
