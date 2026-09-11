@@ -57,9 +57,28 @@ export default function RefurbPhoneRow({
     setNewCost("");
   }
 
+  const statusBadge = tasks.length === 0 ? (
+    <span className="rfr-add-badge"><span className="d">+</span>Feladat</span>
+  ) : allDone ? (
+    <span className="rfr-done-badge">kész</span>
+  ) : (
+    <span className="rfr-cost-badge">{money(openCost)}</span>
+  );
+  const rankCtrl = (
+    <div className="rf-rank-ctrl" onClick={(e) => e.stopPropagation()}>
+      <button type="button" className="rf-rank-btn" disabled={!canMoveUp || busy} onClick={() => onMoveUp(product.id)} title="Előrébb">
+        <ChevronDownIcon style={{ transform: "rotate(180deg)" }} />
+      </button>
+      <span className="rf-rank-num">{rankPos}</span>
+      <button type="button" className="rf-rank-btn" disabled={!canMoveDown || busy} onClick={() => onMoveDown(product.id)} title="Hátrébb">
+        <ChevronDownIcon />
+      </button>
+    </div>
+  );
+
   return (
     <div className="rfr">
-      <div className="rfr-head" style={expanded ? { background: "#FAFAFA" } : undefined} onClick={onToggle}>
+      <div className="rfr-head rfr-head-desktop" style={expanded ? { background: "#FAFAFA" } : undefined} onClick={onToggle}>
         <span className="mono rfr-serial">{phoneCode(product.productNo) || "—"}</span>
         <div className="rfr-title">
           <span className="rfr-name">{product.brand} {product.model}</span>
@@ -67,21 +86,21 @@ export default function RefurbPhoneRow({
             {conditionGradeLabel(product.condition, product.grade)} · {locName(product.locationId)}
           </span>
         </div>
-        {tasks.length === 0 ? (
-          <span className="rfr-add-badge"><span className="d">+</span>Feladat</span>
-        ) : allDone ? (
-          <span className="rfr-done-badge">kész</span>
-        ) : (
-          <span className="rfr-cost-badge">{money(openCost)}</span>
-        )}
-        <div className="rf-rank-ctrl" onClick={(e) => e.stopPropagation()}>
-          <button type="button" className="rf-rank-btn" disabled={!canMoveUp || busy} onClick={() => onMoveUp(product.id)} title="Előrébb">
-            <ChevronDownIcon style={{ transform: "rotate(180deg)" }} />
-          </button>
-          <span className="rf-rank-num">{rankPos}</span>
-          <button type="button" className="rf-rank-btn" disabled={!canMoveDown || busy} onClick={() => onMoveDown(product.id)} title="Hátrébb">
-            <ChevronDownIcon />
-          </button>
+        {statusBadge}
+        {rankCtrl}
+      </div>
+
+      <div className="rfr-head-mobile" style={expanded ? { background: "#FAFAFA" } : undefined} onClick={onToggle}>
+        <div className="rfr-head-mobile-top">
+          <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{phoneCode(product.productNo) || "—"}</span>
+          <span className="rfr-name" style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{product.brand} {product.model}</span>
+        </div>
+        <div className="mob-row-sub" style={{ marginTop: 4 }}>
+          <span>{conditionGradeLabel(product.condition, product.grade)} · {locName(product.locationId)}</span>
+        </div>
+        <div className="rfr-head-mobile-bottom">
+          {statusBadge}
+          {rankCtrl}
         </div>
       </div>
 

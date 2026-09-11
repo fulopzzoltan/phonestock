@@ -676,6 +676,18 @@ tr:hover td{background:#FAFAFA}
 .rfr-cost-badge{font-family:'Roboto Mono',monospace;font-size:13px;font-weight:800;color:#B91C1C;flex-shrink:0;white-space:nowrap}
 .rfr-body{padding:4px 16px 14px 16px;border-top:1px solid #F3F4F6;display:flex;flex-direction:column;gap:14px}
 .rfr-actions{display:flex;align-items:center;justify-content:flex-end;gap:12px}
+/* Mobilon a fejléc-sor (sorszám+név+jelvény+rangsoroló) nem fér el egy vonalban —
+   ugyanaz a minta, mint a .tw table / .mob-cards váltásnál: két külön nézet, a
+   640px-es törésponton egyik láthatatlanná válik a másik javára. */
+.rfr-head-mobile{display:none}
+@media (max-width:640px){
+  .rfr-head-desktop{display:none}
+  .rfr-head-mobile{display:block;padding:12px 14px;cursor:pointer}
+  .rfr-head-mobile-top{display:flex;align-items:center;gap:6px}
+  .rfr-head-mobile-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px}
+  .rf-list-head{display:none}
+  .rfr-body{padding-left:14px;padding-right:14px}
+}
 .rf-parts-cost{font-size:11.5px;color:#6B7280;margin-top:8px}
 .rft-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F9FAFB}
 .rft-row-kesz{opacity:.55}
