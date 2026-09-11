@@ -1,6 +1,7 @@
 import { useState } from "react";
 import LocationField from "./LocationField";
 import { CloseIcon } from "./icons";
+import PatternLockPad from "./PatternLockPad";
 import { PROBLEM_TAGS, WARRANTIES, STATUSES, SUB_STATUSES, statusLabel, normalizeImei, money, ticketCode } from "../lib/utils";
 import CustomerAutocomplete from "./CustomerAutocomplete";
 import { ChipField, DropdownField } from "./FormPickers";
@@ -246,6 +247,31 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
               options={[{ key: "", label: "— nincs hozzárendelve —" }, ...users.map((u) => ({ key: u.id, label: u.fullName || u.email }))]}
             />
           </div>
+          {f.unlockType === "Mintarajzolat" ? (
+            <>
+              <DropdownField
+                label="Feloldás típusa"
+                value={f.unlockType}
+                onChange={(v) => setF({ ...f, unlockType: v, unlockCode: v === "Mintarajzolat" ? f.unlockCode : "" })}
+                options={[{ key: "", label: "— nincs megadva —" }, { key: "PIN kód", label: "PIN kód" }, { key: "Jelszó", label: "Jelszó" }, { key: "Mintarajzolat", label: "Mintarajzolat" }, { key: "Nincs", label: "Nincs (nem zárolt)" }]}
+              />
+              <div className="field">
+                <label>Feloldó minta</label>
+                <div className="field-hint" style={{ marginBottom: 6 }}>Rajzold le ugyanazt a mintát, amit a kijelzőn húztak — az érintőképernyős pöttyök 1-9-es sorrendjét mentjük el.</div>
+                <PatternLockPad value={f.unlockCode} onChange={(v) => setF({ ...f, unlockCode: v })} />
+              </div>
+            </>
+          ) : (
+            <div className="row2">
+              <DropdownField
+                label="Feloldás típusa"
+                value={f.unlockType}
+                onChange={(v) => setF({ ...f, unlockType: v, unlockCode: v === "" || v === "Nincs" ? "" : f.unlockCode })}
+                options={[{ key: "", label: "— nincs megadva —" }, { key: "PIN kód", label: "PIN kód" }, { key: "Jelszó", label: "Jelszó" }, { key: "Mintarajzolat", label: "Mintarajzolat" }, { key: "Nincs", label: "Nincs (nem zárolt)" }]}
+              />
+              <div className="field"><label>Feloldó kód</label><input value={f.unlockCode} onChange={set("unlockCode")} placeholder="pl. 1234" disabled={f.unlockType === "" || f.unlockType === "Nincs"} /></div>
+            </div>
+          )}
           <div className="field">
             <label>Sorszám (kód) <span style={{ color: "#9CA3AF", fontWeight: 400 }}>— opcionális, üresen hagyva automatikusan a következő szabad szám kerül rá</span></label>
             <input type="number" value={f.ticketNo} onChange={set("ticketNo")} placeholder="automatikus" />

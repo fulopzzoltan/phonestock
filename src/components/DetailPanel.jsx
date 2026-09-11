@@ -7,6 +7,7 @@ import CallLink from "./CallLink";
 import ConfirmDelete from "./ConfirmDelete";
 import TicketPhotos from "./TicketPhotos";
 import PhonePartsPicker from "./PhonePartsPicker";
+import PatternLockPad from "./PatternLockPad";
 
 function signatureUrl(path) {
   return supabase.storage.from("signatures").getPublicUrl(path).data.publicUrl;
@@ -117,6 +118,15 @@ export default function DetailPanel({ ticket, locName, parts, stock, users = [],
             <Row k="Márka" v={ticket.brand} />
             <Row k="Modell" v={ticket.model} />
             <Row k="IMEI" v={ticket.imei ? <span className="mono">{ticket.imei}</span> : null} />
+            {ticket.unlockType && ticket.unlockType !== "Nincs" && (
+              <Row k="Feloldás" v={ticket.unlockType === "Mintarajzolat" ? (
+                ticket.unlockCode ? (
+                  <div style={{ maxWidth: 160 }}><PatternLockPad value={ticket.unlockCode} readOnly /></div>
+                ) : <span style={{ color: "#9CA3AF" }}>{ticket.unlockType} — nincs rögzítve</span>
+              ) : (
+                <span>{ticket.unlockType}: <span className="mono" style={{ fontWeight: 700 }}>{ticket.unlockCode || "—"}</span></span>
+              )} />
+            )}
             {ticket.imei && (
               <button type="button" className="btn sec sm" style={{ marginTop: 4, marginBottom: 4 }} onClick={() => onShowHistory(ticket.imei)}>Eszköz előzmény megtekintése</button>
             )}

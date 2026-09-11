@@ -703,6 +703,15 @@ tr:hover td{background:#FAFAFA}
 .errbar{background:#FEF2F2;border:1px solid #FECACA;color:#B91C1C;padding:10px 15px;border-radius:12px;font-size:12.5px;margin-bottom:14px}
 .field-hint{font-size:11px;color:#9CA3AF;margin-top:4px}
 
+/* Mintazár-rajzoló — a szerviz munkalapon a Samsung/Android feloldó minta rögzítésére
+   (ld. TicketFormModal "Mintarajzolat" opció). Sima 3x3 pöttyrács, húzással köti össze
+   a pontokat, ugyanabba a szöveges unlockCode mezőbe menti "1-2-3" formátumban. */
+.pattern-pad{display:flex;flex-direction:column;align-items:center;gap:8px;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:14px;padding:14px}
+.pattern-pad-svg{width:100%;max-width:180px;height:auto;aspect-ratio:1;touch-action:none;cursor:pointer}
+.pattern-pad-svg.readonly{cursor:default}
+.pattern-pad-actions{display:flex;align-items:center;gap:10px}
+.pattern-pad-hint{font-size:11.5px;color:#9CA3AF;font-weight:600}
+
 /* ====== FELÚJÍTÁS — saját telefonok javítás-menedzsmentje ====== */
 .rf-list-head{display:flex;align-items:center;gap:12px;padding:0 16px;height:29px;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.02em;color:#86868B;border-bottom:1px solid #F2F2F4}
 .rf-list-head-serial{width:64px;flex-shrink:0}
