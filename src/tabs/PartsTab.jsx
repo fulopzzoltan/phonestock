@@ -152,7 +152,7 @@ export default function PartsTab({
             <div key={cat} style={{ marginBottom: 18 }}>
               <ResponsiveTable
                 className="tw-apple"
-                columns={[{ key: "n", label: "Sorszám", className: "col-serial" }, { key: "p", label: "Alkatrész", className: "col-grow" }, { key: "t", label: "Típus" }, { key: "k", label: "Kategória" }, { key: "s", label: "Forrás" }, { key: "c", label: "Beérk. ár" }, { key: "x", label: "" }]}
+                columns={[{ key: "n", label: "Sorszám", className: "col-serial" }, { key: "p", label: "Alkatrész", className: "col-grow" }, { key: "s", label: "Forrás" }, { key: "k", label: "Kategória" }, { key: "c", label: "Beérk. ár" }, { key: "x", label: "" }]}
                 rows={items}
                 rowKey={(p) => p.id}
                 renderRow={(p) => (
@@ -163,9 +163,13 @@ export default function PartsTab({
                         {partLabel(p)}
                       </div>
                     </td>
-                    <td style={{ whiteSpace: "nowrap" }}>{originPill(p.origin)}</td>
-                    <td style={{ whiteSpace: "nowrap" }}>{categoryPill(p.category || "Egyéb")}</td>
                     <td style={{ color: "#6B7280", fontSize: 12, whiteSpace: "nowrap" }}>{p.source || "—"}</td>
+                    <td style={{ whiteSpace: "nowrap" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        {categoryPill(p.category || "Egyéb")}
+                        {p.origin && originPill(p.origin)}
+                      </div>
+                    </td>
                     <td className="row-price">{money(p.costPrice)}</td>
                     <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
                       <button type="button" className="use-btn icon-only" disabled={busy || !p.quantity} title="Felhasználás" onClick={() => onUsePart(p)}><UseIcon width={13} height={13} /></button>
