@@ -114,7 +114,12 @@ export default function RefurbTab({
       ) : filtered.length === 0 ? (
         <div className="tw tw-apple"><EmptyState icon={RefurbIcon}>Nincs telefon ebben az állapotban.</EmptyState></div>
       ) : (
-        <div className="rf-list">
+        <div className="tw tw-apple rf-list-wrap">
+          <div className="rf-list-head">
+            <span className="rfr-serial">Sorszám</span>
+            <span>Eszköz</span>
+          </div>
+          <div className="rf-list">
           {filtered.map(({ product, tasks, rankPos }) => (
             <RefurbPhoneRow
               key={product.id}
@@ -142,6 +147,7 @@ export default function RefurbTab({
               onOpenInspection={setInspectProduct}
             />
           ))}
+          </div>
         </div>
       )}
 

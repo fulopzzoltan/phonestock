@@ -83,7 +83,6 @@ export default function RefurbPhoneRow({
             <ChevronDownIcon />
           </button>
         </div>
-        <ChevronDownIcon className="rfr-chev" style={expanded ? { transform: "rotate(180deg)" } : undefined} />
       </div>
 
       {expanded && (

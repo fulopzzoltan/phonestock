@@ -655,16 +655,18 @@ tr:hover td{background:#FAFAFA}
 .field-hint{font-size:11px;color:#9CA3AF;margin-top:4px}
 
 /* ====== FELÚJÍTÁS — saját telefonok javítás-menedzsmentje ====== */
-.rf-list{display:flex;flex-direction:column;gap:8px}
-.rfr{background:#fff;border:1px solid #EEF0F2;border-radius:14px;box-shadow:var(--shadow-card);overflow:hidden}
-.rfr-head{display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer}
+.rf-list-head{display:flex;align-items:center;gap:12px;padding:0 14px;height:34px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;color:#86868B;border-bottom:1px solid #F2F2F4}
+.rf-list{display:flex;flex-direction:column}
+.rfr{background:#fff;border-bottom:0.5px solid rgba(0,0,0,.07)}
+.rf-list .rfr:last-child{border-bottom:none}
+.rfr-head{display:flex;align-items:center;gap:12px;padding:10px 14px;min-height:52px;box-sizing:border-box;cursor:pointer}
 .rfr-head:hover{background:#FAFAFA}
-.rfr-serial{color:#9CA3AF;font-size:12px;flex-shrink:0;white-space:nowrap}
-.rf-rank-ctrl{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0}
-.rf-rank-btn{background:#F3F4F6;border:none;border-radius:7px;width:24px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6B7280}
+.rfr-serial{color:#9CA3AF;font-size:12px;flex-shrink:0;white-space:nowrap;width:64px;overflow:visible}
+.rf-rank-ctrl{display:flex;flex-direction:row;align-items:center;gap:6px;flex-shrink:0}
+.rf-rank-btn{background:#F3F4F6;border:none;border-radius:8px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6B7280}
 .rf-rank-btn:disabled{opacity:.35;cursor:default}
 .rf-rank-btn:not(:disabled):hover{background:#E5E7EB}
-.rf-rank-num{font-size:12px;font-weight:800;color:#111827;padding:1px 0}
+.rf-rank-num{font-size:12.5px;font-weight:800;color:#111827;min-width:18px;text-align:center}
 .rfr-title{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .rfr-name{font-size:13.5px;font-weight:700;color:#111827}
 .rfr-meta{font-size:11.5px;color:#9CA3AF;margin-left:8px}
@@ -672,7 +674,6 @@ tr:hover td{background:#FAFAFA}
 .rfr-add-badge .d{font-size:13px;line-height:1}
 .rfr-done-badge{background:#DCFCE7;color:#15803D;border-radius:999px;padding:3px 10px;font-size:10.5px;font-weight:800;flex-shrink:0}
 .rfr-cost-badge{font-family:'Roboto Mono',monospace;font-size:13px;font-weight:800;color:#B91C1C;flex-shrink:0;white-space:nowrap}
-.rfr-chev{color:#9CA3AF;flex-shrink:0;transition:transform .15s}
 .rfr-body{padding:4px 16px 14px 16px;border-top:1px solid #F3F4F6;display:flex;flex-direction:column;gap:14px}
 .rfr-actions{display:flex;align-items:center;justify-content:flex-end;gap:12px}
 .rf-parts-cost{font-size:11.5px;color:#6B7280;margin-top:8px}
