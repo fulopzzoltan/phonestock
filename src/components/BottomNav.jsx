@@ -113,6 +113,9 @@ export default function BottomNav({
 
       <BottomSheet open={moreOpen} onClose={() => setMoreOpen(false)}>
         <div className="ios-app-grid">
+          {Array.from({ length: (4 - (moreItems.length % 4)) % 4 }).map((_, i) => (
+            <span key={`pad${i}`} className="ios-app-pad" aria-hidden="true" />
+          ))}
           {moreItems.map(({ key, label, from, to, Icon, countKey }) => {
             const count = countKey ? counts[countKey] : 0;
             return (
@@ -125,9 +128,6 @@ export default function BottomNav({
               </button>
             );
           })}
-          {Array.from({ length: (4 - (moreItems.length % 4)) % 4 }).map((_, i) => (
-            <span key={`pad${i}`} className="ios-app-pad" aria-hidden="true" />
-          ))}
         </div>
       </BottomSheet>
     </>
