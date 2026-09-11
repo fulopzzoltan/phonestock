@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { money, PART_CATEGORIES, PART_ORIGINS, partCode, ticketCode } from "../lib/utils";
+import { money, PART_CATEGORIES, partCode, ticketCode } from "../lib/utils";
 import { SearchIcon, EditIcon, PartsIcon, ScanIcon } from "../components/icons";
 import ConfirmDelete from "../components/ConfirmDelete";
 import { EmptyState, LoadingState } from "../components/EmptyState";
@@ -19,11 +19,14 @@ function groupKeyOf(p) {
 }
 
 // A sor címkéje a Szerviznél megszokott "eszköz márkája és típusa" mintát követi
-// (a szabad szöveges Megnevezés helyett), az eredet (Eredeti/Utángyártott/Felújított)
-// pedig utána, mint egy státuszjelző.
+// (a szabad szöveges Megnevezés helyett) — az eredet (Eredeti/Utángyártott/Felújított)
+// külön "Típus" oszlopban jelenik meg.
 function partLabel(p) {
-  const device = [p.brand, p.modelFit].filter(Boolean).join(" ") || p.name || "—";
-  return p.origin ? `${device} — ${p.origin}` : device;
+  return [p.brand, p.modelFit].filter(Boolean).join(" ") || p.name || "—";
+}
+function originPill(origin) {
+  if (!origin) return "—";
+  return <span className="tag" style={{ background: "#F3F4F6", color: "#4B5563" }}>{origin}</span>;
 }
 
 const CATS = [...PART_CATEGORIES, "Egyéb"];
@@ -59,15 +62,12 @@ export default function PartsTab({
 }) {
   const [catFilter, setCatFilter] = useState("all");
   const [showUsed, setShowUsed] = useState(false);
-  const [originFilter, setOriginFilter] = useState("all");
 
   const catFiltered = useMemo(() => {
-    let items = filteredParts;
-    if (catFilter === "Egyéb") items = items.filter((p) => !PART_CATEGORIES.includes(p.category));
-    else if (catFilter !== "all") items = items.filter((p) => p.category === catFilter);
-    if (originFilter !== "all") items = items.filter((p) => p.origin === originFilter);
-    return items;
-  }, [filteredParts, catFilter, originFilter]);
+    if (catFilter === "all") return filteredParts;
+    if (catFilter === "Egyéb") return filteredParts.filter((p) => !PART_CATEGORIES.includes(p.category));
+    return filteredParts.filter((p) => p.category === catFilter);
+  }, [filteredParts, catFilter]);
 
   return (
     <div className="apple-page">
@@ -89,16 +89,6 @@ export default function PartsTab({
               </button>
             );
           })}
-        </div>
-        <div className="status-seg">
-          <button className={originFilter === "all" ? "active" : ""} onClick={() => setOriginFilter("all")}>
-            <span className="dot" style={{ background: "#9CA3AF" }} />Eredet <span className="cnt">{filteredParts.length}</span>
-          </button>
-          {PART_ORIGINS.map((o) => (
-            <button key={o} className={originFilter === o ? "active" : ""} onClick={() => setOriginFilter(o)}>
-              <span className="dot" style={{ background: "#9CA3AF" }} />{o} <span className="cnt">{filteredParts.filter((p) => p.origin === o).length}</span>
-            </button>
-          ))}
         </div>
         <button type="button" className={`history-toolbar-btn${showUsed ? " active" : ""}`} onClick={() => setShowUsed((v) => !v)}>
           <PartsIcon width={14} height={14} />
@@ -162,7 +152,7 @@ export default function PartsTab({
             <div key={cat} style={{ marginBottom: 18 }}>
               <ResponsiveTable
                 className="tw-apple"
-                columns={[{ key: "n", label: "Sorszám", className: "col-serial" }, { key: "p", label: "Alkatrész", className: "col-grow" }, { key: "k", label: "Kategória" }, { key: "s", label: "Forrás" }, { key: "c", label: "Beérk. ár" }, { key: "x", label: "" }]}
+                columns={[{ key: "n", label: "Sorszám", className: "col-serial" }, { key: "p", label: "Alkatrész", className: "col-grow" }, { key: "t", label: "Típus" }, { key: "k", label: "Kategória" }, { key: "s", label: "Forrás" }, { key: "c", label: "Beérk. ár" }, { key: "x", label: "" }]}
                 rows={items}
                 rowKey={(p) => p.id}
                 renderRow={(p) => (
@@ -173,6 +163,7 @@ export default function PartsTab({
                         {partLabel(p)}
                       </div>
                     </td>
+                    <td style={{ whiteSpace: "nowrap" }}>{originPill(p.origin)}</td>
                     <td style={{ whiteSpace: "nowrap" }}>{categoryPill(p.category || "Egyéb")}</td>
                     <td style={{ color: "#6B7280", fontSize: 12, whiteSpace: "nowrap" }}>{p.source || "—"}</td>
                     <td className="row-price">{money(p.costPrice)}</td>
@@ -194,6 +185,7 @@ export default function PartsTab({
                     </div>
                     <div className="mob-row-sub" style={{ marginTop: 8, gap: 6 }}>
                       {categoryPill(p.category || "Egyéb")}
+                      {p.origin && originPill(p.origin)}
                       <span style={{ fontSize: 11 }}>{p.source || "—"}</span>
                     </div>
                     <div className="mob-row-sub" style={{ marginTop: 8, gap: 6 }} onClick={(e) => e.stopPropagation()}>
