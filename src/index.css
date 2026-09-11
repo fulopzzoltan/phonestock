@@ -308,14 +308,22 @@ tr:hover td{background:#FAFAFA}
 .paid-toggle{display:flex;align-items:center;gap:5px;border:1.5px solid #E5E7EB;background:#fff;border-radius:999px;padding:6px 12px;font-size:11px;font-weight:700;color:#9CA3AF;cursor:pointer;white-space:nowrap;width:118px;justify-content:center;font-family:inherit}
 .paid-toggle.done{border-color:transparent;background:var(--primary-soft);color:var(--primary-ink)}
 .st{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:600}
-.st-beveve{background:#F3F4F6;color:#6B7280}
-.st-alkatresz{background:var(--info-soft);color:var(--info-ink)}
-.st-javitas{background:var(--warning-soft);color:var(--warning-ink)}
-.st-kesz{background:#DCFCE7;color:#15803D}
-.st-sikertelen{background:var(--failed-soft);color:var(--failed)}
-.st-kiadva{background:#F3F4F6;color:#6B7280}
-.st-garancialis{background:#EDE9FE;color:#6D28D9}
-.st-qc{background:var(--info-soft);color:var(--info-ink)}
+.st-beveve{background:#F3F4F6;color:#6B7280;--pill-bg:#F3F4F6;--pill-fg:#6B7280}
+.st-alkatresz{background:var(--info-soft);color:var(--info-ink);--pill-bg:var(--info-soft);--pill-fg:var(--info-ink)}
+.st-javitas{background:var(--warning-soft);color:var(--warning-ink);--pill-bg:var(--warning-soft);--pill-fg:var(--warning-ink)}
+.st-kesz{background:#DCFCE7;color:#15803D;--pill-bg:#DCFCE7;--pill-fg:#15803D}
+.st-sikertelen{background:var(--failed-soft);color:var(--failed);--pill-bg:var(--failed-soft);--pill-fg:var(--failed)}
+.st-kiadva{background:#F3F4F6;color:#6B7280;--pill-bg:#F3F4F6;--pill-fg:#6B7280}
+.st-garancialis{background:#EDE9FE;color:#6D28D9;--pill-bg:#EDE9FE;--pill-fg:#6D28D9}
+.st-qc{background:var(--info-soft);color:var(--info-ink);--pill-bg:var(--info-soft);--pill-fg:var(--info-ink)}
+.st-eredeti{--pill-bg:#DCFCE7;--pill-fg:#15803D}
+.st-utangyartott{--pill-bg:#F3F4F6;--pill-fg:#6B7280}
+.st-felujitott{--pill-bg:#FFEDD5;--pill-fg:#C2410C}
+/* Kitöltött, színes pill-változat (mint az Alkatrészek Kategória-oszlopa) — a .tw-apple
+   .st{background:transparent} felülírásához nagyobb specificitású szabály kell, a
+   tényleges színt pedig a --pill-bg/--pill-fg (fenti .st-* osztályokon) adja. */
+.tw-apple .st.st-fill{background:var(--pill-bg);color:var(--pill-fg);padding:3px 9px;font-size:11px;font-weight:600;border-radius:999px}
+.tw-apple .st.st-fill::before{content:none}
 .badge-loc{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:600;background:#F0FDF4;color:#15803D;border:1px solid #BBF7D0}
 .badge-income{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700;background:#DCFCE7;color:#15803D}
 .badge-expense{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700;background:#FEE2E2;color:#B91C1C}

@@ -83,9 +83,9 @@ export default function ServiceTab({
     return t.customerName || "—";
   };
   const statusPill = (t) => (t.subStatus ? (
-    <span className={`st ${subStatusCls(t.status, t.subStatus)}`}>{subStatusLabel(t.status, t.subStatus)}</span>
+    <span className={`st st-fill ${subStatusCls(t.status, t.subStatus)}`}>{subStatusLabel(t.status, t.subStatus)}</span>
   ) : (
-    <span className={`st ${statusCls(t.status)}`}>{statusLabel(t.status)}</span>
+    <span className={`st st-fill ${statusCls(t.status)}`}>{statusLabel(t.status)}</span>
   ));
   const TICKET_COLUMNS = [
     { key: "n", label: "Sorszám", className: "col-serial" }, { key: "d", label: "Eszköz", className: "col-device" }, { key: "c", label: "Kliens" }, { key: "i", label: "Bejött" },

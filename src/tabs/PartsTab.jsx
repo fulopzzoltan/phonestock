@@ -24,9 +24,10 @@ function groupKeyOf(p) {
 function partLabel(p) {
   return [p.brand, p.modelFit].filter(Boolean).join(" ") || p.name || "—";
 }
+const ORIGIN_CLS = { "Eredeti": "st-eredeti", "Utángyártott": "st-utangyartott", "Felújított": "st-felujitott" };
 function originPill(origin) {
-  if (!origin) return "—";
-  return <span className="tag" style={{ background: "#F3F4F6", color: "#4B5563" }}>{origin}</span>;
+  if (!origin) return null;
+  return <span className={`st st-fill ${ORIGIN_CLS[origin] || "st-utangyartott"}`}>{origin}</span>;
 }
 
 const CATS = [...PART_CATEGORIES, "Egyéb"];
@@ -161,15 +162,11 @@ export default function PartsTab({
                     <td>
                       <div className="stk-name" style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                         {partLabel(p)}
+                        {originPill(p.origin)}
                       </div>
                     </td>
                     <td style={{ color: "#6B7280", fontSize: 12, whiteSpace: "nowrap" }}>{p.source || "—"}</td>
-                    <td style={{ whiteSpace: "nowrap" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        {categoryPill(p.category || "Egyéb")}
-                        {p.origin && originPill(p.origin)}
-                      </div>
-                    </td>
+                    <td style={{ whiteSpace: "nowrap" }}>{categoryPill(p.category || "Egyéb")}</td>
                     <td className="row-price">{money(p.costPrice)}</td>
                     <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
                       <button type="button" className="use-btn icon-only" disabled={busy || !p.quantity} title="Felhasználás" onClick={() => onUsePart(p)}><UseIcon width={13} height={13} /></button>
@@ -189,7 +186,7 @@ export default function PartsTab({
                     </div>
                     <div className="mob-row-sub" style={{ marginTop: 8, gap: 6 }}>
                       {categoryPill(p.category || "Egyéb")}
-                      {p.origin && originPill(p.origin)}
+                      {originPill(p.origin)}
                       <span style={{ fontSize: 11 }}>{p.source || "—"}</span>
                     </div>
                     <div className="mob-row-sub" style={{ marginTop: 8, gap: 6 }} onClick={(e) => e.stopPropagation()}>
