@@ -74,6 +74,8 @@ export default function BottomNav({
   const isMoreActive = !fixedKeys.includes(tab);
   const pultTotal = pultPendingCounts ? pultPendingCounts.webOrders + pultPendingCounts.waiting + pultPendingCounts.notes : 0;
   const counts = { refurb: refurbCount, inbox: inboxUnreadCount };
+  const moreItems = MORE_SECTIONS.filter((s) => !s.adminOnly || isAdmin)
+    .flatMap((section) => section.items.filter((it) => (!it.employeeOnly || !isAdmin) && (!it.adminOnly || isAdmin)));
 
   function go(nextTab) {
     setTab(nextTab);
@@ -111,20 +113,21 @@ export default function BottomNav({
 
       <BottomSheet open={moreOpen} onClose={() => setMoreOpen(false)}>
         <div className="ios-app-grid">
-          {MORE_SECTIONS.filter((s) => !s.adminOnly || isAdmin)
-            .flatMap((section) => section.items.filter((it) => (!it.employeeOnly || !isAdmin) && (!it.adminOnly || isAdmin)))
-            .map(({ key, label, from, to, Icon, countKey }) => {
-              const count = countKey ? counts[countKey] : 0;
-              return (
-                <button key={key + label} type="button" className={`ios-app${tab === key ? " active" : ""}`} onClick={() => go(key)}>
-                  <span className="ios-app-icon-wrap">
-                    <AppIcon from={from} to={to} size={54} radius={14}><Icon stroke="#fff" width={24} height={24} /></AppIcon>
-                    {count > 0 && <span className="ios-app-badge">{count > 99 ? "99+" : count}</span>}
-                  </span>
-                  <span className="ios-app-label">{label}</span>
-                </button>
-              );
-            })}
+          {moreItems.map(({ key, label, from, to, Icon, countKey }) => {
+            const count = countKey ? counts[countKey] : 0;
+            return (
+              <button key={key + label} type="button" className={`ios-app${tab === key ? " active" : ""}`} onClick={() => go(key)}>
+                <span className="ios-app-icon-wrap">
+                  <AppIcon from={from} to={to} size={54} radius={14}><Icon stroke="#fff" width={24} height={24} /></AppIcon>
+                  {count > 0 && <span className="ios-app-badge">{count > 99 ? "99+" : count}</span>}
+                </span>
+                <span className="ios-app-label">{label}</span>
+              </button>
+            );
+          })}
+          {Array.from({ length: (4 - (moreItems.length % 4)) % 4 }).map((_, i) => (
+            <span key={`pad${i}`} className="ios-app-pad" aria-hidden="true" />
+          ))}
         </div>
       </BottomSheet>
     </>
