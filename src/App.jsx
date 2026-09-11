@@ -3187,7 +3187,7 @@ function AppShell() {
             busy={busy} setWarrantyModal={setWarrantyModal} activeWarranties={activeWarranties}
             warrantyFilter={warrantyFilter} setWarrantyFilter={setWarrantyFilter} loadingData={loadingData}
             filteredWarranties={filteredWarranties} setWarrantyDetailKey={setWarrantyDetailKey}
-            expiredWarranties={expiredWarranties}
+            expiredWarranties={expiredWarranties} onPrint={printWarrantySlip}
           />
         )}
 

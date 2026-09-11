@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { SearchIcon, WarrantyIcon } from "../components/icons";
+import { SearchIcon, WarrantyIcon, PrintIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import HistorySection from "../components/HistorySection";
 
@@ -7,7 +7,7 @@ const FILTERS = [["all", "Mind"], ["sale", "Telefon garancia"], ["service", "Sze
 
 export default function WarrantyTab({
   warrantyFilter, setWarrantyFilter, loadingData, filteredWarranties,
-  setWarrantyDetailKey, expiredWarranties,
+  setWarrantyDetailKey, expiredWarranties, onPrint,
 }) {
   const [search, setSearch] = useState("");
   const [showExpired, setShowExpired] = useState(false);
@@ -45,7 +45,7 @@ export default function WarrantyTab({
       >
         {(rows) => (
           <table>
-            <thead><tr><th>Ügyfél</th><th className="col-grow">Termék / Eszköz</th><th>Garancia</th><th>Lejárt</th></tr></thead>
+            <thead><tr><th>Ügyfél</th><th className="col-grow">Termék / Eszköz</th><th>Garancia</th><th>Lejárt</th><th></th></tr></thead>
             <tbody>
               {rows.map((w) => (
                 <tr key={w.key} style={{ cursor: "pointer" }} onClick={() => setWarrantyDetailKey(w.key)}>
@@ -53,6 +53,9 @@ export default function WarrantyTab({
                   <td>{w.label || "—"}</td>
                   <td style={{ whiteSpace: "nowrap" }}><span className="gar-pill">{w.warranty}</span></td>
                   <td className="mono" style={{ color: "#9CA3AF", whiteSpace: "nowrap" }}>{w.expiry}</td>
+                  <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
+                    <button type="button" className="btn sec sm icon-only" title="Nyomtatás" onClick={() => onPrint(w)}><PrintIcon width={13} height={13} /></button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -64,7 +67,7 @@ export default function WarrantyTab({
         {loadingData ? <LoadingState /> : rows.length === 0 ? <EmptyState icon={WarrantyIcon}>Nincs aktív garancia.</EmptyState> : (
           <>
             <table>
-              <thead><tr><th>Ügyfél</th><th className="col-grow">Termék / Eszköz</th><th>Garancia</th><th>Lejárat</th></tr></thead>
+              <thead><tr><th>Ügyfél</th><th className="col-grow">Termék / Eszköz</th><th>Garancia</th><th>Lejárat</th><th></th></tr></thead>
               <tbody>
                 {rows.map((w) => (
                   <tr key={w.key} style={{ cursor: "pointer" }} onClick={() => setWarrantyDetailKey(w.key)}>
@@ -72,6 +75,9 @@ export default function WarrantyTab({
                     <td>{w.label || "—"}</td>
                     <td style={{ whiteSpace: "nowrap" }}><span className="gar-pill">{w.warranty}</span></td>
                     <td className="mono" style={{ color: "#6B7280", whiteSpace: "nowrap" }}>{w.expiry}</td>
+                    <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
+                      <button type="button" className="btn sec sm icon-only" title="Nyomtatás" onClick={() => onPrint(w)}><PrintIcon width={13} height={13} /></button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -86,6 +92,9 @@ export default function WarrantyTab({
                   <div className="mob-row-sub">
                     <span>{w.label || "—"}</span>
                     <span className="gar-pill">{w.warranty}</span>
+                  </div>
+                  <div className="mob-row-sub" style={{ marginTop: 8 }} onClick={(e) => e.stopPropagation()}>
+                    <button type="button" className="btn sec sm icon-only" title="Nyomtatás" onClick={() => onPrint(w)}><PrintIcon width={13} height={13} /></button>
                   </div>
                 </div>
               ))}

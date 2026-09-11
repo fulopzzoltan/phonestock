@@ -1,5 +1,5 @@
 import { formatPhone, money } from "../lib/utils";
-import { SearchIcon, CustomersIcon } from "../components/icons";
+import { SearchIcon, CustomersIcon, CallIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 
 export default function CustomersTab({
@@ -15,7 +15,7 @@ export default function CustomersTab({
         {loadingData ? <LoadingState /> : customers.length === 0 ? <EmptyState icon={CustomersIcon}>Nincs ügyfél.</EmptyState> : (
           <>
             <table>
-              <thead><tr><th>Név</th><th className="col-grow">Telefonszám</th><th>Vásárlások</th><th>Szerviz</th><th>Utolsó aktivitás</th></tr></thead>
+              <thead><tr><th>Név</th><th className="col-grow">Telefonszám</th><th>Vásárlások</th><th>Szerviz</th><th>Utolsó aktivitás</th><th></th></tr></thead>
               <tbody>
                 {customers.map((c) => (
                   <tr key={c.key} style={{ cursor: "pointer" }} onClick={() => setCustomerKey(c.key)}>
@@ -29,6 +29,9 @@ export default function CustomersTab({
                     <td style={{ whiteSpace: "nowrap" }}>{c.purchases.length} db · <span className="mono">{money(c.purchaseTotal)}</span></td>
                     <td style={{ whiteSpace: "nowrap" }}>{c.tickets.length} db · <span className="mono">{money(c.ticketTotal)}</span></td>
                     <td className="mono" style={{ color: "#6B7280", whiteSpace: "nowrap" }}>{c.lastActivity || "—"}</td>
+                    <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
+                      {c.phone && <a className="btn sec sm icon-only" title="Hívás" href={`tel:${c.phone.replace(/\s/g, "")}`}><CallIcon width={13} height={13} /></a>}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -48,6 +51,11 @@ export default function CustomersTab({
                     <span>{c.tickets.length} szerviz · {money(c.ticketTotal)}</span>
                     <span>{c.lastActivity || "—"}</span>
                   </div>
+                  {c.phone && (
+                    <div className="mob-row-sub" style={{ marginTop: 8 }} onClick={(e) => e.stopPropagation()}>
+                      <a className="btn sec sm icon-only" title="Hívás" href={`tel:${c.phone.replace(/\s/g, "")}`}><CallIcon width={13} height={13} /></a>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
