@@ -88,24 +88,20 @@ export default function ServiceTab({
     <span className={`st st-fill ${statusCls(t.status)}`}>{statusLabel(t.status)}</span>
   ));
   const TICKET_COLUMNS = [
-    { key: "n", label: "Sorszám", className: "col-serial" }, { key: "d", label: "Eszköz", className: "col-device" }, { key: "c", label: "Kliens" }, { key: "i", label: "Bejött" },
-    { key: "p", label: "Probléma", className: "col-grow" }, { key: "f", label: "" }, { key: "s", label: "Státusz", className: "col-status" }, { key: "a", label: "Ár", className: "num-col" }, { key: "x", label: "" },
+    { key: "n", label: "Sorszám", className: "col-serial" }, { key: "d", label: "Eszköz", className: "col-grow" }, { key: "c", label: "Kliens" }, { key: "i", label: "Bejött" },
+    { key: "f", label: "" }, { key: "s", label: "Státusz", className: "col-status" }, { key: "a", label: "Ár", className: "num-col" }, { key: "x", label: "" },
   ];
   const renderTicketRow = (t) => (
     <tr key={t.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
       <td className="mono col-serial" style={{ color: "#9CA3AF", whiteSpace: "nowrap" }}>{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</td>
-      <td style={{ whiteSpace: "nowrap" }}>
-        <div className="stk-name" style={{ flexWrap: "nowrap" }}>
+      <td>
+        <div className="stk-name">
           {displayName(t.brand, t.model) || "—"}
+          {probsOf(t).map((p, i) => <span key={i} className="prob-pill">{p}</span>)}
         </div>
       </td>
       <td style={{ whiteSpace: "nowrap" }}>{kliensOf(t)}</td>
       <td>{daysOf(t)}</td>
-      <td>
-        <div className="svc-probs">
-          {probsOf(t).length > 0 ? probsOf(t).map((p, i) => <span key={i} className="prob-pill">{p}</span>) : "—"}
-        </div>
-      </td>
       <td style={{ whiteSpace: "nowrap" }}>{flagsOf(t)}</td>
       <td className="col-status" style={{ whiteSpace: "nowrap" }}>{statusPill(t)}</td>
       <td className="row-price">
