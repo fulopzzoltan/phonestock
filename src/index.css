@@ -180,8 +180,8 @@ td{padding:12px 16px;border-bottom:1px solid #F3F4F6;vertical-align:middle}
 .tw-compact th{padding:8px 14px}
 .tw-compact td{padding:7px 14px}
 .tw-apple table{font-family:-apple-system,BlinkMacSystemFont,'Inter','Helvetica Neue',Arial,sans-serif;letter-spacing:-.006em}
-.tw-apple th{padding:0 18px;height:34px;font-size:10.5px;color:#86868B;background:#fff;border-bottom:1px solid #F2F2F4;text-align:left}
-.tw-apple td{padding:17px 18px;font-size:13px;border-bottom:0.5px solid rgba(0,0,0,.07);vertical-align:middle}
+.tw-apple th{padding:0 16px;height:29px;font-size:10.5px;color:#86868B;background:#fff;border-bottom:1px solid #F2F2F4;text-align:left}
+.tw-apple td{padding:10px 16px;font-size:12.5px;border-bottom:0.5px solid rgba(0,0,0,.07);vertical-align:middle}
 .tw-apple .mono{font-family:-apple-system,BlinkMacSystemFont,'Inter','Helvetica Neue',Arial,sans-serif;font-variant-numeric:tabular-nums}
 .tw-apple .row-price{font-family:-apple-system,BlinkMacSystemFont,'Inter','Helvetica Neue',Arial,sans-serif;font-variant-numeric:tabular-nums;text-align:left}
 .tw-apple td.row-price,.tw-apple td.num-col{text-align:left}
