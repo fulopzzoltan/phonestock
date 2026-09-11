@@ -28,6 +28,19 @@ function partLabel(p) {
 
 const CATS = [...PART_CATEGORIES, "Egyéb"];
 
+// Kategória-jelzés minden soron, a Szerviz Státusz-oszlopához hasonlóan — mivel a
+// listán a "Mind" nézetnél a kategóriák immár egymás alatt, fejléc nélkül futnak,
+// soronként is látszania kell, mi az alkatrész típusa.
+const CATEGORY_STYLE = {
+  "Kijelző": { background: "var(--info-soft)", color: "var(--info-ink)" },
+  "Akkumulátor": { background: "var(--warning-soft)", color: "var(--warning-ink)" },
+  "Hátlap": { background: "#EDE9FE", color: "#6D28D9" },
+};
+function categoryPill(cat) {
+  const style = CATEGORY_STYLE[cat] || { background: "#F3F4F6", color: "#6B7280" };
+  return <span className="st" style={style}>{cat}</span>;
+}
+
 const UseIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
     <rect x="3" y="7" width="18" height="12" rx="2" /><path d="M8 7V5.5A1.5 1.5 0 019.5 4h5A1.5 1.5 0 0116 5.5V7" />
@@ -131,7 +144,7 @@ export default function PartsTab({
             <div key={cat} style={{ marginBottom: 18 }}>
               <ResponsiveTable
                 className="tw-apple"
-                columns={[{ key: "n", label: "Sorszám", className: "col-serial" }, { key: "p", label: "Alkatrész", className: "col-grow" }, { key: "s", label: "Forrás" }, { key: "c", label: "Beérk. ár" }, { key: "x", label: "" }]}
+                columns={[{ key: "n", label: "Sorszám", className: "col-serial" }, { key: "p", label: "Alkatrész", className: "col-grow" }, { key: "k", label: "Kategória" }, { key: "s", label: "Forrás" }, { key: "c", label: "Beérk. ár" }, { key: "x", label: "" }]}
                 rows={items}
                 rowKey={(p) => p.id}
                 renderRow={(p) => (
@@ -142,6 +155,7 @@ export default function PartsTab({
                         {partLabel(p)}
                       </div>
                     </td>
+                    <td style={{ whiteSpace: "nowrap" }}>{categoryPill(p.category || "Egyéb")}</td>
                     <td style={{ color: "#6B7280", fontSize: 12, whiteSpace: "nowrap" }}>{p.source || "—"}</td>
                     <td className="row-price">{money(p.costPrice)}</td>
                     <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
@@ -160,8 +174,11 @@ export default function PartsTab({
                       </div>
                       <div className="mob-row-amount">{money(p.costPrice)}</div>
                     </div>
-                    <div className="mob-row-sub" style={{ marginTop: 8, gap: 6 }} onClick={(e) => e.stopPropagation()}>
+                    <div className="mob-row-sub" style={{ marginTop: 8, gap: 6 }}>
+                      {categoryPill(p.category || "Egyéb")}
                       <span style={{ fontSize: 11 }}>{p.source || "—"}</span>
+                    </div>
+                    <div className="mob-row-sub" style={{ marginTop: 8, gap: 6 }} onClick={(e) => e.stopPropagation()}>
                       <button type="button" className="use-btn icon-only" style={{ marginLeft: "auto" }} disabled={busy || !p.quantity} title="Felhasználás" onClick={() => onUsePart(p)}><UseIcon width={13} height={13} /></button>
                     </div>
                   </div>
