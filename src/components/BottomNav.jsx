@@ -37,7 +37,6 @@ const MORE_SECTIONS = [
   {
     label: "Pénzügyek",
     items: [
-      { key: "finance", label: "Cashflow", from: "#4B5563", to: "#111827", Icon: TrendCard },
       { key: "cash-settlement", label: "Elszámolás", from: "#FBBF24", to: "#D97706", Icon: ClipboardCheck, adminOnly: true },
       { key: "payroll", label: "Költségek", from: "#FCD34D", to: "#B45309", Icon: Wallet, adminOnly: true },
       { key: "invoices", label: "Számlák", from: "#94A3B8", to: "#475569", Icon: Invoice },
@@ -99,6 +98,10 @@ export default function BottomNav({
             {chatUnread > 0 && <span className="bnav-badge">{chatUnread > 9 ? "9+" : chatUnread}</span>}
           </span>
           <span>Chat</span>
+        </button>
+        <button type="button" className={`bnav-btn${tab === "finance" ? " active" : ""}`} onClick={() => go("finance")}>
+          <span className="bnav-ic-wrap"><AppIcon from="#4B5563" to="#111827" size={30} radius={9}><TrendCard stroke="#fff" width={16} height={16} /></AppIcon></span>
+          <span>Cashflow</span>
         </button>
         <button type="button" className={`bnav-btn${moreOpen || isMoreActive ? " active" : ""}`} onClick={() => setMoreOpen(true)}>
           <span className="bnav-ic-wrap"><AppIcon from="#9CA3AF" to="#4B5563" size={30} radius={9}><MoreIcon stroke="#fff" width={16} height={16} /></AppIcon></span>
