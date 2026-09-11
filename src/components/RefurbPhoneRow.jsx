@@ -79,7 +79,7 @@ export default function RefurbPhoneRow({
   return (
     <div className="rfr">
       <div className="rfr-head rfr-head-desktop" style={expanded ? { background: "#FAFAFA" } : undefined} onClick={onToggle}>
-        <span className="mono rfr-serial">{phoneCode(product.productNo) || "—"}</span>
+        <span className="rfr-serial">{phoneCode(product.productNo) || "—"}</span>
         <div className="rfr-title">
           <span className="rfr-name">{product.brand} {product.model}</span>
           <span className="rfr-meta">

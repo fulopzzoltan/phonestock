@@ -2410,23 +2410,23 @@ function AppShell() {
     for (const t of refurbTasks) (m.get(t.productId) || m.set(t.productId, []).get(t.productId)).push(t);
     return m;
   }, [refurbTasks]);
+  // A Felújítás egy közös, helyszín-független sor: mindkét üzletből ide kerülnek be a
+  // javítandó darabok, és innen mennek majd ki bármelyik helyszínre — ezért NEM szűrünk a
+  // bal oldali helyszín-választóval, mindig minden helyszín javítandó tétele látszik.
   const refurbPhones = useMemo(() => {
     let s = stock.filter((i) => i.status === "in_stock" && i.stockStatus === "javitando");
-    if (stockLocFilter !== "all") s = s.filter((i) => i.locationId === stockLocFilter || i.locationId === reserveLocId);
     return [...s].sort((a, b) => {
       const ra = a.repairRank ?? 999999, rb = b.repairRank ?? 999999;
       if (ra !== rb) return ra - rb;
       return (a.dateAdded || "").localeCompare(b.dateAdded || "");
     });
-  }, [stock, stockLocFilter, reserveLocId]);
+  }, [stock]);
   const refurbCount = refurbPhones.length;
   // A "+" gombbal a Felújítás fülön ide, a meglévő (még nem javítandó) raktárkészletből
-  // lehet átemelni egy tételt — ugyanaz a helyszín-szűrés, mint a refurbPhones listán.
+  // lehet átemelni egy tételt — ugyanúgy mindkét helyszínről, mint a refurbPhones listán.
   const refurbPickable = useMemo(() => {
-    let s = stock.filter((i) => i.status === "in_stock" && i.stockStatus !== "javitando");
-    if (stockLocFilter !== "all") s = s.filter((i) => i.locationId === stockLocFilter || i.locationId === reserveLocId);
-    return s;
-  }, [stock, stockLocFilter, reserveLocId]);
+    return stock.filter((i) => i.status === "in_stock" && i.stockStatus !== "javitando");
+  }, [stock]);
 
   const filteredTransactions = useMemo(() => {
     if (effectiveLocFilter === "all") return transactions;
