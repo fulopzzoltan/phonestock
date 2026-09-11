@@ -705,6 +705,7 @@ tr:hover td{background:#FAFAFA}
 
 /* ====== FELÚJÍTÁS — saját telefonok javítás-menedzsmentje ====== */
 .rf-list-head{display:flex;align-items:center;gap:12px;padding:0 16px;height:29px;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.02em;color:#86868B;border-bottom:1px solid #F2F2F4}
+.rf-list-head-serial{width:64px;flex-shrink:0}
 .rf-list{display:flex;flex-direction:column}
 .rfr{background:#fff;border-bottom:0.5px solid rgba(0,0,0,.07)}
 .rf-list .rfr:last-child{border-bottom:none}

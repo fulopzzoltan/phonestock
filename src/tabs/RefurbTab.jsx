@@ -116,7 +116,7 @@ export default function RefurbTab({
       ) : (
         <div className="tw tw-apple rf-list-wrap">
           <div className="rf-list-head">
-            <span className="rfr-serial">Sorszám</span>
+            <span className="rf-list-head-serial">Sorszám</span>
             <span>Eszköz</span>
           </div>
           <div className="rf-list">
