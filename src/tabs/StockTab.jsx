@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { money, displayName, phoneCode, daysOnShelf, isSlowMoving, stockStatusLabel, conditionGradeLabel, exportToCsv, today } from "../lib/utils";
-import { SearchIcon, PhoneCaseIcon, WarrantyIcon, ServiceIcon, CartIcon, ScanIcon } from "../components/icons";
+import { SearchIcon, PhoneCaseIcon, ServiceIcon, CartIcon, ScanIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import HistorySection from "../components/HistorySection";
 import ResponsiveTable from "../components/ResponsiveTable";
@@ -51,17 +51,16 @@ export default function StockTab({
             <td style={{ whiteSpace: "nowrap" }}>
               <div className="stk-name" style={{ flexWrap: "nowrap" }}>
                 {displayName(i.brand, i.model)}
+                <span className={`st st-fill ${i.condition === "New" ? "st-kesz" : "st-beveve"}`}>{conditionGradeLabel(i.condition, i.grade)}</span>
                 {i.acquisition?.acquisitionType === "consignment" && <span className="badge-loc">Bizomány</span>}
                 {i.stockStatus === "lefoglalt" && <span style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }} title="Nem látszik a webshopban">{stockStatusLabel(i.stockStatus)}</span>}
               </div>
             </td>
             <td style={{ whiteSpace: "nowrap" }}>
               <div className="stk-badges" style={{ flexWrap: "nowrap" }}>
-                <span className={`st st-flat ${i.condition === "New" ? "st-kesz" : "st-beveve"}`}>{conditionGradeLabel(i.condition, i.grade)}</span>
                 {i.storage && <span className="stk-sub" style={{ marginTop: 0 }}>{i.storage}</span>}
                 {i.brand !== "Apple" && i.ram && <span className="stk-sub" style={{ marginTop: 0 }}>{i.ram} RAM</span>}
                 {i.color && <span className="stk-sub" style={{ marginTop: 0 }}>{i.color}</span>}
-                {i.warranty && <span className="gar-pill"><WarrantyIcon width={10} height={10} />{i.warranty}</span>}
               </div>
             </td>
             <td style={{ whiteSpace: "nowrap" }}>
@@ -84,6 +83,7 @@ export default function StockTab({
               <div className="mob-row-main">
                 <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{phoneCode(i.productNo) || "—"}</span>
                 <span>{displayName(i.brand, i.model)}</span>
+                <span className={`st st-fill ${i.condition === "New" ? "st-kesz" : "st-beveve"}`} style={{ marginLeft: 6 }}>{conditionGradeLabel(i.condition, i.grade)}</span>
               </div>
               <div className="mob-row-amount">{money(i.salePrice)}</div>
             </div>
@@ -91,8 +91,6 @@ export default function StockTab({
               {i.storage && <span>{i.storage}</span>}
               {i.brand !== "Apple" && i.ram && <span>{i.ram} RAM</span>}
               {i.color && <span>{i.color}</span>}
-              <span className={`st st-flat ${i.condition === "New" ? "st-kesz" : "st-beveve"}`}>{conditionGradeLabel(i.condition, i.grade)}</span>
-              {i.warranty && <span className="gar-pill"><WarrantyIcon width={10} height={10} />{i.warranty}</span>}
               {i.acquisition?.acquisitionType === "consignment" && <span className="badge-loc">Bizomány</span>}
               {i.stockStatus === "javitando" && <span className="tag" style={{ background: "var(--danger-soft)", color: "var(--danger-ink)", fontWeight: 700 }}>Javítandó</span>}
               {i.stockStatus === "lefoglalt" && <span style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }}>{stockStatusLabel(i.stockStatus)}</span>}

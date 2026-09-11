@@ -36,9 +36,9 @@ const CATS = [...PART_CATEGORIES, "Egyéb"];
 // listán a "Mind" nézetnél a kategóriák immár egymás alatt, fejléc nélkül futnak,
 // soronként is látszania kell, mi az alkatrész típusa.
 const CATEGORY_STYLE = {
-  "Kijelző": { background: "var(--info-soft)", color: "var(--info-ink)" },
-  "Akkumulátor": { background: "var(--warning-soft)", color: "var(--warning-ink)" },
-  "Hátlap": { background: "#EDE9FE", color: "#6D28D9" },
+  "Kijelző": { "--pill-bg": "var(--info-soft)", "--pill-fg": "var(--info-ink)" },
+  "Akkumulátor": { "--pill-bg": "var(--warning-soft)", "--pill-fg": "var(--warning-ink)" },
+  "Hátlap": { "--pill-bg": "#EDE9FE", "--pill-fg": "#6D28D9" },
 };
 const CATEGORY_DOT = {
   "Kijelző": "var(--info)",
@@ -46,8 +46,8 @@ const CATEGORY_DOT = {
   "Hátlap": "#7C3AED",
 };
 function categoryPill(cat) {
-  const style = CATEGORY_STYLE[cat] || { background: "#F3F4F6", color: "#6B7280" };
-  return <span className="st part-cat-pill" style={style}>{cat}</span>;
+  const style = CATEGORY_STYLE[cat] || { "--pill-bg": "#F3F4F6", "--pill-fg": "#6B7280" };
+  return <span className="st st-fill" style={style}>{cat}</span>;
 }
 
 const UseIcon = (props) => (
