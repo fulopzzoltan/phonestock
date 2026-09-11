@@ -481,11 +481,21 @@ function AppShell() {
   // nem frissít kézzel. Websocket helyett (ld. fenti megjegyzés a Realtime-ról) egy rövid,
   // csak látható böngészőlapon futó pollozással pótoljuk ezt — ez sima REST-lekérés, nem
   // tartós kapcsolat, tehát nem okozza a korábban tapasztalt bejelentkezési megbízhatósági gondot.
+  // A tranzakciók és napi zárások is ide kerültek: ha ketten dolgoznak egyszerre (pl. mindketten
+  // az Árulás/Cashflow fülön), egy kolléga rögzítése eddig csak kézi frissítésre jelent meg a
+  // másiknál. Ugyanaz a csendes, csak-látható-lapon futó pollozás, NEM Realtime websocket (ld. a
+  // fenti megjegyzést) — a tranzakciólista lekérdezése pontosan az kezdeti betöltéssel egyezik.
   useEffect(() => {
     const id = setInterval(async () => {
       if (document.visibilityState !== "visible") return;
-      const rows = unwrap(await fetchAllRows(() => supabase.from("chat_messages").select("*").order("created_at", { ascending: true })));
-      setInboxMessages((rows || []).map(chatMessageFromApi));
+      const [chatRows, txRows, dayCloseRows] = await Promise.all([
+        fetchAllRows(() => supabase.from("chat_messages").select("*").order("created_at", { ascending: true })),
+        fetchAllRows(() => supabase.from("transactions").select("*, smartbill_documents(*), signatures(*)").is("deleted_at", null).order("date", { ascending: false })),
+        fetchAllRows(() => supabase.from("day_closes").select("*").order("date", { ascending: false })),
+      ]);
+      setInboxMessages((unwrap(chatRows) || []).map(chatMessageFromApi));
+      setTransactions((unwrap(txRows) || []).map(txFromApi));
+      setDayCloses((unwrap(dayCloseRows) || []).map(dayCloseFromApi));
     }, 30000);
     return () => clearInterval(id);
   }, []);
