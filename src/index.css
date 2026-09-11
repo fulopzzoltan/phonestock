@@ -349,6 +349,15 @@ tr:hover td{background:#FAFAFA}
 .dcc-loc{font-size:12.5px;font-weight:700;color:#374151}
 .dcc-stale{font-size:12.5px;color:#92400E;background:#FEF3C7;border-radius:var(--radius-sm);padding:8px 12px;margin-top:10px;display:flex;justify-content:space-between;align-items:center;gap:10px}
 .dcc-confirm{margin-top:10px;background:#F9FAFB;border:1px solid #EEF0F2;border-radius:12px;padding:12px}
+.liquid-toggle{position:relative;border:none;background:none;padding:0;cursor:pointer;display:inline-block;width:46px;height:26px;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.liquid-toggle:disabled{cursor:default;opacity:.55}
+.lt-track{position:absolute;inset:0;border-radius:999px;background:#E5E7EB;transition:background .32s ease}
+.liquid-toggle.on .lt-track{background:#DC2626}
+.lt-blobs{position:absolute;inset:0}
+.lt-thumb,.lt-drop{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff}
+.lt-thumb{transition:transform .38s cubic-bezier(.34,1.56,.64,1)}
+.lt-drop{transition:transform .46s cubic-bezier(.22,.9,.4,1) .05s}
+.liquid-toggle.on .lt-thumb,.liquid-toggle.on .lt-drop{transform:translateX(20px)}
 .badge-expense{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700;background:#FEE2E2;color:#B91C1C}
 .badge-refurb{display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:#fff;color:#C2410C;border:1px solid #FDBA74}
 .badge-new{display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:#fff;color:#6D28D9;border:1px solid #DDD6FE}

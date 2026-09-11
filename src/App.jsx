@@ -14,6 +14,7 @@ import IssueInvoiceModal from "./components/IssueInvoiceModal";
 import PartModal from "./components/PartModal";
 import PartUsageModal from "./components/PartUsageModal";
 import PdfOrderImportModal from "./components/PdfOrderImportModal";
+import LiquidToggle from "./components/LiquidToggle";
 import DetailPanel from "./components/DetailPanel";
 import TicketDepositModal from "./components/TicketDepositModal";
 import ProductDetailPanel from "./components/ProductDetailPanel";
@@ -679,6 +680,7 @@ function AppShell() {
   const allowedLocations = stockLocations.filter((l) => l.name !== "Tartalék");
   const effectiveLocFilter = isAdmin ? locFilter : (myLocationId || "none");
   const defaultLocId = isAdmin ? (locFilter !== "all" ? locFilter : lastActiveLocationId) : myLocationId;
+  const headerTodayClose = dayCloses.find((d) => d.date === today() && d.locationId === defaultLocId && !d.reopenedAt);
   const reserveLocId = locations.find((l) => l.name === "Tartalék")?.id;
   const defaultStockLocId = isAdmin ? (locFilter !== "all" ? locFilter : (reserveLocId || allowedLocations[0]?.id)) : myLocationId;
 
@@ -3011,6 +3013,17 @@ function AppShell() {
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Cashflow</div>
             <button className="btn sec" style={{ padding: "8px 14px" }} disabled={busy} onClick={() => setPdfImportModal(true)}>+ PDF</button>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 4 }}>
+              <LiquidToggle
+                on={!!headerTodayClose}
+                disabled={busy}
+                title={headerTodayClose ? "Nap visszanyitása" : "Nap zárása"}
+                onChange={(next) => (next ? closeDay(today(), defaultLocId) : reopenDay(headerTodayClose.id))}
+              />
+              <span style={{ fontSize: 11.5, fontWeight: 600, color: headerTodayClose ? "#B91C1C" : "#9CA3AF", whiteSpace: "nowrap" }}>
+                {headerTodayClose ? "Nap lezárva" : "Nap zárása"}
+              </span>
+            </div>
           </>
         ) : tab === "leave" ? (
           <>
