@@ -103,7 +103,7 @@ export default function BottomNav({
         </button>
         <button type="button" className={`bnav-btn${tab === "finance" ? " active" : ""}`} onClick={() => go("finance")}>
           <span className="bnav-ic-wrap"><AppIcon from="#4B5563" to="#111827" size={30} radius={9}><TrendCard stroke="#fff" width={16} height={16} /></AppIcon></span>
-          <span>Cashflow</span>
+          <span>Árulás</span>
         </button>
         <button type="button" className={`bnav-btn${moreOpen || isMoreActive ? " active" : ""}`} onClick={() => setMoreOpen(true)}>
           <span className="bnav-ic-wrap"><AppIcon from="#9CA3AF" to="#4B5563" size={30} radius={9}><MoreIcon stroke="#fff" width={16} height={16} /></AppIcon></span>
