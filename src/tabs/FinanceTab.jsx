@@ -42,8 +42,11 @@ function KpiColumn({ loc, locTx, expected, showHeading }) {
             <polygon points="0,100 35,78 65,92 95,58 125,84 155,66 200,88 200,100" fill="#2E3548" opacity="0.75" />
           </svg>
         )}
-        <div className="lbl" style={{ position: "relative" }}>{loc.name}</div>
-        <div className="val" style={{ position: "relative" }}>{money(expected)}</div>
+        {loc.name === "Gyimes" && (
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0) 30%, rgba(10,12,18,.55) 100%)" }} aria-hidden="true" />
+        )}
+        <div className="lbl" style={{ position: "relative", textShadow: loc.name === "Gyimes" ? "0 1px 4px rgba(0,0,0,.6)" : undefined }}>{loc.name}</div>
+        <div className="val" style={{ position: "relative", textShadow: loc.name === "Gyimes" ? "0 1px 5px rgba(0,0,0,.65)" : undefined }}>{money(expected)}</div>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         <div className="statcard"><div className="lbl">Készpénz</div><div className="val" style={{ color: "#15803D" }}>{money(stats.incomeCash)}</div></div>
