@@ -52,8 +52,7 @@ export default function ServiceTab({
           })}
         </div>
         <button type="button" className={`history-toolbar-btn${showHandedOver ? " active" : ""}`} onClick={() => setShowHandedOver((v) => !v)}>
-          <ServiceIcon width={14} height={14} />
-          Átadott munkalapok <span className="cnt">{handedOverTickets.length}</span>
+          Átadott munkák <span className="cnt">{handedOverTickets.length}</span>
         </button>
       </div>
 

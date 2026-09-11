@@ -66,7 +66,7 @@ import BuybackRuleModal from "./components/BuybackRuleModal";
 import LeaveRequestModal from "./components/LeaveRequestModal";
 import LeaveBalanceModal from "./components/LeaveBalanceModal";
 import RepairPriceModal from "./components/RepairPriceModal";
-import { CloseIcon, ServiceIcon } from "./components/icons";
+import { CloseIcon, PlusIcon } from "./components/icons";
 import Sidebar from "./components/Sidebar";
 import MacDock from "./components/MacDock";
 import BottomNav from "./components/BottomNav";
@@ -2948,12 +2948,12 @@ function AppShell() {
         pageHeader={tab === "stock" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Telefonok</div>
-            <button className="btn pill-btn" disabled={busy} onClick={() => setStockModal("add")}>+ Új termék</button>
+            <button type="button" className="btn header-add-btn" disabled={busy} title="Új termék" onClick={() => setStockModal("add")}><PlusIcon width={16} height={16} /></button>
           </>
         ) : tab === "parts" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Alkatrész raktár</div>
-            <button className="btn" style={{ padding: "8px 14px" }} disabled={busy} onClick={() => setPartModal("add")}>+ Új alkatrész</button>
+            <button type="button" className="btn header-add-btn" disabled={busy} title="Új alkatrész" onClick={() => setPartModal("add")}><PlusIcon width={16} height={16} /></button>
           </>
         ) : tab === "refurb" ? (
           <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Felújítás</div>
@@ -2962,21 +2962,19 @@ function AppShell() {
         ) : tab === "customers" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Kliensek</div>
-            <button className="btn pill-btn" disabled={busy} onClick={() => setCustomerModal("add")}>+ Új ügyfél</button>
+            <button type="button" className="btn header-add-btn" disabled={busy} title="Új ügyfél" onClick={() => setCustomerModal("add")}><PlusIcon width={16} height={16} /></button>
           </>
         ) : tab === "warranty" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Garancia</div>
-            <button className="btn pill-btn" disabled={busy} onClick={() => setWarrantyModal("add")}>+ Garancia felvétele</button>
+            <button type="button" className="btn header-add-btn" disabled={busy} title="Garancia felvétele" onClick={() => setWarrantyModal("add")}><PlusIcon width={16} height={16} /></button>
           </>
         ) : tab === "dashboard" ? (
           <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Áttekintés</div>
         ) : tab === "service" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Szerviz</div>
-            <button type="button" className="btn pill-btn" disabled={busy} onClick={() => setTicketModal("add")}>
-              <ServiceIcon width={14} height={14} />Új munkalap
-            </button>
+            <button type="button" className="btn header-add-btn" disabled={busy} title="Új munkalap" onClick={() => setTicketModal("add")}><PlusIcon width={16} height={16} /></button>
           </>
         ) : tab === "buyback" ? (
           <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Felvásárlás</div>
@@ -3030,7 +3028,7 @@ function AppShell() {
         ) : tab === "users" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Felhasználók</div>
-            <button className="btn" style={{ padding: "8px 14px" }} disabled={busy} onClick={() => { setInviteError(""); setInviteModal(true); }}>+ Új kolléga meghívása</button>
+            <button type="button" className="btn header-add-btn" disabled={busy} title="Új kolléga meghívása" onClick={() => { setInviteError(""); setInviteModal(true); }}><PlusIcon width={16} height={16} /></button>
           </>
         ) : null}
       />
