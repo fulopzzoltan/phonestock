@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CloseIcon } from "./icons";
+import { CloseIcon, PlusIcon, MinusIcon } from "./icons";
 import { CATEGORIES, PAYMENTS } from "../lib/utils";
 
 // Kosár/blokk-alapú gyors rögzítő — a QuickSaleButtons + TransactionQuickAdd párost váltja.
@@ -88,7 +88,7 @@ export function useBasketBar({ defaultLocId, onCheckout }) {
 
 // Felső sáv: mód-váltó (Kiadás | Bevétel, jobb felső sarokban a Bevétel) balra a
 // gyorsgombokkal — ez a kártyán KÍVÜL, fölötte ül.
-export function BasketTopBar({ bb, defaultLocId, busy, smartQuickItems }) {
+export function BasketTopBar({ bb, defaultLocId, busy, smartQuickItems, onImportPdf }) {
   if (!defaultLocId) {
     return <div style={{ fontSize: 12.5, color: "#B91C1C" }}>Válassz helyszínt a bal oldali sávban a rögzítéshez.</div>;
   }
@@ -101,9 +101,14 @@ export function BasketTopBar({ bb, defaultLocId, busy, smartQuickItems }) {
           </button>
         ))}
       </div>
-      <div className="seg">
-        <button type="button" className={bb.mode === "expense" ? "active" : ""} onClick={() => bb.setMode("expense")}>Kiadás</button>
-        <button type="button" className={bb.mode === "income" ? "active" : ""} onClick={() => bb.setMode("income")}>Bevétel</button>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        {bb.mode === "expense" && onImportPdf && (
+          <button type="button" className="btn sec sm" disabled={busy} onClick={onImportPdf}>+ PDF</button>
+        )}
+        <div className="seg mode-seg">
+          <button type="button" className={`seg-expense${bb.mode === "expense" ? " active" : ""}`} onClick={() => bb.setMode("expense")}>Kiadás</button>
+          <button type="button" className={`seg-income${bb.mode === "income" ? " active" : ""}`} onClick={() => bb.setMode("income")}>Bevétel</button>
+        </div>
       </div>
     </div>
   );
@@ -119,27 +124,33 @@ export function BasketBody({ bb, defaultLocId, busy }) {
     <div>
       {bb.err && <div className="errbar">{bb.err}</div>}
 
-      <div style={{ display: "grid", gridTemplateColumns: mode === "income" ? "1.6fr 1fr 1fr 1fr" : "2fr 1fr 1fr", gap: 8, alignItems: "flex-end" }}>
+      <div style={{ display: "grid", gridTemplateColumns: mode === "income" ? "1.6fr .7fr .7fr 1fr auto" : "2fr .7fr 1fr auto", gap: 8, alignItems: "flex-end" }}>
         <div className="field" style={{ margin: 0 }}>
-          <label>Leírás</label>
-          <input value={bb.description} onChange={(e) => bb.setDescription(e.target.value)} placeholder="pl. tok eladás, hirdetés..." />
+          <input value={bb.description} onChange={(e) => bb.setDescription(e.target.value)} placeholder="Leírás, pl. tok eladás, hirdetés..." />
         </div>
         <div className="field" style={{ margin: 0 }}>
-          <label>Összeg (Lei)</label>
-          <input type="number" value={bb.amount} onChange={(e) => bb.setAmount(e.target.value)} placeholder="0" />
+          <input type="number" value={bb.amount} onChange={(e) => bb.setAmount(e.target.value)} placeholder="Lei" />
         </div>
         {mode === "income" && (
           <div className="field" style={{ margin: 0 }}>
-            <label>Besz. ár (Lei)</label>
-            <input type="number" value={bb.costPrice} onChange={(e) => bb.setCostPrice(e.target.value)} placeholder="0" />
+            <input type="number" value={bb.costPrice} onChange={(e) => bb.setCostPrice(e.target.value)} placeholder="Besz. ár" />
           </div>
         )}
         <div className="field" style={{ margin: 0 }}>
-          <label>Kategória</label>
           <select value={bb.category} onChange={(e) => bb.setCategory(e.target.value)}>
             {CATEGORIES.map((c) => <option key={c} value={c}>{c === "Eszköz" ? "Eszköz (befektetés)" : c}</option>)}
           </select>
         </div>
+        {mode === "income" && (
+          <button type="button" className="btn sm income-btn icon-only" style={{ width: 37.5, height: 37.5, justifyContent: "center", borderRadius: 999 }} title="Rögzítés" onClick={bb.addFreeToBasket}>
+            <PlusIcon width={16} height={16} />
+          </button>
+        )}
+        {mode === "expense" && basketItems.length === 0 && (
+          <button type="button" className="btn sm expense-btn icon-only" style={{ width: 37.5, height: 37.5, justifyContent: "center", borderRadius: 999 }} title="Rögzítés" disabled={busy} onClick={bb.handleDirectExpense}>
+            <MinusIcon width={16} height={16} />
+          </button>
+        )}
       </div>
 
       {mode === "expense" && bb.category === "Készlet" && (
@@ -152,13 +163,6 @@ export function BasketBody({ bb, defaultLocId, busy }) {
           </div>
         </div>
       )}
-
-      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 10 }}>
-        {mode === "income" && <button type="button" className="btn sec sm" onClick={bb.addFreeToBasket}>Hozzáadás a kosárhoz</button>}
-        {mode === "expense" && basketItems.length === 0 && (
-          <button type="button" className="btn sm" disabled={busy} onClick={bb.handleDirectExpense}>Rögzítés</button>
-        )}
-      </div>
 
       {basketItems.length > 0 && (
         <>

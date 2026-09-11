@@ -3012,7 +3012,6 @@ function AppShell() {
         ) : tab === "finance" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Árulás</div>
-            <button className="btn sec" style={{ padding: "8px 14px" }} disabled={busy} onClick={() => setPdfImportModal(true)}>+ PDF</button>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 4 }}>
               <LiquidToggle
                 on={!!headerTodayClose}
@@ -3126,6 +3125,7 @@ function AppShell() {
             dayCloses={dayCloses}
             closeDay={closeDay} reopenDay={reopenDay}
             isAdmin={isAdmin}
+            onImportPdf={() => setPdfImportModal(true)}
           />
         )}
 

@@ -55,19 +55,19 @@ function CloseStaleBanner({ loc, locTx, todayStr, busy, todayClose, closeDay }) 
 
 function LocationRecordBox({
   loc, locTx, todayStr, locName, busy, setTxModal, deleteTransaction, setReceiptTxId, productConditionById,
-  todayClose, closeDay, showHeading, showBasket, defaultLocId, smartQuickItems, checkoutBasket,
+  todayClose, closeDay, showHeading, showBasket, defaultLocId, smartQuickItems, checkoutBasket, onImportPdf,
 }) {
   const bb = useBasketBar({ defaultLocId, onCheckout: checkoutBasket });
   return (
     <>
       {showBasket && (
         <div style={{ marginBottom: 14 }}>
-          <BasketTopBar bb={bb} defaultLocId={defaultLocId} busy={busy} smartQuickItems={smartQuickItems} />
+          <BasketTopBar bb={bb} defaultLocId={defaultLocId} busy={busy} smartQuickItems={smartQuickItems} onImportPdf={onImportPdf} />
         </div>
       )}
 
       {showBasket && (
-        <div className="tw tw-compact" style={{ padding: 16, marginBottom: 16, minHeight: 168 }}>
+        <div className="tw tw-compact" style={{ padding: 16, marginBottom: 16, minHeight: 92 }}>
           <BasketBody bb={bb} defaultLocId={defaultLocId} busy={busy} />
         </div>
       )}
@@ -93,7 +93,7 @@ export default function FinanceTab({
   productConditionById,
   smartQuickItems, checkoutBasket,
   dayCloses, closeDay,
-  isAdmin,
+  isAdmin, onImportPdf,
 }) {
   const [showHistory, setShowHistory] = useState(false);
   const todayStr = today();
@@ -149,6 +149,7 @@ export default function FinanceTab({
             defaultLocId={basketLocId}
             smartQuickItems={smartQuickItems}
             checkoutBasket={checkoutBasket}
+            onImportPdf={onImportPdf}
           />
         ))}
 

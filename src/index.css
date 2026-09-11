@@ -259,6 +259,10 @@ tr:hover td{background:#FAFAFA}
 .seg{display:flex;gap:2px;background:#EEF0F2;border-radius:11px;padding:3px}
 .seg button{border:none;background:none;color:#6B7280;font-family:inherit;font-size:12px;font-weight:600;padding:7px 13px;border-radius:8px;cursor:pointer}
 .seg button.active{background:#fff;color:var(--accent-dark);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.seg button.seg-expense.active{background:#FEE2E2;color:#B91C1C}
+.seg button.seg-income.active{background:#DCFCE7;color:#15803D}
+.btn.expense-btn{background:#DC2626;box-shadow:0 4px 12px rgba(220,38,38,.25)}
+.btn.income-btn{background:#1DB954;box-shadow:0 4px 12px rgba(29,185,84,.25)}
 .toggle-link{color:#6B7280;font-size:12px;cursor:pointer;text-decoration:underline;margin-top:14px;display:inline-block}
 
 .status-seg{display:flex;gap:2px;background:#EEF0F2;border-radius:11px;padding:3px}
@@ -272,6 +276,8 @@ tr:hover td{background:#FAFAFA}
 .quick-add-seg button .cnt{font-size:10px;font-weight:700;color:#86868B}
 .quick-add-seg button:hover:not(:disabled){border-color:#BBF7D0;background:#F0FDF4;color:var(--accent-dark)}
 .quick-add-seg button:hover:not(:disabled) .cnt{color:var(--accent-dark)}
+.mode-seg{height:36px;box-sizing:border-box;align-items:stretch}
+.mode-seg button{height:100%;box-sizing:border-box}
 .quick-add-seg button:disabled{opacity:.6;cursor:default}
 
 .svc-days{font-weight:600;color:#111827;white-space:nowrap}
