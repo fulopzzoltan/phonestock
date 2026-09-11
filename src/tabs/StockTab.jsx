@@ -211,11 +211,6 @@ export default function StockTab({
           if (items.length === 0) return null;
           return (
             <div key={loc.id} style={{ marginBottom: 18 }}>
-              <div className="loc-group-head">
-                <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151" }}>
-                  {loc.name} <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({items.length} db)</span>
-                </div>
-              </div>
               {renderPhoneTable(items)}
             </div>
           );

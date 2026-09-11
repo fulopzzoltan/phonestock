@@ -115,11 +115,6 @@ export default function PartsTab({
           if (items.length === 0) return null;
           return (
             <div key={cat} style={{ marginBottom: 18 }}>
-              <div className="loc-group-head">
-                <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151" }}>
-                  {cat} <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({items.length} db)</span>
-                </div>
-              </div>
               <ResponsiveTable
                 className="tw-apple"
                 columns={[{ key: "n", label: "Sorszám", className: "col-serial" }, { key: "p", label: "Alkatrész", className: "col-grow" }, { key: "s", label: "Forrás" }, { key: "c", label: "Beérk. ár" }, { key: "x", label: "" }]}
