@@ -76,7 +76,7 @@ export default function MacDock({ tab, setTab, isAdmin, inboxUnreadCount, attent
   return (
     <div className="md-wrap">
       <div className="md-dock">
-        <DockItem label="Pult" icon={<AppIcon from="#60A5FA" to="#2563EB"><Toggle stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "pult"} badge={attentionCount} onClick={go("pult")} />
+        <DockItem label="Pult" icon={<AppIcon from="#1DB954" to="#159C46"><Toggle stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "pult"} badge={attentionCount} onClick={go("pult")} />
         <DockItem label="Bevételek és kiadások" icon={<AppIcon from="#FBBF24" to="#D97706"><Euro stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "finance" || tab === "cash-settlement" || tab === "payroll"} onClick={go("finance")} />
 
         <div className="md-sep" />

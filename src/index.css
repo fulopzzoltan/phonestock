@@ -63,7 +63,7 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
 .loc-drop-menu{position:absolute;top:calc(100% + 4px);left:0;min-width:100%;width:max-content;background:#fff;border:1px solid #E8EAEF;border-radius:10px;box-shadow:0 8px 24px rgba(16,24,40,.12);padding:4px;z-index:20}
 .loc-drop-item{display:block;width:100%;text-align:left;border:none;background:none;font-family:inherit;font-size:12px;font-weight:600;color:#5B6472;padding:8px 9px;border-radius:7px;cursor:pointer;white-space:nowrap}
 .loc-drop-item:hover{background:#F1F2F6}
-.loc-drop-item.active{background:#E8FBEF;color:#0F7A36}
+.loc-drop-item.active{background:#F1F2F6;color:#111827}
 .util-icon-btn{width:30px;height:30px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border:1px solid #E8EAEF;border-radius:9px;color:#5B6472}
 .util-icon-btn:hover{border-color:#1DB954;color:#0F7A36}
 .group-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;border:none;background:none;padding:0 13px;cursor:pointer;font-size:10.5px;font-weight:800;color:var(--sidebar-text-dim);text-transform:uppercase;letter-spacing:.05em;margin:20px 0 6px;font-family:inherit;transition:color .12s}
@@ -86,7 +86,7 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
   border-radius:22px;padding:8px 6px;
   box-shadow:0 8px 24px rgba(16,24,40,.16),0 1px 2px rgba(16,24,40,.06);
 }
-.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:none;color:var(--sidebar-text-dim);font-family:inherit;padding:6px 2px 5px;border-radius:14px;cursor:pointer;min-height:48px;-webkit-tap-highlight-color:transparent;transition:color .15s}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:none;color:var(--sidebar-text-dim);font-family:inherit;padding:8px 2px;border-radius:14px;cursor:pointer;min-height:48px;-webkit-tap-highlight-color:transparent;transition:color .15s}
 .bnav-btn span{font-size:10.5px;font-weight:600}
 .bnav-btn.active{color:var(--sidebar-accent-text)}
 .bnav-btn.active .md-item-appicon{transform:translateY(-1px) scale(1.05)}
@@ -232,6 +232,7 @@ td{padding:12px 16px;border-bottom:1px solid #F3F4F6;vertical-align:middle}
 .apple-page .seg button{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:999px;height:36px;padding:0 14px;color:#48484A}
 .apple-page .seg button.active{background:#1D1D1F;color:#fff}
 .history-toolbar-btn{margin-left:auto;display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:999px;height:36px;padding:0 15px;color:#48484A;font-size:12.5px;font-weight:600;box-shadow:none}
+.history-toolbar-btn-dots{display:none}
 .history-toolbar-btn .cnt{color:#86868B;font-variant-numeric:tabular-nums}
 .history-toolbar-btn.active{background:#1D1D1F;color:#fff;border-color:#1D1D1F}
 .history-toolbar-btn.active .cnt{color:rgba(255,255,255,.7)}
@@ -449,12 +450,16 @@ tr:hover td{background:#FAFAFA}
 .pb-stat-head{display:flex;align-items:baseline;gap:8px;margin-bottom:12px}
 .pb-stat-n{font-size:26px;font-weight:800;color:#111827;line-height:1}
 .pb-stat-l{font-size:11.5px;font-weight:600;color:#9CA3AF}
-.pb-stat-chips{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
-.pb-stat-chip{display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:#6B7280;padding:6px 9px;background:#F9FAFB;border-radius:9px}
+.pb-stat-greeting{font-size:18px;font-weight:800;color:#111827}
+.pb-stat-chips{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.pb-stat-chip{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;font-weight:600;color:#6B7280;padding:11px 13px;background:#F9FAFB;border-radius:11px}
+.pb-stat-chip-toggle{width:100%;border:none;font-family:inherit;cursor:pointer}
+.pb-stat-chip-toggle:disabled{cursor:default}
+.pb-stat-chip-toggle:not(:disabled):hover{background:#F1F2F6}
 .pb-stat-chip .l{display:flex;align-items:center;gap:6px}
-.pb-stat-chip .d{width:6px;height:6px;border-radius:999px;flex-shrink:0}
-.pb-stat-chip b{color:#111827;font-family:'Roboto Mono',monospace;font-weight:700}
-.pb-stat-list{display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto}
+.pb-stat-chip .d{width:7px;height:7px;border-radius:999px;flex-shrink:0}
+.pb-stat-chip b{color:#111827;font-family:'Roboto Mono',monospace;font-weight:700;font-size:13.5px}
+.pb-stat-list{display:flex;flex-direction:column;gap:8px}
 .pb-stat-row{display:flex;flex-direction:column;gap:5px;padding:10px 11px;border-radius:11px;background:#F9FAFB;border-left:3px solid var(--info)}
 .pb-stat-row.job{border-left-color:var(--primary);cursor:pointer}
 .pb-stat-row.ready{border-left-color:#7C3AED}
@@ -806,8 +811,18 @@ tr:hover td{background:#FAFAFA}
 
 /* QR/vonalkód-szkennelés — ld. QR_SZKENNELES_ES_NYOMTATO_JAVASLAT.md. Sötét, teli-képernyős
    kameranézet (nem a sima .modal fehér-kártya minta), mert a kamerakép önmagában ad kontrasztot. */
-.scan-trigger{flex-shrink:0;height:33.5px;padding:0 12px}
+.apple-page .scan-trigger{flex-shrink:0;height:33.5px;width:40px;padding:0;justify-content:center}
 @media (min-width:641px){.scan-trigger{display:none}}
+
+/* Mobilon a kereső, a szkenner és az "Átadott munkák" kapcsoló egy sorban férjen el —
+   a kereső rugalmasan zsugorodik, a másik kettő kör alakú ikongomb, fix méretű. */
+@media (max-width:640px){
+  .filter-row{flex-wrap:nowrap}
+  .apple-page .searchbar{flex:1;min-width:0;max-width:none}
+  .history-toolbar-btn{margin-left:0;flex-shrink:0;width:40px;height:33.5px;padding:0;justify-content:center}
+  .history-toolbar-btn-dots{display:block}
+  .history-toolbar-btn-text{display:none}
+}
 .scan-overlay{position:fixed;inset:0;background:rgba(10,10,12,.92);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px}
 .scan-modal{width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px}
 .scan-head{display:flex;align-items:center;justify-content:space-between;color:#fff;font-size:14px;font-weight:700}
@@ -942,6 +957,14 @@ tr:hover td{background:#FAFAFA}
   .iconbtn{padding:11px}
   .confirm-btn{padding:9px 13px}
   .t-card-step{width:40px;height:40px}
+}
+
+/* iOS Safari 16px alatti betűméretű mezőre fókuszáláskor automatikusan ránagyít (zoom) —
+   ez okozta, hogy az app egy rossz nagyítási szinten indult/ragadt be mobilon, és emiatt
+   egy ujjal nem lehetett görgetni. A látvány-méret (padding, sor) maradhat kicsi, csak a
+   tényleges betűméretnek kell legalább 16px-nek lennie, hogy a zoom eleve ne induljon el. */
+@media (pointer:coarse){
+  input,select,textarea{font-size:16px!important}
 }
 
 /* ====== TERMÉKFOTÓK ====== */
@@ -1843,6 +1866,37 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .mac-pult-fade-7{height:24px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .mac-pult-fade-8{height:12px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 
+/* A fenti Mac-dokkos "lebegő üvegkártya gradiens szobában" megjelenés (content-col +
+   mac-pult-content lekerekített sarkai/árnyéka/elmosás-rétegei) kifejezetten a desktop
+   dokk fölé lebegő nézethez lett tervezve — mobilon, ahol az alsó sáv élig érő, sima
+   sáv, ez két külön lekerekített/árnyékolt hátteret eredményezett egymás fölött.
+   Mobilon ezért sima, sík hátteret kap az egész, dokk-dekoráció nélkül. */
+@media (max-width:640px){
+  /* A színes gradiens a teljes shell-en ül — így a fenti mobil sáv (helyszín/webshop-link/
+     avatar) és a lenti tartalom ugyanabba az egy háttérbe simul, nem csak a tartalom alatt
+     van egy külön háttér-folt. */
+  /* A két színes "izzás" pozíciója FIX px-ben van megadva (nem %-ban), mert a shell
+     magassága a tartalommal nő (height:auto) — egy hosszú listás oldalon (pl. Szerviz,
+     sok tétellel) a magasság sokszorosa a Pult oldalénak, és %-os pozíció esetén az izzás
+     messze a látható terület fölé/alá csúszna, gyakorlatilag eltűnve. Fix px-szel mindig
+     ugyanott jelenik meg, a tartalom hosszától függetlenül. */
+  .shell.mac-pult{
+    display:flex;height:auto;overflow:visible;
+    background:
+      radial-gradient(500px 360px at 12% -40px, #dfe9ff 0%, transparent 60%),
+      radial-gradient(420px 320px at 100% 90px, #ffe9e0 0%, transparent 55%),
+      linear-gradient(160deg,#f3f5f9 0%,#eceef3 100%);
+  }
+  .shell.mac-pult .content-col{width:100%;max-width:none;margin:0;background:none;border:none;border-radius:0;box-shadow:none;height:auto}
+  .shell.mac-pult .content-topbar{background:none;border-radius:0;border-bottom:none}
+  .shell.mac-pult .mtb{background:none;border-bottom:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+  .mac-pult-content{
+    background:none;
+    border-radius:0;padding:10px 16px calc(96px + env(safe-area-inset-bottom))
+  }
+  .mac-pult-fade{display:none}
+}
+
 /* --- lebegő üveg-dokk --- */
 .md-wrap{position:fixed;left:0;right:0;bottom:42px;display:flex;justify-content:center;pointer-events:none;z-index:40}
 .md-dock{pointer-events:auto;display:flex;align-items:flex-end;gap:10px;padding:17px 20px;border-radius:26px;
@@ -1878,4 +1932,4 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .md-cluster .md-flyout .md-item{width:44px;height:44px}
 
 @media (max-width:640px){.md-wrap{display:none}}
-@media (max-width:1100px){.shell.mac-pult .content-col{width:calc(100% - 32px)}}
+@media (min-width:641px) and (max-width:1100px){.shell.mac-pult .content-col{width:calc(100% - 32px)}}

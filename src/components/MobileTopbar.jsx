@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { PinIcon, ExternalLinkIcon, ChevronDownIcon, SettingsIcon, LogoutIcon } from "./icons";
+import { PinIcon, ExternalLinkIcon, ChevronDownIcon, SettingsIcon, LogoutIcon, ChatIcon } from "./icons";
 import { SITE_URL } from "../lib/utils";
 
 // Mobilon a Sidebar és a ContentTopbar is el van rejtve (ld. index.css 640px média-határ) —
@@ -8,6 +8,7 @@ import { SITE_URL } from "../lib/utils";
 export default function MobileTopbar({
   isAdmin, locFilter, setLocFilter, allowedLocations, myLocationId, locName,
   profile, user, signOut, setTab,
+  chatOpen, setChatOpen, chatUnread, markChatRead,
 }) {
   const [locMenuOpen, setLocMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -54,6 +55,16 @@ export default function MobileTopbar({
         <ExternalLinkIcon width={14} height={14} />
       </a>
 
+      <button
+        type="button"
+        className="util-icon-btn ctb-chat-btn"
+        title="Csapat-chat"
+        onClick={() => { setChatOpen((o) => !o); if (!chatOpen) markChatRead(); }}
+      >
+        <ChatIcon width={14} height={14} />
+        {chatUnread > 0 && <span className="ctb-chat-badge">{chatUnread > 9 ? "9+" : chatUnread}</span>}
+      </button>
+
       <div className="user-chip-wrap" ref={userMenuRef}>
         <button type="button" className="user-avatar mtb-avatar-btn" onClick={() => setUserMenuOpen((v) => !v)}>
           {(profile?.fullName || user?.email || "?").slice(0, 1).toUpperCase()}
@@ -69,6 +80,7 @@ export default function MobileTopbar({
           </div>
         )}
       </div>
+
     </div>
   );
 }

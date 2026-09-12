@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { LeaveIcon, DashboardIcon, UsersNavIcon, TrashNavIcon, BuybackIcon, RepairPriceIcon, ReviewsIcon, LockIcon, MoreIcon } from "./icons";
+import { LeaveIcon, DashboardIcon, UsersNavIcon, TrashNavIcon, BuybackIcon, RepairPriceIcon, ReviewsIcon, LockIcon, MoreIcon, RefurbIcon, CashSettlementIcon, PayrollIcon } from "./icons";
 import {
   AppIcon, Toggle, Wrench, Phone, Chip, Bubble, People, Shield, Euro,
-  Lock, Chat,
+  Lock,
 } from "./MacDock";
 import BottomSheet from "./BottomSheet";
 
@@ -12,15 +12,17 @@ import BottomSheet from "./BottomSheet";
 // kezdőképernyő-szerű rács, nem függőleges lista — egy pillantásra átláthatóbb,
 // és illik a dokk-metaforához (macOS dokk asztalon, iOS rács mobilon).
 const FIXED = [
-  { key: "pult", label: "Pult", icon: <AppIcon from="#60A5FA" to="#2563EB" size={30} radius={9}><Toggle stroke="#fff" width={16} height={16} /></AppIcon> },
-  { key: "service", label: "Szerviz", icon: <AppIcon from="#FB923C" to="#EA580C" size={30} radius={9}><Wrench stroke="#fff" width={16} height={16} /></AppIcon> },
+  { key: "pult", label: "Pult", icon: <AppIcon from="#1DB954" to="#159C46" size={36} radius={11}><Toggle stroke="#fff" width={19} height={19} /></AppIcon> },
+  { key: "service", label: "Szerviz", icon: <AppIcon from="#FB923C" to="#EA580C" size={36} radius={11}><Wrench stroke="#fff" width={19} height={19} /></AppIcon> },
 ];
 
 const MORE_SECTIONS = [
   {
     label: "Napi munka",
     items: [
-      { key: "stock", label: "Telefonok", from: "#22D3EE", to: "#0891B2", Icon: Phone, countKey: "refurb", activeAlso: ["consignment", "refurb"] },
+      { key: "stock", label: "Telefonok", from: "#22D3EE", to: "#0891B2", Icon: Phone, countKey: "refurb" },
+      { key: "consignment", label: "Bizomány", from: "#67E8F9", to: "#0E7490", Icon: Phone },
+      { key: "refurb", label: "Felújítás", from: "#38BDF8", to: "#0369A1", Icon: RefurbIcon },
       { key: "parts", label: "Alkatrészek", from: "#A78BFA", to: "#7C3AED", Icon: Chip },
       { key: "vault", label: "Belépések", from: "#94A3B8", to: "#1E293B", Icon: Lock, employeeOnly: true },
     ],
@@ -28,7 +30,6 @@ const MORE_SECTIONS = [
   {
     label: "Ügyfelek",
     items: [
-      { key: "inbox", label: "Üzenetek", from: "#34D399", to: "#047857", Icon: Bubble, countKey: "inbox" },
       { key: "customers", label: "Kliensek", from: "#F472B6", to: "#DB2777", Icon: People },
       { key: "warranty", label: "Garancia", from: "#818CF8", to: "#4F46E5", Icon: Shield },
     ],
@@ -37,6 +38,8 @@ const MORE_SECTIONS = [
     label: "Pénzügyek",
     items: [
       { key: "leave", label: "Szabadság", from: "#2DD4BF", to: "#0D9488", Icon: LeaveIcon, employeeOnly: true },
+      { key: "cash-settlement", label: "Elszámolás", from: "#FCD34D", to: "#B45309", Icon: CashSettlementIcon, adminOnly: true },
+      { key: "payroll", label: "Költségek", from: "#FDBA74", to: "#C2410C", Icon: PayrollIcon, adminOnly: true },
     ],
   },
   {
@@ -63,10 +66,9 @@ const MORE_SECTIONS = [
 
 export default function BottomNav({
   tab, setTab, isAdmin, pultPendingCounts, inboxUnreadCount, refurbCount,
-  chatOpen, setChatOpen, chatUnread, markChatRead,
 }) {
   const [moreOpen, setMoreOpen] = useState(false);
-  const fixedKeys = FIXED.map((f) => f.key);
+  const fixedKeys = [...FIXED.map((f) => f.key), "finance", "cash-settlement", "payroll", "inbox"];
   const isMoreActive = !fixedKeys.includes(tab);
   const pultTotal = pultPendingCounts ? pultPendingCounts.webOrders + pultPendingCounts.waiting + pultPendingCounts.notes : 0;
   const counts = { refurb: refurbCount, inbox: inboxUnreadCount };
@@ -82,31 +84,24 @@ export default function BottomNav({
     <>
       <nav className="bottom-nav">
         {FIXED.map(({ key, label, icon }) => (
-          <span key={key} style={{ display: "contents" }}>
-            <button type="button" className={`bnav-btn${tab === key ? " active" : ""}`} onClick={() => go(key)}>
-              <span className="bnav-ic-wrap">
-                {icon}
-                {key === "pult" && pultTotal > 0 && <span className="bnav-badge">{pultTotal}</span>}
-              </span>
-              <span>{label}</span>
-            </button>
-            {key === "pult" && <span className="md-sep" />}
-          </span>
+          <button key={key} type="button" title={label} className={`bnav-btn${tab === key ? " active" : ""}`} onClick={() => go(key)}>
+            <span className="bnav-ic-wrap">
+              {icon}
+              {key === "pult" && pultTotal > 0 && <span className="bnav-badge">{pultTotal}</span>}
+            </span>
+          </button>
         ))}
-        <button type="button" className={`bnav-btn${chatOpen ? " active" : ""}`} onClick={() => { setChatOpen((o) => !o); if (!chatOpen) markChatRead(); }}>
+        <button type="button" title="Árulás" className={`bnav-btn${tab === "finance" || tab === "cash-settlement" || tab === "payroll" ? " active" : ""}`} onClick={() => go("finance")}>
+          <span className="bnav-ic-wrap"><AppIcon from="#FBBF24" to="#D97706" size={36} radius={11}><Euro stroke="#fff" width={19} height={19} /></AppIcon></span>
+        </button>
+        <button type="button" title="Üzenetek" className={`bnav-btn${tab === "inbox" ? " active" : ""}`} onClick={() => go("inbox")}>
           <span className="bnav-ic-wrap">
-            <AppIcon from="#F472B6" to="#BE185D" size={30} radius={9}><Chat stroke="#fff" width={16} height={16} /></AppIcon>
-            {chatUnread > 0 && <span className="bnav-badge">{chatUnread > 9 ? "9+" : chatUnread}</span>}
+            <AppIcon from="#34D399" to="#047857" size={36} radius={11}><Bubble stroke="#fff" width={19} height={19} /></AppIcon>
+            {inboxUnreadCount > 0 && <span className="bnav-badge">{inboxUnreadCount > 9 ? "9+" : inboxUnreadCount}</span>}
           </span>
-          <span>Chat</span>
         </button>
-        <button type="button" className={`bnav-btn${tab === "finance" || tab === "cash-settlement" || tab === "payroll" ? " active" : ""}`} onClick={() => go("finance")}>
-          <span className="bnav-ic-wrap"><AppIcon from="#FBBF24" to="#D97706" size={30} radius={9}><Euro stroke="#fff" width={16} height={16} /></AppIcon></span>
-          <span>Bevételek és kiadások</span>
-        </button>
-        <button type="button" className={`bnav-btn${moreOpen || isMoreActive ? " active" : ""}`} onClick={() => setMoreOpen(true)}>
-          <span className="bnav-ic-wrap"><AppIcon from="#9CA3AF" to="#4B5563" size={30} radius={9}><MoreIcon stroke="#fff" width={16} height={16} /></AppIcon></span>
-          <span>Több</span>
+        <button type="button" title="Több" className={`bnav-btn${moreOpen || isMoreActive ? " active" : ""}`} onClick={() => setMoreOpen(true)}>
+          <span className="bnav-ic-wrap"><AppIcon from="#9CA3AF" to="#4B5563" size={36} radius={11}><MoreIcon stroke="#fff" width={19} height={19} /></AppIcon></span>
         </button>
       </nav>
 

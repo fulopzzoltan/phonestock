@@ -3046,12 +3046,12 @@ function AppShell() {
       <BottomNav
         tab={tab} setTab={setTab} isAdmin={isAdmin} pultPendingCounts={pultPendingCounts} inboxUnreadCount={inboxUnreadCount}
         refurbCount={refurbCount}
-        chatOpen={chatOpen} setChatOpen={setChatOpen} chatUnread={chatUnread} markChatRead={markChatRead}
       />
       <MobileTopbar
         isAdmin={isAdmin} locFilter={locFilter} setLocFilter={setLocFilter}
         allowedLocations={allowedLocations} myLocationId={myLocationId} locName={locName}
         profile={profile} user={user} signOut={signOut} setTab={setTab}
+        chatOpen={chatOpen} setChatOpen={setChatOpen} chatUnread={chatUnread} markChatRead={markChatRead}
       />
 
       <div className="content-col">
