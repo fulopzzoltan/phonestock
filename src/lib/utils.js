@@ -82,6 +82,13 @@ export function displayName(brand, model) {
   return [brand, model].filter(Boolean).join(" ");
 }
 
+// Az Áttekintés "Mérőszámok" fülének mérési kezdete — 2026-08-24 előtt a telefon- és
+// szerviz-bevétel jó része kalapozott/tömbösített manuális tétel volt (nincs egyedi
+// termékhez/munkalaphoz kötve), utána viszont minden eladás/átadás automatikusan,
+// tételesen kerül a Bevételekbe (ld. sellProduct / setTicketStatus App.jsx-ben) —
+// emiatt csak ettől a naptól számítható pontos új/visszatérő ügyfél- és rés-bontás.
+export const ANALYTICS_START_DATE = "2026-08-24";
+
 export const SLOW_MOVING_DAYS = 45;
 export function daysOnShelf(dateAdded) {
   if (!dateAdded) return null;

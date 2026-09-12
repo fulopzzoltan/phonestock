@@ -3232,6 +3232,7 @@ function AppShell() {
             soldPhoneStats={soldPhoneStats}
             svcStats={svcStats} monthlyTrendSummary={monthlyTrendSummary} currentMonthLive={currentMonthLive}
             monthlySummaries={monthlySummaries} locations={locations} transactions={filteredTransactions} partsStats={partsStats} customerStats={customerStats}
+            tickets={tickets}
             todoItems={todoItems} setDetailId={setDetailId}
             stockSparkline={stockHistory.slice(-14).map((h) => h.value)} dailyIncomeTrend={dailyIncomeTrend}
             canSeeFinance={canSeeFinance} userEmail={user?.email} signIn={signIn}

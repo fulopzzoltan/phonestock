@@ -5,6 +5,7 @@ import MonthlyTrendChart from "../components/MonthlyTrendChart";
 import FinanceTrendChart from "../components/FinanceTrendChart";
 import CategorySplitChart from "../components/CategorySplitChart";
 import ExpenseCategoryStats from "../components/ExpenseCategoryStats";
+import RevenueQualityPanel from "../components/RevenueQualityPanel";
 import Sparkline from "../components/Sparkline";
 import { WarningIcon, FinanceIcon, LockIcon } from "../components/icons";
 
@@ -76,6 +77,7 @@ const TABS = [
   { key: "finance", label: "Bevétel & Kiadás" },
   { key: "phones", label: "Telefonok" },
   { key: "service", label: "Szerviz" },
+  { key: "metrics", label: "Mérőszámok" },
 ];
 
 const FINANCE_UNLOCK_KEY = "phonestock_finance_unlocked";
@@ -83,7 +85,7 @@ const FINANCE_UNLOCK_KEY = "phonestock_finance_unlocked";
 export default function DashboardTab({
   effectiveLocFilter, locName, stockStats, stockHistory, svcStats, soldPhoneStats,
   monthlyTrendSummary, currentMonthLive, monthlySummaries, locations,
-  transactions, todoItems, setDetailId,
+  transactions, tickets, todoItems, setDetailId,
   stockSparkline, dailyIncomeTrend,
   canSeeFinance, userEmail, signIn,
 }) {
@@ -104,7 +106,8 @@ export default function DashboardTab({
   const showFinance = canSeeFinance && (filter === "all" || filter === "finance");
   const showPhones = filter === "all" || filter === "phones";
   const showService = filter === "all" || filter === "service";
-  const visibleTabs = canSeeFinance ? TABS : TABS.filter((t) => t.key !== "finance");
+  const showMetrics = canSeeFinance && filter === "metrics";
+  const visibleTabs = canSeeFinance ? TABS : TABS.filter((t) => t.key !== "finance" && t.key !== "metrics");
 
   // A Bevétel & Kiadás tartalom külön jelszó-megerősítést kér a munkamenetben — akkor is,
   // ha a felhasználó egyébként jogosult rá (canSeeFinance) — hogy egy nyitva hagyott gépnél
@@ -220,10 +223,10 @@ export default function DashboardTab({
         </>
       )}
 
-      {showFinance && !financeUnlocked && (
+      {(showFinance || showMetrics) && !financeUnlocked && (
         <div className="statcard" style={{ marginBottom: 22, textAlign: "center", padding: "36px 24px" }}>
           <LockIcon width={22} height={22} style={{ color: "#9CA3AF", marginBottom: 10 }} />
-          <div style={{ fontSize: 13.5, fontWeight: 700, marginBottom: 4 }}>Bevétel & Kiadás zárolva</div>
+          <div style={{ fontSize: 13.5, fontWeight: 700, marginBottom: 4 }}>{showMetrics ? "Mérőszámok zárolva" : "Bevétel & Kiadás zárolva"}</div>
           <div style={{ fontSize: 12, color: "#6B7280", marginBottom: 16 }}>Érzékeny adat — add meg újra a jelszavad a megtekintéshez.</div>
           <form onSubmit={unlockFinance} style={{ maxWidth: 260, margin: "0 auto" }}>
             {lockError && <div className="errbar" style={{ marginBottom: 10 }}>{lockError}</div>}
@@ -451,6 +454,12 @@ export default function DashboardTab({
               <BreakdownBars items={svcStats.iphoneModelBreakdown} />
             </div>
           </div>
+        </div>
+      )}
+
+      {showMetrics && financeUnlocked && (
+        <div style={{ marginBottom: 22 }}>
+          <RevenueQualityPanel transactions={transactions} tickets={tickets} />
         </div>
       )}
 
