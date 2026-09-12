@@ -2298,6 +2298,19 @@ function AppShell() {
       setDetailId(null);
     });
   }
+  // Ha egy munkalap már át lett adva (a bevétel/kiadás tranzakció már létrejött belőle),
+  // egy utólagos alkatrész-hozzáadás/eltávolítás a `mat_cost`-ot helyben frissíti — de a már
+  // rögzített tranzakció költség-mezője enélkül elszakadna a valóságtól. Ez szinkronizálja azt.
+  async function syncHandoverCost(ticket, newMatCost) {
+    if (ticket.handoverTransactionId) {
+      unwrap(await supabase.from("transactions").update({ cost_price: newMatCost }).eq("id", ticket.handoverTransactionId));
+      setTransactions((prev) => prev.map((tx) => (tx.id === ticket.handoverTransactionId ? { ...tx, costPrice: newMatCost } : tx)));
+    }
+    if (ticket.handoverMaterialTransactionId) {
+      unwrap(await supabase.from("transactions").update({ amount: newMatCost }).eq("id", ticket.handoverMaterialTransactionId));
+      setTransactions((prev) => prev.map((tx) => (tx.id === ticket.handoverMaterialTransactionId ? { ...tx, amount: newMatCost } : tx)));
+    }
+  }
   // `part` egy CSOPORT (partGroups eleme, `.units`-szal — FIFO sorrendben, a legrégebb óta
   // raktáron lévő darab elöl) — innen választjuk ki a felhasznált konkrét egyedi darabokat.
   // Minden felhasznált darabhoz saját `service_parts` sor jön létre (quantity=1), hogy a
@@ -2321,6 +2334,7 @@ function AppShell() {
       }
       const newMatCost = (Number(ticket.matCost) || 0) + addedCost;
       unwrap(await supabase.from("service_tickets").update({ mat_cost: newMatCost }).eq("id", ticketId));
+      await syncHandoverCost(ticket, newMatCost);
 
       if (ticket.ticketKind === "Saját készlet - előkészítés" && ticket.productId) {
         const product = stock.find((p) => p.id === ticket.productId);
@@ -2348,6 +2362,7 @@ function AppShell() {
       }
       const newMatCost = Math.max(0, (Number(ticket.matCost) || 0) - (Number(usedPart.costPrice) || 0) * usedPart.quantity);
       unwrap(await supabase.from("service_tickets").update({ mat_cost: newMatCost }).eq("id", ticketId));
+      await syncHandoverCost(ticket, newMatCost);
 
       if (ticket.ticketKind === "Saját készlet - előkészítés" && ticket.productId) {
         const product = stock.find((p) => p.id === ticket.productId);
@@ -3052,6 +3067,7 @@ function AppShell() {
         allowedLocations={allowedLocations} myLocationId={myLocationId} locName={locName}
         profile={profile} user={user} signOut={signOut} setTab={setTab}
         chatOpen={chatOpen} setChatOpen={setChatOpen} chatUnread={chatUnread} markChatRead={markChatRead}
+        tab={tab} busy={busy} onAddTicket={() => setTicketModal("add")} onAddProduct={() => setStockModal("add")} onAddPart={() => setPartModal("add")}
       />
 
       <div className="content-col">

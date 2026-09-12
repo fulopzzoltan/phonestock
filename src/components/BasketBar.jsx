@@ -20,7 +20,7 @@ export function useBasketBar({ defaultLocId, onCheckout, date }) {
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [costPrice, setCostPrice] = useState("");
-  const [category, setCategory] = useState("Készlet");
+  const [category, setCategory] = useState("Tartozékok");
   const [stockKind, setStockKind] = useState("Alkatrész"); // Telefon | Alkatrész | Egyéb
   const [err, setErr] = useState("");
 
@@ -30,7 +30,7 @@ export function useBasketBar({ defaultLocId, onCheckout, date }) {
 
   function setMode(next) {
     setModeRaw(next);
-    setCategory(next === "income" ? "Készlet" : "Egyéb");
+    setCategory(next === "income" ? "Tartozékok" : "Egyéb");
     setBasketItems([]);
     resetFree();
   }
@@ -88,12 +88,13 @@ export function useBasketBar({ defaultLocId, onCheckout, date }) {
 
 // Felső sáv: mód-váltó (Kiadás | Bevétel, jobb felső sarokban a Bevétel) balra a
 // gyorsgombokkal — ez a kártyán KÍVÜL, fölötte ül.
-export function BasketTopBar({ bb, defaultLocId, busy, smartQuickItems, onImportPdf }) {
+export function BasketTopBar({ bb, defaultLocId, busy, smartQuickItems, onImportPdf, historyToggle }) {
   if (!defaultLocId) {
     return <div style={{ fontSize: 12.5, color: "#B91C1C" }}>Válassz helyszínt a bal oldali sávban a rögzítéshez.</div>;
   }
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+      {historyToggle}
       <div className="quick-add-seg">
         {bb.mode === "income" && smartQuickItems.map((item) => (
           <button key={item.label} type="button" disabled={busy} onClick={() => bb.addQuickToBasket(item)}>
@@ -128,16 +129,16 @@ export function BasketBody({ bb, defaultLocId, busy }) {
     <div>
       {bb.err && <div className="errbar">{bb.err}</div>}
 
-      <div style={{ display: "grid", gridTemplateColumns: mode === "income" ? "1.6fr .7fr .7fr 1fr auto" : "2fr .7fr 1fr auto", gap: 8, alignItems: "flex-end" }}>
+      <div className={`bb-item-grid ${mode}`} style={{ alignItems: "flex-end" }}>
         <div className="field" style={{ margin: 0 }}>
-          <input value={bb.description} onChange={(e) => bb.setDescription(e.target.value)} placeholder="Leírás, pl. tok eladás, hirdetés..." />
+          <input value={bb.description} onChange={(e) => bb.setDescription(e.target.value)} placeholder="Megnevezés, pl. tok eladás" />
         </div>
         <div className="field" style={{ margin: 0 }}>
           <input type="number" value={bb.amount} onChange={(e) => bb.setAmount(e.target.value)} placeholder="Lei" />
         </div>
         {mode === "income" && (
           <div className="field" style={{ margin: 0 }}>
-            <input type="number" value={bb.costPrice} onChange={(e) => bb.setCostPrice(e.target.value)} placeholder="Besz. ár" />
+            <input type="number" value={bb.costPrice} onChange={(e) => bb.setCostPrice(e.target.value)} placeholder="Mennyibe érkezett?" />
           </div>
         )}
         <div className="field" style={{ margin: 0 }}>

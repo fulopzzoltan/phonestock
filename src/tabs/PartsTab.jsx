@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import { money, PART_CATEGORIES, partCode, ticketCode } from "../lib/utils";
-import { SearchIcon, EditIcon, PartsIcon, ScanIcon } from "../components/icons";
+import { money, PART_CATEGORIES, partCode, ticketCode, statusCls, subStatusCls } from "../lib/utils";
+import { SearchIcon, EditIcon, PartsIcon, ScanIcon, MoreIcon } from "../components/icons";
 import ConfirmDelete from "../components/ConfirmDelete";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import HistorySection from "../components/HistorySection";
@@ -49,6 +49,22 @@ function categoryPill(cat) {
   const style = CATEGORY_STYLE[cat] || { "--pill-bg": "#F3F4F6", "--pill-fg": "#6B7280" };
   return <span className="st st-fill" style={style}>{cat}</span>;
 }
+// A mobil kártya bal szélén futó kódos csík színe — ugyanazok az árnyalatok, mint a
+// categoryPill-nél, csak közvetlen background/color-ként (a csík nem .st.st-fill elem).
+const CATEGORY_COLORS = {
+  "Kijelző": { background: "#DBEAFE", color: "#1D4ED8" },
+  "Akkumulátor": { background: "#FEF3C7", color: "#92400E" },
+  "Hátlap": { background: "#EDE9FE", color: "#6D28D9" },
+};
+function categoryColorStyle(cat) {
+  return CATEGORY_COLORS[cat] || { background: "#F3F4F6", color: "#6B7280" };
+}
+function isPartDeviceWait(t) {
+  return t.status === "Átvett" && (t.subStatus === "Alkatrészre vár" || t.subStatus === "Készülékre vár" || t.subStatus === "Alkatrészre és készülékre vár");
+}
+function ticketStatusCls(t) {
+  return t.subStatus && !isPartDeviceWait(t) ? subStatusCls(t.status, t.subStatus) : statusCls(t.status);
+}
 
 const UseIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -73,9 +89,16 @@ export default function PartsTab({
   return (
     <div className="apple-page">
 
-      <div className="filter-row">
-        <div className="searchbar"><SearchIcon /><input value={partSearch} onChange={(e) => setPartSearch(e.target.value)} /></div>
-        {onScan && <button type="button" className="btn sec scan-trigger" onClick={onScan} title="QR/vonalkód szkennelése"><ScanIcon width={16} height={16} /></button>}
+      <div className="filter-row parts-filter-row">
+        <div className="parts-search-line">
+          <div className="searchbar"><SearchIcon /><input value={partSearch} onChange={(e) => setPartSearch(e.target.value)} /></div>
+          {onScan && <button type="button" className="btn sec scan-trigger" onClick={onScan} title="QR/vonalkód szkennelése"><ScanIcon width={16} height={16} /></button>}
+          <button type="button" className={`history-toolbar-btn${showUsed ? " active" : ""}`} onClick={() => setShowUsed((v) => !v)}>
+            <PartsIcon className="history-toolbar-btn-icon" width={14} height={14} />
+            <MoreIcon className="history-toolbar-btn-dots" width={16} height={16} />
+            <span className="history-toolbar-btn-text">Felhasznált alkatrészek <span className="cnt">{allUsedParts.length}</span></span>
+          </button>
+        </div>
         <div className="status-seg">
           <button className={catFilter === "all" ? "active" : ""} onClick={() => setCatFilter("all")}>
             <span className="dot" style={{ background: "#9CA3AF" }} />Mind <span className="cnt">{filteredParts.length}</span>
@@ -91,10 +114,6 @@ export default function PartsTab({
             );
           })}
         </div>
-        <button type="button" className={`history-toolbar-btn${showUsed ? " active" : ""}`} onClick={() => setShowUsed((v) => !v)}>
-          <PartsIcon width={14} height={14} />
-          Felhasznált alkatrészek <span className="cnt">{allUsedParts.length}</span>
-        </button>
       </div>
 
       <HistorySection
@@ -124,18 +143,22 @@ export default function PartsTab({
               </tr>
             )}
             renderMobileRow={(sp) => (
-              <div className="mob-row" onClick={() => setDetailId(sp.ticket.id)}>
-                <div className="mob-row-top">
-                  <div className="mob-row-main">
-                    <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{ticketCode(sp.ticket.ticketNo, locName(sp.ticket.intakeLocationId || sp.ticket.locationId))}</span>
-                    <span>{sp.partName}</span>
-                  </div>
-                  <div className="mob-row-amount">{money((sp.costPrice || 0) * sp.quantity)}</div>
+              <div className="mob-row mob-row-coded" onClick={() => setDetailId(sp.ticket.id)}>
+                <div className={`mob-code-col ${ticketStatusCls(sp.ticket)}`}>
+                  {String(sp.ticket.ticketNo).split("").map((ch, k) => <span key={k}>{ch}</span>)}
                 </div>
-                <div className="mob-row-sub">
-                  <span>{sp.ticket.customerName || "—"}</span>
-                  <span>{sp.quantity} db</span>
-                  <span>{(sp.usedAt || "").slice(0, 10) || "—"}</span>
+                <div className="mob-row-content">
+                  <div className="mob-row-top">
+                    <div className="mob-row-main">
+                      <span style={{ flex: 1, minWidth: 0 }}>{sp.partName}</span>
+                    </div>
+                    <div className="mob-row-amount">{money((sp.costPrice || 0) * sp.quantity)}</div>
+                  </div>
+                  <div className="mob-row-sub">
+                    <span>{sp.ticket.customerName || "—"}</span>
+                    <span>{sp.quantity} db</span>
+                    <span>{(sp.usedAt || "").slice(0, 10) || "—"}</span>
+                  </div>
                 </div>
               </div>
             )}
@@ -174,23 +197,25 @@ export default function PartsTab({
                   </tr>
                 )}
                 renderMobileRow={(p) => (
-                  <div className="mob-row" onClick={() => setPartDetailId(groupKeyOf(p))}>
-                    <div className="mob-row-top">
-                      <div className="mob-row-main" style={{ minWidth: 0 }}>
-                        <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                          <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{partCode(p.partNo) || "—"}</span>
-                          {partLabel(p)}
-                        </span>
+                  <div className="mob-row mob-row-coded" onClick={() => setPartDetailId(groupKeyOf(p))}>
+                    <div className="mob-code-col" style={categoryColorStyle(p.category || "Egyéb")}>
+                      {String(p.partNo).split("").map((ch, k) => <span key={k}>{ch}</span>)}
+                    </div>
+                    <div className="mob-row-content">
+                      <div className="mob-row-top">
+                        <div className="mob-row-main" style={{ minWidth: 0 }}>
+                          <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{partLabel(p)}</span>
+                        </div>
+                        <div className="mob-row-amount">{money(p.costPrice)}</div>
                       </div>
-                      <div className="mob-row-amount">{money(p.costPrice)}</div>
-                    </div>
-                    <div className="mob-row-sub" style={{ marginTop: 8, gap: 6 }}>
-                      {categoryPill(p.category || "Egyéb")}
-                      {originPill(p.origin)}
-                      <span style={{ fontSize: 11 }}>{p.source || "—"}</span>
-                    </div>
-                    <div className="mob-row-sub" style={{ marginTop: 8, gap: 6 }} onClick={(e) => e.stopPropagation()}>
-                      <button type="button" className="use-btn icon-only" style={{ marginLeft: "auto" }} disabled={busy || !p.quantity} title="Felhasználás" onClick={() => onUsePart(p)}><UseIcon width={13} height={13} /></button>
+                      <div className="mob-row-sub" style={{ marginTop: 8, gap: 6 }}>
+                        {categoryPill(p.category || "Egyéb")}
+                        {originPill(p.origin)}
+                        <span style={{ fontSize: 11 }}>{p.source || "—"}</span>
+                      </div>
+                      <div className="mob-row-sub" style={{ marginTop: 8, gap: 6 }} onClick={(e) => e.stopPropagation()}>
+                        <button type="button" className="use-btn icon-only" style={{ marginLeft: "auto" }} disabled={busy || !p.quantity} title="Felhasználás" onClick={() => onUsePart(p)}><UseIcon width={13} height={13} /></button>
+                      </div>
                     </div>
                   </div>
                 )}

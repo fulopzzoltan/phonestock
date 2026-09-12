@@ -94,6 +94,7 @@ export default function ServiceTab({
     return t.customerName || "—";
   };
   const isPartDeviceWait = (t) => t.status === "Átvett" && (t.subStatus === "Alkatrészre vár" || t.subStatus === "Készülékre vár" || t.subStatus === "Alkatrészre és készülékre vár");
+  const statusClsOf = (t) => (t.subStatus && !isPartDeviceWait(t) ? subStatusCls(t.status, t.subStatus) : statusCls(t.status));
   const statusPill = (t) => (t.subStatus && !isPartDeviceWait(t) ? (
     <span className={`st st-fill ${subStatusCls(t.status, t.subStatus)}`}>{subStatusLabel(t.status, t.subStatus)}</span>
   ) : (
@@ -137,49 +138,53 @@ export default function ServiceTab({
     </tr>
   );
   const renderTicketMobileRow = (t) => (
-    <div className="mob-row" onClick={() => setDetailId(t.id)}>
-      <div className="mob-row-top">
-        <div className="mob-row-main" style={{ fontSize: 12 }}>
-          <span className="stk-sub" style={{ marginTop: 0, marginRight: 5, flexShrink: 0, fontWeight: 400 }}>{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</span>
-          <span style={{ flex: 1, minWidth: 0 }}>{displayName(t.brand, t.model) || "—"}</span>
-          <span style={{ flexShrink: 0 }}>{statusPill(t)}</span>
-        </div>
-        <div className="mob-row-amount" style={{ fontSize: 12 }}>
-          {(Number(t.depositPaid) || 0) > 0 ? money(t.price - t.depositPaid) : money(t.price)}
-        </div>
+    <div className="mob-row svc-row-lg mob-row-coded" onClick={() => setDetailId(t.id)}>
+      <div className={`mob-code-col ${statusClsOf(t)}`}>
+        {String(t.ticketNo).split("").map((ch, i) => <span key={i}>{ch}</span>)}
       </div>
-      <div className="mob-row-sub" style={{ marginTop: 12 }}>
-        <span>{kliensOf(t)}</span>
-        <span>{daysOf(t)}</span>
-      </div>
-      {(probsOf(t).length > 0 || nextActionOf(t)) && (
-        <div className="svc-probs" style={{ marginTop: -5.5, flexWrap: "wrap", alignItems: "flex-end", overflow: "visible" }}>
-          {probsOf(t).length > 0 && (
-            <span style={{ fontSize: 11, color: "#374151", fontWeight: 600 }}>{probsOf(t).join(", ")}</span>
-          )}
-          {flagsOf(t)}
-          {nextActionOf(t) && (() => {
-            const na = nextActionOf(t);
-            return (
-              <button
-                className="btn sec sm icon-only"
-                style={{ marginLeft: "auto", boxShadow: "none", width: 40, height: 33.5, padding: 0, borderRadius: 999, justifyContent: "center" }}
-                disabled={busy}
-                title={na.title}
-                onClick={(e) => { e.stopPropagation(); runAction(t, na); }}
-              >
-                <na.icon width={13} height={13} />
-              </button>
-            );
-          })()}
+      <div className="mob-row-content">
+        <div className="mob-row-top">
+          <div className="mob-row-main" style={{ fontSize: 13, gap: 9 }}>
+            <span style={{ flex: 1, minWidth: 0 }}>{displayName(t.brand, t.model) || "—"}</span>
+            <span style={{ flexShrink: 0 }}>{statusPill(t)}</span>
+          </div>
+          <div className="mob-row-amount" style={{ fontSize: 13 }}>
+            {(Number(t.depositPaid) || 0) > 0 ? money(t.price - t.depositPaid) : money(t.price)}
+          </div>
         </div>
-      )}
+        <div className="mob-row-sub" style={{ marginTop: 13, fontSize: 12.5 }}>
+          <span>{kliensOf(t)}</span>
+          <span>{daysOf(t)}</span>
+        </div>
+        {(probsOf(t).length > 0 || nextActionOf(t)) && (
+          <div className="svc-probs" style={{ marginTop: -5.5, flexWrap: "wrap", alignItems: "flex-end", overflow: "visible", gap: 5 }}>
+            {probsOf(t).length > 0 && (
+              <span style={{ fontSize: 12, color: "#374151", fontWeight: 600 }}>{probsOf(t).join(", ")}</span>
+            )}
+            <span style={{ marginLeft: 6 }}>{flagsOf(t)}</span>
+            {nextActionOf(t) && (() => {
+              const na = nextActionOf(t);
+              return (
+                <button
+                  className="btn sec sm icon-only"
+                  style={{ marginLeft: "auto", boxShadow: "none", width: 40, height: 33.5, padding: 0, borderRadius: 999, justifyContent: "center" }}
+                  disabled={busy}
+                  title={na.title}
+                  onClick={(e) => { e.stopPropagation(); runAction(t, na); }}
+                >
+                  <na.icon width={13} height={13} />
+                </button>
+              );
+            })()}
+          </div>
+        )}
+      </div>
     </div>
   );
 
   return (
     <div className="apple-page">
-      <div className="filter-row">
+      <div className="filter-row svc-filter-row">
         <div className="searchbar"><SearchIcon /><input value={svcSearch} onChange={(e) => setSvcSearch(e.target.value)} /></div>
         {onScan && <button type="button" className="btn sec scan-trigger" onClick={onScan} title="QR/vonalkód szkennelése"><ScanIcon width={16} height={16} /></button>}
         <button

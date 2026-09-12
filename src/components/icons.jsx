@@ -146,8 +146,8 @@ export const WarrantyIcon = (props) => (
 
 export const FoliaIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <rect x="5" y="3" width="14" height="18" rx="2.5" />
-    <path d="M8.5 6.5 15 17" opacity=".55" />
+    <path d="M7.5 3h6.5l5 5v11.5A1.5 1.5 0 0117.5 21h-10A1.5 1.5 0 016 19.5V4.5A1.5 1.5 0 017.5 3z" />
+    <path d="M14 3v4a1 1 0 001 1h4" opacity=".6" />
   </svg>
 );
 

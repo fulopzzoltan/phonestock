@@ -123,17 +123,26 @@ export function TransactionRowsTable({ rows, locName, onEdit, onDelete, onOpenRe
           const t = entry.tx;
           const isSale = t.type === "income" && t.category === "Készlet" && !!t.productId;
           return (
-            <div key={t.id} className={`mob-row${entry.inBasket ? " basket-item-mob" : ""}`} onClick={() => (isSale ? onOpenReceipt(t.id) : onEdit(t))}>
+            <div key={t.id} className={`mob-row svc-row-lg${entry.inBasket ? " basket-item-mob" : ""}`} onClick={() => (isSale ? onOpenReceipt(t.id) : onEdit(t))}>
               <div className="mob-row-top">
-                <div className="mob-row-main"><span>{t.description}</span><PaymentPill payment={t.payment} /><KindBadge t={t} productConditionById={productConditionById} />{t.smartbillDoc && <SmartBillBadge doc={t.smartbillDoc} />}</div>
+                <div className="mob-row-main">
+                  <span style={{ flex: 1, minWidth: 0 }}>{t.description}</span>
+                  <span style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 7 }}>
+                    <PaymentPill payment={t.payment} />
+                    <KindBadge t={t} productConditionById={productConditionById} />
+                    {t.smartbillDoc && <SmartBillBadge doc={t.smartbillDoc} />}
+                  </span>
+                </div>
                 <span className="mob-row-amount" style={{ color: t.type === "income" ? "#15803D" : "#B91C1C" }}>
                   {t.type === "income" ? "+" : "-"}{num(t.amount)}
                 </span>
               </div>
-              <div className="mob-row-sub">
-                {t.payment === "Vegyes" && <span style={{ color: "#9CA3AF" }}>{num(cashPortion(t))} kp + {num(cardPortion(t))} kártya</span>}
-                {showLocation && <span style={{ color: "#6B7280" }}>{locName(t.locationId)}</span>}
-              </div>
+              {(t.payment === "Vegyes" || showLocation) && (
+                <div className="mob-row-sub">
+                  {t.payment === "Vegyes" && <span style={{ color: "#9CA3AF" }}>{num(cashPortion(t))} kp + {num(cardPortion(t))} kártya</span>}
+                  {showLocation && <span style={{ color: "#6B7280" }}>{locName(t.locationId)}</span>}
+                </div>
+              )}
             </div>
           );
         })}

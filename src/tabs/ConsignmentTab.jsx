@@ -64,20 +64,25 @@ export default function ConsignmentTab({ locName, busy, loadingData, stock, setP
             </tr>
           )}
           renderMobileRow={(i) => (
-            <div className="mob-row" onClick={() => setProductDetailId(i.id)}>
-              <div className="mob-row-top">
-                <div className="mob-row-main">
-                  <span>{displayName(i.brand, i.model)}</span>
+            <div className="mob-row mob-row-coded" onClick={() => setProductDetailId(i.id)}>
+              <div className={`mob-code-col ${i.condition === "New" ? "st-kesz" : "st-beveve"}`}>
+                {String(i.productNo).split("").map((ch, k) => <span key={k}>{ch}</span>)}
+              </div>
+              <div className="mob-row-content">
+                <div className="mob-row-top">
+                  <div className="mob-row-main">
+                    <span>{displayName(i.brand, i.model)}</span>
+                  </div>
+                  <div className="mob-row-amount">{money(Number(i.acquisition?.consignorPayoutAmount) || 0)}</div>
                 </div>
-                <div className="mob-row-amount">{money(Number(i.acquisition?.consignorPayoutAmount) || 0)}</div>
-              </div>
-              <div className="mob-row-sub">
-                <span className="badge-loc">{locName(i.locationId)}</span>
-                <span>{i.acquisition?.sellerName || "—"}</span>
-                <span>{i.dateAdded || "—"}</span>
-              </div>
-              <div className="mob-row-sub" style={{ marginTop: 8 }} onClick={(e) => e.stopPropagation()}>
-                <button type="button" className="btn sec sm" disabled={busy} onClick={() => payoutConsignor(i.id)}>Kifizetés</button>
+                <div className="mob-row-sub">
+                  <span className="badge-loc">{locName(i.locationId)}</span>
+                  <span>{i.acquisition?.sellerName || "—"}</span>
+                  <span>{i.dateAdded || "—"}</span>
+                </div>
+                <div className="mob-row-sub" style={{ marginTop: 8 }} onClick={(e) => e.stopPropagation()}>
+                  <button type="button" className="btn sec sm" disabled={busy} onClick={() => payoutConsignor(i.id)}>Kifizetés</button>
+                </div>
               </div>
             </div>
           )}

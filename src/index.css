@@ -105,7 +105,7 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
 .ios-app-icon-wrap{position:relative;display:inline-flex}
 .ios-app-icon-wrap .md-item-appicon{transition:transform .12s}
 .ios-app-label{font-size:10.5px;font-weight:600;color:#374151;text-align:center;line-height:1.25;max-width:70px}
-.ios-app-badge{position:absolute;top:-4px;right:-6px;min-width:18px;height:18px;padding:0 4px;border-radius:999px;background:#FF3B30;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;line-height:1;border:2px solid #fff}
+.ios-app-badge{position:absolute;top:-5px;right:-5px;min-width:15px;height:15px;padding:0 4px;border-radius:999px;background:#DC2626;color:#fff;font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1}
 .ios-app-pad{visibility:hidden}
 
 /* BOTTOM SHEET — "Több" panel + mobilon a modalok is ezt a mintát követik (lásd media query) */
@@ -116,7 +116,7 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
 /* MOBIL FELSŐ SÁV — a Sidebar és a ContentTopbar helyett látszik ≤640px-en (ld. media
    query lejjebb): mindig elérhető helyszín-választó, webshop-link és felhasználói menü,
    hogy ezekhez ne kelljen a "Több" lapba bemenni. */
-.mtb{display:none;align-items:center;gap:8px;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));background:rgba(255,255,255,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid #EEF0F2;position:sticky;top:0;z-index:30}
+.mtb{display:none;align-items:center;gap:8px;padding:10px 20px;padding-top:calc(28px + env(safe-area-inset-top));background:rgba(255,255,255,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid #EEF0F2;position:sticky;top:0;z-index:30}
 .mtb .loc-drop-wrap{flex:0 0 auto;max-width:160px}
 .mtb-spacer{flex:1}
 .mtb-avatar-btn{border:none;padding:0;cursor:pointer}
@@ -127,7 +127,8 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
 .mtb .loc-drop-menu{border-radius:14px;border-color:rgba(0,0,0,.08)}
 .mtb .loc-drop-item{border-radius:9px}
 .mtb .util-icon-btn{border-radius:999px;background:#fff;border-color:rgba(0,0,0,.08)}
-.mtb .user-avatar{background:linear-gradient(135deg,#1DB954,#159C46);color:#fff}
+.mtb .user-avatar{background:linear-gradient(135deg,#4ADE80,#0F7A36);color:#fff}
+.mtb .btn.header-add-btn{background:linear-gradient(205deg,#A7F3D0,#047857)}
 
 .content-col{flex:1;display:flex;flex-direction:column;min-width:0}
 .content-topbar{flex-shrink:0;padding:16px 30px 0}
@@ -183,6 +184,16 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
 @keyframes header-add-pulse{
   0%{opacity:.55;transform:translate(-50%,-50%) scale(1)}
   100%{opacity:0;transform:translate(-50%,-50%) scale(2.1)}
+}
+@media (max-width:640px){
+  /* Mobilon a tap "beragadhat" hover állapotba, így a végtelen, nagy pulzálás
+     zavaróan feltűnő maradna a + gombon — itt kisebb és csak néhányszor fut le. */
+  .header-add-btn:hover:not(:disabled) .header-add-ring{animation:header-add-pulse-sm 2.8s ease-out 2}
+  .header-add-btn:hover:not(:disabled) .header-add-ring.ring2{animation-delay:1s}
+  @keyframes header-add-pulse-sm{
+    0%{opacity:.35;transform:translate(-50%,-50%) scale(1)}
+    100%{opacity:0;transform:translate(-50%,-50%) scale(1.3)}
+  }
 }
 
 /* STAT ROW */
@@ -817,15 +828,84 @@ tr:hover td{background:#FAFAFA}
    kameranézet (nem a sima .modal fehér-kártya minta), mert a kamerakép önmagában ad kontrasztot. */
 .apple-page .scan-trigger{flex-shrink:0;height:33.5px;width:40px;padding:0;justify-content:center}
 @media (min-width:641px){.scan-trigger{display:none}}
+.fin-history-toggle-mobile{display:none}
 
 /* Mobilon a kereső, a szkenner és az "Átadott munkák" kapcsoló egy sorban férjen el —
    a kereső rugalmasan zsugorodik, a másik kettő kör alakú ikongomb, fix méretű. */
 @media (max-width:640px){
-  .filter-row{flex-wrap:nowrap}
+  /* Bevételek és kiadások: a KPI-oldalsáv mobilon nem fér el a tartalom mellett —
+     a tartalom fölé kerül, a kártyák pedig (a nagy egyenleg-kártya kivételével)
+     egy sorba tördelve, legfeljebb 3-asával, hogy ne foglaljanak túl sok helyet. */
+  .fin-layout{flex-direction:column;align-items:stretch !important;gap:8px}
+  .fin-kpi-col{width:100% !important}
+  .fin-kpi-col > div{margin-bottom:0 !important}
+  .fin-kpi-top{display:flex !important;flex-direction:row !important;gap:8px;margin-bottom:8px}
+  .fin-kpi-top .statcard{flex:1;min-width:0;margin-bottom:0 !important}
+  /* A gyors-gombos (Devia/Üvegfólia/stb.) sáv mobilon nem fér ki kényelmesen — inkább
+     a szabad tétel mezőin (Leírás/Összeg/stb.) keresztül vigyük fel a gyors tételeket is. */
+  .quick-add-seg{display:none}
+  .quick-add-seg + div{margin-left:auto}
+  /* A "Korábbi napok" gomb mobilon nem a KPI-oszlopban áll magában, hanem felkerül a
+     Kiadás/Bevétel váltóval egy sorba (a rejtett gyors-gombok helyére) — a KPI-oszlopos
+     változat ilyenkor elrejtve, a duplikáció elkerülésére. */
+  .fin-history-toggle{display:none}
+  .fin-history-toggle-mobile{display:inline-flex;flex-shrink:0}
+  /* A szabad tétel felviteli sora (Leírás/Összeg/Beszerzési ár/Kategória/gomb) mobilon
+     egy oszlopba kerül — 4-5 mező egy sorban nem fér ki egy telefon szélességén — a
+     Kategória és a rögzítés-gomb viszont az utolsó sorban együtt marad, jobbra igazítva. */
+  .bb-item-grid{grid-template-columns:1fr auto !important}
+  .bb-item-grid > *{grid-column:1 / -1}
+  .bb-item-grid > *:nth-last-child(2){grid-column:1}
+  .bb-item-grid > *:last-child{grid-column:2}
+  .bb-item-grid .field input,
+  .bb-item-grid .field select{padding:9px 11px;font-size:12px !important}
+  .bb-item-grid .field select{
+    -webkit-appearance:none;appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat:no-repeat;
+    background-position:right 12px center;
+    padding-right:30px;
+  }
+  .fin-kpi-grid{flex-direction:row !important;flex-wrap:wrap}
+  .fin-kpi-grid .statcard{flex:1 1 calc(33.333% - 6px);min-width:100px;padding:16px 14px}
+  .fin-kpi-grid .statcard .val{font-size:15px}
+  .fin-kpi-grid .statcard .lbl{font-size:9.5px}
+  .svc-filter-row{flex-wrap:nowrap;position:relative}
   .apple-page .searchbar{flex:1;min-width:0;max-width:none}
   .history-toolbar-btn{margin-left:0;flex-shrink:0;width:40px;height:33.5px;padding:0;justify-content:center}
   .history-toolbar-btn-dots{display:block}
   .history-toolbar-btn-text{display:none}
+  .history-toolbar-btn-icon{display:none}
+  /* Egy szegmentált szűrő-sáv (Mind/Kijelző/Akkumulátor stb.) néha több gombot tartalmaz,
+     mint amennyi egy mobil képernyőn elfér — ne csússzon ki a nézetből, inkább tördelődjön,
+     kisebb gombokkal, hogy minél több férjen egy sorba. */
+  .status-seg{flex-wrap:wrap;max-width:100%;height:auto}
+  .apple-page .status-seg button{height:31px;padding:0 10px;font-size:11.5px}
+}
+/* Alkatrészek mobil nézet: kereső+szkenner+"•••" (Felhasznált alkatrészek) egy sorban,
+   a kategória-szűrő sáv ez alatt, önálló (görgethető) sorban fut. */
+.parts-search-line{display:contents}
+@media (max-width:640px){
+  .parts-search-line{display:flex;align-items:center;gap:10px;width:100%}
+}
+/* Telefonok (Stock) mobil nézet: a keresőn/szkenneren túl a szűrő-gombok (állapot,
+   Tartalék, Eladott telefonok) egy "•••" gomb mögé kerülnek — desktopon a
+   .stock-more-wrap "display:contents"-tel láthatatlanul beolvad a sorba. */
+.stock-more-trigger{display:none}
+.stock-more-wrap{display:contents}
+@media (max-width:640px){
+  .stock-more-trigger{display:inline-flex;flex-shrink:0}
+  .stock-more-wrap{
+    display:none;position:absolute;top:100%;right:19px;margin-top:8px;
+    background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:14px;
+    box-shadow:var(--shadow-lg);padding:12px;flex-direction:column;gap:8px;z-index:50;min-width:230px;
+  }
+  .stock-more-wrap.open{display:flex}
+  .stock-more-wrap .status-seg{flex-direction:column;background:transparent;padding:0;gap:4px}
+  .stock-more-wrap .status-seg button{justify-content:flex-start}
+  .stock-more-export{display:none}
+  .stock-more-wrap .history-toolbar-btn{width:auto;height:36px;padding:0 14px;justify-content:flex-start;margin-left:0}
+  .stock-more-wrap .history-toolbar-btn-text{display:inline}
 }
 .scan-overlay{position:fixed;inset:0;background:rgba(10,10,12,.92);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px}
 .scan-modal{width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px}
@@ -925,6 +1005,17 @@ tr:hover td{background:#FAFAFA}
 .mob-row-main>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mob-row-amount{font-weight:700;font-size:13px;flex-shrink:0}
 .mob-row-sub{margin-top:5px;font-size:11.5px;color:#6B7280;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+/* Szerviz munkalap-kártya: mindent egy hajszálnyit nagyobbra, a gomb kivételével. */
+.svc-row-lg .st{font-size:11.5px;padding:3.5px 10px}
+.svc-row-lg .svc-flag{width:21px;height:21px}
+.svc-row-lg .svc-flag svg{width:12px;height:12px}
+.svc-row-lg .t-folia svg{width:13px;height:13px}
+/* Kódos kártya-elrendezés: a sorszám számjegyei egy státusz-színű, teljes magasságú
+   csíkban futnak a kártya bal szélén, minden más tartalom egy közös oszlopból indul
+   jobbra tőle — közös minta Szerviz/Alkatrész/Telefon mobil kártyákhoz. */
+.mob-row.mob-row-coded{display:flex;align-items:stretch;gap:0;padding:0}
+.mob-code-col{display:flex;flex-direction:column;align-items:center;justify-content:space-between;flex-shrink:0;font-family:'Roboto Mono',monospace;font-size:9.5px;font-weight:700;padding:14px 7px}
+.mob-row-content{flex:1;min-width:0;padding:14px 19px 14px 12px}
 .pgh{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 14px;background:#F9FAFB;border:1px solid #E5E7EB;cursor:pointer;user-select:none}
 .pgh-left{display:flex;align-items:center;gap:8px;min-width:0}
 .pgh-right{display:flex;gap:16px;align-items:center;flex-shrink:0}
@@ -1716,6 +1807,9 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .bb-h1{font-size:20px;font-weight:800;margin:0 0 18px;line-height:1.3}
 .bb-label{font-size:12px;font-weight:700;color:var(--pub-ink-soft);text-transform:uppercase;letter-spacing:.02em;margin-bottom:8px}
 .bb-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.bb-item-grid{display:grid;gap:8px}
+.bb-item-grid.income{grid-template-columns:1.6fr .7fr .7fr 1fr auto}
+.bb-item-grid.expense{grid-template-columns:2fr .7fr 1fr auto}
 .bb-grid-1col{grid-template-columns:1fr}
 .bb-option-card{border:1.5px solid var(--pub-line);background:var(--pub-paper-raised);border-radius:13px;padding:16px 14px;font-size:14px;font-weight:600;color:var(--pub-ink);cursor:pointer;text-align:left;font-family:inherit;transition:border-color .12s,background .12s}
 .bb-option-card:hover{border-color:var(--pub-accent)}
@@ -1887,7 +1981,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
   .shell.mac-pult{
     display:flex;height:auto;overflow:visible;
     background:
-      radial-gradient(380px 260px at 12% -60px, rgba(223,233,255,.75) 0%, transparent 50%),
+      radial-gradient(380px 260px at 12% -20px, rgba(223,233,255,.75) 0%, transparent 50%),
       radial-gradient(320px 240px at 100% 110px, rgba(210,245,224,.75) 0%, transparent 45%),
       linear-gradient(160deg,#f3f5f9 0%,#eceef3 100%);
   }
@@ -1896,7 +1990,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
   .shell.mac-pult .mtb{background:none;border-bottom:none;backdrop-filter:none;-webkit-backdrop-filter:none}
   .mac-pult-content{
     background:none;
-    border-radius:0;padding:10px 16px calc(96px + env(safe-area-inset-bottom))
+    border-radius:0;padding:10px 20px calc(130px + env(safe-area-inset-bottom))
   }
   .mac-pult-fade{display:none}
 }

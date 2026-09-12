@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { money, displayName, phoneCode, daysOnShelf, isSlowMoving, stockStatusLabel, conditionGradeLabel, exportToCsv, today } from "../lib/utils";
-import { SearchIcon, PhoneCaseIcon, ServiceIcon, CartIcon, ScanIcon, PrintIcon, CloseIcon } from "../components/icons";
+import { SearchIcon, PhoneCaseIcon, ServiceIcon, CartIcon, ScanIcon, PrintIcon, CloseIcon, MoreIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import HistorySection from "../components/HistorySection";
 import ResponsiveTable from "../components/ResponsiveTable";
@@ -27,6 +27,16 @@ export default function StockTab({
   const reserveLoc = locations.find((l) => l.name === "Tartalék");
   const [showSold, setShowSold] = useState(false);
   const [showReserve, setShowReserve] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreMenuRef = useRef(null);
+  useEffect(() => {
+    if (!moreOpen) return;
+    function onClickOutside(e) {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target)) setMoreOpen(false);
+    }
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [moreOpen]);
   // Árcimke-nyomtatás: bepipálható telefonok, hogy egyszerre (pl. 4 új felvitel után)
   // egy lapon lehessen kinyomtatni a címkéiket, ahelyett hogy egyesével mennénk.
   const [selectedIds, setSelectedIds] = useState(new Set());
@@ -90,33 +100,33 @@ export default function StockTab({
           </tr>
         )}
         renderMobileRow={(i) => (
-          <div className="mob-row" onClick={() => setProductDetailId(i.id)}>
-            <div className="mob-row-top">
-              <div className="mob-row-main">
-                <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{phoneCode(i.productNo) || "—"}</span>
-                <input
-                  type="checkbox" className="chk" style={{ marginRight: 6 }} checked={selectedIds.has(i.id)}
-                  onClick={(e) => e.stopPropagation()} onChange={() => toggleSelect(i.id)} title="Kijelölés címkenyomtatáshoz"
-                />
-                <span>{displayName(i.brand, i.model)}</span>
-                <span className={`st st-fill ${i.condition === "New" ? "st-kesz" : "st-beveve"}`} style={{ marginLeft: 6 }}>{conditionGradeLabel(i.condition, i.grade)}</span>
-              </div>
-              <div className="mob-row-amount">{money(i.salePrice)}</div>
+          <div className="mob-row mob-row-coded" onClick={() => setProductDetailId(i.id)}>
+            <div className={`mob-code-col ${i.condition === "New" ? "st-kesz" : "st-beveve"}`}>
+              {String(i.productNo).split("").map((ch, k) => <span key={k}>{ch}</span>)}
             </div>
-            <div className="mob-row-sub">
-              {i.storage && <span>{i.storage}</span>}
-              {i.brand !== "Apple" && i.ram && <span>{i.ram} RAM</span>}
-              {i.color && <span>{i.color}</span>}
-              {i.acquisition?.acquisitionType === "consignment" && <span className="badge-loc">Bizomány</span>}
-              {i.stockStatus === "javitando" && <span className="tag" style={{ background: "var(--danger-soft)", color: "var(--danger-ink)", fontWeight: 700 }}>Javítandó</span>}
-              {i.stockStatus === "lefoglalt" && <span style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }}>{stockStatusLabel(i.stockStatus)}</span>}
-              {isSlowMoving(i, reserveLocId) && <span className="tag" style={{ background: "var(--warning-soft)", color: "var(--warning-ink)", fontWeight: 700 }}>{daysOnShelf(i.dateAdded)} napja</span>}
-            </div>
-            {canAct(i) && (
-              <div className="mob-row-sub" style={{ marginTop: 8 }} onClick={(e) => e.stopPropagation()}>
-                <button className="btn sec sm icon-only" disabled={busy} title="Eladás" onClick={() => setSellModal(i)}><CartIcon width={13} height={13} /></button>
+            <div className="mob-row-content">
+              <div className="mob-row-top">
+                <div className="mob-row-main">
+                  <span style={{ flex: 1, minWidth: 0 }}>{displayName(i.brand, i.model)}</span>
+                  <span className={`st st-fill ${i.condition === "New" ? "st-kesz" : "st-beveve"}`} style={{ flexShrink: 0 }}>{conditionGradeLabel(i.condition, i.grade)}</span>
+                </div>
+                <div className="mob-row-amount">{money(i.salePrice)}</div>
               </div>
-            )}
+              <div className="mob-row-sub">
+                {i.storage && <span>{i.storage}</span>}
+                {i.brand !== "Apple" && i.ram && <span>{i.ram} RAM</span>}
+                {i.color && <span>{i.color}</span>}
+                {i.acquisition?.acquisitionType === "consignment" && <span className="badge-loc">Bizomány</span>}
+                {i.stockStatus === "javitando" && <span className="tag" style={{ background: "var(--danger-soft)", color: "var(--danger-ink)", fontWeight: 700 }}>Javítandó</span>}
+                {i.stockStatus === "lefoglalt" && <span style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }}>{stockStatusLabel(i.stockStatus)}</span>}
+                {isSlowMoving(i, reserveLocId) && <span className="tag" style={{ background: "var(--warning-soft)", color: "var(--warning-ink)", fontWeight: 700 }}>{daysOnShelf(i.dateAdded)} napja</span>}
+              </div>
+              {canAct(i) && (
+                <div className="mob-row-sub" style={{ marginTop: 8 }} onClick={(e) => e.stopPropagation()}>
+                  <button className="btn sec sm icon-only" disabled={busy} title="Eladás" onClick={() => setSellModal(i)}><CartIcon width={13} height={13} /></button>
+                </div>
+              )}
+            </div>
           </div>
         )}
       />
@@ -154,31 +164,37 @@ export default function StockTab({
           </button>
         </div>
       )}
-      <div className="filter-row">
+      <div className="filter-row svc-filter-row">
         <div className="searchbar"><SearchIcon /><input value={search} onChange={(e) => setSearch(e.target.value)} /></div>
         {onScan && <button type="button" className="btn sec scan-trigger" onClick={onScan} title="QR/vonalkód szkennelése"><ScanIcon width={16} height={16} /></button>}
-        <div className="status-seg">
-          <button className={condFilter === "all" ? "active" : ""} onClick={() => setCondFilter("all")}>
-            <span className="dot" style={{ background: "#9CA3AF" }} />Mind <span className="cnt">{filteredStock.length}</span>
-          </button>
-          <button className={condFilter === "New" ? "active" : ""} onClick={() => setCondFilter("New")}>
-            <span className="dot" style={{ background: "#22C55E" }} />Új <span className="cnt">{filteredStock.filter((i) => i.condition === "New").length}</span>
-          </button>
-          <button className={condFilter === "Refurbished" ? "active" : ""} onClick={() => setCondFilter("Refurbished")}>
-            <span className="dot" style={{ background: "#F59E0B" }} />Felújított <span className="cnt">{filteredStock.filter((i) => i.condition === "Refurbished").length}</span>
+        <button type="button" className="history-toolbar-btn stock-more-trigger" onClick={() => setMoreOpen((v) => !v)} title="Szűrők és listák">
+          <MoreIcon className="history-toolbar-btn-dots" width={16} height={16} />
+          <span className="history-toolbar-btn-text">Szűrők</span>
+        </button>
+        <div className={`stock-more-wrap${moreOpen ? " open" : ""}`} ref={moreMenuRef}>
+          <div className="status-seg">
+            <button className={condFilter === "all" ? "active" : ""} onClick={() => setCondFilter("all")}>
+              <span className="dot" style={{ background: "#9CA3AF" }} />Mind <span className="cnt">{filteredStock.length}</span>
+            </button>
+            <button className={condFilter === "New" ? "active" : ""} onClick={() => setCondFilter("New")}>
+              <span className="dot" style={{ background: "#22C55E" }} />Új <span className="cnt">{filteredStock.filter((i) => i.condition === "New").length}</span>
+            </button>
+            <button className={condFilter === "Refurbished" ? "active" : ""} onClick={() => setCondFilter("Refurbished")}>
+              <span className="dot" style={{ background: "#F59E0B" }} />Felújított <span className="cnt">{filteredStock.filter((i) => i.condition === "Refurbished").length}</span>
+            </button>
+          </div>
+          <button type="button" className="btn sec sm stock-more-export" onClick={exportStock} disabled={condFiltered.length === 0} title="A jelenleg szűrt lista letöltése CSV-ként">Exportálás CSV-be</button>
+          {reserveLoc && (
+            <button type="button" className={`history-toolbar-btn${showReserve ? " active" : ""}`} onClick={() => { setShowReserve((v) => !v); setMoreOpen(false); }}>
+              <PhoneCaseIcon width={14} height={14} />
+              Tartalék <span className="cnt">{condFiltered.filter((i) => i.locationId === reserveLoc.id).length}</span>
+            </button>
+          )}
+          <button type="button" className={`history-toolbar-btn${showSold ? " active" : ""}`} style={{ marginLeft: reserveLoc ? 0 : "auto" }} onClick={() => { setShowSold((v) => !v); setMoreOpen(false); }}>
+            <PhoneCaseIcon width={14} height={14} />
+            Eladott telefonok <span className="cnt">{soldStock.length}</span>
           </button>
         </div>
-        <button type="button" className="btn sec sm" onClick={exportStock} disabled={condFiltered.length === 0} title="A jelenleg szűrt lista letöltése CSV-ként">Exportálás CSV-be</button>
-        {reserveLoc && (
-          <button type="button" className={`history-toolbar-btn${showReserve ? " active" : ""}`} onClick={() => setShowReserve((v) => !v)}>
-            <PhoneCaseIcon width={14} height={14} />
-            Tartalék <span className="cnt">{condFiltered.filter((i) => i.locationId === reserveLoc.id).length}</span>
-          </button>
-        )}
-        <button type="button" className={`history-toolbar-btn${showSold ? " active" : ""}`} style={{ marginLeft: reserveLoc ? 0 : "auto" }} onClick={() => setShowSold((v) => !v)}>
-          <PhoneCaseIcon width={14} height={14} />
-          Eladott telefonok <span className="cnt">{soldStock.length}</span>
-        </button>
       </div>
 
       {reserveLoc && showReserve && (() => {
@@ -222,19 +238,23 @@ export default function StockTab({
               </tr>
             )}
             renderMobileRow={(i) => (
-              <div className="mob-row" onClick={() => setProductDetailId(i.id)}>
-                <div className="mob-row-top">
-                  <div className="mob-row-main">
-                    <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{phoneCode(i.productNo) || "—"}</span>
-                    <span>{displayName(i.brand, i.model)}</span>
-                  </div>
-                  <div className="mob-row-amount">{money(i.salePrice)}</div>
+              <div className="mob-row mob-row-coded" onClick={() => setProductDetailId(i.id)}>
+                <div className={`mob-code-col ${i.condition === "New" ? "st-kesz" : "st-beveve"}`}>
+                  {String(i.productNo).split("").map((ch, k) => <span key={k}>{ch}</span>)}
                 </div>
-                <div className="mob-row-sub">
-                  <span className="badge-loc">{locName(i.locationId)}</span>
-                  {i.imei && <span>{i.imei}</span>}
-                  <span>{i.saleTx?.date || "—"}</span>
-                  <span>{i.saleTx?.customerName || "—"}</span>
+                <div className="mob-row-content">
+                  <div className="mob-row-top">
+                    <div className="mob-row-main">
+                      <span style={{ flex: 1, minWidth: 0 }}>{displayName(i.brand, i.model)}</span>
+                    </div>
+                    <div className="mob-row-amount">{money(i.salePrice)}</div>
+                  </div>
+                  <div className="mob-row-sub">
+                    <span className="badge-loc">{locName(i.locationId)}</span>
+                    {i.imei && <span>{i.imei}</span>}
+                    <span>{i.saleTx?.date || "—"}</span>
+                    <span>{i.saleTx?.customerName || "—"}</span>
+                  </div>
                 </div>
               </div>
             )}
