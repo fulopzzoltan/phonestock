@@ -51,15 +51,15 @@ export default function StockTab({
     return (
       <ResponsiveTable
         className="tw-apple"
-        columns={[{ key: "c", label: "" }, { key: "n", label: "Sorszám", className: "col-serial" },{ key: "p", label: "Termék", className: "col-device" }, { key: "s", label: "Specifikáció", className: "col-grow" }, { key: "f", label: "" }, { key: "a", label: "Ár", className: "num-col" }, { key: "x", label: "" }]}
+        columns={[{ key: "n", label: "Sorszám", className: "col-serial" }, { key: "c", label: "" }, { key: "p", label: "Termék", className: "col-device" }, { key: "s", label: "Specifikáció", className: "col-grow" }, { key: "f", label: "" }, { key: "a", label: "Ár", className: "num-col" }, { key: "x", label: "" }]}
         rows={items}
         rowKey={(i) => i.id}
         renderRow={(i) => (
           <tr key={i.id} style={{ cursor: "pointer" }} onClick={() => setProductDetailId(i.id)}>
+            <td className="mono col-serial" style={{ color: "#9CA3AF", whiteSpace: "nowrap" }}>{phoneCode(i.productNo) || "—"}</td>
             <td onClick={(e) => e.stopPropagation()}>
               <input type="checkbox" className="chk" checked={selectedIds.has(i.id)} onChange={() => toggleSelect(i.id)} title="Kijelölés címkenyomtatáshoz" />
             </td>
-            <td className="mono col-serial" style={{ color: "#9CA3AF", whiteSpace: "nowrap" }}>{phoneCode(i.productNo) || "—"}</td>
             <td style={{ whiteSpace: "nowrap" }}>
               <div className="stk-name" style={{ flexWrap: "nowrap" }}>
                 {displayName(i.brand, i.model)}
@@ -93,11 +93,11 @@ export default function StockTab({
           <div className="mob-row" onClick={() => setProductDetailId(i.id)}>
             <div className="mob-row-top">
               <div className="mob-row-main">
+                <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{phoneCode(i.productNo) || "—"}</span>
                 <input
                   type="checkbox" className="chk" style={{ marginRight: 6 }} checked={selectedIds.has(i.id)}
                   onClick={(e) => e.stopPropagation()} onChange={() => toggleSelect(i.id)} title="Kijelölés címkenyomtatáshoz"
                 />
-                <span className="stk-sub" style={{ marginTop: 0, marginRight: 6 }}>{phoneCode(i.productNo) || "—"}</span>
                 <span>{displayName(i.brand, i.model)}</span>
                 <span className={`st st-fill ${i.condition === "New" ? "st-kesz" : "st-beveve"}`} style={{ marginLeft: 6 }}>{conditionGradeLabel(i.condition, i.grade)}</span>
               </div>
