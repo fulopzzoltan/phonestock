@@ -84,7 +84,7 @@ const FINANCE_UNLOCK_KEY = "phonestock_finance_unlocked";
 
 export default function DashboardTab({
   effectiveLocFilter, locName, stockStats, stockHistory, svcStats, soldPhoneStats,
-  monthlyTrendSummary, currentMonthLive, monthlySummaries, locations,
+  monthlyTrendSummary, currentMonthLive, monthlySummaries, locations, partsStats,
   transactions, tickets, todoItems, setDetailId,
   stockSparkline, dailyIncomeTrend,
   canSeeFinance, userEmail, signIn,
@@ -208,7 +208,7 @@ export default function DashboardTab({
         ))}
       </div>
 
-      {todoCount > 0 && (
+      {todoCount > 0 && !showMetrics && (
         <>
           <SectionHead icon={WarningIcon}>Ma figyelni kell rá</SectionHead>
           <div className="statcard" style={{ marginBottom: 22 }}>
@@ -459,7 +459,7 @@ export default function DashboardTab({
 
       {showMetrics && financeUnlocked && (
         <div style={{ marginBottom: 22 }}>
-          <RevenueQualityPanel transactions={transactions} tickets={tickets} />
+          <RevenueQualityPanel transactions={transactions} tickets={tickets} locations={locations} stockStats={stockStats} partsStats={partsStats} />
         </div>
       )}
 
