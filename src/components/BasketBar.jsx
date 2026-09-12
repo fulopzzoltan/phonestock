@@ -21,11 +21,11 @@ export function useBasketBar({ defaultLocId, onCheckout, date }) {
   const [amount, setAmount] = useState("");
   const [costPrice, setCostPrice] = useState("");
   const [category, setCategory] = useState("Készlet");
-  const [stockKind, setStockKind] = useState("Egyéb"); // Telefon | Alkatrész | Egyéb
+  const [stockKind, setStockKind] = useState("Alkatrész"); // Telefon | Alkatrész | Egyéb
   const [err, setErr] = useState("");
 
   function resetFree() {
-    setDescription(""); setAmount(""); setCostPrice(""); setStockKind("Egyéb");
+    setDescription(""); setAmount(""); setCostPrice(""); setStockKind("Alkatrész");
   }
 
   function setMode(next) {
@@ -175,7 +175,7 @@ export function BasketBody({ bb, defaultLocId, busy }) {
           <div className="basket-items" style={{ marginTop: 12 }}>
             {basketItems.map((it, i) => (
               <div key={i} className="basket-item-row">
-                <span>{it.label}{it.stockKind && it.stockKind !== "Egyéb" ? ` (${it.stockKind})` : ""}</span>
+                <span>{it.label}{it.stockKind && it.stockKind !== "Alkatrész" ? ` (${it.stockKind})` : ""}</span>
                 <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span className="mono">{it.kind === "income" ? "+" : "-"}{it.amount} Lei</span>
                   <button type="button" className="basket-item-remove" onClick={() => bb.removeItem(i)}><CloseIcon width={12} height={12} /></button>

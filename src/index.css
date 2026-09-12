@@ -81,17 +81,20 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
    ugyanaz a vizuális nyelv mint a publikus .pub-bottom-nav-nél (lásd lejjebb):
    a képernyő szélétől elemelt, lekerekített, blur-ös "pill", nem él-től élig érő sáv. */
 .bottom-nav{
-  display:none;position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:40;
-  background:rgba(255,255,255,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  display:none;position:fixed;left:30px;right:30px;bottom:calc(28px + env(safe-area-inset-bottom));z-index:40;
+  background:rgba(255,255,255,.10);backdrop-filter:blur(28px) saturate(2.1);-webkit-backdrop-filter:blur(28px) saturate(2.1);
+  border:1px solid rgba(255,255,255,.35);
   border-radius:22px;padding:8px 6px;
-  box-shadow:0 8px 24px rgba(16,24,40,.16),0 1px 2px rgba(16,24,40,.06);
+  box-shadow:0 8px 24px rgba(16,24,40,.16),0 1px 2px rgba(16,24,40,.06),inset 0 1px 0 rgba(255,255,255,.6);
 }
-.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:none;color:var(--sidebar-text-dim);font-family:inherit;padding:8px 2px;border-radius:14px;cursor:pointer;min-height:48px;-webkit-tap-highlight-color:transparent;transition:color .15s}
+.bnav-btn{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:none;color:var(--sidebar-text-dim);font-family:inherit;padding:8px 2px;border-radius:14px;cursor:pointer;min-height:48px;-webkit-tap-highlight-color:transparent;transition:color .15s}
+.bnav-dot{position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:999px;background:#1DB954;opacity:0}
+.bnav-btn.active .bnav-dot{opacity:1}
 .bnav-btn span{font-size:10.5px;font-weight:600}
 .bnav-btn.active{color:var(--sidebar-accent-text)}
 .bnav-btn.active .md-item-appicon{transform:translateY(-1px) scale(1.05)}
 .bnav-ic-wrap{position:relative;display:inline-flex;transition:transform .15s}
-.bnav-badge{position:absolute;top:-5px;right:-8px;min-width:15px;height:15px;padding:0 4px;border-radius:999px;background:#DC2626;color:#fff;font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1;border:1.5px solid #fff}
+.bnav-badge{position:absolute;top:-5px;right:-5px;min-width:15px;height:15px;padding:0 4px;border-radius:999px;background:#DC2626;color:#fff;font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1}
 
 /* "Több" lap — iOS kezdőképernyő-szerű rács a korábbi függőleges lista helyett,
    ugyanazokkal a színes app-ikon csempékkel, mint a desktop Mac-dokkon. */
@@ -124,7 +127,7 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
 .mtb .loc-drop-menu{border-radius:14px;border-color:rgba(0,0,0,.08)}
 .mtb .loc-drop-item{border-radius:9px}
 .mtb .util-icon-btn{border-radius:999px;background:#fff;border-color:rgba(0,0,0,.08)}
-.mtb .user-avatar{background:linear-gradient(135deg,#0A84FF,#7db8ff);color:#fff}
+.mtb .user-avatar{background:linear-gradient(135deg,#1DB954,#159C46);color:#fff}
 
 .content-col{flex:1;display:flex;flex-direction:column;min-width:0}
 .content-topbar{flex-shrink:0;padding:16px 30px 0}
@@ -352,7 +355,7 @@ tr:hover td{background:#FAFAFA}
 .paid-toggle{display:flex;align-items:center;gap:5px;border:1.5px solid #E5E7EB;background:#fff;border-radius:999px;padding:6px 12px;font-size:11px;font-weight:700;color:#9CA3AF;cursor:pointer;white-space:nowrap;width:118px;justify-content:center;font-family:inherit}
 .paid-toggle.done{border-color:transparent;background:var(--primary-soft);color:var(--primary-ink)}
 .st{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:600}
-.st-beveve{background:#F3F4F6;color:#6B7280;--pill-bg:#F3F4F6;--pill-fg:#6B7280}
+.st-beveve{background:#E0E7FF;color:#4338CA;--pill-bg:#E0E7FF;--pill-fg:#4338CA}
 .st-alkatresz{background:var(--info-soft);color:var(--info-ink);--pill-bg:var(--info-soft);--pill-fg:var(--info-ink)}
 .st-javitas{background:var(--warning-soft);color:var(--warning-ink);--pill-bg:var(--warning-soft);--pill-fg:var(--warning-ink)}
 .st-kesz{background:#DCFCE7;color:#15803D;--pill-bg:#DCFCE7;--pill-fg:#15803D}
@@ -569,6 +572,7 @@ tr:hover td{background:#FAFAFA}
 .note-card-body{font-family:'Kalam',cursive;font-weight:700;font-size:16px;line-height:1.32;margin:8px 0 10px;overflow-wrap:anywhere;word-break:break-word}
 .note-card-link{align-self:flex-start;display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.65);border:none;border-radius:999px;padding:3px 10px 3px 8px;font-size:10.5px;font-weight:700;font-family:'Inter',sans-serif;margin-bottom:10px;cursor:pointer}
 .note-card-meta{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:6px}
+.note-card-meta .iconbtn{color:inherit;padding:0}
 .note-card-meta span{font-size:10.5px;font-weight:600;font-family:'Inter',sans-serif}
 .note-card-btn{width:24px;height:24px;padding:0;border-radius:999px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;color:inherit;opacity:.6;transition:opacity .12s,background .12s}
 .note-card-btn svg{width:14px;height:14px}
@@ -1883,8 +1887,8 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
   .shell.mac-pult{
     display:flex;height:auto;overflow:visible;
     background:
-      radial-gradient(500px 360px at 12% -40px, #dfe9ff 0%, transparent 60%),
-      radial-gradient(420px 320px at 100% 90px, #ffe9e0 0%, transparent 55%),
+      radial-gradient(380px 260px at 12% -60px, rgba(223,233,255,.75) 0%, transparent 50%),
+      radial-gradient(320px 240px at 100% 110px, rgba(210,245,224,.75) 0%, transparent 45%),
       linear-gradient(160deg,#f3f5f9 0%,#eceef3 100%);
   }
   .shell.mac-pult .content-col{width:100%;max-width:none;margin:0;background:none;border:none;border-radius:0;box-shadow:none;height:auto}

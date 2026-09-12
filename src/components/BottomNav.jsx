@@ -89,19 +89,23 @@ export default function BottomNav({
               {icon}
               {key === "pult" && pultTotal > 0 && <span className="bnav-badge">{pultTotal}</span>}
             </span>
+            <span className="bnav-dot" />
           </button>
         ))}
         <button type="button" title="Árulás" className={`bnav-btn${tab === "finance" || tab === "cash-settlement" || tab === "payroll" ? " active" : ""}`} onClick={() => go("finance")}>
           <span className="bnav-ic-wrap"><AppIcon from="#FBBF24" to="#D97706" size={36} radius={11}><Euro stroke="#fff" width={19} height={19} /></AppIcon></span>
+          <span className="bnav-dot" />
         </button>
         <button type="button" title="Üzenetek" className={`bnav-btn${tab === "inbox" ? " active" : ""}`} onClick={() => go("inbox")}>
           <span className="bnav-ic-wrap">
             <AppIcon from="#34D399" to="#047857" size={36} radius={11}><Bubble stroke="#fff" width={19} height={19} /></AppIcon>
             {inboxUnreadCount > 0 && <span className="bnav-badge">{inboxUnreadCount > 9 ? "9+" : inboxUnreadCount}</span>}
           </span>
+          <span className="bnav-dot" />
         </button>
         <button type="button" title="Több" className={`bnav-btn${moreOpen || isMoreActive ? " active" : ""}`} onClick={() => setMoreOpen(true)}>
           <span className="bnav-ic-wrap"><AppIcon from="#9CA3AF" to="#4B5563" size={36} radius={11}><MoreIcon stroke="#fff" width={19} height={19} /></AppIcon></span>
+          <span className="bnav-dot" />
         </button>
       </nav>
 

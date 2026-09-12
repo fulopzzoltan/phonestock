@@ -1,3 +1,5 @@
+import { Fragment } from "react";
+
 // Közös, újrahasznosítható táblázat: desktopon <table>, 640px alatt automatikusan a már
 // bevált .mob-cards/.mob-row kártyás nézetre vált (ugyanaz a CSS-minta, mint a
 // TransactionsPeriodList.jsx-ben) — hogy mobilon ne kelljen oldalra görgetni egy táblát.
@@ -9,7 +11,7 @@ export default function ResponsiveTable({ columns, rows, rowKey, renderRow, rend
         <tbody>{rows.map((r) => renderRow(r))}</tbody>
       </table>
       <div className="mob-cards">
-        {rows.map((r) => <div key={rowKey(r)}>{renderMobileRow(r)}</div>)}
+        {rows.map((r) => <Fragment key={rowKey(r)}>{renderMobileRow(r)}</Fragment>)}
       </div>
     </>
   );
