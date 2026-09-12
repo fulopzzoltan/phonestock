@@ -28,7 +28,9 @@ export default function NoteCard({ note, users, done, onComplete, onReopen, onDe
             <button type="button" className="note-card-btn" style={{ color: swatch.ink }} onClick={onComplete} title="Kész">
               <svg viewBox="0 0 24 24" fill="none"><path d="M4.5 13.2 9.3 18 19.5 6.5" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </button>
-            <ConfirmDelete disabled={false} onConfirm={onDelete} className="note-card-btn" />
+            <span style={{ color: swatch.ink, display: "flex" }}>
+              <ConfirmDelete disabled={false} onConfirm={onDelete} className="note-card-btn" />
+            </span>
           </span>
         )}
       </div>

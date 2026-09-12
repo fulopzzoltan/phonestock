@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { today, displayName, money } from "../lib/utils";
-import { NoteIcon, LeaveIcon } from "../components/icons";
+import { NoteIcon, LeaveIcon, ChevronDownIcon } from "../components/icons";
 import NoteComposer from "../components/NoteComposer";
 import NoteCard from "../components/NoteCard";
 import WaitingList from "../components/WaitingList";
@@ -8,6 +8,7 @@ import ClosedNotesPopover from "../components/ClosedNotesPopover";
 import { EmptyState } from "../components/EmptyState";
 
 const LEAVE_SOON_DAYS = 14;
+const GREETINGS = ["Szia!", "Hello!", "Üdv újra!", "Szevasz!", "Jó munkát ma!", "Sziasztok!"];
 
 export default function PultTab({
   effectiveLocFilter, filteredTickets, setDetailId,
@@ -19,6 +20,8 @@ export default function PultTab({
   onOpenTicket, onOpenProduct, onOpenPart, onOpenCustomer, onOpenWarranty,
 }) {
   const [noteOpen, setNoteOpen] = useState(false);
+  const [showReceived, setShowReceived] = useState(false);
+  const greeting = useMemo(() => GREETINGS[Math.floor(Math.random() * GREETINGS.length)], []);
   const promisedToday = useMemo(() => {
     const t0 = today();
     return filteredTickets.filter((t) => t.status !== "Átadásra" && (t.dueDate === t0 || t.handoverDate === t0));
@@ -39,19 +42,33 @@ export default function PultTab({
   const activeWaiting = waitingItems.filter((w) => w.status !== "lezarva");
   const closedWaiting = waitingItems.filter((w) => w.status === "lezarva");
   const readyWaiting = activeWaiting.filter((w) => w.status === "megerkezett");
+  const receivedTickets = filteredTickets.filter((t) => t.status === "Átvett");
+  const partsWaitTickets = receivedTickets.filter((t) => t.subStatus === "Alkatrészre vár" || t.subStatus === "Alkatrészre és készülékre vár");
 
-  const attentionCount = webOrders.length + promisedToday.length + readyWaiting.length;
+  const attentionCount = webOrders.length + promisedToday.length + readyWaiting.length + receivedTickets.length;
 
   return (
     <div className="pb-row3">
       <div className="pult-section">
-        <div className="pb-stat-head">
-          <span className="pb-stat-n">{attentionCount}</span><span className="pb-stat-l">tennivaló ma</span>
-        </div>
+        <div className="pb-stat-head"><span className="pb-stat-greeting">{greeting}</span></div>
         <div className="pb-stat-chips">
           <div className="pb-stat-chip"><span className="l"><span className="d" style={{ background: "var(--info)" }} />Webes rendelés</span><b>{webOrders.length}</b></div>
           <div className="pb-stat-chip"><span className="l"><span className="d" style={{ background: "var(--primary)" }} />Ígért munka ma</span><b>{promisedToday.length}</b></div>
           <div className="pb-stat-chip"><span className="l"><span className="d" style={{ background: "#7C3AED" }} />Kész várakozás</span><b>{readyWaiting.length}</b></div>
+          <button
+            type="button"
+            className="pb-stat-chip pb-stat-chip-toggle"
+            disabled={receivedTickets.length === 0}
+            onClick={() => setShowReceived((v) => !v)}
+          >
+            <span className="l"><b>{receivedTickets.length}</b>Rögzített szervizek</span>
+            {receivedTickets.length > 0 && (
+              <ChevronDownIcon width={11} height={11} style={{ transform: showReceived ? "rotate(180deg)" : "none", transition: "transform .15s" }} />
+            )}
+          </button>
+          {partsWaitTickets.length > 0 && (
+            <div className="pb-stat-chip"><span className="l"><span className="d" style={{ background: "#EA580C" }} />Alkatrészre vár</span><b>{partsWaitTickets.length}</b></div>
+          )}
         </div>
 
         {attentionCount === 0 ? (
@@ -90,6 +107,19 @@ export default function PultTab({
                 <div className="sub">{w.customerName || "—"}{w.supplier ? ` · ${w.supplier}` : ""} — megérkezett</div>
                 <div className="actions">
                   <button type="button" className="pb-stat-btn" onClick={() => advanceWaiting(w.id, "ertesitve")}>Értesítettük</button>
+                </div>
+              </div>
+            ))}
+
+            {showReceived && receivedTickets.map((t) => (
+              <div key={`recv-${t.id}`} className="pb-stat-row job" onClick={() => setDetailId(t.id)}>
+                <div className="top">
+                  <span className="name">{t.customerName}</span>
+                  <span className="amt">{money(t.price)}</span>
+                </div>
+                <div className="sub">
+                  {displayName(t.brand, t.model) || "—"}
+                  {(t.subStatus === "Alkatrészre vár" || t.subStatus === "Alkatrészre és készülékre vár") ? " — alkatrészre vár" : " — átvéve"}
                 </div>
               </div>
             ))}

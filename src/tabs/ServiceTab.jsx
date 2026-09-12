@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { money, STATUSES, SUB_STATUSES, statusLabel, statusCls, subStatusCls, subStatusLabel, displayName, ticketCode, daysOnShelf, slaInfo, isStaleReady } from "../lib/utils";
-import { SearchIcon, ServiceIcon, ClockIcon, WarrantyIcon, FoliaIcon, DropletIcon, ChevronRightIcon, CheckIcon, ScanIcon, PartsIcon, PhoneCaseIcon } from "../components/icons";
+import { SearchIcon, ServiceIcon, ClockIcon, WarrantyIcon, FoliaIcon, DropletIcon, ChevronRightIcon, CheckIcon, ScanIcon, PartsIcon, PhoneCaseIcon, MoreIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import ResponsiveTable from "../components/ResponsiveTable";
 import HandoverPaymentModal from "../components/HandoverPaymentModal";
@@ -176,8 +176,14 @@ export default function ServiceTab({
       <div className="filter-row">
         <div className="searchbar"><SearchIcon /><input value={svcSearch} onChange={(e) => setSvcSearch(e.target.value)} /></div>
         {onScan && <button type="button" className="btn sec scan-trigger" onClick={onScan} title="QR/vonalkód szkennelése"><ScanIcon width={16} height={16} /></button>}
-        <button type="button" className={`history-toolbar-btn${showHandedOver ? " active" : ""}`} onClick={() => setShowHandedOver((v) => !v)}>
-          Átadott munkák <span className="cnt">{handedOverTickets.length}</span>
+        <button
+          type="button"
+          className={`history-toolbar-btn${showHandedOver ? " active" : ""}`}
+          onClick={() => setShowHandedOver((v) => !v)}
+          title="Átadott munkák"
+        >
+          <MoreIcon className="history-toolbar-btn-dots" width={16} height={16} />
+          <span className="history-toolbar-btn-text">Átadott munkák <span className="cnt">{handedOverTickets.length}</span></span>
         </button>
       </div>
 
