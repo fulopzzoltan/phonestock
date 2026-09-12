@@ -14,7 +14,7 @@ export default function BrandField({ label = "Márka", value, onChange, hint }) 
         hint={hint}
         value={isCustom ? "Egyéb" : value}
         onChange={(v) => onChange(v === "Egyéb" ? "" : v)}
-        options={PHONE_BRANDS.map((b) => ({ key: b, label: b }))}
+        options={PHONE_BRANDS.map((b) => ({ key: b, label: b === "Apple" ? "iPhone" : b }))}
         placeholder="Válassz márkát..."
       />
       {isCustom && (

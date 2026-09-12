@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 
-export default function CustomerAutocomplete({ customers, name, onChangeName, onSelect, placeholder = "Kovács János" }) {
+export default function CustomerAutocomplete({ customers, name, onChangeName, onSelect, placeholder = "Kovács János", className }) {
   const [open, setOpen] = useState(false);
 
   const matches = useMemo(() => {
@@ -14,6 +14,7 @@ export default function CustomerAutocomplete({ customers, name, onChangeName, on
   return (
     <div style={{ position: "relative" }}>
       <input
+        className={className}
         value={name}
         onChange={(e) => { onChangeName(e.target.value); setOpen(true); }}
         onFocus={() => setOpen(true)}

@@ -198,13 +198,15 @@ export function slaInfo(ticket) {
   return { level: "ok", days, label: `${days} nap van hátra` };
 }
 
+// Sorrend a valós szerviz-munkalapok probléma-előfordulása alapján, a leggyakoribbtól
+// a legritkábbig — "Egyéb" marad legutolsó, gyűjtő opcióként.
 export const PROBLEM_TAGS = [
-  "Kijelző csere", "Akku csere", "Nem tölt", "Töltőcsatlakozó", "Gyorsan merül",
-  "Beszédhangszóró", "Főhangszóró", "Mikrofon", "Hálózat hiba",
-  "Hátlapi kamera", "Előlapi kamera", "Kamera lencse", "Face ID / Touch ID hiba",
-  "Hátlap csere", "Készülékház", "Bekapcsoló gomb", "Hangerő gombok",
-  "Beázás", "Nem kapcsol be", "Alaplapi hiba", "Bootloop", "Adatmentés",
-  "Bevizsgálás", "FRP zárolás", "Egyéb",
+  "Kijelző csere", "Töltőcsatlakozó", "Akku csere", "FRP zárolás", "Hátlap csere",
+  "Főhangszóró", "Mikrofon", "Hátlapi kamera", "Kamera lencse", "Bekapcsoló gomb",
+  "Alaplapi hiba", "Hálózat hiba", "Nem tölt", "Készülékház",
+  "Face ID / Touch ID hiba", "Beszédhangszóró", "Bootloop", "Gyorsan merül",
+  "Előlapi kamera", "Hangerő gombok", "Beázás", "Nem kapcsol be", "Adatmentés",
+  "Bevizsgálás", "Egyéb",
 ];
 export const PART_CATEGORIES = ["Kijelző", "Akkumulátor", "Hátlap"];
 export const PART_ORIGINS = ["Eredeti", "Utángyártott", "Felújított"];
@@ -215,12 +217,14 @@ export const WARRANTIES = ["1 hó", "3 hó", "6 hó", "1 év", "2 év"];
 // mező bukkan fel, így ritka márka sem esik ki. Az "iPhone" szándékosan NEM külön tétel —
 // az Apple-telefonok márkája marad "Apple", a modell mezőben szerepel az "iPhone" szó
 // (ld. displayName()).
+// Sorrend a valós forgalmunk (products + service_tickets brand gyakorisága) alapján,
+// a leggyakoribbtól a legritkábbig — "Egyéb" marad legutolsó, gyűjtő opcióként.
 export const PHONE_BRANDS = [
-  "Samsung", "Apple", "Xiaomi", "Redmi", "Poco", "Huawei", "Honor", "Nokia",
-  "Motorola", "OnePlus", "Oppo", "Realme", "Vivo", "Google", "LG", "Asus",
-  "iHunt", "Allview", "Myria", "Maxcom", "Doro", "Alcatel", "Blackview",
-  "Doogee", "Oukitel", "Ulefone", "Oscal", "TCL", "ZTE", "Lenovo", "Philips",
-  "Crosscall", "MobilWire", "Vodafone", "Orange", "Egyéb",
+  "Samsung", "Apple", "Redmi", "Nokia", "Huawei", "Motorola", "Honor",
+  "Oppo", "iHunt", "Maxcom", "Philips", "Xiaomi", "Doogee", "Allview",
+  "Google", "TCL", "Realme", "Ulefone", "OnePlus", "Alcatel", "Asus", "LG",
+  "Myria", "Blackview", "Vivo", "Poco", "MobilWire", "Lenovo", "Crosscall",
+  "ZTE", "Doro", "Vodafone", "Oscal", "Oukitel", "Egyéb",
 ];
 export const STORAGE_OPTIONS = ["32 GB", "64 GB", "128 GB", "256 GB", "512 GB", "1 TB", "Egyéb"];
 export const RAM_OPTIONS = ["2 GB", "3 GB", "4 GB", "6 GB", "8 GB", "12 GB", "16 GB", "Egyéb"];

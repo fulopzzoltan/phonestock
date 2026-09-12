@@ -26,7 +26,9 @@ export function ChipField({ label, hint, value, onChange, options }) {
 // de a kinyíló lista saját stílusú, nem a böngésző natívja.
 export function DropdownField({ label, hint, value, onChange, options, placeholder = "—" }) {
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
   const ref = useRef(null);
+  const searchRef = useRef(null);
 
   useEffect(() => {
     if (!open) return;
@@ -37,7 +39,16 @@ export function DropdownField({ label, hint, value, onChange, options, placehold
     return () => document.removeEventListener("mousedown", onDocMouseDown);
   }, [open]);
 
+  useEffect(() => {
+    if (open) {
+      setQuery("");
+      searchRef.current?.focus();
+    }
+  }, [open]);
+
   const current = options.find((o) => o.key === value);
+  const q = query.trim().toLowerCase();
+  const filtered = q ? options.filter((o) => o.label.toLowerCase().includes(q)) : options;
 
   return (
     <div className="field" ref={ref} style={{ position: "relative" }}>
@@ -48,7 +59,18 @@ export function DropdownField({ label, hint, value, onChange, options, placehold
       </button>
       {open && (
         <div className="autocomplete-list">
-          {options.map((o) => {
+          {options.length > 6 && (
+            <input
+              ref={searchRef}
+              className="dd-search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Keresés..."
+              onMouseDown={(e) => e.stopPropagation()}
+            />
+          )}
+          {filtered.length === 0 && <div className="autocomplete-empty">Nincs találat</div>}
+          {filtered.map((o) => {
             const active = o.key === value;
             return (
               <div

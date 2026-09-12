@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { money, STATUSES, SUB_STATUSES, statusLabel, statusCls, subStatusCls, subStatusLabel, displayName, ticketCode, daysOnShelf, slaInfo, isStaleReady } from "../lib/utils";
-import { SearchIcon, ServiceIcon, ClockIcon, WarrantyIcon, FoliaIcon, DropletIcon, ChevronRightIcon, CheckIcon, ScanIcon } from "../components/icons";
+import { SearchIcon, ServiceIcon, ClockIcon, WarrantyIcon, FoliaIcon, DropletIcon, ChevronRightIcon, CheckIcon, ScanIcon, PartsIcon, PhoneCaseIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import ResponsiveTable from "../components/ResponsiveTable";
 import HandoverPaymentModal from "../components/HandoverPaymentModal";
@@ -22,7 +22,6 @@ export default function ServiceTab({
   effectiveLocFilter, locName, busy, setTicketModal, svcSearch, setSvcSearch, onScan,
   loadingData, activeTickets, setDetailId, handedOverTickets, onStatusChange,
 }) {
-  const [listStatus, setListStatus] = useState(STATUSES[0].key);
   const [handoverPrompt, setHandoverPrompt] = useState(null);
   const [showHandedOver, setShowHandedOver] = useState(false);
   const [handedOverQuery, setHandedOverQuery] = useState("");
@@ -42,16 +41,28 @@ export default function ServiceTab({
   // mert azok is azonnali odafigyelést igényelnek.
   const flagsOf = (t) => {
     const sla = slaInfo(t) || (isStaleReady(t) ? { level: "overdue", label: "90+ napja várja az átvételt" } : null);
+    const partWait = t.status === "Átvett" && (t.subStatus === "Alkatrészre vár" || t.subStatus === "Alkatrészre és készülékre vár");
+    const deviceWait = t.status === "Átvett" && (t.subStatus === "Készülékre vár" || t.subStatus === "Alkatrészre és készülékre vár");
     return (
       <span className="svc-flags">
-        {probsOf(t).includes("Beázás") && (
-          <span className="svc-flag svc-flag-water" title="Beázott készülék">
+        {(probsOf(t).includes("Beázás") || t.waterDamage) && (
+          <span className="svc-flag svc-flag-water" title="Ázott készülék">
             <DropletIcon width={11} height={11} />
           </span>
         )}
         {t.isWarranty && (
           <span className="svc-flag svc-flag-warranty" title={t.warrantyKind === "termék" ? "Garanciális — termék" : "Garanciális — szerviz"}>
             <WarrantyIcon width={11} height={11} />
+          </span>
+        )}
+        {partWait && (
+          <span className="svc-flag svc-flag-part" title="Alkatrészre vár">
+            <PartsIcon width={11} height={11} />
+          </span>
+        )}
+        {deviceWait && (
+          <span className="svc-flag svc-flag-device" title="Készülékre vár">
+            <PhoneCaseIcon width={11} height={11} />
           </span>
         )}
         {t.folia && (
@@ -82,14 +93,15 @@ export default function ServiceTab({
     }
     return t.customerName || "—";
   };
-  const statusPill = (t) => (t.subStatus ? (
+  const isPartDeviceWait = (t) => t.status === "Átvett" && (t.subStatus === "Alkatrészre vár" || t.subStatus === "Készülékre vár" || t.subStatus === "Alkatrészre és készülékre vár");
+  const statusPill = (t) => (t.subStatus && !isPartDeviceWait(t) ? (
     <span className={`st st-fill ${subStatusCls(t.status, t.subStatus)}`}>{subStatusLabel(t.status, t.subStatus)}</span>
   ) : (
     <span className={`st st-fill ${statusCls(t.status)}`}>{statusLabel(t.status)}</span>
   ));
   const TICKET_COLUMNS = [
     { key: "n", label: "Sorszám", className: "col-serial" }, { key: "d", label: "Eszköz", className: "col-grow" }, { key: "c", label: "Kliens" }, { key: "i", label: "Bejött" },
-    { key: "f", label: "" }, { key: "s", label: "Státusz", className: "col-status" }, { key: "a", label: "Ár", className: "num-col" }, { key: "x", label: "" },
+    { key: "s", label: "Státusz", className: "col-status" }, { key: "a", label: "Ár", className: "num-col" }, { key: "x", label: "" },
   ];
   const renderTicketRow = (t) => (
     <tr key={t.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
@@ -98,11 +110,11 @@ export default function ServiceTab({
         <div className="stk-name">
           {displayName(t.brand, t.model) || "—"}
           {probsOf(t).map((p, i) => <span key={i} className="prob-pill">{p}</span>)}
+          {flagsOf(t)}
         </div>
       </td>
       <td style={{ whiteSpace: "nowrap" }}>{kliensOf(t)}</td>
       <td>{daysOf(t)}</td>
-      <td style={{ whiteSpace: "nowrap" }}>{flagsOf(t)}</td>
       <td className="col-status" style={{ whiteSpace: "nowrap" }}>{statusPill(t)}</td>
       <td className="row-price">
         {(Number(t.depositPaid) || 0) > 0 ? (
@@ -139,11 +151,11 @@ export default function ServiceTab({
         <span>{kliensOf(t)}</span>
         {daysOf(t)}
         {statusPill(t)}
-        {flagsOf(t)}
       </div>
       {probsOf(t).length > 0 && (
-        <div className="svc-probs" style={{ marginTop: 6, flexWrap: "wrap" }}>
+        <div className="svc-probs" style={{ marginTop: 6, flexWrap: "wrap", alignItems: "center" }}>
           {probsOf(t).map((p, i) => <span key={i} className="prob-pill">{p}</span>)}
+          {flagsOf(t)}
         </div>
       )}
       {nextActionOf(t) && (() => {
@@ -164,17 +176,6 @@ export default function ServiceTab({
       <div className="filter-row">
         <div className="searchbar"><SearchIcon /><input value={svcSearch} onChange={(e) => setSvcSearch(e.target.value)} /></div>
         {onScan && <button type="button" className="btn sec scan-trigger" onClick={onScan} title="QR/vonalkód szkennelése"><ScanIcon width={16} height={16} /></button>}
-        <div className="status-seg">
-          {STATUSES.map((col) => {
-            const count = activeTickets.filter((t) => t.status === col.key).length;
-            return (
-              <button key={col.key} type="button" className={listStatus === col.key ? "active" : ""} onClick={() => setListStatus(col.key)}>
-                <span className="dot" style={{ background: col.color }} />
-                {statusLabel(col.key)} <span className="cnt">{count}</span>
-              </button>
-            );
-          })}
-        </div>
         <button type="button" className={`history-toolbar-btn${showHandedOver ? " active" : ""}`} onClick={() => setShowHandedOver((v) => !v)}>
           Átadott munkák <span className="cnt">{handedOverTickets.length}</span>
         </button>
@@ -211,9 +212,12 @@ export default function ServiceTab({
       <div className="tw tw-apple">
       {loadingData ? <LoadingState /> : (
         (() => {
-          const items = activeTickets.filter((t) => t.status === listStatus);
-          if (listStatus === "Átadásra") items.sort((a, b) => (daysOnShelf(a.dateIn) ?? -1) - (daysOnShelf(b.dateIn) ?? -1));
-          if (items.length === 0) return <EmptyState icon={ServiceIcon}>Nincs munkalap ebben az állapotban.</EmptyState>;
+          const items = [...activeTickets].sort((a, b) => {
+            const byStatus = STATUS_KEYS.indexOf(a.status) - STATUS_KEYS.indexOf(b.status);
+            if (byStatus !== 0) return byStatus;
+            return (daysOnShelf(a.dateIn) ?? -1) - (daysOnShelf(b.dateIn) ?? -1);
+          });
+          if (items.length === 0) return <EmptyState icon={ServiceIcon}>Nincs munkalap.</EmptyState>;
           return (
             <ResponsiveTable
               wrap={false}

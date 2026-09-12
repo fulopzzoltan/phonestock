@@ -3,7 +3,7 @@ import { Helmet } from "react-helmet-async";
 import { supabase } from "./lib/supabaseClient";
 import { photoUrl } from "./lib/imageResize";
 import { t, translateColor, translateWarranty } from "./lib/i18n";
-import { normalizeStorage, normalizeBrand } from "./lib/utils";
+import { normalizeStorage, normalizeBrand, displayName } from "./lib/utils";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 import { SearchIcon, FilterIcon, CartIcon, HeartIcon, FinderIcon, CheckIcon, ChevronDownIcon, WarrantyIcon, PinIcon } from "./components/icons";
@@ -295,7 +295,7 @@ export default function StockShowcase({ lang = "hu" }) {
               {visibleBrands.map((b) => (
                 <button key={b} type="button" className={`pub-check-row${selectedBrands.includes(b) ? " active" : ""}`} onClick={() => toggleBrand(b)}>
                   <span className="pub-check">{selectedBrands.includes(b) && <CheckIcon width={10} height={10} strokeWidth={3} />}</span>
-                  <span className="pub-check-row-label">{b}</span>
+                  <span className="pub-check-row-label">{b === "Apple" ? "iPhone" : b}</span>
                   <span className="pub-check-row-count">{countsByBrand[b]}</span>
                 </button>
               ))}
@@ -395,7 +395,7 @@ export default function StockShowcase({ lang = "hu" }) {
                             />
                           ) : deviceSvg}
                         </div>
-                        <div className="pub-card-name">{p.brand} {p.model}</div>
+                        <div className="pub-card-name">{displayName(p.brand, p.model)}</div>
                         <div className="pub-card-specs">
                           {p.storage && <span>{normalizeStorage(p.storage)}</span>}
                           {p.color && <span>{translateColor(p.color, lang)}</span>}
