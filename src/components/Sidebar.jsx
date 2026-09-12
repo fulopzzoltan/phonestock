@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   DashboardIcon, ServiceIcon, PhoneCaseIcon, BoardIcon,
-  PartsIcon, FinanceIcon, CustomersIcon, WarrantyIcon, UsersNavIcon, TrashNavIcon, BuybackIcon, LeaveIcon, RepairPriceIcon, CashSettlementIcon, InvoiceIcon, ReviewsIcon, PayrollIcon, ChatIcon, LockIcon, ChevronDownIcon, RefurbIcon,
+  PartsIcon, FinanceIcon, CustomersIcon, WarrantyIcon, UsersNavIcon, TrashNavIcon, BuybackIcon, LeaveIcon, RepairPriceIcon, ReviewsIcon, ChatIcon, LockIcon, ChevronDownIcon,
 } from "./icons";
 
 const WEBSHOP_TABS = ["buyback", "repair-prices", "reviews"];
@@ -45,12 +45,11 @@ export default function Sidebar({
           )}
         </button>
         <button className={`navbtn ${tab === "service" ? "active" : ""}`} onClick={() => go("service")}><ServiceIcon className="nav-ic" />Szerviz</button>
-        <button className={`navbtn ${tab === "stock" ? "active" : ""}`} onClick={() => go("stock")}><PhoneCaseIcon className="nav-ic" />Telefonok</button>
-        <button className={`navbtn ${tab === "parts" ? "active" : ""}`} onClick={() => go("parts")}><PartsIcon className="nav-ic" />Alkatrészek</button>
-        <button className={`navbtn ${tab === "refurb" ? "active" : ""}`} onClick={() => go("refurb")}>
-          <RefurbIcon className="nav-ic" />Felújítás
+        <button className={`navbtn ${tab === "stock" || tab === "consignment" || tab === "refurb" ? "active" : ""}`} onClick={() => go("stock")}>
+          <PhoneCaseIcon className="nav-ic" />Telefonok
           {refurbCount > 0 && <span className="nav-pill-group"><span className="nav-pill amber">{refurbCount}</span></span>}
         </button>
+        <button className={`navbtn ${tab === "parts" ? "active" : ""}`} onClick={() => go("parts")}><PartsIcon className="nav-ic" />Alkatrészek</button>
         {!isAdmin && (
           <button className={`navbtn ${tab === "vault" ? "active" : ""}`} onClick={() => go("vault")}><LockIcon className="nav-ic" />Belépések</button>
         )}
@@ -64,14 +63,7 @@ export default function Sidebar({
         <button className={`navbtn ${tab === "warranty" ? "active" : ""}`} onClick={() => go("warranty")}><WarrantyIcon className="nav-ic" />Garancia</button>
 
         <div className="nav-lbl">Pénzügyek</div>
-        <button className={`navbtn ${tab === "finance" ? "active" : ""}`} onClick={() => go("finance")}><FinanceIcon className="nav-ic" />Árulás</button>
-        {isAdmin && (
-          <button className={`navbtn ${tab === "cash-settlement" ? "active" : ""}`} onClick={() => go("cash-settlement")}><CashSettlementIcon className="nav-ic" />Elszámolás</button>
-        )}
-        {isAdmin && (
-          <button className={`navbtn ${tab === "payroll" ? "active" : ""}`} onClick={() => go("payroll")}><PayrollIcon className="nav-ic" />Költségek</button>
-        )}
-        <button className={`navbtn ${tab === "invoices" ? "active" : ""}`} onClick={() => go("invoices")}><InvoiceIcon className="nav-ic" />Számlák</button>
+        <button className={`navbtn ${tab === "finance" ? "active" : ""}`} onClick={() => go("finance")}><FinanceIcon className="nav-ic" />Bevételek és kiadások</button>
         {!isAdmin && (
           <button className={`navbtn ${tab === "leave" ? "active" : ""}`} onClick={() => go("leave")}><LeaveIcon className="nav-ic" />Szabadság</button>
         )}

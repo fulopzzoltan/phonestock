@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { supabase } from "../lib/supabaseClient";
-import { ChatIcon, SearchIcon, WhatsappIcon, FacebookIcon, CameraIcon, ServiceIcon } from "../components/icons";
+import { ChatIcon, SearchIcon, WhatsappIcon, FacebookIcon, MailIcon, CameraIcon, ServiceIcon } from "../components/icons";
 import { EmptyState } from "../components/EmptyState";
 import { formatPhone, displayName, money, statusCls, statusLabel } from "../lib/utils";
 
@@ -37,7 +37,7 @@ const STAGE_BY_VALUE = Object.fromEntries(LEAD_STAGES.map((s) => [s.value, s]));
 function buildThreads(messages, customers) {
   const byKey = {};
   for (const m of messages) {
-    const identity = m.phoneNorm || m.senderPsid;
+    const identity = m.phoneNorm || m.senderPsid || m.emailAddress;
     if (!identity) continue;
     const key = `${m.channel}:${identity}`;
     (byKey[key] ||= []).push(m);
@@ -45,27 +45,32 @@ function buildThreads(messages, customers) {
   const customerById = {};
   const customerByPhone = {};
   const customerByPsid = {};
+  const customerByEmail = {};
   for (const c of customers) {
     customerById[c.id] = c;
     const norm = normPhone(c.phone);
     if (norm) customerByPhone[norm] = c;
     if (c.messengerPsid) customerByPsid[c.messengerPsid] = c;
+    if (c.email) customerByEmail[c.email.toLowerCase()] = c;
   }
 
   return Object.entries(byKey).map(([key, msgs]) => {
     const sorted = [...msgs].sort((a, b) => (a.createdAt || "").localeCompare(b.createdAt || ""));
     const last = sorted[sorted.length - 1];
     const channel = sorted[0].channel;
-    const identity = sorted[0].phoneNorm || sorted[0].senderPsid;
+    const identity = sorted[0].phoneNorm || sorted[0].senderPsid || sorted[0].emailAddress;
     const withCustomerId = [...sorted].reverse().find((m) => m.customerId);
     const customer = (withCustomerId && customerById[withCustomerId.customerId])
-      || (channel === "messenger" ? customerByPsid[identity] : customerByPhone[identity])
+      || (channel === "messenger" ? customerByPsid[identity] : channel === "email" ? customerByEmail[(identity || "").toLowerCase()] : customerByPhone[identity])
       || null;
     return {
       key,
       channel,
       phoneNorm: channel === "whatsapp" ? identity : null,
       senderPsid: channel === "messenger" ? identity : null,
+      emailAddress: channel === "email" ? identity : null,
+      subject: channel === "email" ? last?.subject : null,
+      threadId: channel === "email" ? last?.threadId : null,
       customer,
       customerId: customer?.id || null,
       messages: sorted,
@@ -105,8 +110,8 @@ function fmtWindow(ms) {
 const QUICK_REPLIES = ["Mikor tudod behozni?", "1–2 munkanap a javítás", "Elkészült, átveheted"];
 
 function ChannelBadge({ channel }) {
-  const Icon = channel === "messenger" ? FacebookIcon : WhatsappIcon;
-  const color = channel === "messenger" ? "#1877F2" : "#25D366";
+  const Icon = channel === "messenger" ? FacebookIcon : channel === "email" ? MailIcon : WhatsappIcon;
+  const color = channel === "messenger" ? "#1877F2" : channel === "email" ? "#EA580C" : "#25D366";
   return <Icon width={13} height={13} style={{ color, flexShrink: 0 }} />;
 }
 
@@ -160,7 +165,7 @@ export default function InboxTab({ messages, customers, tickets = [], onSend, on
       : filterMode === "failed" ? failedThreads
       : visibleBase;
     if (!qq) return pool;
-    return pool.filter((t) => [t.customer?.name, t.phoneNorm, t.senderPsid].filter(Boolean).join(" ").toLowerCase().includes(qq));
+    return pool.filter((t) => [t.customer?.name, t.phoneNorm, t.senderPsid, t.emailAddress, t.subject].filter(Boolean).join(" ").toLowerCase().includes(qq));
   }, [visibleBase, waitingThreads, failedThreads, irrelevantThreads, filterMode, q]);
 
   const active = threads.find((t) => t.key === activeKey) || filtered[0] || null;
@@ -191,7 +196,7 @@ export default function InboxTab({ messages, customers, tickets = [], onSend, on
   }, [active?.key, active?.messages.length]);
 
   function threadRef(t) {
-    return { channel: t.channel, phoneNorm: t.phoneNorm, senderPsid: t.senderPsid, customerId: t.customerId };
+    return { channel: t.channel, phoneNorm: t.phoneNorm, senderPsid: t.senderPsid, emailAddress: t.emailAddress, subject: t.subject, threadId: t.threadId, customerId: t.customerId };
   }
 
   async function submit() {
@@ -216,7 +221,7 @@ export default function InboxTab({ messages, customers, tickets = [], onSend, on
     setSendError("");
     try {
       const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-      const identity = active.phoneNorm || active.senderPsid;
+      const identity = active.phoneNorm || active.senderPsid || active.emailAddress;
       const path = `outbound/${active.channel}/${identity}/${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage.from("chat-media").upload(path, file, { contentType: file.type || "image/jpeg" });
       if (upErr) throw upErr;
@@ -258,8 +263,8 @@ export default function InboxTab({ messages, customers, tickets = [], onSend, on
   if (threads.length === 0) {
     return (
       <EmptyState icon={ChatIcon}>
-        Még nincs beszélgetés. Amint a WhatsApp és/vagy Messenger be van kötve (webhook + Meta
-        rendszerfelhasználó token beállítva), az ügyfelekkel folytatott üzenetváltások itt fognak megjelenni.
+        Még nincs beszélgetés. Amint a WhatsApp, Messenger és/vagy a céges Gmail be van kötve,
+        az ügyfelekkel folytatott üzenetváltások itt fognak megjelenni.
       </EmptyState>
     );
   }
@@ -298,8 +303,11 @@ export default function InboxTab({ messages, customers, tickets = [], onSend, on
             >
               <div className="wa-thread-name">
                 <ChannelBadge channel={t.channel} />
-                {t.customer?.name || formatPhone(t.phoneNorm) || t.phoneNorm || "Ismeretlen"}
+                {t.customer?.name || formatPhone(t.phoneNorm) || t.phoneNorm || t.emailAddress || "Ismeretlen"}
               </div>
+              {t.channel === "email" && t.subject && (
+                <div style={{ fontSize: 12, fontWeight: 600, color: "#374151" }}>{t.subject}</div>
+              )}
               <div className="wa-thread-preview">{t.lastPreview}</div>
               <div className="wa-thread-time">{fmtTime(t.lastAt)}</div>
               {t.unread && <span className="wa-thread-dot" />}
@@ -335,8 +343,13 @@ export default function InboxTab({ messages, customers, tickets = [], onSend, on
                   )}
                 </div>
                 <div style={{ fontSize: 12, color: "#6B7280", marginTop: 2 }}>
-                  {active.channel === "whatsapp" ? (formatPhone(active.phoneNorm) || active.phoneNorm) : "Messenger"}
+                  {active.channel === "whatsapp" ? (formatPhone(active.phoneNorm) || active.phoneNorm)
+                    : active.channel === "email" ? active.emailAddress
+                    : "Messenger"}
                 </div>
+                {active.channel === "email" && active.subject && (
+                  <div style={{ fontSize: 12, fontWeight: 600, color: "#374151", marginTop: 2 }}>{active.subject}</div>
+                )}
               </div>
               {active.customer && onOpenCustomer && (
                 <button type="button" className="btn sec sm" onClick={() => onOpenCustomer(active.customer.id)}>Ügyfélkártya</button>
@@ -388,13 +401,17 @@ export default function InboxTab({ messages, customers, tickets = [], onSend, on
               <div style={{ fontSize: 10.5, color: "#9CA3AF", marginBottom: 6 }}>
                 {active.channel === "messenger"
                   ? "Messengeren csak akkor kézbesíthető, ha az ügyfél 24 órán belül írt — utána csak ő tud új üzenetet kezdeményezni."
+                  : active.channel === "email"
+                  ? "Válasz e-mailben, ugyanabban a levélfolyamban."
                   : "Csak akkor kézbesíthető, ha az ügyfél a közelmúltban írt nekünk (Meta service window)."}
               </div>
               <div style={{ display: "flex", gap: 8 }}>
                 <input ref={fileInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleImagePick} />
-                <button type="button" className="btn sec" style={{ padding: "0 12px" }} disabled={sending} onClick={() => fileInputRef.current?.click()} title="Kép küldése">
-                  <CameraIcon width={16} height={16} />
-                </button>
+                {active.channel !== "email" && (
+                  <button type="button" className="btn sec" style={{ padding: "0 12px" }} disabled={sending} onClick={() => fileInputRef.current?.click()} title="Kép küldése">
+                    <CameraIcon width={16} height={16} />
+                  </button>
+                )}
                 <textarea
                   rows={2}
                   value={draft}

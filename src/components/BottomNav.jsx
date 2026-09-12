@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { LeaveIcon, DashboardIcon, UsersNavIcon, TrashNavIcon, BuybackIcon, RepairPriceIcon, ReviewsIcon, LockIcon, MoreIcon } from "./icons";
 import {
-  AppIcon, Home, Wrench, Phone, Chip, Refresh, Bubble, People, Shield, TrendCard,
-  ClipboardCheck, Wallet, Invoice, Lock, Chat,
+  AppIcon, Toggle, Wrench, Phone, Chip, Bubble, People, Shield, Euro,
+  Lock, Chat,
 } from "./MacDock";
 import BottomSheet from "./BottomSheet";
 
@@ -12,7 +12,7 @@ import BottomSheet from "./BottomSheet";
 // kezdőképernyő-szerű rács, nem függőleges lista — egy pillantásra átláthatóbb,
 // és illik a dokk-metaforához (macOS dokk asztalon, iOS rács mobilon).
 const FIXED = [
-  { key: "pult", label: "Pult", icon: <AppIcon from="#60A5FA" to="#2563EB" size={30} radius={9}><Home stroke="#fff" width={16} height={16} /></AppIcon> },
+  { key: "pult", label: "Pult", icon: <AppIcon from="#60A5FA" to="#2563EB" size={30} radius={9}><Toggle stroke="#fff" width={16} height={16} /></AppIcon> },
   { key: "service", label: "Szerviz", icon: <AppIcon from="#FB923C" to="#EA580C" size={30} radius={9}><Wrench stroke="#fff" width={16} height={16} /></AppIcon> },
 ];
 
@@ -20,9 +20,8 @@ const MORE_SECTIONS = [
   {
     label: "Napi munka",
     items: [
-      { key: "stock", label: "Telefonok", from: "#22D3EE", to: "#0891B2", Icon: Phone },
+      { key: "stock", label: "Telefonok", from: "#22D3EE", to: "#0891B2", Icon: Phone, countKey: "refurb", activeAlso: ["consignment", "refurb"] },
       { key: "parts", label: "Alkatrészek", from: "#A78BFA", to: "#7C3AED", Icon: Chip },
-      { key: "refurb", label: "Felújítás", from: "#4ADE80", to: "#16A34A", Icon: Refresh, countKey: "refurb" },
       { key: "vault", label: "Belépések", from: "#94A3B8", to: "#1E293B", Icon: Lock, employeeOnly: true },
     ],
   },
@@ -37,9 +36,6 @@ const MORE_SECTIONS = [
   {
     label: "Pénzügyek",
     items: [
-      { key: "cash-settlement", label: "Elszámolás", from: "#FBBF24", to: "#D97706", Icon: ClipboardCheck, adminOnly: true },
-      { key: "payroll", label: "Költségek", from: "#FCD34D", to: "#B45309", Icon: Wallet, adminOnly: true },
-      { key: "invoices", label: "Számlák", from: "#94A3B8", to: "#475569", Icon: Invoice },
       { key: "leave", label: "Szabadság", from: "#2DD4BF", to: "#0D9488", Icon: LeaveIcon, employeeOnly: true },
     ],
   },
@@ -86,13 +82,16 @@ export default function BottomNav({
     <>
       <nav className="bottom-nav">
         {FIXED.map(({ key, label, icon }) => (
-          <button key={key} type="button" className={`bnav-btn${tab === key ? " active" : ""}`} onClick={() => go(key)}>
-            <span className="bnav-ic-wrap">
-              {icon}
-              {key === "pult" && pultTotal > 0 && <span className="bnav-badge">{pultTotal}</span>}
-            </span>
-            <span>{label}</span>
-          </button>
+          <span key={key} style={{ display: "contents" }}>
+            <button type="button" className={`bnav-btn${tab === key ? " active" : ""}`} onClick={() => go(key)}>
+              <span className="bnav-ic-wrap">
+                {icon}
+                {key === "pult" && pultTotal > 0 && <span className="bnav-badge">{pultTotal}</span>}
+              </span>
+              <span>{label}</span>
+            </button>
+            {key === "pult" && <span className="md-sep" />}
+          </span>
         ))}
         <button type="button" className={`bnav-btn${chatOpen ? " active" : ""}`} onClick={() => { setChatOpen((o) => !o); if (!chatOpen) markChatRead(); }}>
           <span className="bnav-ic-wrap">
@@ -101,9 +100,9 @@ export default function BottomNav({
           </span>
           <span>Chat</span>
         </button>
-        <button type="button" className={`bnav-btn${tab === "finance" ? " active" : ""}`} onClick={() => go("finance")}>
-          <span className="bnav-ic-wrap"><AppIcon from="#4B5563" to="#111827" size={30} radius={9}><TrendCard stroke="#fff" width={16} height={16} /></AppIcon></span>
-          <span>Árulás</span>
+        <button type="button" className={`bnav-btn${tab === "finance" || tab === "cash-settlement" || tab === "payroll" ? " active" : ""}`} onClick={() => go("finance")}>
+          <span className="bnav-ic-wrap"><AppIcon from="#FBBF24" to="#D97706" size={30} radius={9}><Euro stroke="#fff" width={16} height={16} /></AppIcon></span>
+          <span>Bevételek és kiadások</span>
         </button>
         <button type="button" className={`bnav-btn${moreOpen || isMoreActive ? " active" : ""}`} onClick={() => setMoreOpen(true)}>
           <span className="bnav-ic-wrap"><AppIcon from="#9CA3AF" to="#4B5563" size={30} radius={9}><MoreIcon stroke="#fff" width={16} height={16} /></AppIcon></span>
@@ -116,10 +115,11 @@ export default function BottomNav({
           {Array.from({ length: (4 - (moreItems.length % 4)) % 4 }).map((_, i) => (
             <span key={`pad${i}`} className="ios-app-pad" aria-hidden="true" />
           ))}
-          {moreItems.map(({ key, label, from, to, Icon, countKey }) => {
+          {moreItems.map(({ key, label, from, to, Icon, countKey, activeAlso }) => {
             const count = countKey ? counts[countKey] : 0;
+            const active = tab === key || activeAlso?.includes(tab);
             return (
-              <button key={key + label} type="button" className={`ios-app${tab === key ? " active" : ""}`} onClick={() => go(key)}>
+              <button key={key + label} type="button" className={`ios-app${active ? " active" : ""}`} onClick={() => go(key)}>
                 <span className="ios-app-icon-wrap">
                   <AppIcon from={from} to={to} size={54} radius={14}><Icon stroke="#fff" width={24} height={24} /></AppIcon>
                   {count > 0 && <span className="ios-app-badge">{count > 99 ? "99+" : count}</span>}

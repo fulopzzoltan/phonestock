@@ -24,6 +24,7 @@ import OwnStockServiceModal from "./components/OwnStockServiceModal";
 import TicketFormModal from "./components/TicketFormModal";
 import DashboardTab from "./tabs/DashboardTab";
 import StockTab from "./tabs/StockTab";
+import ConsignmentTab from "./tabs/ConsignmentTab";
 import PultTab from "./tabs/PultTab";
 import FinanceTab from "./tabs/FinanceTab";
 import InvoicesTab from "./tabs/InvoicesTab";
@@ -58,6 +59,7 @@ import PrintSlip from "./components/PrintSlip";
 import SaleReceiptPanel from "./components/SaleReceiptPanel";
 import PrintReceiptSlip from "./components/PrintReceiptSlip";
 import PrintConsignmentDocs from "./components/PrintConsignmentDocs";
+import PrintConsignmentList from "./components/PrintConsignmentList";
 import PrintPriceLabels from "./components/PrintPriceLabels";
 import PrintPurchaseDocs from "./components/PrintPurchaseDocs";
 import WarrantyDetailPanel from "./components/WarrantyDetailPanel";
@@ -68,7 +70,7 @@ import BuybackRuleModal from "./components/BuybackRuleModal";
 import LeaveRequestModal from "./components/LeaveRequestModal";
 import LeaveBalanceModal from "./components/LeaveBalanceModal";
 import RepairPriceModal from "./components/RepairPriceModal";
-import { CloseIcon, PlusIcon } from "./components/icons";
+import { CloseIcon, PlusIcon, PrintIcon } from "./components/icons";
 import Sidebar from "./components/Sidebar";
 import MacDock from "./components/MacDock";
 import BottomNav from "./components/BottomNav";
@@ -245,8 +247,9 @@ function AppShell() {
   const [receiptTxId, setReceiptTxId] = useState(null);
   const [printReceipt, setPrintReceipt] = useState(null);
   const [printConsignment, setPrintConsignment] = useState(null);
-  const [printPurchase, setPrintPurchase] = useState(null);
+  const [printConsignmentList, setPrintConsignmentList] = useState(null);
   const [printPriceLabels, setPrintPriceLabels] = useState(null);
+  const [printPurchase, setPrintPurchase] = useState(null);
   const [acquisitionPrintPrompt, setAcquisitionPrintPrompt] = useState(null);
   const [warranties, setWarranties] = useState([]);
   const [notes, setNotes] = useState([]);
@@ -296,6 +299,7 @@ function AppShell() {
     setPrintWarranty(null);
     setPrintConsignment(null);
     setPrintPurchase(null);
+    setPrintConsignmentList(null);
     setPrintPriceLabels(null);
   }
   function printTicketSlip(ticket) {
@@ -316,6 +320,15 @@ function AppShell() {
     clearAllPrints();
     setPrintConsignment({ product, acquisition });
     setAcquisitionPrintPrompt(null);
+    requestAnimationFrame(() => {
+      window.print();
+    });
+  }
+  function printConsignmentListDocs() {
+    clearAllPrints();
+    const items = stock.filter((p) => p.status === "in_stock" && p.acquisition?.acquisitionType === "consignment"
+      && (stockLocFilter === "all" || p.locationId === stockLocFilter));
+    setPrintConsignmentList({ items });
     requestAnimationFrame(() => {
       window.print();
     });
@@ -1427,6 +1440,19 @@ function AppShell() {
   // korlátlan sablon nélkül is elfogadják; Messenger: szigorúan 24 órán belül) írt nekünk —
   // ld. TASKS_WHATSAPP_INTEGRACIO.md.
   async function sendInboxReply(thread, body, mediaUrl) {
+    if (thread.channel === "email") {
+      const { data, error: fnError } = await supabase.functions.invoke("send-email", {
+        body: { to: thread.emailAddress, subject: thread.subject || null, text: body || "", threadId: thread.threadId || null, customerId: thread.customerId || null },
+      });
+      if (fnError) throw fnError;
+      if (data?.error) throw new Error(data.error);
+      setInboxMessages((prev) => [...prev, {
+        id: `local-${Date.now()}`, channel: "email", direction: "out", emailAddress: thread.emailAddress,
+        subject: thread.subject || null, threadId: data?.data?.threadId || thread.threadId || null,
+        body: body || "", status: "sent", customerId: thread.customerId || null, createdAt: new Date().toISOString(),
+      }]);
+      return data;
+    }
     if (thread.channel === "messenger") {
       const { data, error: fnError } = await supabase.functions.invoke("send-messenger", {
         body: { psid: thread.senderPsid, text: body || null, mediaUrl: mediaUrl || null, customerId: thread.customerId || null },
@@ -1462,7 +1488,9 @@ function AppShell() {
   async function markInboxRead(thread) {
     const unreadIds = inboxMessages
       .filter((m) => m.channel === thread.channel
-        && (thread.channel === "messenger" ? m.senderPsid === thread.senderPsid : m.phoneNorm === thread.phoneNorm)
+        && (thread.channel === "messenger" ? m.senderPsid === thread.senderPsid
+          : thread.channel === "email" ? m.emailAddress === thread.emailAddress
+          : m.phoneNorm === thread.phoneNorm)
         && m.direction === "in" && !m.readAt)
       .map((m) => m.id);
     if (unreadIds.length === 0) return;
@@ -3042,6 +3070,11 @@ function AppShell() {
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Telefonok</div>
             <button type="button" className="btn header-add-btn" disabled={busy} title="Új termék" onClick={() => setStockModal("add")}><span className="header-add-ring" /><span className="header-add-ring ring2" /><PlusIcon width={16} height={16} /></button>
           </>
+        ) : tab === "consignment" ? (
+          <>
+            <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Bizomány</div>
+            <button type="button" className="btn header-add-btn" disabled={busy} title="Lista nyomtatása" onClick={printConsignmentListDocs}><span className="header-add-ring" /><span className="header-add-ring ring2" /><PrintIcon width={16} height={16} /></button>
+          </>
         ) : tab === "parts" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Alkatrész raktár</div>
@@ -3082,7 +3115,7 @@ function AppShell() {
           </>
         ) : tab === "finance" ? (
           <>
-            <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Árulás</div>
+            <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Bevételek és kiadások</div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 4 }}>
               <LiquidToggle
                 on={!!headerTodayClose}
@@ -3136,6 +3169,21 @@ function AppShell() {
             <button type="button" className="btn header-add-btn" disabled={busy} title="Új kolléga meghívása" onClick={() => { setInviteError(""); setInviteModal(true); }}><span className="header-add-ring" /><span className="header-add-ring ring2" /><PlusIcon width={16} height={16} /></button>
           </>
         ) : null}
+        contextNav={isAdmin && tab === "finance" ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <button type="button" className="loc-drop" style={{ width: "auto" }} onClick={() => setTab("cash-settlement")}>Elszámolás</button>
+            <button type="button" className="loc-drop" style={{ width: "auto" }} onClick={() => setTab("payroll")}>Költségek</button>
+          </div>
+        ) : (tab === "cash-settlement" || tab === "payroll") ? (
+          <button type="button" className="loc-drop" style={{ width: "auto" }} onClick={() => setTab("finance")}>← Bevételek és kiadások</button>
+        ) : tab === "stock" ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <button type="button" className="loc-drop" style={{ width: "auto" }} onClick={() => setTab("consignment")}>Bizomány</button>
+            <button type="button" className="loc-drop" style={{ width: "auto" }} onClick={() => setTab("refurb")}>Felújítás</button>
+          </div>
+        ) : (tab === "consignment" || tab === "refurb") ? (
+          <button type="button" className="loc-drop" style={{ width: "auto" }} onClick={() => setTab("stock")}>← Telefonok</button>
+        ) : null}
       />
       <div className={`main${useMacDock ? " mac-pult-content" : ""}`}>
         {error && <div className="errbar">{error}</div>}
@@ -3183,6 +3231,16 @@ function AppShell() {
             soldStock={soldStock}
             isAdmin={isAdmin} myLocationId={myLocationId}
             onPrintLabels={printPriceLabelsDocs}
+          />
+        )}
+
+        {!noLocationAssigned && tab === "consignment" && (
+          <ConsignmentTab
+            effectiveLocFilter={stockLocFilter} locName={locName} busy={busy}
+            loadingData={loadingData} stock={filteredStock} locations={locations}
+            setProductDetailId={setProductDetailId}
+            payoutConsignor={payoutConsignor}
+            printConsignmentList={printConsignmentListDocs}
           />
         )}
 
@@ -3690,8 +3748,9 @@ function AppShell() {
         {printReceipt && <PrintReceiptSlip tx={printReceipt} location={locations.find((l) => l.id === printReceipt.locationId)} />}
         {printWarranty && <PrintWarrantySlip w={printWarranty} location={locations.find((l) => l.id === printWarranty.locationId)} />}
         {printConsignment && <PrintConsignmentDocs product={printConsignment.product} acquisition={printConsignment.acquisition} settings={settings} location={locations.find((l) => l.id === printConsignment.product.locationId)} />}
-        {printPurchase && <PrintPurchaseDocs product={printPurchase.product} acquisition={printPurchase.acquisition} settings={settings} location={locations.find((l) => l.id === printPurchase.product.locationId)} />}
+        {printConsignmentList && <PrintConsignmentList items={printConsignmentList.items} locations={locations} settings={settings} />}
         {printPriceLabels && <PrintPriceLabels items={printPriceLabels.items} />}
+        {printPurchase && <PrintPurchaseDocs product={printPurchase.product} acquisition={printPurchase.acquisition} settings={settings} location={locations.find((l) => l.id === printPurchase.product.locationId)} />}
       </div>
       {acquisitionPrintPrompt && (
         <div className="overlay">

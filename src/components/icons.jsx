@@ -263,6 +263,14 @@ export const RefurbIcon = (props) => (
   </svg>
 );
 
+export const ConsignmentIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M21 8 12 3 3 8v8l9 5 9-5V8z" />
+    <path d="M3 8l9 5 9-5" />
+    <path d="M12 13v8" />
+  </svg>
+);
+
 export const ChevronDownIcon = (props) => (
   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" {...props}>
     <polyline points="6 9 12 15 18 9" />
@@ -298,6 +306,12 @@ export const WarningIcon = (props) => (
 export const ChatIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...props}>
     <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />
+  </svg>
+);
+
+export const MailIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" />
   </svg>
 );
 

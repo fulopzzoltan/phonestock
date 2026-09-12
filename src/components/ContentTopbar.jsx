@@ -107,7 +107,7 @@ function GlobalSearch({ stock, tickets, customersTable, parts, warranties, onOpe
 // ezek az elemek a tartalom-hasáb tetején, oldal-fejléc fölött legyenek elérhetők.
 export default function ContentTopbar({
   tab, setTab, isAdmin, locFilter, setLocFilter, allowedLocations, myLocationId, locName,
-  profile, user, signOut, chatOpen, setChatOpen, chatUnread, markChatRead, pageHeader,
+  profile, user, signOut, chatOpen, setChatOpen, chatUnread, markChatRead, pageHeader, contextNav,
   stock, tickets, customersTable, parts, warranties, onOpenProduct, onOpenTicket, onOpenCustomer, onOpenPart, onOpenWarranty,
 }) {
   const [locMenuOpen, setLocMenuOpen] = useState(false);
@@ -148,6 +148,8 @@ export default function ContentTopbar({
           onOpenProduct={onOpenProduct} onOpenTicket={onOpenTicket} onOpenCustomer={onOpenCustomer} onOpenPart={onOpenPart} onOpenWarranty={onOpenWarranty}
         />
       )}
+
+      {contextNav}
 
       {isAdmin ? (
         <div className="loc-drop-wrap" ref={locMenuRef}>

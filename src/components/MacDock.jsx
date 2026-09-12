@@ -6,6 +6,7 @@ import { BuybackIcon, RepairPriceIcon, ReviewsIcon, DashboardIcon, LeaveIcon, Us
 // Webshop, Admin) egy-egy ikonba sűrítve, fölé vitt egérrel nyílnak ki — ugyanaz a mintázat,
 // amit a design-canvason ("Pult — Mac Dokk Irányok" A-verzió) jóváhagytunk.
 export function Home(p) { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="m3 11 9-8 9 8" /><path d="M5 10v10h14V10" /></svg>; }
+export function Toggle(p) { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" {...p}><rect x="2" y="6.5" width="20" height="11" rx="5.5" /><circle cx="15.5" cy="12" r="3.3" fill="currentColor" stroke="none" /></svg>; }
 export function Wrench(p) { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.4-3.4a6 6 0 0 1-7.9 7.9L6.4 20.6a2.1 2.1 0 0 1-3-3L10.2 10.8a6 6 0 0 1 7.9-7.9Z" /></svg>; }
 export function Phone(p) { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" {...p}><rect x="6" y="2" width="12" height="20" rx="2.5" /><path d="M10 18h4" /></svg>; }
 export function Chip(p) { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" {...p}><rect x="7" y="7" width="10" height="10" rx="1.6" /><path d="M9 7V3.5M12 7V3.5M15 7V3.5M9 21v-3.5M12 21v-3.5M15 21v-3.5M7 9H3.5M7 12H3.5M7 15H3.5M17 9h3.5M17 12h3.5M17 15h3.5" /></svg>; }
@@ -20,6 +21,8 @@ export function Invoice(p) { return <svg viewBox="0 0 24 24" fill="none" stroke=
 export function Bag(p) { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" /><path d="M3 6h18" /><path d="M16 10a4 4 0 0 1-8 0" /></svg>; }
 export function Lock(p) { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" {...p}><rect x="5" y="11" width="14" height="9" rx="2.2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /><circle cx="12" cy="15" r="1.1" /><path d="M12 16.1v1.4" /></svg>; }
 export function Chat(p) { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" /></svg>; }
+export function Package(p) { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M21 8 12 3 3 8v8l9 5 9-5V8Z" /><path d="M3 8l9 5 9-5" /><path d="M12 13v8" /></svg>; }
+export function Euro(p) { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M19 6.2a8 8 0 100 11.6" /><line x1="4" y1="10" x2="15.5" y2="10" /><line x1="4" y1="14" x2="13.5" y2="14" /></svg>; }
 
 // Színes, "valódi app-ikon" jellegű változat a dokk fő ikonjaihoz — ugyanazokat a
 // már bevált vonal-glyph alakokat használja fehér színben (ne rajzoljunk újakat,
@@ -73,11 +76,14 @@ export default function MacDock({ tab, setTab, isAdmin, inboxUnreadCount, attent
   return (
     <div className="md-wrap">
       <div className="md-dock">
-        <DockItem label="Pult" icon={<AppIcon from="#60A5FA" to="#2563EB"><Home stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "pult"} badge={attentionCount} onClick={go("pult")} />
+        <DockItem label="Pult" icon={<AppIcon from="#60A5FA" to="#2563EB"><Toggle stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "pult"} badge={attentionCount} onClick={go("pult")} />
+        <DockItem label="Bevételek és kiadások" icon={<AppIcon from="#FBBF24" to="#D97706"><Euro stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "finance" || tab === "cash-settlement" || tab === "payroll"} onClick={go("finance")} />
+
+        <div className="md-sep" />
+
         <DockItem label="Szerviz" icon={<AppIcon from="#FB923C" to="#EA580C"><Wrench stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "service"} onClick={go("service")} />
-        <DockItem label="Telefonok" icon={<AppIcon from="#22D3EE" to="#0891B2"><Phone stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "stock"} onClick={go("stock")} />
+        <DockItem label="Telefonok" icon={<AppIcon from="#22D3EE" to="#0891B2"><Phone stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "stock" || tab === "consignment" || tab === "refurb"} onClick={go("stock")} />
         <DockItem label="Alkatrészek" icon={<AppIcon from="#A78BFA" to="#7C3AED"><Chip stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "parts"} onClick={go("parts")} />
-        <DockItem label="Felújítás" icon={<AppIcon from="#4ADE80" to="#16A34A"><Refresh stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "refurb"} onClick={go("refurb")} />
         {!isAdmin && <DockItem label="Belépések" icon={<AppIcon from="#94A3B8" to="#1E293B"><Lock stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "vault"} onClick={go("vault")} />}
 
         <div className="md-sep" />
@@ -86,13 +92,12 @@ export default function MacDock({ tab, setTab, isAdmin, inboxUnreadCount, attent
         <DockItem label="Kliensek" icon={<AppIcon from="#F472B6" to="#DB2777"><People stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "customers"} onClick={go("customers")} />
         <DockItem label="Garancia" icon={<AppIcon from="#818CF8" to="#4F46E5"><Shield stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "warranty"} onClick={go("warranty")} />
 
-        <div className="md-sep" />
-
-        <DockItem label="Árulás" icon={<AppIcon from="#4B5563" to="#111827"><TrendCard stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "finance"} onClick={go("finance")} />
-        {isAdmin && <DockItem label="Elszámolás" icon={<AppIcon from="#FBBF24" to="#D97706"><ClipboardCheck stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "cash-settlement"} onClick={go("cash-settlement")} />}
-        {isAdmin && <DockItem label="Költségek" icon={<AppIcon from="#FCD34D" to="#B45309"><Wallet stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "payroll"} onClick={go("payroll")} />}
-        <DockItem label="Számlák" icon={<AppIcon from="#94A3B8" to="#475569"><Invoice stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "invoices"} onClick={go("invoices")} />
-        {!isAdmin && <DockItem label="Szabadság" icon={<AppIcon from="#2DD4BF" to="#0D9488"><LeaveIcon stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "leave"} onClick={go("leave")} />}
+        {!isAdmin && (
+          <>
+            <div className="md-sep" />
+            <DockItem label="Szabadság" icon={<AppIcon from="#2DD4BF" to="#0D9488"><LeaveIcon stroke="#fff" width={22} height={22} /></AppIcon>} active={tab === "leave"} onClick={go("leave")} />
+          </>
+        )}
 
         {isAdmin && (
           <>
