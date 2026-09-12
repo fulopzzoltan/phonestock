@@ -145,7 +145,41 @@ export default function RevenueQualityPanel({ transactions, tickets, locations, 
       return { key: k, capital, annMargin, turns, roc, isEstimate: k === "accessory" };
     });
 
-    return { segs, totalRevenue, totalMargin, identifiedAll, newAll, avgNewMargin, accessoryMislabeled, accessoryProper, days, locStats, capStats };
+    // Átlagos kosárérték — egy "blokk" (egy vásárlás) lehet több tranzakció-sor is,
+    // ha egy checkoutban több tétel ment el egyszerre (basket_id köti össze őket);
+    // ami nincs kosárhoz kötve, az önmagában egy egytételes blokk. Ez adja meg, hogy
+    // van-e egyáltalán kereszteladás (pl. telefonhoz tok/fólia egyazon vásárláson).
+    const basketMap = new Map();
+    income.forEach((t) => {
+      const key = t.basketId || t.id;
+      if (!basketMap.has(key)) basketMap.set(key, { total: 0, lines: 0, hasPhone: false, hasService: false, hasAccessory: false });
+      const b = basketMap.get(key);
+      b.total += Number(t.amount) || 0;
+      b.lines += 1;
+      const seg = classifySegment(t);
+      if (seg === "phone") b.hasPhone = true;
+      else if (seg === "service") b.hasService = true;
+      else b.hasAccessory = true;
+    });
+    const basketList = Array.from(basketMap.values());
+    const basketCount = basketList.length;
+    const avgBasketValue = basketCount ? basketList.reduce((s, b) => s + b.total, 0) / basketCount : 0;
+    const avgItemsPerBasket = basketCount ? basketList.reduce((s, b) => s + b.lines, 0) / basketCount : 0;
+    const basketKind = (b) => {
+      const n = (b.hasPhone ? 1 : 0) + (b.hasService ? 1 : 0) + (b.hasAccessory ? 1 : 0);
+      if (n > 1) return "mixed";
+      if (b.hasPhone) return "phone";
+      if (b.hasService) return "service";
+      return "accessory";
+    };
+    const basketByKind = { phone: { n: 0, total: 0 }, service: { n: 0, total: 0 }, accessory: { n: 0, total: 0 }, mixed: { n: 0, total: 0 } };
+    basketList.forEach((b) => {
+      const k = basketByKind[basketKind(b)];
+      k.n += 1;
+      k.total += b.total;
+    });
+
+    return { segs, totalRevenue, totalMargin, identifiedAll, newAll, avgNewMargin, accessoryMislabeled, accessoryProper, days, locStats, capStats, basketCount, avgBasketValue, avgItemsPerBasket, basketByKind };
   }, [transactions, tickets, locations, stockStats, partsStats]);
 
   const pct = (v, total) => (total > 0 ? Math.round((v / total) * 100) : 0);
@@ -156,6 +190,46 @@ export default function RevenueQualityPanel({ transactions, tickets, locations, 
         Mérve <b>{ANALYTICS_START_DATE.split("-").reverse().join(".")}.</b> óta ({d.days} nap) — ekkortól kerül minden eladás/átadás
         tételesen, automatikusan a Bevételekbe. A korábbi adat tömbösített/becsült, azon ez a bontás nem megbízható —
         érdemes ezt a fület újra megnézni 2-3 hónap adatával, amikor már trendet is lehet belőle olvasni.
+      </div>
+
+      <div className="statcard" style={{ marginBottom: 14 }}>
+        <div className="dp-section-title">Átlagos kosárérték — egy blokk, nem egy tranzakció-sor</div>
+        <div style={{ display: "flex", gap: 24, marginBottom: 12, flexWrap: "wrap" }}>
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 4 }}>Átlagos kosárérték</div>
+            <div style={{ fontSize: 20, fontWeight: 800 }}>{money(d.avgBasketValue)}</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 4 }}>Blokkok száma</div>
+            <div style={{ fontSize: 20, fontWeight: 800 }}>{d.basketCount} db</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 4 }}>Tétel / blokk</div>
+            <div style={{ fontSize: 20, fontWeight: 800 }}>{d.avgItemsPerBasket.toFixed(2)}</div>
+          </div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 12 }}>
+          {[
+            { key: "phone", label: "Csak telefon" },
+            { key: "service", label: "Csak szerviz" },
+            { key: "accessory", label: "Csak tartozék" },
+            { key: "mixed", label: "Vegyes (kereszteladás)" },
+          ].map(({ key, label }) => {
+            const b = d.basketByKind[key];
+            return (
+              <div key={key} style={{ background: "#F9FAFB", border: "1px solid #F1F2F6", borderRadius: 12, padding: "10px 12px" }}>
+                <div style={{ fontSize: 10.5, color: "#9CA3AF", marginBottom: 4 }}>{label}</div>
+                <div style={{ fontSize: 15, fontWeight: 800 }}>{b.n} db</div>
+                <div style={{ fontSize: 11, color: "#6B7280" }}>{b.n ? money(b.total / b.n) : "—"} átl.</div>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ fontSize: 10.5, color: "#9CA3AF", lineHeight: 1.6 }}>
+          {d.basketByKind.mixed.n === 0
+            ? "0 vegyes blokk: még senki nem vett telefont+tartozékot vagy telefont+szervizt egy vásárláson belül. Ez konkrét, kihasználatlan lehetőség — ha telefon-eladásnál felkínálsz egy tokot/fóliát, az azonnal emeli a kosárértéket, ráadásul ez a legjobb pillanat rá (a vevő már ott áll a pultnál, épp fizet)."
+            : `${d.basketByKind.mixed.n} vegyes blokk volt eddig — ez a kereszteladás, amit érdemes tudatosan növelni.`}
+        </div>
       </div>
 
       <div className="statcard" style={{ marginBottom: 14 }}>
