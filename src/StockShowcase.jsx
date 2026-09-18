@@ -3,10 +3,10 @@ import { Helmet } from "react-helmet-async";
 import { supabase } from "./lib/supabaseClient";
 import { photoUrl } from "./lib/imageResize";
 import { t, translateColor, colorSwatch } from "./lib/i18n";
-import { normalizeStorage, normalizeBrand, displayName } from "./lib/utils";
+import { normalizeStorage, normalizeBrand, displayName, conditionGradeLabel } from "./lib/utils";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
-import { SearchIcon, FilterIcon, HeartIcon, FinderIcon, CheckIcon, ChevronDownIcon, WarrantyIcon, PinIcon } from "./components/icons";
+import { SearchIcon, FilterIcon, FilterLinesIcon, SortIcon, HeartIcon, CompassIcon, CheckIcon, ChevronDownIcon, WarrantyIcon, PinIcon } from "./components/icons";
 import { EmptyState, LoadingState } from "./components/EmptyState";
 import { addToCart, useCart } from "./lib/cart";
 import { toggleWishlist, useWishlist } from "./lib/wishlist";
@@ -59,11 +59,35 @@ export default function StockShowcase({ lang = "hu" }) {
   const [selectedOS, setSelectedOS] = useState([]);
   const [sort, setSort] = useState("recommended");
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [sortSheetOpen, setSortSheetOpen] = useState(false);
   const [openGroups, setOpenGroups] = useState({ brand: true, os: false, storage: false, condition: false });
   const [brandsExpanded, setBrandsExpanded] = useState(false);
   const cart = useCart();
   const wishlist = useWishlist();
   const { avg: reviewsAvg, count: reviewsCount } = usePublicReviews();
+
+  // A Telefon Kalauz kártya iránytűje az egér felé fordul — amint mozdul az egér,
+  // leáll a saját (rögzített) lengő animációja és a kurzor irányát mutatja.
+  const compassNeedleRef = useRef(null);
+  useEffect(() => {
+    let raf = null;
+    function onMove(e) {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = null;
+        const node = compassNeedleRef.current;
+        if (!node) return;
+        const rect = node.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const angle = Math.atan2(e.clientY - cy, e.clientX - cx) * (180 / Math.PI) + 90;
+        node.style.animation = "none";
+        node.style.transform = `rotate(${angle}deg)`;
+      });
+    }
+    window.addEventListener("mousemove", onMove);
+    return () => { window.removeEventListener("mousemove", onMove); if (raf) cancelAnimationFrame(raf); };
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -175,6 +199,13 @@ export default function StockShowcase({ lang = "hu" }) {
   }
 
   const activeFilterCount = selectedBrands.length + selectedConditions.length + selectedStorages.length + selectedOS.length;
+  const SORT_OPTIONS = [
+    { value: "recommended", label: s.sortRecommended },
+    { value: "price-asc", label: s.sortPriceAsc },
+    { value: "price-desc", label: s.sortPriceDesc },
+    { value: "brand", label: s.sortBrand },
+  ];
+  const currentSortLabel = SORT_OPTIONS.find((o) => o.value === sort)?.label || s.sortRecommended;
 
   // A rácsba illesztett bizalomépítő kártyák — egyik sem visz el a telefonok közül,
   // a cél nem konverzió-elterelés, hanem bizalomépítés böngészés közben.
@@ -187,6 +218,7 @@ export default function StockShowcase({ lang = "hu" }) {
   // vagy egy importált asset) — nem kell hozzá admin-felület, üresen hagyva a kártya kép nélkül,
   // a jelenlegi szöveges elrendezéssel jelenik meg.
   const PROMO_CARDS = [
+    { variant: "finder" },
     { variant: "benefits-green", image: null },
     { variant: "benefits-dark", image: null },
     { variant: "benefits-light", image: null },
@@ -246,35 +278,39 @@ export default function StockShowcase({ lang = "hu" }) {
 
       <main className="pub-main">
         {error && <div className="errbar">{error}</div>}
-        <a className="pub-finder-banner" href={lang === "ro" ? "/ro/asistent" : "/segito"}>
-          <span className="pub-finder-spark pub-finder-spark-1"><FinderIcon width={12} height={12} /></span>
-          <span className="pub-finder-spark pub-finder-spark-2"><FinderIcon width={9} height={9} /></span>
-          <span className="pub-finder-spark pub-finder-spark-3"><FinderIcon width={7} height={7} /></span>
-          <div className="pub-finder-banner-text">
-            <div className="pub-finder-icon-wrap"><FinderIcon width={18} height={18} /></div>
-            <div className="pub-finder-banner-title">{s.finderNavTitle}</div>
-          </div>
-          <span className="pub-finder-banner-cta">{s.finderNavCta}</span>
-        </a>
         <div className="pub-mobile-filterbar">
-          <button type="button" className="pub-mfb-btn pub-filters-toggle" onClick={() => setFiltersOpen((v) => !v)}>
-            <FilterIcon width={16} height={16} />
-            {s.filters}
-            {activeFilterCount > 0 && <span className="pub-filters-count">{activeFilterCount}</span>}
-          </button>
-          <div className="pub-mfb-btn pub-sort-field">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
-            <select value={sort} onChange={(e) => setSort(e.target.value)}>
-              <option value="recommended">{s.sortRecommended}</option>
-              <option value="price-asc">{s.sortPriceAsc}</option>
-              <option value="price-desc">{s.sortPriceDesc}</option>
-              <option value="brand">{s.sortBrand}</option>
-            </select>
-            <ChevronDownIcon />
+          <div className="pub-mfb-third">
+            <button type="button" className="pub-mfb-plain" onClick={() => setSortSheetOpen(true)}>
+              <SortIcon width={13} height={13} />
+              <span className="pub-mfb-plain-label">{currentSortLabel}</span>
+            </button>
+          </div>
+          <span className="pub-mfb-divider" />
+          <div className="pub-mfb-third">
+            <a className="pub-mfb-finder" href={lang === "ro" ? "/ro/asistent" : "/segito"} aria-label={s.finderNavTitle} title={s.finderNavTitle}>
+              <CompassIcon width={14} height={14} />
+              <span className="pub-mfb-plain-label">{s.finderShort}</span>
+            </a>
+          </div>
+          <span className="pub-mfb-divider" />
+          <div className="pub-mfb-third">
+            <button type="button" className="pub-mfb-plain pub-filters-toggle" onClick={() => setFiltersOpen((v) => !v)}>
+              <FilterLinesIcon width={15} height={15} />
+              <span className="pub-mfb-plain-label">{s.filters}</span>
+              {activeFilterCount > 0 && <span className="pub-filters-count">{activeFilterCount}</span>}
+            </button>
           </div>
         </div>
         <div className="pub-body">
+          {filtersOpen && <div className="pub-sheet-backdrop" onClick={() => setFiltersOpen(false)} />}
           <aside className={`pub-sidebar${filtersOpen ? " open" : ""}`}>
+            <div className="pub-sheet-handle" />
+            <div className="pub-sheet-mobile-head">
+              <span>{s.filters}</span>
+              <button type="button" className="pub-sheet-close" onClick={() => setFiltersOpen(false)} aria-label="Bezárás">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+              </button>
+            </div>
             <div className="pub-sidebar-card pub-sidebar-card-sort">
               <div className="pub-sort-field">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
@@ -350,6 +386,11 @@ export default function StockShowcase({ lang = "hu" }) {
             <div className="pub-sidebar-card">
               <ReviewsBadge lang={lang} stacked />
             </div>
+
+            <div className="pub-sheet-footer">
+              <button type="button" className="pub-sheet-footer-clear" onClick={clearFilters} disabled={activeFilterCount === 0}>{s.clearFilters}</button>
+              <button type="button" className="pub-sheet-footer-done" onClick={() => setFiltersOpen(false)}>{s.filtersDone}</button>
+            </div>
           </aside>
 
           <div className="pub-results" ref={resultsTopRef}>
@@ -401,17 +442,16 @@ export default function StockShowcase({ lang = "hu" }) {
                         <div className="pub-card-name-row">
                           <span className="pub-card-name">{displayName(p.brand, p.model)}</span>
                         </div>
-                        {(p.color || p.storage) && (
-                          <div className="pub-card-swatch-row">
-                            {p.color && <span className="pub-card-swatch" style={{ background: colorSwatch(p.color) }} title={translateColor(p.color, lang)} />}
-                            {p.storage && <span className="pub-card-storage-text">{normalizeStorage(p.storage)}</span>}
-                            {/iphone|apple/i.test(p.brand) && p.battery_health ? (
-                              <span className="pub-card-storage-text">· {p.battery_health}%</span>
-                            ) : (!/iphone|apple/i.test(p.brand) && p.ram ? (
-                              <span className="pub-card-storage-text">· {normalizeStorage(p.ram)} RAM</span>
-                            ) : null)}
-                          </div>
-                        )}
+                        <div className="pub-card-swatch-row">
+                          {p.color && <span className="pub-card-swatch" style={{ background: colorSwatch(p.color) }} title={translateColor(p.color, lang)} />}
+                          <span className="pub-card-storage-text pub-card-grade">{conditionGradeLabel(p.condition, p.grade)}</span>
+                          {p.storage && <span className="pub-card-storage-text">· {normalizeStorage(p.storage)}</span>}
+                          {/iphone|apple/i.test(p.brand) && p.battery_health ? (
+                            <span className="pub-card-storage-text">· {p.battery_health}%</span>
+                          ) : (!/iphone|apple/i.test(p.brand) && p.ram ? (
+                            <span className="pub-card-storage-text">· {normalizeStorage(p.ram)} RAM</span>
+                          ) : null)}
+                        </div>
                         <div className="pub-card-foot">
                           <div>
                             {hasAnchor && (
@@ -432,7 +472,24 @@ export default function StockShowcase({ lang = "hu" }) {
                           )}
                         </div>
                       </div>
-                      {promo && (promo.variant.startsWith("benefits") ? (
+                      {promo && (promo.variant === "finder" ? (
+                        <a className="pub-promo-card finder" href={lang === "ro" ? "/ro/asistent" : "/segito"}>
+                          <span className="pub-promo-eyebrow">{s.finderBrandName}</span>
+                          <div className="pub-promo-finder-body">
+                            <div className="pub-promo-title">{s.finderNavTitle}</div>
+                            <div className="pub-finder-compass">
+                              <span className="pub-finder-compass-ring" />
+                              <span className="pub-finder-compass-ring pub-finder-compass-ring-2" />
+                              <div className="pub-finder-compass-badge">
+                                <span ref={compassNeedleRef} className="pub-finder-compass-needle">
+                                  <CompassIcon width={44} height={44} />
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <span className="pub-promo-finder-cta">{s.finderNavCta}</span>
+                        </a>
+                      ) : promo.variant.startsWith("benefits") ? (
                         <div className={`pub-promo-card ${promo.variant}`}>
                           <div className="pub-promo-benefits-title">{s.trustBenefitsTitle}</div>
                           <div className="pub-promo-benefits-rows">
@@ -470,6 +527,32 @@ export default function StockShowcase({ lang = "hu" }) {
           </div>
         </div>
       </main>
+
+      {sortSheetOpen && (
+        <>
+          <div className="pub-sheet-backdrop" onClick={() => setSortSheetOpen(false)} />
+          <div className="pub-sort-sheet">
+            <div className="pub-sheet-handle" />
+            <div className="pub-sheet-mobile-head">
+              <span>{s.sortLabel}</span>
+              <button type="button" className="pub-sheet-close" onClick={() => setSortSheetOpen(false)} aria-label="Bezárás">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+              </button>
+            </div>
+            {SORT_OPTIONS.map((o) => (
+              <button
+                key={o.value}
+                type="button"
+                className="pub-sort-sheet-row"
+                onClick={() => { setSort(o.value); setSortSheetOpen(false); }}
+              >
+                <span>{o.label}</span>
+                <span className={`pub-sort-sheet-radio${sort === o.value ? " active" : ""}`} />
+              </button>
+            ))}
+          </div>
+        </>
+      )}
 
       <ReviewsSection lang={lang} />
 

@@ -6,9 +6,9 @@ export const STRINGS = {
     // Készlet-vitrin
     searchPlaceholder: "Keresés — pl. iPhone 13...", filters: "Szűrők",
     allBrands: "Minden márka", allConditions: "Összes állapot", os: "Operációs rendszer",
-    conditionNew: "Új", conditionRefurb: "Felújított", clearFilters: "Szűrők törlése",
+    conditionNew: "Új", conditionRefurb: "Felújított", clearFilters: "Szűrők törlése", filtersDone: "Kész",
     showMoreBrands: (n) => `+${n} további márka`, showFewerBrands: "Kevesebb mutatása",
-    sortRecommended: "Ajánlott sorrend", sortPriceAsc: "Ár: olcsóbb elöl", sortPriceDesc: "Ár: drágább elöl", sortBrand: "Márka szerint",
+    sortRecommended: "Rendezés", sortPriceAsc: "Ár: olcsóbb elöl", sortPriceDesc: "Ár: drágább elöl", sortBrand: "Márka szerint", sortLabel: "Rendezés",
     loading: "Betöltés...", noResults: "Nincs találat a szűrésre — próbálj más márkát vagy keresőszót.",
     warrantyTag: (w) => `${w} garancia`, interested: "Érdekel",
     footer: "Telefonos — az árak és a raktárkészlet folyamatosan frissülnek, végleges ár a szervizben/üzletben.",
@@ -24,11 +24,13 @@ export const STRINGS = {
     trustTestedTitle: "Tesztelt, ellenőrzött",
     trustTryTitle: "Kipróbálhatod nálunk", trustTryDesc: "Fizetés előtt kézbe veheted.", trustTryTag: "Nálunk, személyesen",
     trustServiceTitle: "Szerviz is a miénk", trustServiceDesc: "Nem küldjük külső partnerhez.", trustServiceTag: "Helyben, nem alvállalkozó",
+    navBuybackSub: "Gyors, ingyenes ajánlatot adunk",
 
     // Telefon-választó segítő
+    finderBrandName: "Telefon Kalauz", finderShort: "Kalauz",
     finderNavTitle: "Milyen telefont keresel?",
     finderNavCta: "Segíts választani →",
-    finderPageTitle: "Telefon-választó segítő — Telefonos",
+    finderPageTitle: "Telefon Kalauz — Telefonos",
     finderPageDesc: "4 gyors kérdés, és kiválasztjuk a hozzád illő telefonokat a készletünkből.",
     faqPageTitle: "Gyakran ismételt kérdések — Telefonos",
     faqPageSubtitle: "Miben segíthetünk?",
@@ -152,9 +154,9 @@ export const STRINGS = {
 
     searchPlaceholder: "Căutare — ex. iPhone 13...", filters: "Filtre",
     allBrands: "Toate mărcile", allConditions: "Toate stările", os: "Sistem de operare",
-    conditionNew: "Nou", conditionRefurb: "Recondiționat", clearFilters: "Șterge filtrele",
+    conditionNew: "Nou", conditionRefurb: "Recondiționat", clearFilters: "Șterge filtrele", filtersDone: "Gata",
     showMoreBrands: (n) => `+${n} mărci suplimentare`, showFewerBrands: "Arată mai puține",
-    sortRecommended: "Recomandat", sortPriceAsc: "Preț: crescător", sortPriceDesc: "Preț: descrescător", sortBrand: "După marcă",
+    sortRecommended: "Recomandat", sortPriceAsc: "Preț: crescător", sortPriceDesc: "Preț: descrescător", sortBrand: "După marcă", sortLabel: "Sortare",
     loading: "Se încarcă...", noResults: "Niciun rezultat — încearcă altă marcă sau alt cuvânt cheie.",
     warrantyTag: (w) => `garanție ${w}`, interested: "Sunt interesat",
     footer: "Telefonos — prețurile și stocul se actualizează constant, prețul final se stabilește în magazin/service.",
@@ -170,11 +172,13 @@ export const STRINGS = {
     trustTestedTitle: "Testat, verificat",
     trustTryTitle: "Îl încerci la noi", trustTryDesc: "Îl ții în mână înainte să plătești.", trustTryTag: "Personal, în magazin",
     trustServiceTitle: "Service-ul e tot al nostru", trustServiceDesc: "Nu îl trimitem la un partener extern.", trustServiceTag: "Local, nu subcontractat",
+    navBuybackSub: "Ofertă rapidă și gratuită",
 
     // Asistent de alegere telefon
+    finderBrandName: "Ghid Telefon", finderShort: "Ghid",
     finderNavTitle: "Ce telefon ți se potrivește?",
     finderNavCta: "Ajută-mă să aleg →",
-    finderPageTitle: "Asistent de alegere telefon — Telefonos",
+    finderPageTitle: "Ghid Telefon — Telefonos",
     finderPageDesc: "4 întrebări rapide, și îți alegem telefoanele potrivite din stocul nostru.",
     faqPageTitle: "Întrebări frecvente — Telefonos",
     faqPageSubtitle: "Cu ce te putem ajuta?",

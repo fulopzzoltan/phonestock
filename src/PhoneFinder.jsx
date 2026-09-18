@@ -136,6 +136,7 @@ export default function PhoneFinder({ lang = "hu" }) {
       {seoHead}
       <PublicHeader activeNav="finder" lang={lang} />
       <main className="bb-main">
+        <div className="pub-promo-eyebrow" style={{ marginBottom: 10, textAlign: "center" }}>{s.finderBrandName}</div>
         {step !== "result" && (
           <div className="pub-steps">
             {STEP_ORDER.slice(0, 4).map((st, i) => (

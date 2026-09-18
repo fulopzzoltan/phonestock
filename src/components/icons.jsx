@@ -354,6 +354,23 @@ export const FilterIcon = (props) => (
   </svg>
 );
 
+// Gymshark-stílusú, egyszerű (kör nélküli, elkeskenyedő) szűrő-ikon és fel/le nyílpár
+// a rendezés-ikonhoz — a mobil rendezés/szűrő sávban használjuk, a fentiek helyett.
+export const FilterLinesIcon = (props) => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" {...props}>
+    <line x1="4" y1="7" x2="20" y2="7" />
+    <line x1="7" y1="12" x2="17" y2="12" />
+    <line x1="10" y1="17" x2="14" y2="17" />
+  </svg>
+);
+
+export const SortIcon = (props) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <polyline points="7 8 12 3 17 8" />
+    <polyline points="7 16 12 21 17 16" />
+  </svg>
+);
+
 export const CartIcon = (props) => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
     <circle cx="9" cy="21" r="1.4" fill="currentColor" stroke="none" /><circle cx="18" cy="21" r="1.4" fill="currentColor" stroke="none" />
@@ -391,6 +408,17 @@ export const FinderIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
     <path d="M12 3l1.8 4.9L18.5 9l-4.7 1.9L12 15l-1.8-4.1L5.5 9l4.7-1.1L12 3z" />
     <path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z" />
+  </svg>
+);
+
+// Telefon Kalauz — iránytű-jelvény: a tű kéttónusú zöld marad a kontextustól függetlenül,
+// a gyűrű/középpont currentColor-t követ, hogy illeszkedjen a hívó hely színéhez.
+export const CompassIcon = (props) => (
+  <svg viewBox="0 0 24 24" {...props}>
+    <circle cx="12" cy="12" r="9.3" fill="none" stroke="currentColor" strokeWidth="1.3" opacity=".35" />
+    <path d="M12 4.5L14.6 12L12 19.5L9.4 12z" fill="#1DB954" />
+    <path d="M12 4.5L14.6 12L12 12z" fill="#0F7A36" />
+    <circle cx="12" cy="12" r="1.4" fill="currentColor" />
   </svg>
 );
 
