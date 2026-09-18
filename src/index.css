@@ -1410,6 +1410,8 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-promo-card.finder{
   text-decoration:none;
   padding-bottom:9px;
+  padding-left:16px;
+  padding-right:16px;
   background:
     radial-gradient(120% 160% at 8% 15%, rgba(29,185,84,.55) 0%, rgba(29,185,84,0) 60%),
     radial-gradient(90% 140% at 92% 100%, rgba(245,181,61,.45) 0%, rgba(245,181,61,0) 60%),
@@ -1420,6 +1422,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-promo-finder-cta{margin-top:auto;align-self:flex-start;display:inline-flex;align-items:center;background:var(--pub-accent);color:#fff;font-size:12.5px;font-weight:600;padding:9px 16px;border-radius:999px;box-shadow:0 4px 12px rgba(29,185,84,.25);white-space:nowrap}
 @media (max-width:560px){
   .pub-promo-finder-cta{font-size:11px;padding:8px 12px}
+  .pub-promo-card.finder{padding-left:14px;padding-right:14px}
 }
 
 .pub-promo-benefits-title{font-size:17px;font-weight:700;letter-spacing:-.01em;line-height:1.25;color:var(--pub-ink)}
@@ -1457,7 +1460,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-card-storage-text:last-child{overflow:hidden;text-overflow:ellipsis;flex-shrink:1;min-width:0}
 .pub-card-swatch{width:10px;height:10px;border-radius:999px;border:1px solid rgba(0,0,0,.1);flex-shrink:0}
 .pub-warranty-tag{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;color:var(--pub-ink-soft)}
-.pub-card-foot{margin-top:auto;padding:0 8px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pub-card-foot{margin-top:auto;padding:0 8px;display:flex;align-items:flex-end;justify-content:space-between;gap:8px}
 .pub-price{font-size:18px;font-weight:700}
 .pub-price .pub-cur{font-size:11px;font-weight:600;color:var(--pub-ink-soft);margin-left:2px}
 .pub-price.mono,.pub-sticky-price.mono,.pub-detail-price.mono{font-family:-apple-system,BlinkMacSystemFont,'Inter','Helvetica Neue',Arial,sans-serif}
