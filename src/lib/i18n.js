@@ -313,3 +313,34 @@ export function translateColor(color, lang) {
   if (lang !== "ro" || !color) return color;
   return COLOR_HU_TO_RO[color] || color;
 }
+
+// Admin által szabadon beírt színnevekhez (magyar/angol, elgépeléssel is) közelítő kitöltőszín a
+// webshop kártyáin mutatott színkörhöz — sorrend számít: a specifikusabb minta (pl. "sötét kék")
+// előbb áll, mint az általánosabb ("kék"), különben az utóbbi győzne.
+const COLOR_SWATCHES = [
+  [/midnight|fekete|black|graphite|space\s*gr[ae]y/i, "#1d1d1f"],
+  [/feh[eé]r|white|starlight/i, "#f5f5f0"],
+  [/ez[üu]st|silver/i, "#c8ccce"],
+  [/arany|gold/i, "#d4af6a"],
+  [/s[öo]t[ée]t\s*k[ée]k|navy|awesome\s*navy/i, "#1c3a5e"],
+  [/light\s*blue|ligth\s*blue|vil[áa]gosk[ée]k/i, "#7db8e8"],
+  [/k[ée]k|blue/i, "#3b82c4"],
+  [/vil[áa]goszöld|light\s*green|menta|mint/i, "#8fd9b6"],
+  [/z[öo]ld|green/i, "#2f855a"],
+  [/sz[üu]rke|gr[ae]y/i, "#8a8f98"],
+  [/r[óo]zsasz[íi]n|pink/i, "#e8a7c1"],
+  [/piros|red/i, "#c53030"],
+  [/narancs|orange/i, "#dd7a2c"],
+  [/lila|purple|violet/i, "#7c5cbf"],
+  [/bord[óo]|maroon/i, "#7a2331"],
+  [/barna|brown/i, "#7a5230"],
+  [/tit[áa]n|titanium/i, "#8d857a"],
+];
+export function colorSwatch(color) {
+  if (!color) return null;
+  const c = color.trim();
+  for (const [re, hex] of COLOR_SWATCHES) {
+    if (re.test(c)) return hex;
+  }
+  return "#c4c9ce";
+}

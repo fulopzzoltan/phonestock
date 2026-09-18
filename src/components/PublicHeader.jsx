@@ -8,18 +8,25 @@ import { markLangChosen } from "../lib/langPref";
 // még a hero előtt, ezért csak valós, ellenőrizhető állításokat tartalmaz.
 const ANNOUNCEMENTS = [
   {
-    hu: "Beszámítjuk a régi telefonod — kredit-egyenleggel akár 10%-kal többet érsz",
-    ro: "Preluăm telefonul vechi — cu credit primești până la 10% în plus",
+    hu: "Akár +10% kredit, ha beszámítod a régi telefonod",
+    ro: "Până la +10% credit dacă predai telefonul vechi",
     href: { hu: "/eladom", ro: "/eladom" },
     cta: { hu: "Beszámítás", ro: "Vezi oferta" },
+    id: "beszamitas",
   },
   {
-    hu: "Minden használt telefonunkra garanciát vállalunk",
+    hu: "Minden használt telefonunkra garanciát adunk",
     ro: "Oferim garanție la toate telefoanele folosite",
+    href: { hu: "/", ro: "/ro/telefoane" },
+    cta: { hu: "Kínálat", ro: "Vezi telefoanele" },
+    id: "garancia",
   },
   {
-    hu: "2 üzletünkben, Gyimesben és Szentgyörgyön azonnal átveheted",
-    ro: "Ridici imediat din oricare din cele 2 magazinele noastre",
+    hu: "2 üzlet, Gyimes és Szentgyörgy — azonnal átveheted",
+    ro: "2 magazine, Ghimeș și Sânzieni — ridici imediat",
+    href: { hu: "/", ro: "/ro/telefoane" },
+    cta: { hu: "Kínálat", ro: "Vezi telefoanele" },
+    id: "uzletek",
   },
 ];
 
@@ -93,7 +100,12 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
             <span key={i} className={`pub-announce-msg${i === announceIdx ? " active" : ""}`}>
               {lang === "ro" ? a.ro : a.hu}
               {a.href && (
-                <a className="pub-announce-cta" href={lang === "ro" ? a.href.ro : a.href.hu}>
+                <a
+                  className="pub-announce-cta"
+                  href={lang === "ro" ? a.href.ro : a.href.hu}
+                  data-umami-event="announce-bar-click"
+                  data-umami-event-msg={a.id}
+                >
                   {lang === "ro" ? a.cta.ro : a.cta.hu} →
                 </a>
               )}

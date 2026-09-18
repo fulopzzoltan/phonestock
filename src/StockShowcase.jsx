@@ -2,11 +2,11 @@ import { useState, useEffect, useMemo, useRef, Fragment } from "react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "./lib/supabaseClient";
 import { photoUrl } from "./lib/imageResize";
-import { t, translateColor, translateWarranty } from "./lib/i18n";
+import { t, translateColor, colorSwatch } from "./lib/i18n";
 import { normalizeStorage, normalizeBrand, displayName } from "./lib/utils";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
-import { SearchIcon, FilterIcon, CartIcon, HeartIcon, FinderIcon, CheckIcon, ChevronDownIcon, WarrantyIcon, PinIcon } from "./components/icons";
+import { SearchIcon, FilterIcon, HeartIcon, FinderIcon, CheckIcon, ChevronDownIcon, WarrantyIcon, PinIcon } from "./components/icons";
 import { EmptyState, LoadingState } from "./components/EmptyState";
 import { addToCart, useCart } from "./lib/cart";
 import { toggleWishlist, useWishlist } from "./lib/wishlist";
@@ -183,12 +183,15 @@ export default function StockShowcase({ lang = "hu" }) {
     { Icon: PinIcon, label: s.trustLocTitle },
     { Icon: CheckIcon, label: s.trustTestedTitle },
   ];
+  // `image` opcionális, csak kódból tölthető ki (pl. "/promo/setup.png" a public/promo mappából
+  // vagy egy importált asset) — nem kell hozzá admin-felület, üresen hagyva a kártya kép nélkül,
+  // a jelenlegi szöveges elrendezéssel jelenik meg.
   const PROMO_CARDS = [
-    { variant: "benefits-green" },
-    { variant: "benefits-dark" },
-    { variant: "benefits-light" },
-    { variant: "try", title: s.trustTryTitle, desc: s.trustTryDesc, tag: s.trustTryTag },
-    { variant: "service", title: s.trustServiceTitle, desc: s.trustServiceDesc, tag: s.trustServiceTag },
+    { variant: "benefits-green", image: null },
+    { variant: "benefits-dark", image: null },
+    { variant: "benefits-light", image: null },
+    { variant: "try", title: s.trustTryTitle, desc: s.trustTryDesc, tag: s.trustTryTag, image: null },
+    { variant: "service", title: s.trustServiceTitle, desc: s.trustServiceDesc, tag: s.trustServiceTag, image: null },
   ];
 
   const canonical = lang === "ro" ? `${SITE}/ro/telefoane` : `${SITE}/keszlet`;
@@ -380,6 +383,9 @@ export default function StockShowcase({ lang = "hu" }) {
                         >
                           <HeartIcon width={14} height={14} />
                         </button>
+                        {p.condition === "New" && (
+                          <span className="pub-new-btn">{s.conditionNew}</span>
+                        )}
                         <div className="pub-device-art">
                           {p.photo_paths && p.photo_paths.length > 0 ? (
                             <img
@@ -394,15 +400,18 @@ export default function StockShowcase({ lang = "hu" }) {
                         </div>
                         <div className="pub-card-name-row">
                           <span className="pub-card-name">{displayName(p.brand, p.model)}</span>
-                          <span className={`pub-cond-badge ${p.condition === "New" ? "new" : "refurb"}`} title={p.condition === "New" ? s.conditionNew : s.conditionRefurb}>
-                            <svg viewBox="0 0 24 24" style={{ width: 9, height: 9 }} fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="5 13 9 17 19 7" /></svg>
-                          </span>
                         </div>
-                        <div className="pub-card-specs">
-                          {p.storage && <span>{normalizeStorage(p.storage)}</span>}
-                          {p.color && <span>{translateColor(p.color, lang)}</span>}
-                          {p.warranty && <span>{s.warrantyTag(translateWarranty(p.warranty, lang))}</span>}
-                        </div>
+                        {(p.color || p.storage) && (
+                          <div className="pub-card-swatch-row">
+                            {p.color && <span className="pub-card-swatch" style={{ background: colorSwatch(p.color) }} title={translateColor(p.color, lang)} />}
+                            {p.storage && <span className="pub-card-storage-text">{normalizeStorage(p.storage)}</span>}
+                            {/iphone|apple/i.test(p.brand) && p.battery_health ? (
+                              <span className="pub-card-storage-text">· {p.battery_health}%</span>
+                            ) : (!/iphone|apple/i.test(p.brand) && p.ram ? (
+                              <span className="pub-card-storage-text">· {normalizeStorage(p.ram)} RAM</span>
+                            ) : null)}
+                          </div>
+                        )}
                         <div className="pub-card-foot">
                           <div>
                             {hasAnchor && (
@@ -414,12 +423,12 @@ export default function StockShowcase({ lang = "hu" }) {
                             <div className="pub-price mono">{Number(p.sale_price).toLocaleString("hu-HU")}<span className="pub-cur">Lei</span></div>
                           </div>
                           {cart.some((c) => c.id === p.id) ? (
-                            <a className="pub-ask-btn pub-ask-btn-added" href="/kosar" aria-label="Kosárban" onClick={(e) => e.stopPropagation()}><CartIcon width={13} height={13} /><span className="pub-ask-btn-label">Kosárban</span></a>
+                            <a className="pub-ask-btn pub-ask-btn-added" href="/kosar" aria-label="Kosárban" onClick={(e) => e.stopPropagation()}>Kosárban</a>
                           ) : (
                             <button type="button" className="pub-ask-btn" aria-label="Kosárba" onClick={(e) => {
                               e.stopPropagation();
                               addToCart({ id: p.id, brand: p.brand, model: p.model, storage: normalizeStorage(p.storage), color: p.color, salePrice: p.sale_price, photoPath: p.photo_paths?.[0] || null, locationId: p.location_id, locationName: p.location_name });
-                            }}><CartIcon width={13} height={13} /><span className="pub-ask-btn-label">Kosárba</span></button>
+                            }}>Kosárba</button>
                           )}
                         </div>
                       </div>
@@ -434,14 +443,14 @@ export default function StockShowcase({ lang = "hu" }) {
                               </div>
                             ))}
                           </div>
+                          {promo.image && <img className="pub-promo-img" src={promo.image} alt="" />}
                         </div>
                       ) : (
                         <div className={`pub-promo-card ${promo.variant}`}>
-                          <div>
-                            <div className="pub-promo-title">{promo.title}</div>
-                            <div className="pub-promo-desc">{promo.desc}</div>
-                          </div>
-                          <span className="pub-promo-tag">{promo.tag}</span>
+                          <span className="pub-promo-eyebrow">{promo.tag}</span>
+                          <div className="pub-promo-title">{promo.title}</div>
+                          <div className="pub-promo-desc">{promo.desc}</div>
+                          {promo.image && <img className="pub-promo-img" src={promo.image} alt="" />}
                         </div>
                       ))}
                     </Fragment>
