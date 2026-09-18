@@ -380,9 +380,6 @@ export default function StockShowcase({ lang = "hu" }) {
                         >
                           <HeartIcon width={14} height={14} />
                         </button>
-                        <div className="pub-card-top">
-                          <span className={`pub-cond-pill ${p.condition === "New" ? "new" : "refurb"}`}>{p.condition === "New" ? s.conditionNew : s.conditionRefurb}</span>
-                        </div>
                         <div className="pub-device-art">
                           {p.photo_paths && p.photo_paths.length > 0 ? (
                             <img
@@ -395,17 +392,17 @@ export default function StockShowcase({ lang = "hu" }) {
                             />
                           ) : deviceSvg}
                         </div>
-                        <div className="pub-card-name">{displayName(p.brand, p.model)}</div>
+                        <div className="pub-card-name-row">
+                          <span className="pub-card-name">{displayName(p.brand, p.model)}</span>
+                          <span className={`pub-cond-badge ${p.condition === "New" ? "new" : "refurb"}`} title={p.condition === "New" ? s.conditionNew : s.conditionRefurb}>
+                            <svg viewBox="0 0 24 24" style={{ width: 9, height: 9 }} fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="5 13 9 17 19 7" /></svg>
+                          </span>
+                        </div>
                         <div className="pub-card-specs">
                           {p.storage && <span>{normalizeStorage(p.storage)}</span>}
                           {p.color && <span>{translateColor(p.color, lang)}</span>}
+                          {p.warranty && <span>{s.warrantyTag(translateWarranty(p.warranty, lang))}</span>}
                         </div>
-                        {p.warranty && (
-                          <div className="pub-warranty-tag">
-                            <svg viewBox="0 0 24 24" style={{ width: 11, height: 11, stroke: "var(--pub-ink-soft)", fill: "none", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" }}><path d="M12 3l7 2.5v5.8c0 4.2-2.9 7.6-7 8.7-4.1-1.1-7-4.5-7-8.7V5.5L12 3z" /></svg>
-                            {s.warrantyTag(translateWarranty(p.warranty, lang))}
-                          </div>
-                        )}
                         <div className="pub-card-foot">
                           <div>
                             {hasAnchor && (

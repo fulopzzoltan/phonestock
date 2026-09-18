@@ -3691,7 +3691,10 @@ function AppShell() {
         />
       )}
       {receiptTx && (
-        <SaleReceiptPanel tx={receiptTx} locName={locName} onClose={() => setReceiptTxId(null)} onPrint={printReceiptSlip} />
+        <SaleReceiptPanel
+          tx={receiptTx} locName={locName} onClose={() => setReceiptTxId(null)} onPrint={printReceiptSlip}
+          onEdit={(t) => { setReceiptTxId(null); setTxModal(t); }}
+        />
       )}
       {warrantyDetailKey && (() => {
         const w = activeWarranties.find((x) => x.key === warrantyDetailKey) || expiredWarranties.find((x) => x.key === warrantyDetailKey);

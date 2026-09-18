@@ -1235,7 +1235,12 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 @media (max-width:640px){
   .pub-search-box{max-width:none}
 }
-.pub-main{max-width:1180px;margin:0 auto;padding:14px 24px 64px}
+/* .pub-shop egy oszlop-irányú flex konténer — a .pub-main-en lévő auto oldalmargó
+   ilyenkor CSAK akkor középre igazít (ahelyett hogy megakadályozná a nyúlást),
+   ha explicit width:100% is van rajta, különben a keresztirányú "stretch" helyett
+   tartalom-alapú (shrink-to-fit) méretre esne vissza — ez volt az oka, hogy a
+   webshop desktop nézete csak ~2 oszlopnyi szélességre "összecsukódott". */
+.pub-main{width:100%;max-width:1440px;margin:0 auto;padding:14px 24px 64px}
 .pub-empty{text-align:center;padding:64px 20px;color:var(--pub-ink-soft);font-size:13.5px;display:flex;flex-direction:column;align-items:center;gap:6px}
 .pub-empty svg{width:34px;height:34px;color:var(--pub-line);margin-bottom:6px}
 
@@ -1361,20 +1366,27 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-promo-card.service{background:#8A5F0E;color:#fff}
 .pub-promo-card.service .pub-promo-desc{color:rgba(255,255,255,.75)}
 .pub-promo-card.service .pub-promo-tag{background:rgba(255,255,255,.18);color:#fff}
-.pub-card{background:var(--pub-paper-raised);border:1px solid var(--pub-line);border-radius:var(--radius-lg);padding:16px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow-card);transition:transform .14s;cursor:pointer;position:relative}
+/* A kártya és a fotó sarok-sugara koncentrikus (32/26px, Figma node 129:533 alapján) —
+   a fotó csak a kártya 8px-es belső margójával érintkezik a szélekkel, a szöveges rész
+   pedig ehhez képest kap még egy kis extra vízszintes térközt (.pub-card-name/-specs/-foot). */
+.pub-card{background:var(--pub-paper-raised);border:1px solid var(--pub-line);border-radius:32px;padding:8px 8px 16px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow-card);transition:transform .14s;cursor:pointer;position:relative}
 .pub-card:hover{transform:translateY(-2px)}
 .pub-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding-right:34px}
 .pub-cond-pill{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px}
 .pub-cond-pill.new{background:var(--pub-new-soft);color:var(--pub-new)}
 .pub-cond-pill.refurb{background:var(--pub-accent-soft);color:var(--pub-accent-ink)}
-.pub-device-art{height:168px;display:flex;align-items:center;justify-content:center;color:var(--pub-ink);border-radius:10px;overflow:hidden;background:var(--pub-paper)}
+.pub-device-art{height:168px;display:flex;align-items:center;justify-content:center;color:var(--pub-ink);border-radius:26px;overflow:hidden;background:var(--pub-paper)}
 .pub-device-art svg{height:78px;opacity:.88}
 .pub-device-photo{width:100%;height:100%;object-fit:cover;display:block}
+.pub-card-name-row{display:flex;align-items:center;gap:6px;padding:0 8px}
 .pub-card-name{font-size:14.5px;font-weight:700;line-height:1.25}
-.pub-card-specs{font-size:11.5px;color:var(--pub-ink-soft);display:flex;gap:6px;flex-wrap:wrap}
+.pub-cond-badge{width:16px;height:16px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.pub-cond-badge.new{background:var(--pub-new)}
+.pub-cond-badge.refurb{background:var(--pub-accent)}
+.pub-card-specs{font-size:11.5px;color:var(--pub-ink-soft);display:flex;gap:6px;flex-wrap:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 8px}
 .pub-card-specs span:not(:last-child)::after{content:"·";margin-left:6px;color:var(--pub-line)}
 .pub-warranty-tag{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;color:var(--pub-ink-soft)}
-.pub-card-foot{margin-top:auto;padding-top:10px;border-top:1px solid var(--pub-line);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pub-card-foot{margin-top:auto;padding:0 8px;display:flex;align-items:center;justify-content:space-between;gap:8px}
 .pub-price{font-size:18px;font-weight:700}
 .pub-price .pub-cur{font-size:11px;font-weight:600;color:var(--pub-ink-soft);margin-left:2px}
 .pub-ask-btn{border:1px solid var(--pub-accent);background:var(--pub-accent);color:#fff;font-size:12px;font-weight:700;padding:8px 13px;border-radius:9px;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center;gap:5px;font-family:inherit}

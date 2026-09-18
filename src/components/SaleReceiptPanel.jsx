@@ -9,7 +9,7 @@ function signatureUrl(path) {
   return supabase.storage.from("signatures").getPublicUrl(path).data.publicUrl;
 }
 
-export default function SaleReceiptPanel({ tx, locName, onClose, onPrint }) {
+export default function SaleReceiptPanel({ tx, locName, onClose, onPrint, onEdit }) {
   const [copied, setCopied] = useState(false);
   const expiry = warrantyExpiry(tx.date, tx.warranty);
   const active = isWarrantyActive(tx.date, tx.warranty);
@@ -57,6 +57,7 @@ export default function SaleReceiptPanel({ tx, locName, onClose, onPrint }) {
           </div>
         </div>
         <div className="dp-actions">
+          {onEdit && <button className="btn sec sm" onClick={() => onEdit(tx)}>Szerkesztés</button>}
           <button className="btn sec sm" onClick={() => onPrint(tx)}>Nyomtatás</button>
           {saleSignature ? (
             <a className="btn sec sm" href={signatureUrl(saleSignature.imagePath)} target="_blank" rel="noreferrer" style={{ color: "#22C55E" }}>
