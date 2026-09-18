@@ -1409,6 +1409,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 
 .pub-promo-card.finder{
   text-decoration:none;
+  padding-bottom:9px;
   background:
     radial-gradient(120% 160% at 8% 15%, rgba(29,185,84,.55) 0%, rgba(29,185,84,0) 60%),
     radial-gradient(90% 140% at 92% 100%, rgba(245,181,61,.45) 0%, rgba(245,181,61,0) 60%),
