@@ -1417,7 +1417,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 }
 .pub-promo-card.finder .pub-finder-compass-badge{background:#fff}
 .pub-promo-finder-body{display:flex;flex-direction:column;gap:10px;flex:1;min-height:0}
-.pub-promo-finder-cta{margin-top:auto;align-self:flex-start;display:inline-flex;align-items:center;background:var(--pub-accent);color:#fff;font-size:12.5px;font-weight:600;padding:9px 16px;border-radius:11px;box-shadow:0 4px 12px rgba(29,185,84,.25);white-space:nowrap}
+.pub-promo-finder-cta{margin-top:auto;align-self:flex-start;display:inline-flex;align-items:center;background:var(--pub-accent);color:#fff;font-size:12.5px;font-weight:600;padding:9px 16px;border-radius:999px;box-shadow:0 4px 12px rgba(29,185,84,.25);white-space:nowrap}
 @media (max-width:560px){
   .pub-promo-finder-cta{font-size:11px;padding:8px 12px}
 }
