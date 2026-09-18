@@ -2,10 +2,10 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "./lib/supabaseClient";
 import { photoUrl } from "./lib/imageResize";
-import { t, translateColor, translateWarranty } from "./lib/i18n";
+import { t, translateColor, translateWarranty, colorSwatch } from "./lib/i18n";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
-import { PhoneCaseIcon, CartIcon, HeartIcon, CheckIcon, WarrantyIcon, PinIcon } from "./components/icons";
+import { PhoneCaseIcon, HeartIcon, CheckIcon, WarrantyIcon, PinIcon } from "./components/icons";
 import { EmptyState, LoadingState } from "./components/EmptyState";
 import { addToCart, useCart } from "./lib/cart";
 import { toggleWishlist, useWishlist } from "./lib/wishlist";
@@ -135,12 +135,12 @@ export default function PhoneDetail({ id, lang = "hu" }) {
               <div className="pub-sticky-name">{phone.brand} {phone.model}{phone.storage ? ` · ${normalizeStorage(phone.storage)}` : ""}</div>
               <div className="pub-sticky-cond">{phone.condition === "New" ? s.conditionNew : s.conditionRefurb}</div>
             </div>
-            <div className="pub-sticky-price mono">{Number(phone.sale_price).toLocaleString("hu-HU")} <span>Lei</span></div>
+            <div className="pub-sticky-price mono">{Number(phone.sale_price).toLocaleString("hu-HU")}<span className="pub-cur">Lei</span></div>
             {cart.some((c) => c.id === phone.id) ? (
-              <a className="pub-ask-btn pub-ask-btn-added" href="/kosar"><CartIcon width={13} height={13} />Kosárban</a>
+              <a className="pub-ask-btn pub-ask-btn-added" href="/kosar">Kosárban</a>
             ) : (
               <button type="button" className="pub-ask-btn" onClick={() => addToCart({ id: phone.id, brand: phone.brand, model: phone.model, storage: normalizeStorage(phone.storage), color: phone.color, salePrice: phone.sale_price, photoPath: photos[0] || null, locationId: phone.location_id, locationName: phone.location_name })}>
-                <CartIcon width={13} height={13} />Kosárba
+                Kosárba
               </button>
             )}
           </div>
@@ -232,10 +232,10 @@ export default function PhoneDetail({ id, lang = "hu" }) {
 
             <div className="pub-detail-cta-row">
               {cart.some((c) => c.id === phone.id) ? (
-                <a className="pub-ask-btn pub-ask-btn-added" style={{ padding: "13px 22px", fontSize: 14 }} href="/kosar"><CartIcon width={15} height={15} />Kosárban — tovább a kosárhoz</a>
+                <a className="pub-ask-btn pub-ask-btn-added" style={{ padding: "13px 22px", fontSize: 14 }} href="/kosar">Kosárban — tovább a kosárhoz</a>
               ) : (
                 <button type="button" className="pub-ask-btn" style={{ padding: "13px 22px", fontSize: 14 }} onClick={() => addToCart({ id: phone.id, brand: phone.brand, model: phone.model, storage: normalizeStorage(phone.storage), color: phone.color, salePrice: phone.sale_price, photoPath: photos[0] || null, locationId: phone.location_id, locationName: phone.location_name })}>
-                  <CartIcon width={15} height={15} />Kosárba
+                  Kosárba
                 </button>
               )}
               <button
@@ -287,8 +287,11 @@ export default function PhoneDetail({ id, lang = "hu" }) {
                       {rPhotos.length > 0 ? <img src={photoUrl(rPhotos[0], "thumb")} alt={`${p.brand} ${p.model}`} loading="lazy" decoding="async" /> : deviceSvg}
                     </div>
                     <div className="pub-related-name">{p.brand} {p.model}</div>
-                    <div className="pub-related-specs">{[p.storage ? normalizeStorage(p.storage) : null, p.color ? translateColor(p.color, lang) : null].filter(Boolean).join(" · ")}</div>
-                    <div className="pub-related-price">{Number(p.sale_price).toLocaleString("hu-HU")} Lei</div>
+                    <div className="pub-related-specs">
+                      {p.color && <span className="pub-related-swatch" style={{ background: colorSwatch(p.color) }} title={translateColor(p.color, lang)} />}
+                      {[p.storage ? normalizeStorage(p.storage) : null].filter(Boolean).join(" · ")}
+                    </div>
+                    <div className="pub-related-price">{Number(p.sale_price).toLocaleString("hu-HU")}<span className="pub-cur">Lei</span></div>
                   </a>
                 );
               })}
