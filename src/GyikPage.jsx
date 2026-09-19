@@ -59,6 +59,7 @@ export default function GyikPage({ lang = "hu" }) {
       </Helmet>
       <PublicHeader activeNav="stock" lang={lang} langSwitchHref={langSwitchHref} />
       <main className="pub-faq-main">
+        <a href={lang === "ro" ? "/ro/telefoane" : "/"} className="pub-back-link">{s.back}</a>
         <h1 className="pub-faq-title">{s.faqPageTitle}</h1>
         <p className="pub-faq-subtitle">{s.faqPageSubtitle}</p>
 

@@ -618,6 +618,8 @@ function PortalInner() {
     <div className="pub-shop">
       <PublicHeader activeNav="login" langSwitchHref={null} />
       <main className="pub-lookup-main">
+        <div style={{ width: "100%" }}>
+        <a href="/" className="pub-back-link">← Vissza</a>
         {passwordRecovery ? (
           <PasswordRecoveryForm />
         ) : loading ? (
@@ -631,6 +633,7 @@ function PortalInner() {
         ) : (
           <Dashboard profile={profile} />
         )}
+        </div>
       </main>
       <PublicFooter />
     </div>

@@ -6,7 +6,7 @@ import { t, translateColor, colorSwatch } from "./lib/i18n";
 import { normalizeStorage, normalizeBrand, displayName, conditionGradeLabel } from "./lib/utils";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
-import { SearchIcon, FilterIcon, FilterLinesIcon, SortIcon, HeartIcon, CompassIcon, CheckIcon, ChevronDownIcon, WarrantyIcon, PinIcon } from "./components/icons";
+import { SearchIcon, FilterIcon, FilterLinesIcon, SortIcon, HeartIcon, CompassIcon, CheckIcon, ChevronDownIcon, WarrantyIcon, ReturnIcon } from "./components/icons";
 import { EmptyState, LoadingState } from "./components/EmptyState";
 import { addToCart, useCart } from "./lib/cart";
 import { toggleWishlist, useWishlist } from "./lib/wishlist";
@@ -210,7 +210,7 @@ export default function StockShowcase({ lang = "hu" }) {
   // a cél nem konverzió-elterelés, hanem bizalomépítés böngészés közben.
   const CORE_BENEFITS = [
     { Icon: WarrantyIcon, label: s.trustWarrantyTitle },
-    { Icon: PinIcon, label: s.trustLocTitle },
+    { Icon: ReturnIcon, label: s.trustReturnTitle },
     { Icon: CheckIcon, label: s.trustTestedTitle },
   ];
   // `image` opcionális, csak kódból tölthető ki (pl. "/promo/setup.png" a public/promo mappából
@@ -490,7 +490,6 @@ export default function StockShowcase({ lang = "hu" }) {
                         </a>
                       ) : promo.variant.startsWith("benefits") ? (
                         <div className={`pub-promo-card ${promo.variant}`}>
-                          <div className="pub-promo-benefits-title">{s.trustBenefitsTitle}</div>
                           <div className="pub-promo-benefits-rows">
                             {CORE_BENEFITS.map((b, i) => (
                               <div className="pub-promo-benefits-row" key={i}>

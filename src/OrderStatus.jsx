@@ -48,6 +48,8 @@ export default function OrderStatus({ token }) {
     <div className="pub-shop">
       <PublicHeader activeNav="cart" />
       <main className="pub-lookup-main">
+        <div style={{ width: "100%" }}>
+        <a href="/" className="pub-back-link">← Vissza</a>
         <div className="login-card" style={{ maxWidth: 460 }}>
           {busy && <div style={{ textAlign: "center", color: "#6B7280", fontSize: 13, padding: "10px 0" }}>Betöltés...</div>}
           {error && <div className="errbar">{error}</div>}
@@ -94,11 +96,9 @@ export default function OrderStatus({ token }) {
                 </div>
               )}
 
-              <div className="login-note" style={{ marginTop: 10 }}>
-                <a href="/">Vissza a készlethez</a>
-              </div>
             </div>
           )}
+        </div>
         </div>
       </main>
       <PublicFooter />

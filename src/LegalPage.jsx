@@ -1,5 +1,6 @@
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
+import { t } from "./lib/i18n";
 
 const TERMS_CONTENT = (
   <>
@@ -257,10 +258,12 @@ const CONTENT_BY_VARIANT = { terms: TERMS_CONTENT, privacy: PRIVACY_CONTENT, ret
 
 export default function LegalPage({ title, variant, lang = "hu" }) {
   const content = CONTENT_BY_VARIANT[variant];
+  const s = t(lang);
   return (
     <div className="pub-shop">
       <PublicHeader activeNav="stock" lang={lang} />
       <main className="pub-legal-main">
+        <a href={lang === "ro" ? "/ro/telefoane" : "/"} className="pub-back-link">{s.back}</a>
         <h1 className="pub-legal-title">{title}</h1>
         {lang === "ro" && (
           <p className="login-note" style={{ marginBottom: 16 }}>

@@ -51,6 +51,8 @@ export default function PaymentMock({ token }) {
         ⚠️ Az online bankkártyás fizetés még nem aktív ezen az oldalon.
       </div>
       <main className="pub-lookup-main">
+        <div style={{ width: "100%" }}>
+        <a href="/" className="pub-back-link">← Vissza</a>
         <div className="login-card" style={{ maxWidth: 420 }}>
           {busy && !order && <div style={{ textAlign: "center", color: "#6B7280", fontSize: 13, padding: "10px 0" }}>Betöltés...</div>}
           {error && <div className="errbar">{error}</div>}
@@ -69,6 +71,7 @@ export default function PaymentMock({ token }) {
               <button className="btn sec checkout-submit" disabled={busy} onClick={cancelOrder}>Rendelés lemondása</button>
             </>
           )}
+        </div>
         </div>
       </main>
       <PublicFooter />

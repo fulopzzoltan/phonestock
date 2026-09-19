@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "./lib/supabaseClient";
+import { t } from "./lib/i18n";
 import { money, warrantyExpiry, isWarrantyActive, SALE_WARRANTY_TERMS } from "./lib/utils";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
@@ -16,6 +17,7 @@ const LOYALTY_LIVE = false;
 // már kinyomtatott/kiküldött /receipt/:token linkeket szolgálja ki, hogy azok
 // visszamenőleg is működjenek.
 export default function ReceiptLookup({ token, signStage, minimal = false, lang = "hu" }) {
+  const s = t(lang);
   const otherLangHref = `${window.location.pathname}${lang === "ro" ? "" : "?lang=ro"}`;
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
@@ -81,6 +83,10 @@ export default function ReceiptLookup({ token, signStage, minimal = false, lang 
     <div className="pub-shop">
       <PublicHeader activeNav="status" minimal={minimal} lang={lang} langSwitchHref={otherLangHref} />
       <main className="pub-lookup-main">
+      <div style={{ width: "100%" }}>
+      {!minimal && (
+        <a href={lang === "ro" ? "/ro/telefoane" : "/"} className="pub-back-link">{s.back}</a>
+      )}
       <div className="login-card" style={{ maxWidth: 440 }}>
         {busy && <div style={{ textAlign: "center", color: "#6B7280", fontSize: 13, padding: "10px 0" }}>Betöltés...</div>}
         {error && <div className="errbar">{error}</div>}
@@ -139,6 +145,7 @@ export default function ReceiptLookup({ token, signStage, minimal = false, lang 
             )}
           </div>
         )}
+      </div>
       </div>
       </main>
       <PublicFooter minimal={minimal} lang={lang} />
