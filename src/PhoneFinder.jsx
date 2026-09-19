@@ -56,8 +56,10 @@ export default function PhoneFinder({ lang = "hu" }) {
 
   const stepIndex = STEP_ORDER.indexOf(step);
 
+  const stockHref = lang === "ro" ? "/ro/telefoane" : "/";
   function goBack() {
     if (stepIndex > 0) setStep(STEP_ORDER[stepIndex - 1]);
+    else window.location.href = stockHref;
   }
   function pickCondition(key) { setAnswers((a) => ({ ...a, condition: key })); setStep("budget"); }
   function pickBudget(key) { setAnswers((a) => ({ ...a, budget: key })); setStep("storage"); }
@@ -144,7 +146,7 @@ export default function PhoneFinder({ lang = "hu" }) {
             ))}
           </div>
         )}
-        {stepIndex > 0 && step !== "result" && (
+        {step !== "result" && (
           <button type="button" className="pub-back-link" style={{ border: "none", background: "none", cursor: "pointer" }} onClick={goBack}>{s.back}</button>
         )}
 
