@@ -109,6 +109,7 @@ export default function Checkout() {
     <div className="pub-shop">
       <PublicHeader activeNav="cart" />
       <main className="pub-lookup-main" style={{ maxWidth: 900 }}>
+        <div style={{ width: "100%" }}>
         <div className="pub-breadcrumb">
           <a href="/">Telefonok</a> › <a href="/kosar">Kosár</a> › <span className="current">Pénztár</span>
         </div>
@@ -172,6 +173,7 @@ export default function Checkout() {
             </form>
           </div>
           <div className="checkout-sidebar">{summary}</div>
+        </div>
         </div>
       </main>
       <PublicFooter />
