@@ -1522,7 +1522,6 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-footer-brand{margin-bottom:2px}
 .pub-footer-logo{height:23px;width:auto;display:block}
 .pub-footer-about{margin:0;font-size:12px;line-height:1.6;color:var(--pub-ink-soft);max-width:280px}
-.pub-footer-phone{display:inline-flex;align-items:center;gap:6px;font-weight:700;color:var(--pub-ink)!important}
 .pub-footer-social{display:flex;gap:10px;margin-top:2px}
 .pub-footer-social a{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;background:var(--pub-paper-raised);border:1px solid var(--pub-line);color:var(--pub-ink-soft)!important;text-decoration:none!important;transition:border-color .12s,color .12s}
 .pub-footer-social a:hover{border-color:var(--pub-accent);color:var(--pub-accent-ink)!important}

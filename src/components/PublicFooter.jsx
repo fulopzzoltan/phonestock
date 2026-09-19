@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { t } from "../lib/i18n";
-import { CallIcon, PinIcon, FacebookIcon, InstagramIcon, YoutubeIcon, TiktokIcon } from "./icons";
+import { PinIcon, FacebookIcon, InstagramIcon, YoutubeIcon, TiktokIcon } from "./icons";
 
 const SOCIAL_LINKS = [
   { Icon: FacebookIcon, href: "https://www.facebook.com/telefonos.ro", label: "Facebook" },
@@ -120,8 +120,6 @@ export default function PublicFooter({ lang = "hu", minimal = false, onContactCl
         <div className="pub-footer-brand-block">
           <img src="/logo.png" alt="Telefonos" className="pub-footer-logo" />
           <p className="pub-footer-about">{s.footer}</p>
-          <a className="pub-footer-phone" href="tel:0773985278"><CallIcon width={12} height={12} />0773 985 278</a>
-          <a className="pub-footer-phone" href="mailto:info@telefonos.ro">info@telefonos.ro</a>
           <div className="pub-footer-social">
             {SOCIAL_LINKS.map(({ Icon, href, label }) => (
               <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>
