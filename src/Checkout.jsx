@@ -51,8 +51,21 @@ export default function Checkout() {
   }, [deliveryMethod, lockerQuery]);
 
   const locationIds = useMemo(() => [...new Set(items.map((i) => i.locationId).filter(Boolean))], [items]);
-  const singleLocation = locationIds.length === 1 ? items.find((i) => i.locationId === locationIds[0]) : null;
   const mixedLocations = locationIds.length > 1;
+  // Egy telefon fizikailag csak egy üzletben van, de a vevőnek nem kell emiatt két
+  // rendelést leadnia — ha a kosárban 2 üzletből van tétel, kiválasztja melyik boltból
+  // induljon (oda menne be / onnan indul a futár), a másik üzletből a személyzet hozza át.
+  const involvedLocations = useMemo(() => {
+    const map = new Map();
+    items.forEach((i) => { if (i.locationId) map.set(i.locationId, i.locationName); });
+    return [...map.entries()].map(([id, name]) => ({ id, name }));
+  }, [items]);
+  const [pickupLocationId, setPickupLocationId] = useState("");
+  useEffect(() => {
+    if (locationIds.length === 1) { setPickupLocationId(locationIds[0]); return; }
+    setPickupLocationId((cur) => (locationIds.includes(cur) ? cur : ""));
+  }, [locationIds]);
+  const pickupLocationName = involvedLocations.find((l) => l.id === pickupLocationId)?.name || "—";
 
   const subtotal = cartTotal(items);
   const baseShippingFee = deliveryMethod === "courier_locker" ? LOCKER_SHIPPING_FEE : SHIPPING_FEE;
@@ -65,7 +78,7 @@ export default function Checkout() {
   const deliveryValid = deliveryMethod === "pickup"
     || (deliveryMethod === "courier_home" && deliveryCity.trim() && deliveryCounty.trim() && deliveryAddress.trim())
     || (deliveryMethod === "courier_locker" && !!selectedLocker);
-  const canSubmit = !mixedLocations && locationIds.length === 1 && name.trim().length >= 2 && phone.replace(/\D/g, "").length >= 6 && !emailError && deliveryValid;
+  const canSubmit = !!pickupLocationId && name.trim().length >= 2 && phone.replace(/\D/g, "").length >= 6 && !emailError && deliveryValid;
 
   useEffect(() => {
     document.title = "Pénztár — Telefonos";
@@ -80,7 +93,7 @@ export default function Checkout() {
     try {
       const { data, error: err } = await supabase.rpc("create_web_order", {
         p_items: items.map((i) => i.id),
-        p_location_id: locationIds[0],
+        p_location_id: pickupLocationId,
         p_guest_name: name,
         p_guest_email: email || null,
         p_guest_phone: phone,
@@ -202,7 +215,21 @@ export default function Checkout() {
 
               <div className="checkout-section-title">Átvétel / szállítás</div>
               {mixedLocations && (
-                <div className="errbar">A kosaradban különböző üzletekből (Gyimes és Szentgyörgy) származó telefonok vannak — egyszerre csak egy üzletből rendelhetsz. Vedd ki az egyik tételt a kosárból a folytatáshoz.</div>
+                <div style={{ marginBottom: 14 }}>
+                  <div className="field-hint" style={{ marginBottom: 8 }}>
+                    A kosaradban két üzletből is van telefon — válaszd ki, melyikből induljon a rendelésed. A másik boltból mi hozzuk át, mielőtt jössz / indul a csomagod.
+                  </div>
+                  <div className="checkout-delivery-options">
+                    {involvedLocations.map((l) => (
+                      <label key={l.id} className={`checkout-delivery-opt${pickupLocationId === l.id ? " active" : ""}`}>
+                        <input type="radio" name="pickup-location" checked={pickupLocationId === l.id} onChange={() => setPickupLocationId(l.id)} />
+                        <div>
+                          <div className="checkout-delivery-opt-title">{l.name}</div>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
               )}
 
               <div className="checkout-delivery-options">
@@ -210,7 +237,7 @@ export default function Checkout() {
                   <input type="radio" name="delivery" checked={deliveryMethod === "pickup"} onChange={() => setDeliveryMethod("pickup")} />
                   <div>
                     <div className="checkout-delivery-opt-title">Átvétel a boltban — ingyenes</div>
-                    <div className="checkout-delivery-opt-sub">{singleLocation ? singleLocation.locationName : "—"}, fizetés a boltban</div>
+                    <div className="checkout-delivery-opt-sub">{pickupLocationName}, fizetés a boltban</div>
                   </div>
                 </label>
                 <label className={`checkout-delivery-opt${deliveryMethod === "courier_home" ? " active" : ""}`}>

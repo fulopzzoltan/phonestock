@@ -83,6 +83,11 @@ export default function PultTab({
                 </div>
                 <div className="sub">{o.items.map((it) => [it.brand, it.model].filter(Boolean).join(" ")).join(", ")}</div>
                 <div className="sub">{o.guestPhone} · {o.locationName}</div>
+                {o.items.some((it) => it.locationId && it.locationId !== o.locationId) && (
+                  <div className="sub" style={{ color: "#EA580C", fontWeight: 600 }}>
+                    ⚠️ Áthozandó {o.locationName}-ra: {o.items.filter((it) => it.locationId && it.locationId !== o.locationId).map((it) => [it.brand, it.model].filter(Boolean).join(" ")).join(", ")} ({o.items.find((it) => it.locationId && it.locationId !== o.locationId)?.locationName})
+                  </div>
+                )}
                 {o.deliveryMethod !== "pickup" && (
                   <div className="sub">
                     {o.deliveryMethod === "courier_locker" ? `📦 Csomagautomata: ${o.lockerName || o.lockerId}` : `🚚 Házhozszállítás: ${[o.deliveryAddress, o.deliveryCity, o.deliveryCounty].filter(Boolean).join(", ")}`}

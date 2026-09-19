@@ -691,6 +691,7 @@ export const webOrderFromApi = (r) => ({
   items: (r.web_order_items || []).map((it) => ({
     id: it.id, productId: it.product_id, price: it.price,
     brand: it.products?.brand, model: it.products?.model, storage: it.products?.storage, color: it.products?.color,
+    locationId: it.products?.location_id, locationName: it.products?.locations?.name || "",
   })),
 });
 
