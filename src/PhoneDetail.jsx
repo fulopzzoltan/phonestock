@@ -50,7 +50,11 @@ export default function PhoneDetail({ id, lang = "hu" }) {
 
   useEffect(() => {
     const header = document.querySelector(".pub-header");
-    if (header) setHeaderHeight(header.offsetHeight);
+    if (!header) return;
+    const sync = () => setHeaderHeight(header.offsetHeight);
+    sync();
+    window.addEventListener("resize", sync);
+    return () => window.removeEventListener("resize", sync);
   }, [phone]);
 
   // A mini sáv csak akkor jelenjen meg, ha a felhasználó már túlgörgetett a valódi
@@ -127,7 +131,7 @@ export default function PhoneDetail({ id, lang = "hu" }) {
       <PublicHeader activeNav="stock" lang={lang} langSwitchHref={langSwitchHref} />
 
       {showStickyBar && (
-        <div className="pub-sticky-bar" style={{ top: headerHeight }}>
+        <div className="pub-sticky-bar" style={{ "--pub-header-h": `${headerHeight}px` }}>
           <div className="pub-sticky-bar-inner">
             <div className="pub-sticky-thumb">
               {photos.length > 0 ? <img src={photoUrl(photos[0], "thumb")} alt="" /> : deviceSvg}
@@ -153,7 +157,7 @@ export default function PhoneDetail({ id, lang = "hu" }) {
           <a href={lang === "ro" ? "/ro/telefoane" : "/"}>{s.navStock}</a> › <span>{phone.brand}</span> › <span className="current">{phone.model}</span>
         </div>
         <div className="pub-detail-grid">
-          <div className="pub-detail-gallery">
+          <div className="pub-detail-media">
             <div className="pub-detail-photo-main">
               {photos.length > 0 ? (
                 <img
@@ -180,41 +184,6 @@ export default function PhoneDetail({ id, lang = "hu" }) {
                 ))}
               </div>
             )}
-
-            <div className="pub-detail-box">
-              <div className="pub-detail-box-title">{phone.condition === "New" ? s.detailConditionNewTitle : s.detailConditionRefurbTitle}</div>
-              <div className="pub-detail-box-text">{phone.condition === "New" ? s.detailConditionNewDesc : s.detailConditionRefurbDesc}</div>
-            </div>
-
-            <div className="pub-detail-box">
-              <div className="pub-sidebar-label" style={{ marginBottom: 14 }}>{s.detailSpecsTitle}</div>
-              <div className="pub-detail-specs-grid">
-                {phone.storage && (
-                  <div className="pub-detail-spec-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="17" height="17"><rect x="7" y="2" width="10" height="20" rx="2" /><line x1="11" y1="18" x2="13" y2="18" /></svg>
-                    <div><div className="pub-detail-spec-label">{s.storageLabel}</div><div className="pub-detail-spec-value">{normalizeStorage(phone.storage)}</div></div>
-                  </div>
-                )}
-                {phone.color && (
-                  <div className="pub-detail-spec-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="17" height="17"><circle cx="12" cy="12" r="9" /></svg>
-                    <div><div className="pub-detail-spec-label">{s.colorLabel}</div><div className="pub-detail-spec-value">{translateColor(phone.color, lang)}</div></div>
-                  </div>
-                )}
-                {phone.battery_health != null && (
-                  <div className="pub-detail-spec-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="17" height="17"><rect x="1" y="7" width="18" height="10" rx="2" /><line x1="21" y1="10" x2="21" y2="14" /></svg>
-                    <div><div className="pub-detail-spec-label">{s.batteryLabel}</div><div className="pub-detail-spec-value">{phone.battery_health}%</div></div>
-                  </div>
-                )}
-                {phone.warranty && (
-                  <div className="pub-detail-spec-item">
-                    <WarrantyIcon width={17} height={17} />
-                    <div><div className="pub-detail-spec-label">{s.warrantyLabel}</div><div className="pub-detail-spec-value">{translateWarranty(phone.warranty, lang)}</div></div>
-                  </div>
-                )}
-              </div>
-            </div>
           </div>
 
           <div className="pub-detail-info">
@@ -272,6 +241,43 @@ export default function PhoneDetail({ id, lang = "hu" }) {
 
             <a className="pub-ask-btn" style={{ padding: "10px 18px", fontSize: 12.5, background: "none", color: "var(--pub-ink-soft)" }} href="tel:0773985278">{s.interestedCall}</a>
             <div className="pub-detail-note">{s.priceNote}</div>
+          </div>
+
+          <div className="pub-detail-extras">
+            <div className="pub-detail-box">
+              <div className="pub-detail-box-title">{phone.condition === "New" ? s.detailConditionNewTitle : s.detailConditionRefurbTitle}</div>
+              <div className="pub-detail-box-text">{phone.condition === "New" ? s.detailConditionNewDesc : s.detailConditionRefurbDesc}</div>
+            </div>
+
+            <div className="pub-detail-box">
+              <div className="pub-sidebar-label" style={{ marginBottom: 14 }}>{s.detailSpecsTitle}</div>
+              <div className="pub-detail-specs-grid">
+                {phone.storage && (
+                  <div className="pub-detail-spec-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="17" height="17"><rect x="7" y="2" width="10" height="20" rx="2" /><line x1="11" y1="18" x2="13" y2="18" /></svg>
+                    <div><div className="pub-detail-spec-label">{s.storageLabel}</div><div className="pub-detail-spec-value">{normalizeStorage(phone.storage)}</div></div>
+                  </div>
+                )}
+                {phone.color && (
+                  <div className="pub-detail-spec-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="17" height="17"><circle cx="12" cy="12" r="9" /></svg>
+                    <div><div className="pub-detail-spec-label">{s.colorLabel}</div><div className="pub-detail-spec-value">{translateColor(phone.color, lang)}</div></div>
+                  </div>
+                )}
+                {phone.battery_health != null && (
+                  <div className="pub-detail-spec-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="17" height="17"><rect x="1" y="7" width="18" height="10" rx="2" /><line x1="21" y1="10" x2="21" y2="14" /></svg>
+                    <div><div className="pub-detail-spec-label">{s.batteryLabel}</div><div className="pub-detail-spec-value">{phone.battery_health}%</div></div>
+                  </div>
+                )}
+                {phone.warranty && (
+                  <div className="pub-detail-spec-item">
+                    <WarrantyIcon width={17} height={17} />
+                    <div><div className="pub-detail-spec-label">{s.warrantyLabel}</div><div className="pub-detail-spec-value">{translateWarranty(phone.warranty, lang)}</div></div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
