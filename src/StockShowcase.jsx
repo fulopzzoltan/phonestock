@@ -205,7 +205,6 @@ export default function StockShowcase({ lang = "hu" }) {
     { value: "price-desc", label: s.sortPriceDesc },
     { value: "brand", label: s.sortBrand },
   ];
-  const currentSortLabel = SORT_OPTIONS.find((o) => o.value === sort)?.label || s.sortRecommended;
 
   // A rácsba illesztett bizalomépítő kártyák — egyik sem visz el a telefonok közül,
   // a cél nem konverzió-elterelés, hanem bizalomépítés böngészés közben.
@@ -282,7 +281,7 @@ export default function StockShowcase({ lang = "hu" }) {
           <div className="pub-mfb-third">
             <button type="button" className="pub-mfb-plain" onClick={() => setSortSheetOpen(true)}>
               <SortIcon width={13} height={13} />
-              <span className="pub-mfb-plain-label">{currentSortLabel}</span>
+              <span className="pub-mfb-plain-label">{s.sortLabel}</span>
             </button>
           </div>
           <span className="pub-mfb-divider" />

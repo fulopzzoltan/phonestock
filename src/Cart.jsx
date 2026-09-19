@@ -20,9 +20,7 @@ export default function Cart() {
     <div className="pub-shop">
       <PublicHeader activeNav="cart" />
       <main className="pub-cart-main">
-        <div className="pub-breadcrumb">
-          <a href="/">Telefonok</a> › <span className="current">Kosár</span>
-        </div>
+        <a href="/" className="pub-back-link">← Vissza</a>
         <h1 className="pub-cart-title">Kosár</h1>
 
         {items.length === 0 ? (

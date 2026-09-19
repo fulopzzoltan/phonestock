@@ -418,6 +418,10 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
     <div className={`pub-shop${minimal ? " pub-shop-tabbed" : ""}`}>
       <PublicHeader activeNav="status" minimal={minimal} lang={lang} langSwitchHref={otherLangHref} />
       <main className="pub-lookup-main">
+      <div style={{ width: "100%" }}>
+      {!minimal && (
+        <a href={lang === "ro" ? "/ro/telefoane" : "/"} className="pub-back-link">{s.back}</a>
+      )}
       {view === "contact" ? (
         <ContactPanel s={s} lang={lang} locations={locations} onBack={() => setView("status")} />
       ) : isTicket ? (
@@ -654,13 +658,9 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
           </div>
         )}
         {!token && !shortCode && !result && !matches && <div className="login-note">{s.statusPhoneHint}</div>}
-        {!token && !shortCode && !result && !matches && !minimal && (
-          <div className="login-note" style={{ marginTop: 6 }}>
-            {s.backToStockPrefix} <a href="/">{s.backToStockLink}</a>.
-          </div>
-        )}
       </div>
       )}
+      </div>
       </main>
       <PublicFooter minimal={minimal} lang={lang} onContactClick={minimal ? () => { setView("contact"); window.scrollTo({ top: 0, behavior: "smooth" }); } : undefined} />
       {bottomNavItems && <PublicBottomNav items={bottomNavItems} />}

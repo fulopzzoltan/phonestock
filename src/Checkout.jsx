@@ -110,9 +110,7 @@ export default function Checkout() {
       <PublicHeader activeNav="cart" />
       <main className="pub-lookup-main" style={{ maxWidth: 900 }}>
         <div style={{ width: "100%" }}>
-        <div className="pub-breadcrumb">
-          <a href="/">Telefonok</a> › <a href="/kosar">Kosár</a> › <span className="current">Pénztár</span>
-        </div>
+        <a href="/kosar" className="pub-back-link">← Vissza</a>
         <div className="checkout-grid">
           <div className="checkout-form-col">
             <div className="login-title" style={{ marginBottom: 4 }}>Pénztár</div>
