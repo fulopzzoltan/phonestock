@@ -117,7 +117,9 @@ export default function RepairEstimator({ lang = "hu" }) {
     setShowLeadForm(false);
     setStep("result");
   }
+  const stockHref = lang === "ro" ? "/ro/telefoane" : "/";
   function goBack() {
+    if (step === "model") { window.location.href = stockHref; return; }
     setSubmitError("");
     if (step === "problem") setStep("model");
     else if (step === "result") setStep("problem");
@@ -239,15 +241,18 @@ export default function RepairEstimator({ lang = "hu" }) {
       <PublicHeader activeNav="repair" lang={lang} />
       <main className="bb-main">
         <ReviewsBadge lang={lang} style={{ marginBottom: 12 }} />
-        {step !== "custom" && (
-          <div className="pub-steps">
-            {STEP_ORDER.map((st, i) => (
-              <div key={st} className={`pub-step${STEP_ORDER.indexOf(step) === i ? " active" : ""}`} />
-            ))}
+        {step !== "custom" ? (
+          <div className="pub-wizard-steprow">
+            <button type="button" className="pub-back-link pub-wizard-back" onClick={goBack}>{s.back}</button>
+            <div className="pub-steps">
+              {STEP_ORDER.map((st, i) => (
+                <div key={st} className={`pub-step${STEP_ORDER.indexOf(step) === i ? " active" : ""}`} />
+              ))}
+            </div>
+            <span />
           </div>
-        )}
-        {step !== "model" && (
-          <button type="button" className="pub-back-link" style={{ border: "none", background: "none", cursor: "pointer" }} onClick={goBack}>{s.back}</button>
+        ) : (
+          <button type="button" className="pub-back-link" onClick={goBack}>{s.back}</button>
         )}
 
         {step === "model" && (

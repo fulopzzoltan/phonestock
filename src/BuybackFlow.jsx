@@ -125,7 +125,10 @@ export default function BuybackFlow() {
   }
 
   function goNext() { setStepIndex((i) => Math.min(i + 1, STEP_KEYS.length - 1)); }
-  function goBack() { setStepIndex((i) => Math.max(i - 1, 0)); }
+  function goBack() {
+    if (stepIndex === 0) { window.location.href = "/"; return; }
+    setStepIndex((i) => Math.max(i - 1, 0));
+  }
 
   function pickBrand(b) { setBrand(b); setModelName(null); setVariant(null); goNext(); }
   function pickModel(name) {
@@ -236,6 +239,7 @@ export default function BuybackFlow() {
     <div className="pub-shop">
       <PublicHeader activeNav="buyback" />
       <main className="bb-main">
+        <button type="button" className="pub-back-link" onClick={goBack}>← Vissza</button>
         {step !== "brand" && <ReviewsBadge style={{ marginBottom: 12 }} />}
 
         {step === "brand" && (
@@ -272,8 +276,6 @@ export default function BuybackFlow() {
           <div className="bb-progress-track"><div className="bb-progress-fill" style={{ "--bb-progress": (stepIndex + 1) / totalSteps }} /></div>
           <span className="bb-progress-label">{stepIndex + 1}/{totalSteps}</span>
         </div>
-        {stepIndex > 0 && <button type="button" className="pub-back-link" style={{ border: "none", background: "none", cursor: "pointer" }} onClick={goBack}>← Vissza</button>}
-
         {step === "brand" && (
           <div className="bb-card">
             <h1 className="bb-h1">Milyen márkájú a telefonod?</h1>

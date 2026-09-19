@@ -109,6 +109,9 @@ export default function Checkout() {
     <div className="pub-shop">
       <PublicHeader activeNav="cart" />
       <main className="pub-lookup-main" style={{ maxWidth: 900 }}>
+        <div className="pub-breadcrumb">
+          <a href="/">Telefonok</a> › <a href="/kosar">Kosár</a> › <span className="current">Pénztár</span>
+        </div>
         <div className="checkout-grid">
           <div className="checkout-form-col">
             <div className="login-title" style={{ marginBottom: 4 }}>Pénztár</div>
@@ -167,9 +170,6 @@ export default function Checkout() {
                 {busy ? "Feldolgozás..." : `Fizetés — ${money(total)}`}
               </button>
             </form>
-            <div className="login-note" style={{ marginTop: 10, textAlign: "center" }}>
-              <a href="/kosar">← Vissza a kosárhoz</a>
-            </div>
           </div>
           <div className="checkout-sidebar">{summary}</div>
         </div>

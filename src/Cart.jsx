@@ -76,7 +76,6 @@ export default function Cart() {
               </div>
               <a href="/penztar" className="pub-ask-btn pub-cart-checkout">Tovább a pénztárhoz</a>
               <div className="pub-cart-summary-note">Az ár és a készlet folyamatosan frissül, végleges adásvétel az üzletben történik.</div>
-              <a href="/" className="pub-cart-back">← Vissza a készlethez</a>
             </aside>
           </div>
         )}

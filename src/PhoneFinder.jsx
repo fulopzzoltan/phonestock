@@ -140,8 +140,8 @@ export default function PhoneFinder({ lang = "hu" }) {
       <main className="bb-main">
         <div className="pub-promo-eyebrow" style={{ marginBottom: 10, textAlign: "center" }}>{s.finderBrandName}</div>
         {step !== "result" && (
-          <div className="pub-finder-steprow">
-            <button type="button" className="pub-back-link pub-finder-back" onClick={goBack}>{s.back}</button>
+          <div className="pub-wizard-steprow">
+            <button type="button" className="pub-back-link pub-wizard-back" onClick={goBack}>{s.back}</button>
             <div className="pub-steps">
               {STEP_ORDER.slice(0, 4).map((st, i) => (
                 <div key={st} className={`pub-step${stepIndex === i ? " active" : ""}`} />
