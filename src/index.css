@@ -1708,16 +1708,6 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-related-title{font-size:17px;font-weight:800;margin-bottom:16px}
 .pub-related-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
 @media (max-width:760px){.pub-related-grid{grid-template-columns:repeat(2,1fr)}}
-.pub-related-card{background:var(--pub-paper-raised);border:none;border-radius:20px;padding:14px;text-decoration:none;color:inherit;display:block;box-shadow:0 1px 3px rgba(0,0,0,.06);transition:transform .14s}
-.pub-related-card:hover{transform:translateY(-2px)}
-.pub-related-photo{background:var(--pub-paper);border-radius:10px;height:110px;margin-bottom:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--pub-ink-soft)}
-.pub-related-photo img{width:100%;height:100%;object-fit:cover}
-.pub-related-photo svg{height:60px;opacity:.7}
-.pub-related-name{font-size:12.5px;font-weight:700}
-.pub-related-specs{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--pub-ink-soft);margin:4px 0 6px}
-.pub-related-swatch{width:8px;height:8px;border-radius:999px;flex-shrink:0;border:1px solid rgba(0,0,0,.1)}
-.pub-related-price{font-size:14px;font-weight:800}
-.pub-related-price .pub-cur{font-size:10px;font-weight:600;color:var(--pub-ink-soft);margin-left:2px}
 .pub-lookup-main{max-width:1180px;margin:0 auto;padding:40px 24px 64px;display:flex;justify-content:center}
 
 /* Élő pötty (a fejléc-jelvényen és a jegy-kártya alján) + pulzáló gyűrű az aktuális

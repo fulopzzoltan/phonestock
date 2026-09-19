@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "./lib/supabaseClient";
 import { photoUrl } from "./lib/imageResize";
-import { t, translateColor, translateWarranty, colorSwatch } from "./lib/i18n";
+import { t, translateColor, translateWarranty } from "./lib/i18n";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 import { PhoneCaseIcon, HeartIcon, CheckIcon, WarrantyIcon, PinIcon } from "./components/icons";
@@ -11,6 +11,7 @@ import { addToCart, useCart } from "./lib/cart";
 import { toggleWishlist, useWishlist } from "./lib/wishlist";
 import { normalizeBrand, normalizeStorage } from "./lib/utils";
 import { ReviewsBadge } from "./components/PublicReviews";
+import PhoneMiniCard from "./components/PhoneMiniCard";
 
 const SITE = "https://phonestock-manager.netlify.app";
 
@@ -278,23 +279,9 @@ export default function PhoneDetail({ id, lang = "hu" }) {
           <div className="pub-related">
             <div className="pub-related-title">{s.detailRelatedTitle}</div>
             <div className="pub-related-grid">
-              {related.map((p) => {
-                const rPhotos = p.photo_paths || [];
-                const href = lang === "ro" ? `/ro/telefon/${p.id}` : `/telefon/${p.id}`;
-                return (
-                  <a key={p.id} className="pub-related-card" href={href}>
-                    <div className="pub-related-photo">
-                      {rPhotos.length > 0 ? <img src={photoUrl(rPhotos[0], "thumb")} alt={`${p.brand} ${p.model}`} loading="lazy" decoding="async" /> : deviceSvg}
-                    </div>
-                    <div className="pub-related-name">{p.brand} {p.model}</div>
-                    <div className="pub-related-specs">
-                      {p.color && <span className="pub-related-swatch" style={{ background: colorSwatch(p.color) }} title={translateColor(p.color, lang)} />}
-                      {[p.storage ? normalizeStorage(p.storage) : null].filter(Boolean).join(" · ")}
-                    </div>
-                    <div className="pub-related-price">{Number(p.sale_price).toLocaleString("hu-HU")}<span className="pub-cur">Lei</span></div>
-                  </a>
-                );
-              })}
+              {related.map((p) => (
+                <PhoneMiniCard key={p.id} phone={p} lang={lang} />
+              ))}
             </div>
           </div>
         )}
