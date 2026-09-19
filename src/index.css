@@ -1465,7 +1465,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-price .pub-cur,.pub-sticky-price .pub-cur{font-size:11px;font-weight:600;color:var(--pub-ink-soft);margin-left:2px}
 .pub-detail-price .pub-cur{font-size:15px;font-weight:600;color:var(--pub-ink-soft);margin-left:4px}
 .pub-price.mono,.pub-sticky-price.mono,.pub-detail-price.mono{font-family:-apple-system,BlinkMacSystemFont,'Inter','Helvetica Neue',Arial,sans-serif}
-.pub-ask-btn{border:none;background:var(--pub-accent);color:#fff;font-size:14px;font-weight:600;height:38px;padding:0 20px;border-radius:999px;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-family:inherit;transition:transform .12s ease,opacity .12s ease}
+.pub-ask-btn{border:none;background:var(--pub-accent);color:#fff;font-size:13px;font-weight:600;height:32px;padding:0 14px;border-radius:999px;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-family:inherit;transition:transform .12s ease,opacity .12s ease}
 .pub-ask-btn:active{transform:scale(.94)}
 .pub-ask-btn-added{background:var(--pub-paper-raised);color:var(--pub-accent-ink);border:1px solid var(--pub-accent);box-shadow:none}
 
