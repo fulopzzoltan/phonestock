@@ -683,6 +683,11 @@ export const webOrderFromApi = (r) => ({
   guestName: r.guest_name, guestPhone: r.guest_phone, guestEmail: r.guest_email,
   locationId: r.location_id, locationName: r.locations?.name || "",
   createdAt: r.created_at,
+  deliveryMethod: r.delivery_method || "pickup",
+  deliveryCity: r.delivery_city, deliveryCounty: r.delivery_county, deliveryAddress: r.delivery_address,
+  deliveryPostalCode: r.delivery_postal_code, lockerId: r.locker_id, lockerName: r.locker_name,
+  shippingFee: Number(r.shipping_fee) || 0,
+  samedayAwbNumber: r.sameday_awb_number, samedayAwbStatus: r.sameday_awb_status,
   items: (r.web_order_items || []).map((it) => ({
     id: it.id, productId: it.product_id, price: it.price,
     brand: it.products?.brand, model: it.products?.model, storage: it.products?.storage, color: it.products?.color,

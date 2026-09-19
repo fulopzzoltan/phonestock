@@ -16,7 +16,7 @@ export default function PultTab({
   waitingItems, addWaitingItem, advanceWaiting,
   users, currentUserId, tickets, stock, parts, customersTable, warranties, locName,
   upcomingLeave,
-  webOrders, confirmWebOrder, cancelWebOrder, completeWebOrder,
+  webOrders, confirmWebOrder, cancelWebOrder, completeWebOrder, generateWebOrderAwb,
   onOpenTicket, onOpenProduct, onOpenPart, onOpenCustomer, onOpenWarranty,
 }) {
   const [noteOpen, setNoteOpen] = useState(false);
@@ -83,9 +83,19 @@ export default function PultTab({
                 </div>
                 <div className="sub">{o.items.map((it) => [it.brand, it.model].filter(Boolean).join(" ")).join(", ")}</div>
                 <div className="sub">{o.guestPhone} · {o.locationName}</div>
+                {o.deliveryMethod !== "pickup" && (
+                  <div className="sub">
+                    {o.deliveryMethod === "courier_locker" ? `📦 Csomagautomata: ${o.lockerName || o.lockerId}` : `🚚 Házhozszállítás: ${[o.deliveryAddress, o.deliveryCity, o.deliveryCounty].filter(Boolean).join(", ")}`}
+                    {" · utánvét"}
+                    {o.samedayAwbNumber ? ` · AWB: ${o.samedayAwbNumber}` : ""}
+                  </div>
+                )}
                 <div className="actions">
                   {o.status === "fizetve" && <button type="button" className="pb-stat-btn" onClick={() => confirmWebOrder(o.id)}>Előkészítve</button>}
-                  {o.status === "visszaigazolva" && <button type="button" className="pb-stat-btn" onClick={() => completeWebOrder(o.id)}>Átadva</button>}
+                  {o.status === "visszaigazolva" && o.deliveryMethod !== "pickup" && !o.samedayAwbNumber && (
+                    <button type="button" className="pb-stat-btn" onClick={() => generateWebOrderAwb(o.id)}>SameDay AWB generálása</button>
+                  )}
+                  {o.status === "visszaigazolva" && (o.deliveryMethod === "pickup" || o.samedayAwbNumber) && <button type="button" className="pb-stat-btn" onClick={() => completeWebOrder(o.id)}>Átadva</button>}
                   <button type="button" className="pb-stat-btn" onClick={() => cancelWebOrder(o.id)}>Lemondás</button>
                 </div>
               </div>

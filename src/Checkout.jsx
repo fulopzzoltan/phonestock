@@ -8,6 +8,17 @@ import PublicFooter from "./components/PublicFooter";
 import { EmptyState } from "./components/EmptyState";
 import { CartIcon, ChevronDownIcon } from "./components/icons";
 
+const ROMANIAN_COUNTIES = [
+  "Alba", "Arad", "Argeș", "Bacău", "Bihor", "Bistrița-Năsăud", "Botoșani", "Brăila", "Brașov", "București",
+  "Buzău", "Călărași", "Caraș-Severin", "Cluj", "Constanța", "Covasna", "Dâmbovița", "Dolj", "Galați", "Giurgiu",
+  "Gorj", "Harghita", "Hunedoara", "Ialomița", "Iași", "Ilfov", "Maramureș", "Mehedinți", "Mureș", "Neamț",
+  "Olt", "Prahova", "Sălaj", "Satu Mare", "Sibiu", "Suceava", "Teleorman", "Timiș", "Tulcea", "Vâlcea", "Vaslui", "Vrancea",
+];
+
+const SHIPPING_FEE = 20;
+const LOCKER_SHIPPING_FEE = 12;
+const FREE_SHIPPING_OVER = 1000;
+
 export default function Checkout() {
   const items = useCart();
   const [name, setName] = useState("");
@@ -18,14 +29,43 @@ export default function Checkout() {
   const [error, setError] = useState("");
   const [summaryOpen, setSummaryOpen] = useState(false);
 
+  const [deliveryMethod, setDeliveryMethod] = useState("pickup");
+  const [deliveryCity, setDeliveryCity] = useState("");
+  const [deliveryCounty, setDeliveryCounty] = useState("");
+  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [deliveryPostalCode, setDeliveryPostalCode] = useState("");
+  const [lockerQuery, setLockerQuery] = useState("");
+  const [lockerResults, setLockerResults] = useState([]);
+  const [selectedLocker, setSelectedLocker] = useState(null);
+
+  useEffect(() => {
+    if (deliveryMethod !== "courier_locker" || lockerQuery.trim().length < 2) { setLockerResults([]); return; }
+    let alive = true;
+    const t = setTimeout(async () => {
+      const { data } = await supabase.from("sameday_lockers").select("id, name, city, county, address")
+        .or(`city.ilike.%${lockerQuery.trim()}%,address.ilike.%${lockerQuery.trim()}%,name.ilike.%${lockerQuery.trim()}%`)
+        .limit(15);
+      if (alive) setLockerResults(data || []);
+    }, 300);
+    return () => { alive = false; clearTimeout(t); };
+  }, [deliveryMethod, lockerQuery]);
+
   const locationIds = useMemo(() => [...new Set(items.map((i) => i.locationId).filter(Boolean))], [items]);
   const singleLocation = locationIds.length === 1 ? items.find((i) => i.locationId === locationIds[0]) : null;
   const mixedLocations = locationIds.length > 1;
 
+  const subtotal = cartTotal(items);
+  const baseShippingFee = deliveryMethod === "courier_locker" ? LOCKER_SHIPPING_FEE : SHIPPING_FEE;
+  const shippingFee = deliveryMethod === "pickup" ? 0 : (subtotal >= FREE_SHIPPING_OVER ? 0 : baseShippingFee);
+  const total = subtotal + shippingFee;
+
   const phoneError = touched.phone && phone.replace(/\D/g, "").length < 6 ? "Adj meg egy érvényes telefonszámot." : "";
   const emailError = touched.email && email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? "Ez nem tűnik érvényes email-címnek." : "";
   const nameError = touched.name && name.trim().length < 2 ? "Add meg a neved." : "";
-  const canSubmit = !mixedLocations && locationIds.length === 1 && name.trim().length >= 2 && phone.replace(/\D/g, "").length >= 6 && !emailError;
+  const deliveryValid = deliveryMethod === "pickup"
+    || (deliveryMethod === "courier_home" && deliveryCity.trim() && deliveryCounty.trim() && deliveryAddress.trim())
+    || (deliveryMethod === "courier_locker" && !!selectedLocker);
+  const canSubmit = !mixedLocations && locationIds.length === 1 && name.trim().length >= 2 && phone.replace(/\D/g, "").length >= 6 && !emailError && deliveryValid;
 
   useEffect(() => {
     document.title = "Pénztár — Telefonos";
@@ -44,11 +84,25 @@ export default function Checkout() {
         p_guest_name: name,
         p_guest_email: email || null,
         p_guest_phone: phone,
+        p_delivery_method: deliveryMethod,
+        p_delivery_city: deliveryMethod === "courier_home" ? deliveryCity : null,
+        p_delivery_county: deliveryMethod === "courier_home" ? deliveryCounty : null,
+        p_delivery_address: deliveryMethod === "courier_home" ? deliveryAddress : null,
+        p_delivery_postal_code: deliveryMethod === "courier_home" ? deliveryPostalCode || null : null,
+        p_locker_id: deliveryMethod === "courier_locker" ? String(selectedLocker.id) : null,
+        p_locker_name: deliveryMethod === "courier_locker" ? `${selectedLocker.name} — ${selectedLocker.city}` : null,
+        p_shipping_fee: shippingFee,
       });
       if (err) throw err;
       const order = data?.[0];
       if (!order) throw new Error("Nem sikerült leadni a rendelést.");
-      window.location.href = `/fizetes/${order.public_token}`;
+      // Futáros (utánvétes) rendelésnél nincs online fizetési lépés — egyenesen a
+      // rendelés-visszaigazoló/nyomonkövető oldalra megyünk, ott áll az AWB-adat is.
+      if (order.status === "fizetve") {
+        window.location.href = `/rendeles/${order.public_token}`;
+      } else {
+        window.location.href = `/fizetes/${order.public_token}`;
+      }
     } catch (err) {
       setError(err.message || "Hiba történt a rendelés leadása közben.");
       setBusy(false);
@@ -72,8 +126,6 @@ export default function Checkout() {
       </div>
     );
   }
-
-  const total = cartTotal(items);
 
   const summary = (
     <div className="checkout-summary">
@@ -99,7 +151,8 @@ export default function Checkout() {
         ))}
       </div>
       <div className="checkout-totals">
-        <div className="checkout-totals-row"><span>Részösszeg</span><span className="mono">{money(total)}</span></div>
+        <div className="checkout-totals-row"><span>Részösszeg</span><span className="mono">{money(subtotal)}</span></div>
+        <div className="checkout-totals-row"><span>Szállítás</span><span className="mono">{deliveryMethod === "pickup" ? "—" : (shippingFee === 0 ? "Ingyenes" : money(shippingFee))}</span></div>
         <div className="checkout-totals-row checkout-totals-final"><span>Végösszeg</span><span className="mono">{money(total)}</span></div>
       </div>
     </div>
@@ -147,19 +200,96 @@ export default function Checkout() {
                 {emailError && <div className="field-error" aria-live="polite">{emailError}</div>}
               </div>
 
-              <div className="checkout-section-title">Átvétel</div>
-              {mixedLocations ? (
+              <div className="checkout-section-title">Átvétel / szállítás</div>
+              {mixedLocations && (
                 <div className="errbar">A kosaradban különböző üzletekből (Gyimes és Szentgyörgy) származó telefonok vannak — egyszerre csak egy üzletből rendelhetsz. Vedd ki az egyik tételt a kosárból a folytatáshoz.</div>
-              ) : singleLocation ? (
-                <div className="checkout-pickup-line">Átvehető: <b>{singleLocation.locationName || "—"}</b></div>
-              ) : null}
+              )}
 
-              <div className="checkout-trust">
-                <span>💳 Visa / Mastercard</span>
-                <span>🔒 Biztonságos fizetés — Netopia</span>
+              <div className="checkout-delivery-options">
+                <label className={`checkout-delivery-opt${deliveryMethod === "pickup" ? " active" : ""}`}>
+                  <input type="radio" name="delivery" checked={deliveryMethod === "pickup"} onChange={() => setDeliveryMethod("pickup")} />
+                  <div>
+                    <div className="checkout-delivery-opt-title">Átvétel a boltban — ingyenes</div>
+                    <div className="checkout-delivery-opt-sub">{singleLocation ? singleLocation.locationName : "—"}, fizetés a boltban</div>
+                  </div>
+                </label>
+                <label className={`checkout-delivery-opt${deliveryMethod === "courier_home" ? " active" : ""}`}>
+                  <input type="radio" name="delivery" checked={deliveryMethod === "courier_home"} onChange={() => setDeliveryMethod("courier_home")} />
+                  <div>
+                    <div className="checkout-delivery-opt-title">Házhozszállítás — {subtotal >= FREE_SHIPPING_OVER ? "ingyenes" : money(SHIPPING_FEE)}</div>
+                    <div className="checkout-delivery-opt-sub">SameDay futár, fizetés utánvéttel átvételkor</div>
+                  </div>
+                </label>
+                <label className={`checkout-delivery-opt${deliveryMethod === "courier_locker" ? " active" : ""}`}>
+                  <input type="radio" name="delivery" checked={deliveryMethod === "courier_locker"} onChange={() => setDeliveryMethod("courier_locker")} />
+                  <div>
+                    <div className="checkout-delivery-opt-title">Csomagautomata — {subtotal >= FREE_SHIPPING_OVER ? "ingyenes" : money(LOCKER_SHIPPING_FEE)}</div>
+                    <div className="checkout-delivery-opt-sub">SameDay easybox, fizetés utánvéttel átvételkor</div>
+                  </div>
+                </label>
               </div>
+
+              {deliveryMethod === "courier_home" && (
+                <div style={{ marginBottom: 14 }}>
+                  <div className="field">
+                    <label htmlFor="co-county">Megye</label>
+                    <select id="co-county" value={deliveryCounty} onChange={(e) => setDeliveryCounty(e.target.value)}>
+                      <option value="">Válassz megyét...</option>
+                      {ROMANIAN_COUNTIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                  <div className="field">
+                    <label htmlFor="co-city">Város / község</label>
+                    <input id="co-city" value={deliveryCity} onChange={(e) => setDeliveryCity(e.target.value)} placeholder="pl. Sepsiszentgyörgy" />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="co-address">Cím</label>
+                    <input id="co-address" value={deliveryAddress} onChange={(e) => setDeliveryAddress(e.target.value)} placeholder="utca, házszám" />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="co-postal">Irányítószám (nem kötelező)</label>
+                    <input id="co-postal" value={deliveryPostalCode} onChange={(e) => setDeliveryPostalCode(e.target.value)} placeholder="pl. 520000" />
+                  </div>
+                </div>
+              )}
+
+              {deliveryMethod === "courier_locker" && (
+                <div style={{ marginBottom: 14 }}>
+                  <div className="field">
+                    <label htmlFor="co-locker">Keress rá a városodra</label>
+                    <input id="co-locker" value={lockerQuery} onChange={(e) => { setLockerQuery(e.target.value); setSelectedLocker(null); }} placeholder="pl. Sepsiszentgyörgy" />
+                  </div>
+                  {selectedLocker ? (
+                    <div className="checkout-pickup-line">Kiválasztva: <b>{selectedLocker.name} — {selectedLocker.city}</b> <button type="button" className="btn sec sm" onClick={() => { setSelectedLocker(null); setLockerQuery(""); }}>Módosít</button></div>
+                  ) : lockerResults.length > 0 ? (
+                    <div className="checkout-locker-results">
+                      {lockerResults.map((l) => (
+                        <button type="button" key={l.id} className="checkout-locker-result" onClick={() => setSelectedLocker(l)}>
+                          <b>{l.name}</b> — {l.address}, {l.city}
+                        </button>
+                      ))}
+                    </div>
+                  ) : lockerQuery.trim().length >= 2 ? (
+                    <div className="field-hint">Nincs találat — próbálj más városnevet.</div>
+                  ) : null}
+                </div>
+              )}
+
+              {deliveryMethod === "pickup" ? (
+                <div className="checkout-trust">
+                  <span>💳 Visa / Mastercard</span>
+                  <span>🔒 Biztonságos fizetés — Netopia</span>
+                </div>
+              ) : (
+                <div className="checkout-trust">
+                  <span>💵 Fizetés utánvéttel</span>
+                  <span>🚚 SameDay futár</span>
+                </div>
+              )}
               <div className="login-note" style={{ marginBottom: 10 }}>
-                Fizetés után azonnal foglaljuk a kiválasztott telefont — előkészítjük, és SMS-ben/telefonon szólunk, ha átvehető a boltban.
+                {deliveryMethod === "pickup"
+                  ? "Fizetés után azonnal foglaljuk a kiválasztott telefont — előkészítjük, és SMS-ben/telefonon szólunk, ha átvehető a boltban."
+                  : "A rendelésed rögzítettük, a kiválasztott telefont lefoglaltuk — a fizetendő összeget a futárnak adod át kézbesítéskor."}
               </div>
               <div className="login-note" style={{ marginBottom: 10 }}>
                 A megrendeléstől számított 14 napon belül indoklás nélkül elállhatsz a vásárlástól. Részletek az <a href="/aszf">Általános Szerződési Feltételekben</a>.

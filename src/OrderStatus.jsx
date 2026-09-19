@@ -73,17 +73,35 @@ export default function OrderStatus({ token }) {
                 ))}
                 <div className="dp-row"><span className="dp-key">Név</span><span className="dp-val">{order.guest_name}</span></div>
                 <div className="dp-row"><span className="dp-key">Telefonszám</span><span className="dp-val">{order.guest_phone}</span></div>
-                <div className="dp-row"><span className="dp-key">Átvételi helyszín</span><span className="dp-val">{order.location_name || "—"}{order.location_phone ? ` · ${order.location_phone}` : ""}</span></div>
-                <div className="dp-row"><span className="dp-key">{PAID_STATUSES.includes(order.status) ? "Fizetve" : "Fizetendő"}</span><span className="dp-val mono" style={{ fontWeight: 700 }}>{money(order.total_amount)}</span></div>
+                {order.delivery_method === "pickup" ? (
+                  <div className="dp-row"><span className="dp-key">Átvételi helyszín</span><span className="dp-val">{order.location_name || "—"}{order.location_phone ? ` · ${order.location_phone}` : ""}</span></div>
+                ) : order.delivery_method === "courier_locker" ? (
+                  <div className="dp-row"><span className="dp-key">Csomagautomata</span><span className="dp-val">{order.locker_name || "—"}</span></div>
+                ) : (
+                  <div className="dp-row"><span className="dp-key">Szállítási cím</span><span className="dp-val">{[order.delivery_address, order.delivery_city, order.delivery_county].filter(Boolean).join(", ")}</span></div>
+                )}
+                {order.delivery_method !== "pickup" && order.shipping_fee > 0 && (
+                  <div className="dp-row"><span className="dp-key">Szállítási díj</span><span className="dp-val mono">{money(order.shipping_fee)}</span></div>
+                )}
+                {order.delivery_method !== "pickup" && order.sameday_awb_number && (
+                  <div className="dp-row"><span className="dp-key">Csomagkövetés</span><span className="dp-val mono">{order.sameday_awb_number}</span></div>
+                )}
+                <div className="dp-row"><span className="dp-key">{order.delivery_method === "pickup" ? (PAID_STATUSES.includes(order.status) ? "Fizetve" : "Fizetendő") : "Fizetendő a futárnak"}</span><span className="dp-val mono" style={{ fontWeight: 700 }}>{money(order.total_amount)}</span></div>
               </div>
 
               {order.status === "lemondva" ? (
                 <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 12, padding: 14, fontSize: 12, color: "#B91C1C", lineHeight: 1.6, marginTop: 14 }}>
                   A rendelés lemondásra került, a kiválasztott telefon(oka)t felszabadítottuk. Ha mégis szeretnéd megrendelni, indíts egy új rendelést a készletből.
                 </div>
-              ) : (
+              ) : order.delivery_method === "pickup" ? (
                 <div style={{ background: "#F9FAFB", border: "1px solid #EEF0F2", borderRadius: 12, padding: 14, fontSize: 11, color: "#6B7280", lineHeight: 1.6, marginTop: 14 }}>
                   A kiválasztott telefon(oka)t félretettük neked. Előkészítjük, és SMS-ben/telefonon szólunk, ha átvehető a fenti boltban.
+                </div>
+              ) : (
+                <div style={{ background: "#F9FAFB", border: "1px solid #EEF0F2", borderRadius: 12, padding: 14, fontSize: 11, color: "#6B7280", lineHeight: 1.6, marginTop: 14 }}>
+                  {order.sameday_awb_number
+                    ? "A csomagod úton van a SameDay futárral. A fenti összeget kézbesítéskor kell kifizetned."
+                    : "A rendelésedet rögzítettük — hamarosan átadjuk a futárnak, utána SMS-ben/telefonon jelentkezünk a részletekkel. A fenti összeget kézbesítéskor fizeted."}
                 </div>
               )}
 

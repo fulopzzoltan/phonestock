@@ -1413,6 +1413,7 @@ function AppShell() {
     await withBusy(async () => {
       const apiPatch = {};
       if ("googleReviewUrl" in patch) apiPatch.google_review_url = patch.googleReviewUrl || null;
+      if ("samedayPickupPointId" in patch) apiPatch.sameday_pickup_point_id = patch.samedayPickupPointId || null;
       const r = unwrap(await supabase.from("locations").update(apiPatch).eq("id", id).select());
       setLocations((prev) => prev.map((l) => (l.id === id ? r[0] : l)));
     });
@@ -1911,6 +1912,16 @@ function AppShell() {
       unwrap(await supabase.from("customer_requests").update({ status: nextStatus, updated_at: new Date().toISOString() }).eq("id", id));
       if (nextStatus === "lezarva") setCustomerRequests((prev) => prev.filter((r) => r.id !== id));
       else setCustomerRequests((prev) => prev.map((r) => (r.id === id ? { ...r, status: nextStatus } : r)));
+    });
+  }
+  async function generateWebOrderAwb(id) {
+    await withBusy(async () => {
+      const { data, error: err } = await supabase.functions.invoke("sameday-create-awb", { body: { orderId: id } });
+      if (err || data?.error) {
+        alert(`Nem sikerült az AWB-t legenerálni: ${data?.error || err?.message || "ismeretlen hiba"}`);
+        return;
+      }
+      setWebOrders((prev) => prev.map((o) => (o.id === id ? { ...o, samedayAwbNumber: data.awbNumber, samedayAwbStatus: "created" } : o)));
     });
   }
   async function confirmWebOrder(id) {
@@ -3216,7 +3227,7 @@ function AppShell() {
             users={users} currentUserId={profile?.id} tickets={tickets} stock={stock} parts={parts} customersTable={customersTable} warranties={warranties}
             upcomingLeave={upcomingLeave}
             customerRequests={customerRequests} advanceCustomerRequest={advanceCustomerRequest}
-            webOrders={webOrders} confirmWebOrder={confirmWebOrder} cancelWebOrder={cancelWebOrder} completeWebOrder={completeWebOrder}
+            webOrders={webOrders} confirmWebOrder={confirmWebOrder} cancelWebOrder={cancelWebOrder} completeWebOrder={completeWebOrder} generateWebOrderAwb={generateWebOrderAwb}
             onOpenTicket={(id) => setDetailId(id)}
             onOpenProduct={(id) => setProductDetailId(id)}
             onOpenPart={(id) => setPartDetailId(id)}
