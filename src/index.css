@@ -1526,14 +1526,12 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-footer-social{display:flex;gap:10px;margin-top:2px}
 .pub-footer-social a{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;background:var(--pub-paper-raised);border:1px solid var(--pub-line);color:var(--pub-ink-soft)!important;text-decoration:none!important;transition:border-color .12s,color .12s}
 .pub-footer-social a:hover{border-color:var(--pub-accent);color:var(--pub-accent-ink)!important}
-.pub-footer-heading{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--pub-ink);margin-bottom:2px}
 .pub-footer-loc{display:flex;align-items:center;gap:6px;font-size:12.5px;color:inherit;text-decoration:none}
 .pub-footer-loc:hover{color:var(--pub-accent-ink);text-decoration:underline}
 .pub-footer-loc-franchise{align-items:flex-start}
 .pub-footer-loc-franchise svg{margin-top:2px}
 .pub-footer-loc-franchise span{display:flex;flex-direction:column;gap:1px}
 .pub-footer-loc-franchise small{font-size:10px;font-weight:600;color:var(--pub-ink-soft)}
-.pub-footer-bottom{border-top:1px solid var(--pub-line);padding-top:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:11.5px}
 .pub-footer-bottom-left{display:flex;flex-direction:column;gap:3px}
 .pub-footer-legal{display:flex;gap:16px}
 .pub-footer-legal a{color:var(--pub-ink-soft);text-decoration:none}
@@ -1541,15 +1539,45 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-footer-anpc{display:block;flex:none}
 .pub-footer-anpc img{height:26px;width:auto;display:block}
 
-.pub-footer-payment-badges{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+/* Gymshark-mintás lábléc: brand blokk felül, "vissza a tetejére" link,
+   mobilon összecsukható (+/−) szekciók, alul középre rendezett jogi sáv. */
+.pub-footer-brand-block{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding-bottom:20px}
+.pub-footer-brand-block .pub-footer-about{max-width:360px;text-align:center}
+.pub-footer-brand-block .pub-footer-social{margin-top:6px}
+
+.pub-footer-backtotop{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;background:none;border:none;border-top:1px solid var(--pub-line);padding:14px 0;font-size:12.5px;font-weight:700;color:var(--pub-ink);cursor:pointer;font-family:inherit}
+.pub-footer-backtotop:hover{color:var(--pub-accent-ink)}
+.pub-footer-backtotop-arrow{font-size:14px}
+
+.pub-footer-accordions{display:flex;flex-direction:column}
+.pub-footer-acc{border-bottom:1px solid var(--pub-line)}
+.pub-footer-acc-head{display:flex;align-items:center;justify-content:space-between;width:100%;background:none;border:none;padding:15px 0;font-size:13px;font-weight:700;color:var(--pub-ink);cursor:pointer;font-family:inherit;text-align:left}
+.pub-footer-acc-icon{font-size:17px;font-weight:400;color:var(--pub-ink-soft);flex-shrink:0;line-height:1}
+.pub-footer-acc-body{max-height:0;overflow:hidden;transition:max-height .25s ease}
+.pub-footer-acc-body.open{max-height:420px}
+.pub-footer-acc-body-inner{display:flex;flex-direction:column;gap:10px;padding-bottom:18px}
+.pub-footer-acc-body-inner a{color:var(--pub-ink-soft);text-decoration:none;font-size:12.5px}
+.pub-footer-acc-body-inner a:hover{color:var(--pub-accent-ink);text-decoration:underline}
+
+.pub-footer-payment-badges{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:14px;padding:24px 0}
 .pub-footer-payment-badges img{height:22px;width:auto;display:block}
+
+.pub-footer-bottom{border-top:1px solid var(--pub-line);padding-top:18px;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:11.5px;text-align:center}
+
+@media (min-width:761px){
+  .pub-footer-accordions{flex-direction:row;gap:48px}
+  .pub-footer-acc{border-bottom:none;flex:1}
+  .pub-footer-acc-head{cursor:default;padding:0 0 12px}
+  .pub-footer-acc-icon{display:none}
+  .pub-footer-acc-body{max-height:none!important;overflow:visible}
+  .pub-footer-acc-body-inner{padding-bottom:0}
+}
 @media (max-width:760px){
   .pub-footer-grid{grid-template-columns:1fr 1fr;gap:24px 16px}
 }
 @media (max-width:640px){
   .pub-header-inner,.pub-main,.pub-results-bar,.pub-footer-inner{padding-left:16px;padding-right:16px}
   .pub-main{padding-top:0}
-  .pub-footer-bottom{flex-direction:column;align-items:flex-start}
 }
 
 .chat-panel{position:fixed;right:22px;top:66px;width:340px;max-width:calc(100vw - 32px);height:460px;max-height:calc(100vh - 120px);background:#fff;border-radius:16px;box-shadow:0 12px 40px rgba(16,24,40,.22);border:1px solid #EEF0F2;display:flex;flex-direction:column;z-index:41;overflow:hidden}

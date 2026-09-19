@@ -25,6 +25,21 @@ function mapsHref(name) {
 // itt statikusan tüntetjük fel, külön "Franchise partner" jelöléssel.
 const FRANCHISE_LOCATIONS = [{ name: "Csíkmadaras" }];
 
+function FooterAccordion({ title, children }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="pub-footer-acc">
+      <button type="button" className="pub-footer-acc-head" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+        <span>{title}</span>
+        <span className="pub-footer-acc-icon">{open ? "−" : "+"}</span>
+      </button>
+      <div className={`pub-footer-acc-body${open ? " open" : ""}`}>
+        <div className="pub-footer-acc-body-inner">{children}</div>
+      </div>
+    </div>
+  );
+}
+
 function LocationLinks({ locations }) {
   return (
     <>
@@ -102,63 +117,57 @@ export default function PublicFooter({ lang = "hu", minimal = false, onContactCl
   return (
     <footer className="pub-footer">
       <div className="pub-footer-inner">
-        <div className="pub-footer-grid">
-          <div className="pub-footer-col">
-            <div className="pub-footer-brand">
-              <img src="/logo.png" alt="Telefonos" className="pub-footer-logo" />
-            </div>
-            <p className="pub-footer-about">{s.footer}</p>
-            <a className="pub-footer-phone" href="tel:0773985278"><CallIcon width={12} height={12} />0773 985 278</a>
-            <a className="pub-footer-phone" href="mailto:info@telefonos.ro">info@telefonos.ro</a>
-            <div className="pub-footer-social">
-              {SOCIAL_LINKS.map(({ Icon, href, label }) => (
-                <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>
-                  <Icon width={16} height={16} />
-                </a>
-              ))}
-            </div>
+        <div className="pub-footer-brand-block">
+          <img src="/logo.png" alt="Telefonos" className="pub-footer-logo" />
+          <p className="pub-footer-about">{s.footer}</p>
+          <a className="pub-footer-phone" href="tel:0773985278"><CallIcon width={12} height={12} />0773 985 278</a>
+          <a className="pub-footer-phone" href="mailto:info@telefonos.ro">info@telefonos.ro</a>
+          <div className="pub-footer-social">
+            {SOCIAL_LINKS.map(({ Icon, href, label }) => (
+              <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>
+                <Icon width={16} height={16} />
+              </a>
+            ))}
           </div>
+        </div>
 
-          <div className="pub-footer-col">
-            <div className="pub-footer-heading">{s.footerShop}</div>
+        <button type="button" className="pub-footer-backtotop" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+          <span className="pub-footer-backtotop-arrow">↑</span> {s.footerBackToTop}
+        </button>
+
+        <div className="pub-footer-accordions">
+          <FooterAccordion title={s.footerShop}>
             <a href={stockHref}>{s.navStock}</a>
             <a href={repairHref}>{s.navRepair}</a>
             <a href="/eladom">{s.navBuyback}</a>
             <a href="/status">{s.navStatus}</a>
             <a href="/kosar">{s.footerCart}</a>
-          </div>
+          </FooterAccordion>
 
-          <div className="pub-footer-col">
-            <div className="pub-footer-heading">{s.footerAccount}</div>
+          <FooterAccordion title={s.footerAccount}>
             <a href="/fiok">{s.footerMyAccount}</a>
             <a href={faqHref}>{s.footerFaq}</a>
-          </div>
+          </FooterAccordion>
 
-          <div className="pub-footer-col">
-            <div className="pub-footer-heading">{s.footerLocations}</div>
+          <FooterAccordion title={s.footerLocations}>
             <LocationLinks locations={locations} />
-          </div>
+          </FooterAccordion>
+        </div>
 
-          <div className="pub-footer-col">
-            <div className="pub-footer-heading">{s.footerPayment}</div>
-            <div className="pub-footer-payment-badges">
-              <a href="https://netopia-payments.com" target="_blank" rel="noopener noreferrer"><img src="/netopiacolor-telefonos.png" alt="Netopia Payments" /></a>
-              <img src="/Mastercard-Logo.png" alt="Mastercard" />
-              <img src="/visacolor-telefonos.png" alt="Visa" />
-            </div>
-          </div>
+        <div className="pub-footer-payment-badges">
+          <a href="https://netopia-payments.com" target="_blank" rel="noopener noreferrer"><img src="/netopiacolor-telefonos.png" alt="Netopia Payments" /></a>
+          <img src="/Mastercard-Logo.png" alt="Mastercard" />
+          <img src="/visacolor-telefonos.png" alt="Visa" />
         </div>
 
         <div className="pub-footer-bottom">
-          <div className="pub-footer-bottom-left">
-            <span>{s.footerRights(new Date().getFullYear())}</span>
-          </div>
           <span className="pub-footer-legal">
             <a href={`/aszf${legalLangQuery}`}>{s.footerTerms}</a>
             <a href={`/visszakuldes${legalLangQuery}`}>{s.footerReturns}</a>
             <a href={`/adatvedelem${legalLangQuery}`}>{s.footerPrivacy}</a>
           </span>
           <a href="https://anpc.ro/ce-este-sal/" target="_blank" rel="noopener noreferrer" className="pub-footer-anpc"><img src="/anpc_sal.v1787810231.png" alt="ANPC SAL" /></a>
+          <span>{s.footerRights(new Date().getFullYear())}</span>
         </div>
       </div>
     </footer>
