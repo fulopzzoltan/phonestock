@@ -1707,6 +1707,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-sticky-bar{position:sticky;top:var(--pub-header-h,0px);z-index:4;background:#fff;border-bottom:1px solid var(--pub-line);box-shadow:0 4px 14px rgba(16,24,40,.06)}
 @media (max-width:760px){
   .pub-sticky-bar{position:fixed;top:auto;bottom:0;left:0;right:0;border-bottom:none;border-top:1px solid var(--pub-line);box-shadow:0 -4px 14px rgba(16,24,40,.08);padding-bottom:env(safe-area-inset-bottom)}
+  .pub-shop-sticky-cta{padding-bottom:64px}
 }
 .pub-sticky-bar-inner{max-width:1000px;margin:0 auto;padding:10px 24px;display:flex;align-items:center;gap:14px}
 .pub-sticky-thumb{width:38px;height:38px;border-radius:8px;background:var(--pub-paper);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--pub-ink-soft)}

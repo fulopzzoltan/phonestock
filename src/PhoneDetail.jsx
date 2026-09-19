@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "./lib/supabaseClient";
 import { photoUrl } from "./lib/imageResize";
@@ -27,12 +27,9 @@ export default function PhoneDetail({ id, lang = "hu" }) {
   const [allPhones, setAllPhones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activePhoto, setActivePhoto] = useState(0);
-  const [showStickyBar, setShowStickyBar] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
   const cart = useCart();
   const wishlist = useWishlist();
-  const ctaSentinelRef = useRef(null);
-  const hasSeenCtaRef = useRef(false);
 
   useEffect(() => {
     (async () => {
@@ -56,26 +53,6 @@ export default function PhoneDetail({ id, lang = "hu" }) {
     window.addEventListener("resize", sync);
     return () => window.removeEventListener("resize", sync);
   }, [phone]);
-
-  // A mini sáv csak akkor jelenjen meg, ha a felhasználó már túlgörgetett a valódi
-  // Kosárba gombon — mobilon a galéria a kártya adatai előtt van a DOM-ban, így a gomb
-  // kezdetben "nem látszik" (lentebb van), de ez még nem jelenti, hogy túlgörgettünk rajta.
-  useEffect(() => {
-    hasSeenCtaRef.current = false;
-    setShowStickyBar(false);
-    if (!ctaSentinelRef.current) return;
-    const el = ctaSentinelRef.current;
-    const obs = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        hasSeenCtaRef.current = true;
-        setShowStickyBar(false);
-      } else if (hasSeenCtaRef.current) {
-        setShowStickyBar(true);
-      }
-    }, { rootMargin: `-${headerHeight}px 0px 0px 0px` });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [phone?.id, headerHeight]);
 
   const langSwitchHref = lang === "ro" ? `/telefon/${id}` : `/ro/telefon/${id}`;
 
@@ -106,7 +83,7 @@ export default function PhoneDetail({ id, lang = "hu" }) {
     : `${phone.brand} ${phone.model} ${phone.condition === "New" ? "új" : "felújított"}${phone.warranty ? `, ${phone.warranty} garanciával` : ""} — ${Number(phone.sale_price).toLocaleString("hu-HU")} Lei.`;
 
   return (
-    <div className="pub-shop">
+    <div className="pub-shop pub-shop-sticky-cta">
       <Helmet>
         <html lang={lang} />
         <title>{title}</title>
@@ -130,27 +107,25 @@ export default function PhoneDetail({ id, lang = "hu" }) {
       </Helmet>
       <PublicHeader activeNav="stock" lang={lang} langSwitchHref={langSwitchHref} />
 
-      {showStickyBar && (
-        <div className="pub-sticky-bar" style={{ "--pub-header-h": `${headerHeight}px` }}>
-          <div className="pub-sticky-bar-inner">
-            <div className="pub-sticky-thumb">
-              {photos.length > 0 ? <img src={photoUrl(photos[0], "thumb")} alt="" /> : deviceSvg}
-            </div>
-            <div className="pub-sticky-info">
-              <div className="pub-sticky-name">{phone.brand} {phone.model}{phone.storage ? ` · ${normalizeStorage(phone.storage)}` : ""}</div>
-              <div className="pub-sticky-cond">{phone.condition === "New" ? s.conditionNew : s.conditionRefurb}</div>
-            </div>
-            <div className="pub-sticky-price mono">{Number(phone.sale_price).toLocaleString("hu-HU")}<span className="pub-cur">Lei</span></div>
-            {cart.some((c) => c.id === phone.id) ? (
-              <a className="pub-ask-btn pub-ask-btn-added" href="/kosar">Kosárban</a>
-            ) : (
-              <button type="button" className="pub-ask-btn" onClick={() => addToCart({ id: phone.id, brand: phone.brand, model: phone.model, storage: normalizeStorage(phone.storage), color: phone.color, salePrice: phone.sale_price, photoPath: photos[0] || null, locationId: phone.location_id, locationName: phone.location_name })}>
-                Kosárba
-              </button>
-            )}
+      <div className="pub-sticky-bar" style={{ "--pub-header-h": `${headerHeight}px` }}>
+        <div className="pub-sticky-bar-inner">
+          <div className="pub-sticky-thumb">
+            {photos.length > 0 ? <img src={photoUrl(photos[0], "thumb")} alt="" /> : deviceSvg}
           </div>
+          <div className="pub-sticky-info">
+            <div className="pub-sticky-name">{phone.brand} {phone.model}{phone.storage ? ` · ${normalizeStorage(phone.storage)}` : ""}</div>
+            <div className="pub-sticky-cond">{phone.condition === "New" ? s.conditionNew : s.conditionRefurb}</div>
+          </div>
+          <div className="pub-sticky-price mono">{Number(phone.sale_price).toLocaleString("hu-HU")}<span className="pub-cur">Lei</span></div>
+          {cart.some((c) => c.id === phone.id) ? (
+            <a className="pub-ask-btn pub-ask-btn-added" href="/kosar">Kosárban</a>
+          ) : (
+            <button type="button" className="pub-ask-btn" onClick={() => addToCart({ id: phone.id, brand: phone.brand, model: phone.model, storage: normalizeStorage(phone.storage), color: phone.color, salePrice: phone.sale_price, photoPath: photos[0] || null, locationId: phone.location_id, locationName: phone.location_name })}>
+              Kosárba
+            </button>
+          )}
         </div>
-      )}
+      </div>
 
       <main className="pub-detail-main">
         <div className="pub-breadcrumb">
@@ -217,8 +192,6 @@ export default function PhoneDetail({ id, lang = "hu" }) {
                 <HeartIcon width={18} height={18} />
               </button>
             </div>
-
-            <div ref={ctaSentinelRef} />
 
             <div className="pub-detail-trust">
               {phone.warranty && (
