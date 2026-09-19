@@ -34,20 +34,17 @@ function CompanySettings({ settings, updateSettings, busy }) {
   return (
     <div className="pult-section">
       <div className="pult-section-head"><SettingsIcon width={16} height={16} />Cégadatok</div>
-      <div className="settings-row-desc" style={{ marginBottom: 10 }}>
-        Ezek az adatok kerülnek a generált dokumentumokba (bizományos szerződés, borderou, nyilatkozatok).
-      </div>
       <div className="row2">
         <div className="field"><label>Cégnév</label><input value={f.companyName} onChange={set("companyName")} /></div>
-        <div className="field"><label>Cégjegyzékszám / CUI</label><input value={f.companyCui} onChange={set("companyCui")} /></div>
+        <div className="field"><label>CUI</label><input value={f.companyCui} onChange={set("companyCui")} /></div>
       </div>
-      <div className="field"><label>Székhely cím</label><input value={f.companyAddress} onChange={set("companyAddress")} placeholder="A dokumentumokon a cég (nem a boltok) hivatalos címe" /></div>
+      <div className="field"><label>Székhely</label><input value={f.companyAddress} onChange={set("companyAddress")} /></div>
       <div className="row2">
-        <div className="field"><label>Telefonszám</label><input value={f.companyPhone} onChange={set("companyPhone")} /></div>
+        <div className="field"><label>Telefon</label><input value={f.companyPhone} onChange={set("companyPhone")} /></div>
         <div className="field"><label>Email</label><input value={f.companyEmail} onChange={set("companyEmail")} /></div>
       </div>
       <div className="field">
-        <label>Bizományos szerződés felmondási határideje (nap) <span style={{ color: "#9CA3AF", fontWeight: 400 }}>— jogilag még pontosítandó, addig üresen marad a szerződésen</span></label>
+        <label>Felmondási határidő (nap)</label>
         <input type="number" value={f.consignmentNoticeDays} onChange={set("consignmentNoticeDays")} placeholder="pl. 30" style={{ maxWidth: 140 }} />
       </div>
       <button type="button" className="btn sec sm" disabled={busy} onClick={() => updateSettings({
@@ -93,38 +90,26 @@ function SmartBillSettings({ settings, updateSettings, busy, locations }) {
   return (
     <div className="pult-section">
       <div className="pult-section-head"><SettingsIcon width={16} height={16} />SmartBill</div>
-      <div className="settings-row-desc" style={{ marginBottom: 10 }}>
-        Számla/bon kiállítás SmartBillen keresztül. A hitelesítő adatok Supabase secretként vannak beállítva, itt nem szerepelnek.
-      </div>
       <div className="row2">
-        <div className="field">
-          <label>Alapértelmezett számlasorozat <span style={{ color: "#9CA3AF", fontWeight: 400 }}>— ha üres, automatikusan próbál választani</span></label>
-          <input value={f.smartbillDefaultSeries} onChange={set("smartbillDefaultSeries")} placeholder="pl. TLF" />
-        </div>
-        <div className="field">
-          <label>Alapértelmezett ÁFA-kód <span style={{ color: "#9CA3AF", fontWeight: 400 }}>— neplătitor esetén a könyvelővel egyeztetett érték</span></label>
-          <input value={f.smartbillDefaultTaxName} onChange={set("smartbillDefaultTaxName")} placeholder="pl. Scutit fara drept de deducere" />
-        </div>
+        <div className="field"><label>Sorozat</label><input value={f.smartbillDefaultSeries} onChange={set("smartbillDefaultSeries")} placeholder="pl. TLF" /></div>
+        <div className="field"><label>ÁFA-kód</label><input value={f.smartbillDefaultTaxName} onChange={set("smartbillDefaultTaxName")} placeholder="pl. Scutit fara drept" /></div>
       </div>
       <button type="button" className="btn sec sm" disabled={busy} onClick={() => updateSettings({ smartbillDefaultSeries: f.smartbillDefaultSeries, smartbillDefaultTaxName: f.smartbillDefaultTaxName })}>
         {busy ? "Mentés..." : "Mentés"}
       </button>
 
-      <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid #E5E7EB" }}>
-        <div className="settings-row-lbl" style={{ marginBottom: 8 }}>Kapcsolat tesztelése</div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-          <select value={testLocId} onChange={(e) => setTestLocId(e.target.value)} style={{ maxWidth: 200 }}>
-            {testable.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
-          </select>
-          <button type="button" className="btn sec sm" disabled={testState === "busy" || !testLocId} onClick={runTest}>
-            {testState === "busy" ? "Tesztelés..." : "SmartBill kapcsolat tesztelése"}
-          </button>
-          {testState && testState !== "busy" && (
-            testState.ok
-              ? <span style={{ color: "#22C55E", fontWeight: 700 }}>✓ Sikeres kapcsolat</span>
-              : <span style={{ color: "#EF4444", fontWeight: 700 }}>✗ {testState.error}</span>
-          )}
-        </div>
+      <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid #E5E7EB", display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+        <select value={testLocId} onChange={(e) => setTestLocId(e.target.value)} style={{ maxWidth: 160 }}>
+          {testable.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+        </select>
+        <button type="button" className="btn sec sm" disabled={testState === "busy" || !testLocId} onClick={runTest}>
+          {testState === "busy" ? "Tesztelés..." : "Kapcsolat tesztelése"}
+        </button>
+        {testState && testState !== "busy" && (
+          testState.ok
+            ? <span style={{ color: "#22C55E", fontWeight: 700 }}>✓ OK</span>
+            : <span style={{ color: "#EF4444", fontWeight: 700 }}>✗ {testState.error}</span>
+        )}
       </div>
     </div>
   );
@@ -135,10 +120,10 @@ function LocationReviewUrlRow({ loc, editLocation, busy }) {
   const dirty = value !== (loc.google_review_url || "");
   return (
     <div className="settings-row" style={{ alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-      <div style={{ minWidth: 100, fontWeight: 600, fontSize: 12.5 }}>{loc.name}</div>
+      <div style={{ minWidth: 90, fontWeight: 600, fontSize: 12.5 }}>{loc.name}</div>
       <input
         value={value} onChange={(e) => setValue(e.target.value)}
-        placeholder="https://g.page/r/.../review" style={{ flex: 1, minWidth: 220 }}
+        placeholder="https://g.page/r/.../review" style={{ flex: 1, minWidth: 160 }}
       />
       <button type="button" className="btn sec sm" disabled={busy || !dirty} onClick={() => editLocation(loc.id, { googleReviewUrl: value.trim() })}>
         Mentés
@@ -147,28 +132,47 @@ function LocationReviewUrlRow({ loc, editLocation, busy }) {
   );
 }
 
+function LocationSamedayPickupRow({ loc, editLocation, busy }) {
+  const [value, setValue] = useState(loc.sameday_pickup_point_id || "");
+  const dirty = value !== (loc.sameday_pickup_point_id || "");
+  return (
+    <div className="settings-row" style={{ alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+      <div style={{ minWidth: 90, fontWeight: 600, fontSize: 12.5 }}>{loc.name}</div>
+      <input
+        value={value} onChange={(e) => setValue(e.target.value)}
+        placeholder="pont ID" style={{ flex: 1, minWidth: 120, maxWidth: 180 }}
+      />
+      <button type="button" className="btn sec sm" disabled={busy || !dirty} onClick={() => editLocation(loc.id, { samedayPickupPointId: value.trim() })}>
+        Mentés
+      </button>
+    </div>
+  );
+}
+
+function SamedaySettings({ locations, editLocation, busy }) {
+  const realLocations = (locations || []).filter((l) => l.name !== "Tartalék");
+  return (
+    <div className="pult-section">
+      <div className="pult-section-head"><ChatIcon width={16} height={16} />SameDay szállítás</div>
+      {realLocations.map((l) => (
+        <LocationSamedayPickupRow key={l.id} loc={l} editLocation={editLocation} busy={busy} />
+      ))}
+    </div>
+  );
+}
+
 function ReviewRequestSettings({ settings, updateSettings, busy, locations, editLocation }) {
   const realLocations = (locations || []).filter((l) => l.name !== "Tartalék");
   return (
     <div className="pult-section">
-      <div className="pult-section-head"><ChatIcon width={16} height={16} />Google-értékelés kérés</div>
+      <div className="pult-section-head"><ChatIcon width={16} height={16} />Google-értékelés</div>
       <div className="settings-row">
-        <div>
-          <div className="settings-row-lbl">Automatikus értékelés-kérés</div>
-          <div className="settings-row-desc">
-            Néhány nappal egy szerviz-átadás vagy telefon-eladás után az ügyfél kap egy rövid
-            üzenetet (WhatsApp, ha be van állítva, egyébként SMS) egy Google-értékelés linkkel.
-            Nem érinti a saját készletes (előkészítés/garanciális) munkalapokat.
-          </div>
-        </div>
+        <div className="settings-row-lbl">Automata kérés</div>
         <Toggle checked={!!settings.reviewRequestEnabled} disabled={busy} onChange={(v) => updateSettings({ reviewRequestEnabled: v })} />
       </div>
       {settings.reviewRequestEnabled && (
         <div className="settings-row">
-          <div>
-            <div className="settings-row-lbl">Hány nappal az átadás/eladás után menjen ki</div>
-            <div className="settings-row-desc">2-3 nap a szokásos — legyen ideje kipróbálni, de még friss legyen az élmény.</div>
-          </div>
+          <div className="settings-row-lbl">Napok száma</div>
           <input
             type="number" min={1} max={14} style={{ width: 64 }}
             value={settings.reviewRequestDelayDays}
@@ -176,12 +180,7 @@ function ReviewRequestSettings({ settings, updateSettings, busy, locations, edit
           />
         </div>
       )}
-      <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid #E5E7EB" }}>
-        <div className="settings-row-lbl" style={{ marginBottom: 8 }}>Google-értékelés link helyszínenként</div>
-        <div className="settings-row-desc" style={{ marginBottom: 10 }}>
-          A "Írjon értékelést" linket a Google Cégprofilból lehet kimásolni (Cégprofil kezelése → Vélemények kérése).
-          Amíg egy helyszínnek nincs beállítva, ott nem megy ki értékelés-kérés.
-        </div>
+      <div style={{ marginTop: 12, paddingTop: 10, borderTop: "1px solid #E5E7EB" }}>
         {realLocations.map((l) => (
           <LocationReviewUrlRow key={l.id} loc={l} editLocation={editLocation} busy={busy} />
         ))}
@@ -201,10 +200,10 @@ function LoyaltyRewardRow({ reward, onSave, busy }) {
     || f.active !== reward.active;
   return (
     <div className="settings-row" style={{ alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-      <input value={f.label} onChange={(e) => setF({ ...f, label: e.target.value })} style={{ maxWidth: 220 }} />
-      <input type="number" title="Pontköltség" value={f.pointCost} onChange={(e) => setF({ ...f, pointCost: e.target.value })} placeholder="pont" style={{ maxWidth: 90 }} />
-      <input type="number" title="Nekünk mennyibe kerül (Lei)" value={f.ourCost} onChange={(e) => setF({ ...f, ourCost: e.target.value })} placeholder="költség (Lei)" style={{ maxWidth: 110 }} />
-      <input type="number" title="Vevőnek mennyit ér (Lei)" value={f.customerValue} onChange={(e) => setF({ ...f, customerValue: e.target.value })} placeholder="érték (Lei)" style={{ maxWidth: 110 }} />
+      <input value={f.label} onChange={(e) => setF({ ...f, label: e.target.value })} style={{ maxWidth: 180 }} />
+      <input type="number" title="Pontköltség" value={f.pointCost} onChange={(e) => setF({ ...f, pointCost: e.target.value })} placeholder="pont" style={{ maxWidth: 70 }} />
+      <input type="number" title="Nekünk mennyibe kerül (Lei)" value={f.ourCost} onChange={(e) => setF({ ...f, ourCost: e.target.value })} placeholder="költség" style={{ maxWidth: 80 }} />
+      <input type="number" title="Vevőnek mennyit ér (Lei)" value={f.customerValue} onChange={(e) => setF({ ...f, customerValue: e.target.value })} placeholder="érték" style={{ maxWidth: 80 }} />
       <Toggle checked={f.active} disabled={busy} onChange={(v) => setF({ ...f, active: v })} />
       <button type="button" className="btn sec sm" disabled={busy || !dirty} onClick={() => onSave(f)}>Mentés</button>
     </div>
@@ -217,16 +216,13 @@ function LoyaltyRewardsSettings({ rewards, addLoyaltyReward, editLoyaltyReward, 
   const sorted = [...(rewards || [])].sort((a, b) => a.sortOrder - b.sortOrder);
   return (
     <div className="pult-section">
-      <div className="pult-section-head"><SettingsIcon width={16} height={16} />Hűségpont-beváltási katalógus</div>
-      <div className="settings-row-desc" style={{ marginBottom: 10 }}>
-        Ezek a jutalmak jelennek meg beváltható tételként az ügyfél pontegyenlege alapján a Kliens-lapon. A pontszerzés (1 pont/Lei) és az ajánlói bónusz (200 pont) automatikus, nem itt állítható.
-      </div>
+      <div className="pult-section-head"><SettingsIcon width={16} height={16} />Hűségpont-katalógus</div>
       {sorted.map((r) => (
         <LoyaltyRewardRow key={r.id} reward={r} busy={busy} onSave={(f) => editLoyaltyReward(r.id, { ...r, ...f })} />
       ))}
-      <div className="settings-row" style={{ alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 10, paddingTop: 10, borderTop: "1px solid #E5E7EB" }}>
-        <input value={newLabel} onChange={(e) => setNewLabel(e.target.value)} placeholder="Új jutalom neve" style={{ maxWidth: 220 }} />
-        <input type="number" value={newPointCost} onChange={(e) => setNewPointCost(e.target.value)} placeholder="pont" style={{ maxWidth: 90 }} />
+      <div className="settings-row" style={{ alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 8, paddingTop: 8, borderTop: "1px solid #E5E7EB" }}>
+        <input value={newLabel} onChange={(e) => setNewLabel(e.target.value)} placeholder="Új jutalom" style={{ maxWidth: 180 }} />
+        <input type="number" value={newPointCost} onChange={(e) => setNewPointCost(e.target.value)} placeholder="pont" style={{ maxWidth: 70 }} />
         <button
           type="button" className="btn sec sm" disabled={busy || !newLabel.trim() || !newPointCost}
           onClick={() => {
@@ -234,84 +230,91 @@ function LoyaltyRewardsSettings({ rewards, addLoyaltyReward, editLoyaltyReward, 
             setNewLabel(""); setNewPointCost("");
           }}
         >
-          + Új jutalom
+          + Új
         </button>
       </div>
     </div>
   );
 }
 
+function WhatsappFollowupSettings({ settings, updateSettings, busy }) {
+  return (
+    <div className="pult-section">
+      <div className="pult-section-head"><ChatIcon width={16} height={16} />Vásárlás utáni WhatsApp</div>
+      <div className="settings-row">
+        <div className="settings-row-lbl">Vásárlás után</div>
+        <Toggle checked={!!settings.loyaltyFollowupEnabled} disabled={busy} onChange={(v) => updateSettings({ loyaltyFollowupEnabled: v })} />
+      </div>
+      {settings.loyaltyFollowupEnabled && (
+        <div className="settings-row">
+          <div className="settings-row-lbl">Napok száma</div>
+          <input
+            type="number" min={1} max={14} style={{ width: 64 }}
+            value={settings.loyaltyFollowupDays}
+            onChange={(e) => updateSettings({ loyaltyFollowupDays: Number(e.target.value) || 3 })}
+          />
+        </div>
+      )}
+      <div className="settings-row-desc" style={{ marginTop: 6 }}>Kikapcsolva, amíg a hűségpont él nem indul.</div>
+    </div>
+  );
+}
+
+function TicketSmsSettings({ settings, updateSettings, busy }) {
+  return (
+    <div className="pult-section">
+      <div className="pult-section-head"><ChatIcon width={16} height={16} />Automatikus SMS-ek</div>
+      <div className="settings-row">
+        <div className="settings-row-lbl">Felvételkor</div>
+        <Toggle checked={!!settings.smsOnTicketCreate} disabled={busy} onChange={(v) => updateSettings({ smsOnTicketCreate: v })} />
+      </div>
+      <div className="settings-row">
+        <div className="settings-row-lbl">Átvehetőnél</div>
+        <Toggle checked={!!settings.smsOnTicketReady} disabled={busy} onChange={(v) => updateSettings({ smsOnTicketReady: v })} />
+      </div>
+    </div>
+  );
+}
+
+function SettingsGroup({ title }) {
+  return <div className="pult-group-title">{title}</div>;
+}
+
 export default function SettingsTab({ isAdmin, profile, user, settings, updateSettings, busy, setChangePasswordModal, locations, loyaltyRewards, addLoyaltyReward, editLoyaltyReward, editLocation }) {
   return (
-    <>
-      <div className="pult-grid">
-        <div className="pult-section">
-          <div className="pult-section-head"><SettingsIcon width={16} height={16} />Fiók</div>
-          <div className="settings-row">
-            <div>
-              <div className="settings-row-lbl">{profile?.fullName || user?.email}</div>
-              <div className="settings-row-desc">{isAdmin ? "Admin" : "Alkalmazott"}{profile?.email ? ` · ${profile.email}` : ""}</div>
-            </div>
-            <button type="button" className="btn sec sm" onClick={() => setChangePasswordModal(true)}>Jelszó módosítása</button>
+    <div className="pult-settings">
+      <div className="pult-section">
+        <div className="settings-row">
+          <div>
+            <div className="settings-row-lbl">{profile?.fullName || user?.email}</div>
+            <div className="settings-row-desc">{isAdmin ? "Admin" : "Alkalmazott"}{profile?.email ? ` · ${profile.email}` : ""}</div>
           </div>
+          <button type="button" className="btn sec sm" onClick={() => setChangePasswordModal(true)}>Jelszó</button>
         </div>
-
-        {isAdmin && (
-          <div className="pult-section">
-            <div className="pult-section-head"><ChatIcon width={16} height={16} />Automatikus SMS-ek</div>
-            <div className="settings-row">
-              <div>
-                <div className="settings-row-lbl">SMS munkalap felvételekor</div>
-                <div className="settings-row-desc">Az ügyfél SMS-t kap, amikor átvesszük a készülékét, a munkalapszámmal és a nyomon követő linkkel.</div>
-              </div>
-              <Toggle checked={!!settings.smsOnTicketCreate} disabled={busy} onChange={(v) => updateSettings({ smsOnTicketCreate: v })} />
-            </div>
-            <div className="settings-row">
-              <div>
-                <div className="settings-row-lbl">SMS, amikor átvehető a készülék</div>
-                <div className="settings-row-desc">Az ügyfél SMS-t kap, amint a munkalap "Átvehető" állapotba kerül (nem küld, ha "Sikertelen" vagy már helyben "Átadva").</div>
-              </div>
-              <Toggle checked={!!settings.smsOnTicketReady} disabled={busy} onChange={(v) => updateSettings({ smsOnTicketReady: v })} />
-            </div>
-          </div>
-        )}
-
-        {isAdmin && (
-          <div className="pult-section">
-            <div className="pult-section-head"><ChatIcon width={16} height={16} />Vásárlás utáni visszajelzés-kérés</div>
-            <div className="settings-row">
-              <div>
-                <div className="settings-row-lbl">WhatsApp-üzenet telefon-vásárlás után</div>
-                <div className="settings-row-desc">
-                  Néhány nappal egy telefon-eladás után az ügyfél kap egy rövid "minden rendben?" üzenetet
-                  Google-értékelés kéréssel, benne a hűségpont-egyenlegével. <b>Szándékosan kikapcsolva marad</b>,
-                  amíg a hűségpont-rendszert ténylegesen el nem indítjuk az ügyfelek felé — ne kapjon valaki
-                  pontokról szóló üzenetet egy programról, amiről még nem is tud.
-                </div>
-              </div>
-              <Toggle checked={!!settings.loyaltyFollowupEnabled} disabled={busy} onChange={(v) => updateSettings({ loyaltyFollowupEnabled: v })} />
-            </div>
-            {settings.loyaltyFollowupEnabled && (
-              <div className="settings-row">
-                <div>
-                  <div className="settings-row-lbl">Hány nappal a vásárlás után menjen ki</div>
-                  <div className="settings-row-desc">Legyen elég idő kipróbálni a telefont, de még friss legyen az élmény — 2-4 nap a szokásos.</div>
-                </div>
-                <input
-                  type="number" min={1} max={14} style={{ width: 64 }}
-                  value={settings.loyaltyFollowupDays}
-                  onChange={(e) => updateSettings({ loyaltyFollowupDays: Number(e.target.value) || 3 })}
-                />
-              </div>
-            )}
-          </div>
-        )}
-
-        {isAdmin && <ReviewRequestSettings settings={settings} updateSettings={updateSettings} busy={busy} locations={locations} editLocation={editLocation} />}
-        {isAdmin && <CompanySettings settings={settings} updateSettings={updateSettings} busy={busy} />}
-        {isAdmin && <SmartBillSettings settings={settings} updateSettings={updateSettings} busy={busy} locations={locations} />}
-        {isAdmin && <LoyaltyRewardsSettings rewards={loyaltyRewards} addLoyaltyReward={addLoyaltyReward} editLoyaltyReward={editLoyaltyReward} busy={busy} />}
       </div>
-    </>
+
+      {isAdmin && (
+        <>
+          <SettingsGroup title="Automatizmusok" />
+          <div className="pult-row3">
+            <TicketSmsSettings settings={settings} updateSettings={updateSettings} busy={busy} />
+            <ReviewRequestSettings settings={settings} updateSettings={updateSettings} busy={busy} locations={locations} editLocation={editLocation} />
+            <WhatsappFollowupSettings settings={settings} updateSettings={updateSettings} busy={busy} />
+          </div>
+
+          <SettingsGroup title="Integrációk" />
+          <div className="pult-row2">
+            <SmartBillSettings settings={settings} updateSettings={updateSettings} busy={busy} locations={locations} />
+            <SamedaySettings locations={locations} editLocation={editLocation} busy={busy} />
+          </div>
+
+          <SettingsGroup title="Cég és hűségprogram" />
+          <div className="pult-row2">
+            <CompanySettings settings={settings} updateSettings={updateSettings} busy={busy} />
+            <LoyaltyRewardsSettings rewards={loyaltyRewards} addLoyaltyReward={addLoyaltyReward} editLoyaltyReward={editLoyaltyReward} busy={busy} />
+          </div>
+        </>
+      )}
+    </div>
   );
 }

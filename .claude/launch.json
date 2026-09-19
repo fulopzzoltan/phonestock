@@ -12,6 +12,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "preview", "--", "--port", "4173"],
       "port": 4173
+    },
+    {
+      "name": "phonestock-admin",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "VITE_ADMIN_ONLY=true npm run dev -- --port 5174"],
+      "port": 5174
     }
   ]
 }
