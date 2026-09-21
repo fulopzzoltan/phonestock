@@ -8,7 +8,7 @@ import { findBuybackValue, isRepairUneconomical, recommendNearBudget } from "./l
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 import PhoneMiniCard from "./components/PhoneMiniCard";
-import { CallIcon, PinIcon, WarningIcon } from "./components/icons";
+import { CallIcon, PinIcon, WarningIcon, ClockIcon, WarrantyIcon } from "./components/icons";
 import { EmptyState, LoadingState } from "./components/EmptyState";
 import { ReviewsBadge } from "./components/PublicReviews";
 
@@ -253,6 +253,18 @@ export default function RepairEstimator({ lang = "hu" }) {
           </div>
         ) : (
           <button type="button" className="pub-back-link" onClick={goBack}>{s.back}</button>
+        )}
+
+        {step === "model" && (
+          <div className="bb-repair-intro" style={{ marginBottom: 16 }}>
+            <div className="bb-hero-title" style={{ fontSize: 20 }}>{s.repairLandingHeadline}</div>
+            <p className="bb-hero-sub">{s.repairLandingIntro}</p>
+            <div className="bb-trust-row">
+              <div className="bb-trust-item"><ClockIcon width={15} height={15} />{s.repairTrust1}</div>
+              <div className="bb-trust-item"><WarrantyIcon width={15} height={15} />{s.repairTrust2}</div>
+              <div className="bb-trust-item"><PinIcon width={15} height={15} />{s.repairTrust3}</div>
+            </div>
+          </div>
         )}
 
         {step === "model" && (

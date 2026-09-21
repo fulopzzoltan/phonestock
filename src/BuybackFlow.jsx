@@ -3,16 +3,13 @@ import { supabase } from "./lib/supabaseClient";
 import { calculateBuybackPrice } from "./lib/buybackPricing";
 import { BUYBACK_CONDITION_QUESTIONS as CONDITION_QUESTIONS } from "./lib/utils";
 import { recommendNearBudget } from "./lib/tradeEngine";
-import { FAQ_CONTENT } from "./lib/faqContent";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 import PhoneMiniCard from "./components/PhoneMiniCard";
 import BuybackPriceBar from "./components/BuybackPriceBar";
-import { ClockIcon, FinanceIcon, CallIcon, PinIcon, PartsIcon, WarningIcon, BuybackIcon, WarrantyIcon, ChevronDownIcon, PhoneCaseIcon, TransferIcon } from "./components/icons";
+import { ClockIcon, FinanceIcon, CallIcon, PinIcon, PartsIcon, WarningIcon, BuybackIcon, WarrantyIcon } from "./components/icons";
 import { EmptyState, LoadingState } from "./components/EmptyState";
 import { ReviewsBadge } from "./components/PublicReviews";
-
-const EladasFAQ = FAQ_CONTENT.hu.find((c) => c.key === "eladas")?.questions || [];
 
 const COLORS = ["Fekete", "Fehér", "Kék", "Zöld", "Ezüst", "Egyéb"];
 
@@ -50,7 +47,6 @@ export default function BuybackFlow() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [done, setDone] = useState(null); // { offer_no, price }
-  const [openFaq, setOpenFaq] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -258,20 +254,6 @@ export default function BuybackFlow() {
           </div>
         )}
 
-        {step === "brand" && (
-          <div className="bb-payout-teaser">
-            <div className="bb-label">3 módon kérheted a kifizetést</div>
-            <div className="bb-payout-teaser-row">
-              {PAYOUT_OPTIONS.map((o) => (
-                <div key={o.key} className="bb-payout-teaser-item">
-                  <b>{o.label}</b>
-                  <span>{o.key === "keszpenz" ? "a mai ajánlat" : o.key === "kredit" ? "+10%" : "+15%"}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         <div className="bb-progress">
           <div className="bb-progress-track"><div className="bb-progress-fill" style={{ "--bb-progress": (stepIndex + 1) / totalSteps }} /></div>
           <span className="bb-progress-label">{stepIndex + 1}/{totalSteps}</span>
@@ -300,45 +282,6 @@ export default function BuybackFlow() {
           </div>
         )}
 
-        {step === "brand" && (
-          <div className="bb-steps">
-            <div className="bb-label">Hogyan működik</div>
-            <div className="bb-step-cards">
-              <div className="bb-step-card">
-                <span className="bb-step-ic"><PhoneCaseIcon width={18} height={18} /></span>
-                <div><b>Válaszd ki a modelledet</b><p>2 perc alatt látod az ajánlatot.</p></div>
-              </div>
-              <div className="bb-step-card">
-                <span className="bb-step-ic"><PinIcon width={18} height={18} /></span>
-                <div><b>Hozd be bármelyik üzletünkbe</b><p>Gyimesbe vagy Szentgyörgyre.</p></div>
-              </div>
-              <div className="bb-step-card">
-                <span className="bb-step-ic"><TransferIcon width={18} height={18} /></span>
-                <div><b>Válassz kifizetést</b><p>Készpénz, kredit vagy bizomány — és viheted is.</p></div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {step === "brand" && EladasFAQ.length > 0 && (
-          <div className="bb-faq">
-            <div className="bb-label">Gyakori kérdések</div>
-            <div className="pub-faq-list">
-              {EladasFAQ.map((qa, i) => {
-                const open = openFaq === i;
-                return (
-                  <div key={i} className="pub-faq-item">
-                    <button type="button" className="pub-faq-q" onClick={() => setOpenFaq(open ? null : i)}>
-                      <span>{qa.q}</span>
-                      <ChevronDownIcon style={{ transform: open ? "none" : "rotate(-90deg)", transition: "transform .15s", flexShrink: 0 }} />
-                    </button>
-                    {open && <div className="pub-faq-a">{qa.a}</div>}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
 
         {step === "model" && (
           <div className="bb-card">
