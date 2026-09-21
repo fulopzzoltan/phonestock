@@ -22,6 +22,7 @@ const Checkout = lazy(() => import("./Checkout.jsx"));
 const OrderStatus = lazy(() => import("./OrderStatus.jsx"));
 const LegalPage = lazy(() => import("./LegalPage.jsx"));
 const GyikPage = lazy(() => import("./GyikPage.jsx"));
+const QualityPage = lazy(() => import("./QualityPage.jsx"));
 const PaymentMock = lazy(() => import("./PaymentMock.jsx"));
 
 function RouteFallback() {
@@ -74,6 +75,7 @@ const returnsMatch = window.location.pathname.match(/^\/visszakuldes\/?$/i);
 // megmaradjon román nézetben, ne váltson csendben egészben magyarra.
 const legalLang = new URLSearchParams(window.location.search).get("lang") === "ro" ? "ro" : "hu";
 const faqMatch = window.location.pathname.match(/^\/gyik\/?$/i);
+const qualityMatch = window.location.pathname.match(/^\/ellenorzott-felujitas\/?$/i);
 // "/" és "/keszlet" is a nyilvános készletoldalt mutatja — ez az, amit valaki
 // a Netlify domain-re érkezve először lát, nem a bejelentkezés.
 const stockMatch = window.location.pathname.match(/^\/(keszlet\/?)?$/i);
@@ -84,6 +86,7 @@ const roPhoneDetailMatch = window.location.pathname.match(/^\/ro\/telefon\/([0-9
 const roRepairMatch = window.location.pathname.match(/^\/ro\/estimare\/?$/i);
 const roFinderMatch = window.location.pathname.match(/^\/ro\/asistent\/?$/i);
 const roFaqMatch = window.location.pathname.match(/^\/ro\/intrebari-frecvente\/?$/i);
+const roQualityMatch = window.location.pathname.match(/^\/ro\/reconditionare-verificata\/?$/i);
 
 function Root() {
   if (ADMIN_ONLY) return (
@@ -113,6 +116,8 @@ function Root() {
   if (returnsMatch) return <LegalPage title={legalLang === "ro" ? "Politica de retur" : "Visszaküldési és Visszatérítési Szabályzat"} variant="returns" lang={legalLang} />;
   if (roFaqMatch) return <GyikPage lang="ro" />;
   if (faqMatch) return <GyikPage lang="hu" />;
+  if (roQualityMatch) return <QualityPage lang="ro" />;
+  if (qualityMatch) return <QualityPage lang="hu" />;
   if (roPhoneDetailMatch) return <PhoneDetail id={roPhoneDetailMatch[1]} lang="ro" />;
   if (phoneDetailMatch) return <PhoneDetail id={phoneDetailMatch[1]} lang="hu" />;
   if (buybackMatch) return <BuybackFlow />;

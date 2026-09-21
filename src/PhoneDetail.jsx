@@ -200,10 +200,17 @@ export default function PhoneDetail({ id, lang = "hu" }) {
                   <div><div className="pub-detail-trust-title">{s.detailTrustWarranty(translateWarranty(phone.warranty, lang))}</div><div className="pub-detail-trust-sub">{s.detailTrustWarrantySub}</div></div>
                 </div>
               )}
-              <div className="pub-detail-trust-row">
-                <CheckIcon width={19} height={19} strokeWidth={2.4} />
-                <div><div className="pub-detail-trust-title">{s.detailTrustCondition}</div><div className="pub-detail-trust-sub">{s.detailTrustConditionSub}</div></div>
-              </div>
+              {phone.condition === "New" ? (
+                <div className="pub-detail-trust-row">
+                  <CheckIcon width={19} height={19} strokeWidth={2.4} />
+                  <div><div className="pub-detail-trust-title">{s.detailTrustCondition}</div><div className="pub-detail-trust-sub">{s.detailTrustConditionSub}</div></div>
+                </div>
+              ) : (
+                <a className="pub-detail-trust-row" href={lang === "ro" ? "/ro/reconditionare-verificata" : "/ellenorzott-felujitas"} style={{ textDecoration: "none", color: "inherit" }}>
+                  <CheckIcon width={19} height={19} strokeWidth={2.4} />
+                  <div><div className="pub-detail-trust-title">{s.detailTrustCondition}</div><div className="pub-detail-trust-sub">{lang === "ro" ? "Vezi ce verificăm exact →" : "Nézd meg pontosan mit ellenőrzünk →"}</div></div>
+                </a>
+              )}
               {phone.location_name && (
                 <div className="pub-detail-trust-row">
                   <PinIcon width={19} height={19} />

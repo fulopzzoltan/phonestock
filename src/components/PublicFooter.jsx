@@ -67,6 +67,7 @@ export default function PublicFooter({ lang = "hu", minimal = false, onContactCl
   const stockHref = lang === "ro" ? "/ro/telefoane" : "/";
   const repairHref = lang === "ro" ? "/ro/estimare" : "/becsles";
   const faqHref = lang === "ro" ? "/ro/intrebari-frecvente" : "/gyik";
+  const qualityHref = lang === "ro" ? "/ro/reconditionare-verificata" : "/ellenorzott-felujitas";
   // Az ÁSZF/Visszaküldés/Adatvédelem szövege egyelőre csak magyarul létezik — nincs külön RO
   // route rájuk, de a ?lang=ro jelzéssel legalább a fejléc/lábléc (és a nyelvváltó) a
   // látogató nyelvén marad, ahelyett hogy a teljes oldal csendben visszaváltana magyarra.
@@ -145,6 +146,7 @@ export default function PublicFooter({ lang = "hu", minimal = false, onContactCl
           <FooterAccordion title={s.footerAccount}>
             <a href="/fiok">{s.footerMyAccount}</a>
             <a href={faqHref}>{s.footerFaq}</a>
+            <a href={qualityHref}>{lang === "ro" ? "Reconditionare Verificată" : "Ellenőrzött Felújítás"}</a>
           </FooterAccordion>
 
           <FooterAccordion title={s.footerLocations}>
