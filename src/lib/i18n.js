@@ -59,10 +59,10 @@ export const STRINGS = {
 
     // Telefon-részletoldal
     storageLabel: "Tárhely", colorLabel: "Szín", batteryLabel: "Akkumulátor", warrantyLabel: "Garancia",
-    interestedCall: "Érdekel — hívj minket",
     priceNote: "Az ár és a készlet folyamatosan frissül, végleges adásvétel az üzletben történik.",
     detailTrustWarranty: (w) => `${w} garancia`, detailTrustWarrantySub: "A készülékre és a benne lévő alkatrészekre",
     detailTrustCondition: "Ellenőrzött, tesztelt állapot", detailTrustConditionSub: "Kijelző, akku, kamerák és gombok átvizsgálva átadás előtt",
+    detailTrustNewSub: "Bontatlan vagy szinte használatlan, gyári tartozékokkal",
     detailTrustPickup: "Személyes átvétel", detailTrustPickupSub: (loc) => `${loc} üzletünkben, mielőtt fizetsz, kipróbálhatod`,
     detailTrustFolia: "Ajándék kijelzővédő fólia", detailTrustFoliaSub: "Minden telefonhoz jár, felrakva — nem felár",
     detailConditionNewTitle: "Vadonatúj állapot", detailConditionNewDesc: "Ez a készülék bontatlan vagy szinte használatlan állapotban van, gyári tartozékokkal.",
@@ -215,10 +215,10 @@ export const STRINGS = {
     reviewsEmpty: "În curând vor apărea aici primele noastre recenzii.",
 
     storageLabel: "Stocare", colorLabel: "Culoare", batteryLabel: "Baterie", warrantyLabel: "Garanție",
-    interestedCall: "Sunt interesat — sună-ne",
     priceNote: "Prețul și stocul se actualizează constant, tranzacția finală are loc în magazin.",
     detailTrustWarranty: (w) => `Garanție ${w}`, detailTrustWarrantySub: "Pentru dispozitiv și piesele incluse",
     detailTrustCondition: "Stare verificată și testată", detailTrustConditionSub: "Ecran, baterie, camere și butoane verificate înainte de predare",
+    detailTrustNewSub: "Nedesfăcut sau aproape neutilizat, cu accesoriile originale",
     detailTrustPickup: "Ridicare personală", detailTrustPickupSub: (loc) => `La magazinul nostru din ${loc} — îl poți încerca înainte să plătești`,
     detailTrustFolia: "Folie de protecție cadou", detailTrustFoliaSub: "Inclusă la fiecare telefon, montată — fără cost suplimentar",
     detailConditionNewTitle: "Stare nou-nouță", detailConditionNewDesc: "Acest dispozitiv este nedesfăcut sau aproape neutilizat, cu accesoriile originale.",

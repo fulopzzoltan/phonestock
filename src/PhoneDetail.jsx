@@ -276,9 +276,10 @@ export default function PhoneDetail({ id, lang = "hu" }) {
             </div>
           </div>
         )}
-
-        <ReviewsSection lang={lang} />
       </main>
+
+      <ReviewsSection lang={lang} />
+
       <PublicFooter lang={lang} />
       <InfoPanel open={warrantyPanelOpen} onClose={() => setWarrantyPanelOpen(false)} title={lang === "ro" ? "Condiții de garanție" : "Garancia feltételek"}>
         {SALE_WARRANTY_TERMS}
