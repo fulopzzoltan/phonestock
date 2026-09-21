@@ -6,7 +6,7 @@ import { money } from "./lib/utils";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 import { EmptyState } from "./components/EmptyState";
-import { CartIcon, ChevronDownIcon } from "./components/icons";
+import { CartIcon, ChevronDownIcon, FoliaIcon } from "./components/icons";
 
 const ROMANIAN_COUNTIES = [
   "Alba", "Arad", "Argeș", "Bacău", "Bihor", "Bistrița-Năsăud", "Botoșani", "Brăila", "Brașov", "București",
@@ -167,6 +167,10 @@ export default function Checkout() {
         <div className="checkout-totals-row"><span>Részösszeg</span><span className="mono">{money(subtotal)}</span></div>
         <div className="checkout-totals-row"><span>Szállítás</span><span className="mono">{deliveryMethod === "pickup" ? "—" : (shippingFee === 0 ? "Ingyenes" : money(shippingFee))}</span></div>
         <div className="checkout-totals-row checkout-totals-final"><span>Végösszeg</span><span className="mono">{money(total)}</span></div>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12, padding: "10px 12px", background: "var(--primary-soft)", borderRadius: 10, fontSize: 12, color: "var(--primary-ink)", fontWeight: 600 }}>
+        <FoliaIcon width={16} height={16} />
+        Minden telefonhoz jár ajándék kijelzővédő fólia, felrakva — nem felár
       </div>
     </div>
   );

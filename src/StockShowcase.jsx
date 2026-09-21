@@ -6,7 +6,7 @@ import { t, translateColor, colorSwatch } from "./lib/i18n";
 import { normalizeStorage, normalizeBrand, displayName, conditionGradeLabel } from "./lib/utils";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
-import { SearchIcon, FilterIcon, FilterLinesIcon, SortIcon, HeartIcon, CompassIcon, CheckIcon, ChevronDownIcon, WarrantyIcon, ReturnIcon } from "./components/icons";
+import { SearchIcon, FilterIcon, FilterLinesIcon, SortIcon, HeartIcon, CompassIcon, CheckIcon, ChevronDownIcon, WarrantyIcon, ReturnIcon, FoliaIcon, TransferIcon, BuybackIcon } from "./components/icons";
 import { EmptyState, LoadingState } from "./components/EmptyState";
 import { addToCart, useCart } from "./lib/cart";
 import { toggleWishlist, useWishlist } from "./lib/wishlist";
@@ -213,14 +213,22 @@ export default function StockShowcase({ lang = "hu" }) {
     { Icon: ReturnIcon, label: s.trustReturnTitle },
     { Icon: CheckIcon, label: s.trustTestedTitle },
   ];
+  // Ez a 3 pont az, amiben más telefonos boltokhoz képest ténylegesen mást adunk —
+  // nem az általános bizalmi ígéretek (garancia, visszaküldés), hanem konkrét, senki más
+  // által nem hangoztatott extrák. Külön kártyaként fut a CORE_BENEFITS mellett a rácsban.
+  const DIFFERENTIATOR_BENEFITS = [
+    { Icon: FoliaIcon, label: s.trustFoliaTitle },
+    { Icon: TransferIcon, label: s.trustDataMoveTitle },
+    { Icon: BuybackIcon, label: s.trustTradeinDataTitle },
+  ];
   // `image` opcionális, csak kódból tölthető ki (pl. "/promo/setup.png" a public/promo mappából
   // vagy egy importált asset) — nem kell hozzá admin-felület, üresen hagyva a kártya kép nélkül,
   // a jelenlegi szöveges elrendezéssel jelenik meg.
   const PROMO_CARDS = [
     { variant: "finder" },
-    { variant: "benefits-green", image: null },
-    { variant: "benefits-dark", image: null },
-    { variant: "benefits-light", image: null },
+    { variant: "benefits-green", benefits: CORE_BENEFITS, image: null },
+    { variant: "benefits-dark", benefits: DIFFERENTIATOR_BENEFITS, image: null },
+    { variant: "benefits-light", benefits: CORE_BENEFITS, image: null },
     { variant: "try", title: s.trustTryTitle, desc: s.trustTryDesc, tag: s.trustTryTag, image: null },
     { variant: "service", title: s.trustServiceTitle, desc: s.trustServiceDesc, tag: s.trustServiceTag, image: null },
   ];
@@ -491,7 +499,7 @@ export default function StockShowcase({ lang = "hu" }) {
                       ) : promo.variant.startsWith("benefits") ? (
                         <div className={`pub-promo-card ${promo.variant}`}>
                           <div className="pub-promo-benefits-rows">
-                            {CORE_BENEFITS.map((b, i) => (
+                            {(promo.benefits || CORE_BENEFITS).map((b, i) => (
                               <div className="pub-promo-benefits-row" key={i}>
                                 <span className="pub-promo-benefits-ic"><b.Icon width={17} height={17} /></span>
                                 <span className="pub-promo-benefits-label">{b.label}</span>

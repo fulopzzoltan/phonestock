@@ -24,6 +24,9 @@ export const STRINGS = {
     trustTestedTitle: "Tesztelt, ellenőrzött",
     trustTryTitle: "Kipróbálhatod nálunk", trustTryDesc: "Fizetés előtt kézbe veheted.", trustTryTag: "Nálunk, személyesen",
     trustServiceTitle: "Szerviz is a miénk", trustServiceDesc: "Nem küldjük külső partnerhez.", trustServiceTag: "Helyben, nem alvállalkozó",
+    trustFoliaTitle: "Ajándék fólia, felrakva",
+    trustDataMoveTitle: "Segítünk átköltöztetni az adataid",
+    trustTradeinDataTitle: "Beszámításnál is átmásoljuk, ingyen",
     navBuybackSub: "Gyors, ingyenes ajánlatot adunk",
 
     // Telefon-választó segítő
@@ -61,6 +64,7 @@ export const STRINGS = {
     detailTrustWarranty: (w) => `${w} garancia`, detailTrustWarrantySub: "A készülékre és a benne lévő alkatrészekre",
     detailTrustCondition: "Ellenőrzött, tesztelt állapot", detailTrustConditionSub: "Kijelző, akku, kamerák és gombok átvizsgálva átadás előtt",
     detailTrustPickup: "Személyes átvétel", detailTrustPickupSub: (loc) => `${loc} üzletünkben, mielőtt fizetsz, kipróbálhatod`,
+    detailTrustFolia: "Ajándék kijelzővédő fólia", detailTrustFoliaSub: "Minden telefonhoz jár, felrakva — nem felár",
     detailConditionNewTitle: "Vadonatúj állapot", detailConditionNewDesc: "Ez a készülék bontatlan vagy szinte használatlan állapotban van, gyári tartozékokkal.",
     detailConditionRefurbTitle: "Felújított állapot", detailConditionRefurbDesc: "Ezt a készüléket átvizsgáltuk és teszteltük, mielőtt polcra került — kijelző, akkumulátor, kamerák és minden gomb, port működését ellenőriztük. Apró, futólag látható kopásnyomok lehetnek rajta.",
     detailSpecsTitle: "Specifikáció", detailRelatedTitle: "Hasonló telefonok",
@@ -177,6 +181,9 @@ export const STRINGS = {
     trustTestedTitle: "Testat, verificat",
     trustTryTitle: "Îl încerci la noi", trustTryDesc: "Îl ții în mână înainte să plătești.", trustTryTag: "Personal, în magazin",
     trustServiceTitle: "Service-ul e tot al nostru", trustServiceDesc: "Nu îl trimitem la un partener extern.", trustServiceTag: "Local, nu subcontractat",
+    trustFoliaTitle: "Folie cadou, montată",
+    trustDataMoveTitle: "Te ajutăm să transferi datele",
+    trustTradeinDataTitle: "Le copiem gratuit și la preluare",
     navBuybackSub: "Ofertă rapidă și gratuită",
 
     // Asistent de alegere telefon
@@ -213,6 +220,7 @@ export const STRINGS = {
     detailTrustWarranty: (w) => `Garanție ${w}`, detailTrustWarrantySub: "Pentru dispozitiv și piesele incluse",
     detailTrustCondition: "Stare verificată și testată", detailTrustConditionSub: "Ecran, baterie, camere și butoane verificate înainte de predare",
     detailTrustPickup: "Ridicare personală", detailTrustPickupSub: (loc) => `La magazinul nostru din ${loc} — îl poți încerca înainte să plătești`,
+    detailTrustFolia: "Folie de protecție cadou", detailTrustFoliaSub: "Inclusă la fiecare telefon, montată — fără cost suplimentar",
     detailConditionNewTitle: "Stare nou-nouță", detailConditionNewDesc: "Acest dispozitiv este nedesfăcut sau aproape neutilizat, cu accesoriile originale.",
     detailConditionRefurbTitle: "Stare recondiționată", detailConditionRefurbDesc: "Acest dispozitiv a fost verificat și testat înainte să ajungă pe raft — am verificat ecranul, bateria, camerele și fiecare buton, port. Pot exista mici urme de uzură, vizibile doar de aproape.",
     detailSpecsTitle: "Specificații", detailRelatedTitle: "Telefoane similare",

@@ -7,13 +7,16 @@ import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 import PhoneMiniCard from "./components/PhoneMiniCard";
 import BuybackPriceBar from "./components/BuybackPriceBar";
-import { ClockIcon, FinanceIcon, CallIcon, PinIcon, PartsIcon, WarningIcon, BuybackIcon, WarrantyIcon } from "./components/icons";
+import { ClockIcon, FinanceIcon, CallIcon, PinIcon, PartsIcon, WarningIcon, BuybackIcon, WarrantyIcon, TransferIcon } from "./components/icons";
 import { EmptyState, LoadingState } from "./components/EmptyState";
 import { ReviewsBadge } from "./components/PublicReviews";
 
 const COLORS = ["Fekete", "Fehér", "Kék", "Zöld", "Ezüst", "Egyéb"];
 
-const STEP_KEYS = ["brand", "model", "specs", ...CONDITION_QUESTIONS.map((q) => q.key), "imei", "offer", "contact"];
+// "intro" egy önálló teaser-lépés a márka-választás elé (showme.hu "Eladás" mintájára) —
+// megmutatja, hogyan működik és mit kapsz, mielőtt bármit választanod kellene, nem visz
+// rögtön egy üres formba. goBack "intro"-nál lép ki a főoldalra, "brand"-nél "intro"-ra megy vissza.
+const STEP_KEYS = ["intro", "brand", "model", "specs", ...CONDITION_QUESTIONS.map((q) => q.key), "imei", "offer", "contact"];
 
 const PAYOUT_MULT = { keszpenz: 1, kredit: 1.1, bizomany: 1.15 };
 const PAYOUT_OPTIONS = [
@@ -236,28 +239,39 @@ export default function BuybackFlow() {
       <PublicHeader activeNav="buyback" />
       <main className="bb-main">
         <button type="button" className="pub-back-link" onClick={goBack}>← Vissza</button>
-        {step !== "brand" && <ReviewsBadge style={{ marginBottom: 12 }} />}
+        {step !== "intro" && step !== "brand" && <ReviewsBadge style={{ marginBottom: 12 }} />}
 
-        {step === "brand" && (
-          <div className="bb-hero-band">
-            <h1 className="bb-hero-title">Add be a régi telefonod</h1>
-            <p className="bb-hero-sub">2 perc alatt látod, mennyit ér — a pénzt még aznap a kezedben tarthatod.</p>
-            <ReviewsBadge style={{ color: "var(--pub-accent-ink)", fontWeight: 700 }} />
-          </div>
+        {step === "intro" && (
+          <>
+            <div className="bb-hero-band">
+              <h1 className="bb-hero-title">Add be a régi telefonod</h1>
+              <p className="bb-hero-sub">2 perc alatt látod, mennyit ér — a pénzt még aznap a kezedben tarthatod.</p>
+              <ReviewsBadge style={{ color: "var(--pub-accent-ink)", fontWeight: 700 }} />
+            </div>
+            <div className="bb-steps">
+              <div className="bb-step"><span className="bb-step-num">1</span><div><b>Válaszd ki a modellt és az állapotát</b><p>2 perc, nem kell hozzá regisztráció</p></div></div>
+              <div className="bb-step"><span className="bb-step-num">2</span><div><b>Azonnal látod az ajánlatot</b><p>Készpénz, kredit-egyenleg vagy bizomány — te választasz</p></div></div>
+              <div className="bb-step"><span className="bb-step-num">3</span><div><b>Hozd be, vagy küldd el postán</b><p>Elfogadás után a pénz azonnal a tiéd</p></div></div>
+            </div>
+            <div className="bb-trust-row" style={{ marginTop: 18 }}>
+              <div className="bb-trust-item"><ClockIcon width={15} height={15} />Azonnali fizetés, helyben</div>
+              <div className="bb-trust-item"><WarrantyIcon width={15} height={15} />Törött telefont is beveszünk</div>
+              <div className="bb-trust-item"><PinIcon width={15} height={15} />2 fizikai üzletünkben</div>
+            </div>
+            <div className="bb-intro-databox">
+              <TransferIcon width={16} height={16} />
+              Ha nálunk veszel telefont, az adataidat ingyen átmásoljuk a régiről az újra — nem kell magadnak bajlódnod vele.
+            </div>
+            <button type="button" className="btn" style={{ marginTop: 18, width: "100%", justifyContent: "center" }} onClick={goNext}>Kezdjük</button>
+          </>
         )}
 
-        {step === "brand" && (
-          <div className="bb-trust-row">
-            <div className="bb-trust-item"><ClockIcon width={15} height={15} />Azonnali fizetés, helyben</div>
-            <div className="bb-trust-item"><WarrantyIcon width={15} height={15} />Törött telefont is beveszünk</div>
-            <div className="bb-trust-item"><PinIcon width={15} height={15} />2 fizikai üzletünkben</div>
+        {step !== "intro" && (
+          <div className="bb-progress">
+            <div className="bb-progress-track"><div className="bb-progress-fill" style={{ "--bb-progress": stepIndex / (totalSteps - 1) }} /></div>
+            <span className="bb-progress-label">{stepIndex}/{totalSteps - 1}</span>
           </div>
         )}
-
-        <div className="bb-progress">
-          <div className="bb-progress-track"><div className="bb-progress-fill" style={{ "--bb-progress": (stepIndex + 1) / totalSteps }} /></div>
-          <span className="bb-progress-label">{stepIndex + 1}/{totalSteps}</span>
-        </div>
         {step === "brand" && (
           <div className="bb-card">
             <h1 className="bb-h1">Milyen márkájú a telefonod?</h1>

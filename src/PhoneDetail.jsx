@@ -5,13 +5,14 @@ import { photoUrl } from "./lib/imageResize";
 import { t, translateColor, translateWarranty } from "./lib/i18n";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
-import { PhoneCaseIcon, HeartIcon, CheckIcon, WarrantyIcon, PinIcon } from "./components/icons";
+import { PhoneCaseIcon, HeartIcon, CheckIcon, WarrantyIcon, PinIcon, FoliaIcon } from "./components/icons";
 import { EmptyState, LoadingState } from "./components/EmptyState";
 import { addToCart, useCart } from "./lib/cart";
 import { toggleWishlist, useWishlist } from "./lib/wishlist";
-import { normalizeBrand, normalizeStorage } from "./lib/utils";
-import { ReviewsBadge } from "./components/PublicReviews";
+import { normalizeBrand, normalizeStorage, SALE_WARRANTY_TERMS } from "./lib/utils";
+import ReviewsSection, { ReviewsBadge } from "./components/PublicReviews";
 import PhoneMiniCard from "./components/PhoneMiniCard";
+import InfoPanel from "./components/InfoPanel";
 
 const SITE = "https://phonestock-manager.netlify.app";
 
@@ -28,6 +29,7 @@ export default function PhoneDetail({ id, lang = "hu" }) {
   const [loading, setLoading] = useState(true);
   const [activePhoto, setActivePhoto] = useState(0);
   const [headerHeight, setHeaderHeight] = useState(0);
+  const [warrantyPanelOpen, setWarrantyPanelOpen] = useState(false);
   const cart = useCart();
   const wishlist = useWishlist();
 
@@ -195,15 +197,19 @@ export default function PhoneDetail({ id, lang = "hu" }) {
 
             <div className="pub-detail-trust">
               {phone.warranty && (
-                <div className="pub-detail-trust-row">
+                <button type="button" className="pub-detail-trust-row" style={{ border: "none", background: "none", font: "inherit", textAlign: "left", cursor: "pointer", width: "100%" }} onClick={() => setWarrantyPanelOpen(true)}>
                   <WarrantyIcon width={19} height={19} />
-                  <div><div className="pub-detail-trust-title">{s.detailTrustWarranty(translateWarranty(phone.warranty, lang))}</div><div className="pub-detail-trust-sub">{s.detailTrustWarrantySub}</div></div>
-                </div>
+                  <div><div className="pub-detail-trust-title">{s.detailTrustWarranty(translateWarranty(phone.warranty, lang))}</div><div className="pub-detail-trust-sub">{s.detailTrustWarrantySub} →</div></div>
+                </button>
               )}
+              <div className="pub-detail-trust-row">
+                <FoliaIcon width={19} height={19} />
+                <div><div className="pub-detail-trust-title">{s.detailTrustFolia}</div><div className="pub-detail-trust-sub">{s.detailTrustFoliaSub}</div></div>
+              </div>
               {phone.condition === "New" ? (
                 <div className="pub-detail-trust-row">
                   <CheckIcon width={19} height={19} strokeWidth={2.4} />
-                  <div><div className="pub-detail-trust-title">{s.detailTrustCondition}</div><div className="pub-detail-trust-sub">{s.detailTrustConditionSub}</div></div>
+                  <div><div className="pub-detail-trust-title">{s.detailConditionNewTitle}</div><div className="pub-detail-trust-sub">{s.detailTrustNewSub}</div></div>
                 </div>
               ) : (
                 <a className="pub-detail-trust-row" href={lang === "ro" ? "/ro/reconditionare-verificata" : "/ellenorzott-felujitas"} style={{ textDecoration: "none", color: "inherit" }}>
@@ -219,7 +225,6 @@ export default function PhoneDetail({ id, lang = "hu" }) {
               )}
             </div>
 
-            <a className="pub-ask-btn" style={{ padding: "10px 18px", fontSize: 12.5, background: "none", color: "var(--pub-ink-soft)" }} href="tel:0773985278">{s.interestedCall}</a>
             <div className="pub-detail-note">{s.priceNote}</div>
           </div>
 
@@ -271,8 +276,13 @@ export default function PhoneDetail({ id, lang = "hu" }) {
             </div>
           </div>
         )}
+
+        <ReviewsSection lang={lang} />
       </main>
       <PublicFooter lang={lang} />
+      <InfoPanel open={warrantyPanelOpen} onClose={() => setWarrantyPanelOpen(false)} title={lang === "ro" ? "Condiții de garanție" : "Garancia feltételek"}>
+        {SALE_WARRANTY_TERMS}
+      </InfoPanel>
     </div>
   );
 }
