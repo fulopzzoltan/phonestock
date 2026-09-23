@@ -1275,7 +1275,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
    ha explicit width:100% is van rajta, különben a keresztirányú "stretch" helyett
    tartalom-alapú (shrink-to-fit) méretre esne vissza — ez volt az oka, hogy a
    webshop desktop nézete csak ~2 oszlopnyi szélességre "összecsukódott". */
-.pub-main{width:100%;max-width:1440px;margin:0 auto;padding:14px 24px 64px}
+.pub-main{width:100%;max-width:1180px;margin:0 auto;padding:14px 24px 64px}
 .pub-empty{text-align:center;padding:64px 20px;color:var(--pub-ink-soft);font-size:13.5px;display:flex;flex-direction:column;align-items:center;gap:6px}
 .pub-empty svg{width:34px;height:34px;color:var(--pub-line);margin-bottom:6px}
 
@@ -1580,6 +1580,14 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
   .pub-footer-acc-icon{display:none}
   .pub-footer-acc-body{max-height:none!important;overflow:visible}
   .pub-footer-acc-body-inner{padding-bottom:0}
+
+  /* A középre-igazítás csak mobilon kívánt — desktopon a megszokott,
+     bal-igazított lábléc-elrendezés jár. */
+  .pub-footer-brand-block{align-items:flex-start;text-align:left}
+  .pub-footer-brand-block .pub-footer-about{text-align:left}
+  .pub-footer-backtotop{justify-content:flex-start}
+  .pub-footer-payment-badges{justify-content:flex-start}
+  .pub-footer-bottom{align-items:flex-start;text-align:left}
 }
 @media (max-width:760px){
   .pub-footer-grid{grid-template-columns:1fr 1fr;gap:24px 16px}

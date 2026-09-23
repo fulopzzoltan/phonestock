@@ -224,8 +224,6 @@ export default function PhoneDetail({ id, lang = "hu" }) {
                 </div>
               )}
             </div>
-
-            <div className="pub-detail-note">{s.priceNote}</div>
           </div>
 
           <div className="pub-detail-extras">

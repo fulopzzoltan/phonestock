@@ -59,7 +59,6 @@ export const STRINGS = {
 
     // Telefon-részletoldal
     storageLabel: "Tárhely", colorLabel: "Szín", batteryLabel: "Akkumulátor", warrantyLabel: "Garancia",
-    priceNote: "Az ár és a készlet folyamatosan frissül, végleges adásvétel az üzletben történik.",
     detailTrustWarranty: (w) => `${w} garancia`, detailTrustWarrantySub: "A készülékre és a benne lévő alkatrészekre",
     detailTrustCondition: "Ellenőrzött, tesztelt állapot", detailTrustConditionSub: "Kijelző, akku, kamerák és gombok átvizsgálva átadás előtt",
     detailTrustNewSub: "Bontatlan vagy szinte használatlan, gyári tartozékokkal",
@@ -215,7 +214,6 @@ export const STRINGS = {
     reviewsEmpty: "În curând vor apărea aici primele noastre recenzii.",
 
     storageLabel: "Stocare", colorLabel: "Culoare", batteryLabel: "Baterie", warrantyLabel: "Garanție",
-    priceNote: "Prețul și stocul se actualizează constant, tranzacția finală are loc în magazin.",
     detailTrustWarranty: (w) => `Garanție ${w}`, detailTrustWarrantySub: "Pentru dispozitiv și piesele incluse",
     detailTrustCondition: "Stare verificată și testată", detailTrustConditionSub: "Ecran, baterie, camere și butoane verificate înainte de predare",
     detailTrustNewSub: "Nedesfăcut sau aproape neutilizat, cu accesoriile originale",
