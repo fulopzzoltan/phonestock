@@ -272,6 +272,17 @@ function TicketSmsSettings({ settings, updateSettings, busy }) {
         <div className="settings-row-lbl">Átvehetőnél</div>
         <Toggle checked={!!settings.smsOnTicketReady} disabled={busy} onChange={(v) => updateSettings({ smsOnTicketReady: v })} />
       </div>
+      <div className="settings-row" style={{ marginTop: 10 }}>
+        <div className="settings-row-lbl">Szerviz-érdeklődés (becslő) beküldésekor</div>
+        <Toggle checked={!!settings.smsOnRepairLead} disabled={busy} onChange={(v) => updateSettings({ smsOnRepairLead: v })} />
+      </div>
+      <div className="settings-row">
+        <div className="settings-row-lbl">Felvásárlási ajánlatkéréskor</div>
+        <Toggle checked={!!settings.smsOnBuybackOffer} disabled={busy} onChange={(v) => updateSettings({ smsOnBuybackOffer: v })} />
+      </div>
+      <div className="settings-row-desc" style={{ marginTop: 6 }}>
+        Ez a két utóbbi egyelőre WhatsApp-sablon jóváhagyás nélkül csak SMS-fallback-kel megy ki — a végleges szöveget és a WhatsApp-sablont még be kell állítani.
+      </div>
     </div>
   );
 }

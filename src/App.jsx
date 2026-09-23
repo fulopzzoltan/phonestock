@@ -1391,6 +1391,8 @@ function AppShell() {
       const apiPatch = {};
       if ("smsOnTicketCreate" in patch) apiPatch.sms_on_ticket_create = patch.smsOnTicketCreate;
       if ("smsOnTicketReady" in patch) apiPatch.sms_on_ticket_ready = patch.smsOnTicketReady;
+      if ("smsOnRepairLead" in patch) apiPatch.sms_on_repair_lead = patch.smsOnRepairLead;
+      if ("smsOnBuybackOffer" in patch) apiPatch.sms_on_buyback_offer = patch.smsOnBuybackOffer;
       if ("loyaltyFollowupEnabled" in patch) apiPatch.loyalty_followup_enabled = patch.loyaltyFollowupEnabled;
       if ("loyaltyFollowupDays" in patch) apiPatch.loyalty_followup_days = patch.loyaltyFollowupDays;
       if ("reviewRequestEnabled" in patch) apiPatch.review_request_enabled = patch.reviewRequestEnabled;
@@ -3360,6 +3362,8 @@ function AppShell() {
           <InboxTab
             messages={inboxMessages} customers={customersTable} tickets={tickets} onSend={sendInboxReply} onOpenCustomer={setCustomerKey}
             onMarkRead={markInboxRead} onUpdateLead={updateLead} onCreateLead={createLeadFromThread} onOpenTicket={(id) => setDetailId(id)}
+            repairLeads={repairLeads} buybackOffers={buybackOffers}
+            onOpenRepairLead={() => setTab("repair-prices")} onOpenBuybackOffer={(id) => setBuybackOfferDetailId(id)}
           />
         )}
 

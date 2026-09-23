@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { supabase } from "../lib/supabaseClient";
-import { ChatIcon, SearchIcon, WhatsappIcon, FacebookIcon, MailIcon, CameraIcon, ServiceIcon } from "../components/icons";
+import { ChatIcon, SearchIcon, WhatsappIcon, FacebookIcon, MailIcon, CameraIcon, ServiceIcon, RepairPriceIcon, BuybackIcon } from "../components/icons";
 import { EmptyState } from "../components/EmptyState";
 import { formatPhone, displayName, money, statusCls, statusLabel } from "../lib/utils";
 
@@ -126,7 +126,7 @@ function StagePill({ stage }) {
   );
 }
 
-export default function InboxTab({ messages, customers, tickets = [], onSend, onOpenCustomer, onMarkRead, onUpdateLead, onCreateLead, onOpenTicket }) {
+export default function InboxTab({ messages, customers, tickets = [], repairLeads = [], buybackOffers = [], onSend, onOpenCustomer, onMarkRead, onUpdateLead, onCreateLead, onOpenTicket, onOpenRepairLead, onOpenBuybackOffer }) {
   const [q, setQ] = useState("");
   const [filterMode, setFilterMode] = useState("all");
   const [activeKey, setActiveKey] = useState(null);
@@ -250,6 +250,24 @@ export default function InboxTab({ messages, customers, tickets = [], onSend, on
       .filter((t) => (active.customerId && t.customerId === active.customerId) || (activePhone && normPhone(t.customerPhone) === activePhone))
       .sort((a, b) => (b.dateIn || "").localeCompare(a.dateIn || ""));
   }, [tickets, active]);
+
+  // Ugyanaz a párosítás (ügyfél-id, különben telefonszám), mint a munkalapoknál — a
+  // szerviz-becslő leadek és a felvásárlási ajánlatok is megjelennek itt, hogy lássuk,
+  // mivel kapcsolatban írt/kaptunk tőle üzenetet, nemcsak a beszélgetést magát.
+  const relatedRepairLeads = useMemo(() => {
+    if (!active) return [];
+    const activePhone = active.phoneNorm;
+    return repairLeads
+      .filter((l) => (active.customerId && l.customerId === active.customerId) || (activePhone && normPhone(l.customerPhone) === activePhone))
+      .sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
+  }, [repairLeads, active]);
+  const relatedBuybackOffers = useMemo(() => {
+    if (!active) return [];
+    const activePhone = active.phoneNorm;
+    return buybackOffers
+      .filter((o) => (active.customerId && o.customerId === active.customerId) || (activePhone && normPhone(o.customerPhone) === activePhone))
+      .sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
+  }, [buybackOffers, active]);
 
   // Egységesen kezeli az állapot/forrás állítást attól függetlenül, hogy van-e már
   // ügyfél-rekord a beszélgetéshez: ha nincs (vadonatúj megkeresés), létrehozza, ha van,
@@ -476,6 +494,40 @@ export default function InboxTab({ messages, customers, tickets = [], onSend, on
                       <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 1 }}>{money(t.price)}</div>
                     </div>
                     <span className={`st ${statusCls(t.status)}`} style={{ fontSize: 9.5, padding: "2px 7px", flexShrink: 0 }}>{statusLabel(t.status)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {relatedRepairLeads.length > 0 && (
+            <div className="wa-side-sec">
+              <div className="wa-side-lbl">Szerviz-érdeklődés{relatedRepairLeads.length > 1 ? "ek" : ""}</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {relatedRepairLeads.slice(0, 3).map((l) => (
+                  <div key={l.id} className="wa-side-ticket" onClick={() => onOpenRepairLead?.(l.id)}>
+                    <RepairPriceIcon width={14} height={14} style={{ color: "#6B7280", flexShrink: 0 }} />
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div style={{ fontSize: 11.5, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{displayName(l.brand, l.model) || "—"}{l.problemTag ? ` — ${l.problemTag}` : ""}</div>
+                      <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 1 }}>{l.estimatedPrice ? money(l.estimatedPrice) : "—"}</div>
+                    </div>
+                    <span className="st" style={{ fontSize: 9.5, padding: "2px 7px", flexShrink: 0 }}>{l.status || "Új"}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {relatedBuybackOffers.length > 0 && (
+            <div className="wa-side-sec">
+              <div className="wa-side-lbl">Felvásárlási ajánlat{relatedBuybackOffers.length > 1 ? "ok" : ""}</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {relatedBuybackOffers.slice(0, 3).map((o) => (
+                  <div key={o.id} className="wa-side-ticket" onClick={() => onOpenBuybackOffer?.(o.id)}>
+                    <BuybackIcon width={14} height={14} style={{ color: "#6B7280", flexShrink: 0 }} />
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div style={{ fontSize: 11.5, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{displayName(o.brand, o.model) || "—"}</div>
+                      <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 1 }}>{money(o.finalPrice ?? o.estimatedPrice)}</div>
+                    </div>
+                    <span className="st" style={{ fontSize: 9.5, padding: "2px 7px", flexShrink: 0 }}>{o.status || "Új"}</span>
                   </div>
                 ))}
               </div>

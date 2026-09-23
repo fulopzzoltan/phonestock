@@ -642,6 +642,8 @@ export const spFromApi = (r) => ({
 export const settingsFromApi = (r) => ({
   smsOnTicketCreate: r.sms_on_ticket_create,
   smsOnTicketReady: r.sms_on_ticket_ready,
+  smsOnRepairLead: r.sms_on_repair_lead,
+  smsOnBuybackOffer: r.sms_on_buyback_offer,
   loyaltyFollowupEnabled: r.loyalty_followup_enabled,
   loyaltyFollowupDays: r.loyalty_followup_days,
   reviewRequestEnabled: r.review_request_enabled,
