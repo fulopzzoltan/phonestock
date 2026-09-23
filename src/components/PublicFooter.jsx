@@ -118,15 +118,37 @@ export default function PublicFooter({ lang = "hu", minimal = false, onContactCl
   return (
     <footer className="pub-footer">
       <div className="pub-footer-inner">
-        <div className="pub-footer-brand-block">
-          <img src="/logo.png" alt="Telefonos" className="pub-footer-logo" />
-          <p className="pub-footer-about">{s.footer}</p>
-          <div className="pub-footer-social">
-            {SOCIAL_LINKS.map(({ Icon, href, label }) => (
-              <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>
-                <Icon width={16} height={16} />
-              </a>
-            ))}
+        <div className="pub-footer-top">
+          <div className="pub-footer-brand-block">
+            <img src="/logo.png" alt="Telefonos" className="pub-footer-logo" />
+            <p className="pub-footer-about">{s.footer}</p>
+            <div className="pub-footer-social pub-footer-social-mobile">
+              {SOCIAL_LINKS.map(({ Icon, href, label }) => (
+                <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>
+                  <Icon width={16} height={16} />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          <div className="pub-footer-accordions">
+            <FooterAccordion title={s.footerShop}>
+              <a href={stockHref}>{s.navStock}</a>
+              <a href={repairHref}>{s.navRepair}</a>
+              <a href="/eladom">{s.navBuyback}</a>
+              <a href="/status">{s.navStatus}</a>
+              <a href="/kosar">{s.footerCart}</a>
+            </FooterAccordion>
+
+            <FooterAccordion title={s.footerAccount}>
+              <a href="/fiok">{s.footerMyAccount}</a>
+              <a href={faqHref}>{s.footerFaq}</a>
+              <a href={qualityHref}>{lang === "ro" ? "Reconditionare Verificată" : "Ellenőrzött Felújítás"}</a>
+            </FooterAccordion>
+
+            <FooterAccordion title={s.footerLocations}>
+              <LocationLinks locations={locations} />
+            </FooterAccordion>
           </div>
         </div>
 
@@ -134,30 +156,19 @@ export default function PublicFooter({ lang = "hu", minimal = false, onContactCl
           <span className="pub-footer-backtotop-arrow">↑</span> {s.footerBackToTop}
         </button>
 
-        <div className="pub-footer-accordions">
-          <FooterAccordion title={s.footerShop}>
-            <a href={stockHref}>{s.navStock}</a>
-            <a href={repairHref}>{s.navRepair}</a>
-            <a href="/eladom">{s.navBuyback}</a>
-            <a href="/status">{s.navStatus}</a>
-            <a href="/kosar">{s.footerCart}</a>
-          </FooterAccordion>
-
-          <FooterAccordion title={s.footerAccount}>
-            <a href="/fiok">{s.footerMyAccount}</a>
-            <a href={faqHref}>{s.footerFaq}</a>
-            <a href={qualityHref}>{lang === "ro" ? "Reconditionare Verificată" : "Ellenőrzött Felújítás"}</a>
-          </FooterAccordion>
-
-          <FooterAccordion title={s.footerLocations}>
-            <LocationLinks locations={locations} />
-          </FooterAccordion>
-        </div>
-
-        <div className="pub-footer-payment-badges">
-          <a href="https://netopia-payments.com" target="_blank" rel="noopener noreferrer"><img src="/netopiacolor-telefonos.png" alt="Netopia Payments" /></a>
-          <img src="/Mastercard-Logo.png" alt="Mastercard" />
-          <img src="/visacolor-telefonos.png" alt="Visa" />
+        <div className="pub-footer-bottom-row">
+          <div className="pub-footer-payment-badges">
+            <a href="https://netopia-payments.com" target="_blank" rel="noopener noreferrer"><img src="/netopiacolor-telefonos.png" alt="Netopia Payments" /></a>
+            <img src="/Mastercard-Logo.png" alt="Mastercard" />
+            <img src="/visacolor-telefonos.png" alt="Visa" />
+          </div>
+          <div className="pub-footer-social pub-footer-social-desktop">
+            {SOCIAL_LINKS.map(({ Icon, href, label }) => (
+              <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>
+                <Icon width={16} height={16} />
+              </a>
+            ))}
+          </div>
         </div>
 
         <div className="pub-footer-bottom">

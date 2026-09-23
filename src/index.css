@@ -1550,6 +1550,10 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 
 /* Gymshark-mintás lábléc: brand blokk felül, "vissza a tetejére" link,
    mobilon összecsukható (+/−) szekciók, alul középre rendezett jogi sáv. */
+.pub-footer-top{display:contents}
+.pub-footer-bottom-row{display:contents}
+.pub-footer-social-desktop{display:none}
+
 .pub-footer-brand-block{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding-bottom:20px}
 .pub-footer-brand-block .pub-footer-about{max-width:360px;text-align:center}
 .pub-footer-brand-block .pub-footer-social{margin-top:6px}
@@ -1585,9 +1589,18 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
      bal-igazított lábléc-elrendezés jár. */
   .pub-footer-brand-block{align-items:flex-start;text-align:left}
   .pub-footer-brand-block .pub-footer-about{text-align:left}
-  .pub-footer-backtotop{justify-content:flex-start}
-  .pub-footer-payment-badges{justify-content:flex-start}
   .pub-footer-bottom{align-items:flex-start;text-align:left}
+
+  /* Gymshark-mintás desktop szerkezet: a brand blokk és a linkoszlopok egy
+     sorban, a "vissza a tetejére" csak mobilon jelenik meg, a közösségi
+     ikonok pedig a fizetési logókkal egy sorba kerülnek le, a lábléc aljára. */
+  .pub-footer-backtotop{display:none}
+  .pub-footer-top{display:grid;grid-template-columns:1fr 2fr;gap:48px;align-items:start;margin-bottom:12px}
+  .pub-footer-brand-block{padding-bottom:0}
+  .pub-footer-brand-block .pub-footer-social-mobile{display:none}
+  .pub-footer-bottom-row{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:20px 0;border-top:1px solid var(--pub-line)}
+  .pub-footer-payment-badges{padding:0;justify-content:flex-start}
+  .pub-footer-social-desktop{display:flex}
 }
 @media (max-width:760px){
   .pub-footer-grid{grid-template-columns:1fr 1fr;gap:24px 16px}
