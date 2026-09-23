@@ -131,6 +131,21 @@ export default function PublicFooter({ lang = "hu", minimal = false, onContactCl
             </div>
           </div>
 
+          <div className="pub-footer-payment-social-block">
+            <div className="pub-footer-payment-badges">
+              <a href="https://netopia-payments.com" target="_blank" rel="noopener noreferrer"><img src="/netopiacolor-telefonos.png" alt="Netopia Payments" /></a>
+              <img src="/Mastercard-Logo.png" alt="Mastercard" />
+              <img src="/visacolor-telefonos.png" alt="Visa" />
+            </div>
+            <div className="pub-footer-social pub-footer-social-desktop">
+              {SOCIAL_LINKS.map(({ Icon, href, label }) => (
+                <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>
+                  <Icon width={16} height={16} />
+                </a>
+              ))}
+            </div>
+          </div>
+
           <div className="pub-footer-accordions">
             <FooterAccordion title={s.footerShop}>
               <a href={stockHref}>{s.navStock}</a>
@@ -156,19 +171,10 @@ export default function PublicFooter({ lang = "hu", minimal = false, onContactCl
           <span className="pub-footer-backtotop-arrow">↑</span> {s.footerBackToTop}
         </button>
 
-        <div className="pub-footer-bottom-row">
-          <div className="pub-footer-payment-badges">
-            <a href="https://netopia-payments.com" target="_blank" rel="noopener noreferrer"><img src="/netopiacolor-telefonos.png" alt="Netopia Payments" /></a>
-            <img src="/Mastercard-Logo.png" alt="Mastercard" />
-            <img src="/visacolor-telefonos.png" alt="Visa" />
-          </div>
-          <div className="pub-footer-social pub-footer-social-desktop">
-            {SOCIAL_LINKS.map(({ Icon, href, label }) => (
-              <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>
-                <Icon width={16} height={16} />
-              </a>
-            ))}
-          </div>
+        <div className="pub-footer-payment-badges pub-footer-payment-badges-mobile-only">
+          <a href="https://netopia-payments.com" target="_blank" rel="noopener noreferrer"><img src="/netopiacolor-telefonos.png" alt="Netopia Payments" /></a>
+          <img src="/Mastercard-Logo.png" alt="Mastercard" />
+          <img src="/visacolor-telefonos.png" alt="Visa" />
         </div>
 
         <div className="pub-footer-bottom">
@@ -178,7 +184,7 @@ export default function PublicFooter({ lang = "hu", minimal = false, onContactCl
             <a href={`/adatvedelem${legalLangQuery}`}>{s.footerPrivacy}</a>
           </span>
           <a href="https://anpc.ro/ce-este-sal/" target="_blank" rel="noopener noreferrer" className="pub-footer-anpc"><img src="/anpc_sal.v1787810231.png" alt="ANPC SAL" /></a>
-          <span>{s.footerRights(new Date().getFullYear())}</span>
+          <span className="pub-footer-rights">{s.footerRights(new Date().getFullYear())}</span>
         </div>
       </div>
     </footer>
