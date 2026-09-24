@@ -15,10 +15,9 @@ function labelTitle(p) {
 }
 
 const cellStyle = {
-  position: "relative", padding: "14px 12px", textAlign: "center",
-  borderRight: "1px solid #D1D5DB", borderBottom: "1px solid #D1D5DB",
+  position: "relative", padding: "20px 16px", textAlign: "center",
   breakInside: "avoid", pageBreakInside: "avoid",
-  display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3,
+  display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4,
 };
 
 function Label({ p }) {
@@ -28,19 +27,19 @@ function Label({ p }) {
     <div style={cellStyle}>
       {isNew && (
         <span style={{
-          position: "absolute", top: 8, right: 10, width: 26, height: 26, borderRadius: "50%",
-          background: "#22C55E", color: "#fff", fontSize: 9.5, fontWeight: 800,
+          position: "absolute", top: 10, right: 12, width: 30, height: 30, borderRadius: "50%",
+          background: "#22C55E", color: "#fff", fontSize: 11, fontWeight: 800,
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>Új</span>
       )}
-      <div style={{ fontSize: 14.5, fontWeight: 800, color: "#111827", lineHeight: 1.2 }}>{labelTitle(p)}</div>
-      {p.storage && <div style={{ fontSize: 13, fontWeight: 700, color: "#111827" }}>{p.storage}</div>}
-      {p.ram && p.brand !== "Apple" && <div style={{ fontSize: 13, fontWeight: 700, color: "#111827" }}>{p.ram} RAM</div>}
-      {showBattery && <div style={{ fontSize: 13, fontWeight: 700, color: "#111827" }}>Baterie: {Math.round(Number(p.batteryHealth))}%</div>}
-      {p.warranty && <div style={{ fontSize: 13, fontWeight: 700, color: "#16A34A" }}>Garantie: {warrantyRo(p.warranty)}</div>}
+      <div style={{ fontSize: 17, fontWeight: 800, color: "#111827", lineHeight: 1.2 }}>{labelTitle(p)}</div>
+      {p.storage && <div style={{ fontSize: 15, fontWeight: 700, color: "#111827" }}>{p.storage}</div>}
+      {p.ram && p.brand !== "Apple" && <div style={{ fontSize: 15, fontWeight: 700, color: "#111827" }}>{p.ram} RAM</div>}
+      {showBattery && <div style={{ fontSize: 15, fontWeight: 700, color: "#111827" }}>Baterie: {Math.round(Number(p.batteryHealth))}%</div>}
+      {p.warranty && <div style={{ fontSize: 15, fontWeight: 700, color: "#16A34A" }}>Garantie: {warrantyRo(p.warranty)}</div>}
       <div style={{
-        marginTop: 4, background: "#E11D3F", color: "#fff", fontWeight: 800, fontSize: 15,
-        borderRadius: 8, padding: "5px 16px", display: "inline-block",
+        marginTop: 5, background: "#E11D3F", color: "#fff", fontWeight: 800, fontSize: 18,
+        borderRadius: 9, padding: "7px 20px", display: "inline-block",
       }}>
         {(Number(p.salePrice) || 0).toFixed(2)} Lei
       </div>
@@ -52,7 +51,7 @@ export default function PrintPriceLabels({ items = [] }) {
   if (!items.length) return null;
   return (
     <div className="doc-page" style={{ fontFamily: "Inter, sans-serif" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", border: "1px solid #D1D5DB", borderRight: "none", borderBottom: "none" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)" }}>
         {items.map((p) => <Label key={p.id} p={p} />)}
       </div>
     </div>
