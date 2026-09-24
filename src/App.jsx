@@ -3474,7 +3474,7 @@ function AppShell() {
         <StockModal
           product={typeof stockModal === "object" && stockModal?.id ? stockModal : null}
           prefill={typeof stockModal === "object" && !stockModal?.id ? stockModal : null}
-          locations={stockLocations}
+          locations={locations}
           stock={stock}
           tickets={tickets}
           customers={customersTable}
