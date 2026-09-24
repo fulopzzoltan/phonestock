@@ -124,13 +124,6 @@ export default function BuybackFlow() {
     setStepIndex(STEP_KEYS.indexOf("specs"));
   }
 
-  function seeAllForBrand(b) {
-    setBrand(b);
-    setModelName(null);
-    setVariant(null);
-    setStepIndex(STEP_KEYS.indexOf("model"));
-  }
-
   function goNext() { setStepIndex((i) => Math.min(i + 1, STEP_KEYS.length - 1)); }
   function goBack() {
     if (stepIndex === 0) { window.location.href = "/"; return; }
@@ -250,7 +243,7 @@ export default function BuybackFlow() {
         {step !== "intro" && step !== "brand" && <ReviewsBadge style={{ marginBottom: 12 }} />}
 
         {step === "intro" && (
-          <BuybackLandingIntro brands={brands} models={models} onCta={goNext} onSeeAll={seeAllForBrand} />
+          <BuybackLandingIntro brands={brands} models={models} onCta={goNext} />
         )}
 
         {step !== "intro" && (

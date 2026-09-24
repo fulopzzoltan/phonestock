@@ -37,7 +37,7 @@ const FAQ_ITEMS = [
 // Az eladás oldal nyitó "landing" szekciója — az Apple Trade In oldal szerkezetét követi
 // (ár-horgony táblázat márka-tabokkal, szöveges lépéslista, GYIK), a PageIntroHero-tól
 // eltérően nem újrafelhasznált kártya-minta, csak ezen az oldalon él.
-export default function BuybackLandingIntro({ brands, models, onCta, onSeeAll }) {
+export default function BuybackLandingIntro({ brands, models, onCta }) {
   const [activeBrand, setActiveBrand] = useState(brands.includes("Apple") ? "Apple" : brands[0]);
   const [openFaq, setOpenFaq] = useState(0);
 
@@ -71,7 +71,7 @@ export default function BuybackLandingIntro({ brands, models, onCta, onSeeAll })
       {brandModels.length > 0 && (
         <div className="bb-landing-values">
           <div className="bb-landing-values-title">
-            Akár <span>{Math.round(topPrice).toLocaleString("hu-HU")} Lej-t</span> kapsz egy {activeBrand} telefonért.
+            Akár <span>{Math.round(topPrice).toLocaleString("hu-HU")} Lei-t</span> kapsz egy {activeBrand} telefonért.
           </div>
           <p className="bb-landing-values-sub">A pontos ár a modelltől és az állapottól függ.</p>
 
@@ -80,18 +80,15 @@ export default function BuybackLandingIntro({ brands, models, onCta, onSeeAll })
               {brandModels.map((m) => (
                 <div className="bb-landing-val-row" key={m.model}>
                   <span>{m.model}</span>
-                  <b>Akár {Math.round(m.price).toLocaleString("hu-HU")} Lej</b>
+                  <b>Akár {Math.round(m.price).toLocaleString("hu-HU")} Lei</b>
                 </div>
               ))}
-              <button type="button" className="bb-landing-values-link" onClick={() => onSeeAll(activeBrand)}>Összes modell és ár megtekintése →</button>
               <button type="button" className="btn" style={{ justifyContent: "center", marginTop: 18 }} onClick={onCta}>Kérek azonnali ajánlatot</button>
             </div>
             <div className="bb-landing-values-side">
-              <img className="bb-landing-values-img" src="/Gemini_Generated_Image_iso2nyiso2nyiso2.jpeg" alt="Felvásárolt iPhone-ok" />
-              <a href="/status" className="bb-landing-status-box">
-                <span>Már elküldted a telefonod?</span>
-                <b>Nézd meg az állapotát →</b>
-              </a>
+              <div className="bb-landing-values-photo">
+                <img className="bb-landing-values-img" src="/Gemini_Generated_Image_iso2nyiso2nyiso2.jpeg" alt="Felvásárolt iPhone-ok" />
+              </div>
             </div>
           </div>
         </div>
