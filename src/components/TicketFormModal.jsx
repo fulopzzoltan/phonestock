@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from "react";
-import { CloseIcon, WarrantyIcon, DropletIcon, PartsIcon, PhoneCaseIcon } from "./icons";
+import { CloseIcon, WarrantyIcon, DropletIcon, PartsIcon, PhoneCaseIcon, ChargerIcon, LockIcon, FoliaIcon } from "./icons";
 import { PROBLEM_TAGS, WARRANTIES, STATUSES, SUB_STATUSES, statusLabel, normalizeImei, money, ticketCode } from "../lib/utils";
 import CustomerAutocomplete from "./CustomerAutocomplete";
 import { ChipField, DropdownField } from "./FormPickers";
@@ -16,6 +16,16 @@ function parseIssue(issue) {
 // A leggyakoribb 5 probléma elöl látszik; a többi az "Egyéb" gombra kattintva nyílik ki.
 const TOP_PROBLEM_TAGS = PROBLEM_TAGS.filter((t) => t !== "Egyéb").slice(0, 5);
 const REST_PROBLEM_TAGS = PROBLEM_TAGS.filter((t) => t !== "Egyéb" && !TOP_PROBLEM_TAGS.includes(t));
+
+// Az 5 kiemelt tag jelvényes megjelenítést kap (ugyanaz a minta, mint a Garancia/Ázott/
+// Alkatrész jelvényeknél) — a kibontott "Egyéb" lista marad az egyszerű prob-tag stílusban.
+const TOP_PROBLEM_TAG_ICONS = {
+  "Kijelző csere": <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" width="12" height="12"><rect x="5" y="3" width="14" height="18" rx="2" /><path d="M8 21h8" strokeWidth="1.5" /></svg>,
+  "Töltőcsatlakozó": <ChargerIcon width={12} height={12} />,
+  "Akku csere": <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" width="12" height="12"><rect x="6" y="7" width="11" height="10" rx="1.5" /><path d="M17 10h1.5a1 1 0 011 1v2a1 1 0 01-1 1H17" strokeWidth="1.6" /></svg>,
+  "FRP zárolás": <LockIcon width={12} height={12} />,
+  "Hátlap csere": <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" width="12" height="12"><rect x="5" y="2" width="14" height="20" rx="2.5" /></svg>,
+};
 
 function SegField({ label, value, onChange, options }) {
   const ref = useRef(null);
@@ -165,6 +175,16 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
                   <span className="lbl">{fl.label}</span>
                 </button>
               ))}
+              <span className="flag-row-sep" />
+              <button
+                type="button"
+                className={`flag-chip${f.folia ? " on" : ""}`}
+                style={{ "--fc": "#1DB954", marginLeft: "auto" }}
+                onClick={() => setF({ ...f, folia: !f.folia })}
+              >
+                <span className="av"><FoliaIcon width={12} height={12} /></span>
+                <span className="lbl">Kér fóliát</span>
+              </button>
             </div>
           </div>
           {f.isWarranty && (
@@ -243,9 +263,12 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
         <div className="wf-sec">
           <SectionHead title="Mi a probléma?" />
           <div className="field"><label>Probléma {!hasIssue && <span style={{ color: "#DC2626", fontWeight: 400, textTransform: "none" }}>— válassz egy tag-et vagy írj leírást</span>}</label>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: showMoreProbs ? 8 : 0 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: showMoreProbs ? 8 : 0 }}>
               {TOP_PROBLEM_TAGS.map((tag) => (
-                <button key={tag} type="button" className={`prob-tag${tags.includes(tag) ? " active" : ""}`} onClick={() => toggleTag(tag)}>{tag}</button>
+                <button key={tag} type="button" className={`flag-chip${tags.includes(tag) ? " on" : ""}`} style={{ "--fc": "#1DB954" }} onClick={() => toggleTag(tag)}>
+                  <span className="av">{TOP_PROBLEM_TAG_ICONS[tag]}</span>
+                  <span className="lbl">{tag}</span>
+                </button>
               ))}
               <button type="button" className={`prob-tag${showMoreProbs ? " active" : ""}`} onClick={() => setShowMoreProbs((v) => !v)}>Egyéb <span style={{ opacity: 0.6 }}>+{REST_PROBLEM_TAGS.length}</span></button>
             </div>
@@ -341,20 +364,6 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
               ))}
             </div>
           )}
-        </div>
-
-        <div className="wf-sec">
-          <div className="field" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#374151", fontWeight: 500, textTransform: "none", letterSpacing: 0, cursor: "pointer" }}>
-              <input type="checkbox" className="chk" checked={f.folia} onChange={(e) => setF({ ...f, folia: e.target.checked })} /> Fólia felhelyezve
-            </label>
-            <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#374151", fontWeight: 500, textTransform: "none", letterSpacing: 0, cursor: "pointer" }}>
-              <input type="checkbox" className="chk" checked={f.consentGiven} onChange={(e) => setF({ ...f, consentGiven: e.target.checked })} /> Az ügyfél elfogadta a szervizgarancia feltételeket
-            </label>
-            <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#374151", fontWeight: 500, textTransform: "none", letterSpacing: 0, cursor: "pointer" }}>
-              <input type="checkbox" className="chk" checked={f.marketingConsent} onChange={(e) => setF({ ...f, marketingConsent: e.target.checked })} /> Hozzájárul, hogy akciókról/emlékeztetőkről SMS-ben értesítsük
-            </label>
-          </div>
         </div>
 
         <div className="modal-actions">
