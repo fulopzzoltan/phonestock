@@ -139,6 +139,33 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
   return (
     <>
     <div className="pub-topbar">
+      <div className={`pub-announce-bar${hideAnnounce ? " hidden" : ""}`} ref={announceRef}>
+        <div className="pub-announce-inner">
+          {ANNOUNCEMENTS.map((a, i) => (
+            <a
+              key={i}
+              className={`pub-announce-msg${i === announceIdx ? " active" : ""}`}
+              href={lang === "ro" ? a.href.ro : a.href.hu}
+              data-umami-event="announce-bar-click"
+              data-umami-event-msg={a.id}
+            >
+              {lang === "ro" ? a.ro : a.hu}
+            </a>
+          ))}
+          <button
+            type="button"
+            className="pub-announce-pause"
+            aria-label={announcePaused ? "Lejátszás" : "Szüneteltetés"}
+            onClick={() => setAnnouncePaused((v) => !v)}
+          >
+            {announcePaused ? (
+              <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6,4 20,12 6,20" /></svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1" /><rect x="14" y="4" width="4" height="16" rx="1" /></svg>
+            )}
+          </button>
+        </div>
+      </div>
 
       <header className="pub-header" ref={headerRef}>
       <div className="pub-header-inner">
@@ -228,34 +255,6 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
         </div>
       </div>
     </header>
-
-      <div className={`pub-announce-bar${hideAnnounce ? " hidden" : ""}`} ref={announceRef}>
-        <div className="pub-announce-inner">
-          {ANNOUNCEMENTS.map((a, i) => (
-            <a
-              key={i}
-              className={`pub-announce-msg${i === announceIdx ? " active" : ""}`}
-              href={lang === "ro" ? a.href.ro : a.href.hu}
-              data-umami-event="announce-bar-click"
-              data-umami-event-msg={a.id}
-            >
-              {lang === "ro" ? a.ro : a.hu}
-            </a>
-          ))}
-          <button
-            type="button"
-            className="pub-announce-pause"
-            aria-label={announcePaused ? "Lejátszás" : "Szüneteltetés"}
-            onClick={() => setAnnouncePaused((v) => !v)}
-          >
-            {announcePaused ? (
-              <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6,4 20,12 6,20" /></svg>
-            ) : (
-              <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1" /><rect x="14" y="4" width="4" height="16" rx="1" /></svg>
-            )}
-          </button>
-        </div>
-      </div>
     </div>
 
     <nav className={`pub-nav${menuOpen ? " open" : ""}`}>
