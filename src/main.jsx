@@ -76,6 +76,7 @@ const returnsMatch = window.location.pathname.match(/^\/visszakuldes\/?$/i);
 const legalLang = new URLSearchParams(window.location.search).get("lang") === "ro" ? "ro" : "hu";
 const faqMatch = window.location.pathname.match(/^\/gyik\/?$/i);
 const qualityMatch = window.location.pathname.match(/^\/ellenorzott-felujitas\/?$/i);
+const wishlistMatch = window.location.pathname.match(/^\/kedvencek\/?$/i);
 // "/" és "/keszlet" is a nyilvános készletoldalt mutatja — ez az, amit valaki
 // a Netlify domain-re érkezve először lát, nem a bejelentkezés.
 const stockMatch = window.location.pathname.match(/^\/(keszlet\/?)?$/i);
@@ -87,6 +88,7 @@ const roRepairMatch = window.location.pathname.match(/^\/ro\/estimare\/?$/i);
 const roFinderMatch = window.location.pathname.match(/^\/ro\/asistent\/?$/i);
 const roFaqMatch = window.location.pathname.match(/^\/ro\/intrebari-frecvente\/?$/i);
 const roQualityMatch = window.location.pathname.match(/^\/ro\/reconditionare-verificata\/?$/i);
+const roWishlistMatch = window.location.pathname.match(/^\/ro\/favorite\/?$/i);
 
 function Root() {
   if (ADMIN_ONLY) return (
@@ -125,6 +127,8 @@ function Root() {
   if (repairMatch) return <RepairEstimator lang="hu" />;
   if (roFinderMatch) return <PhoneFinder lang="ro" />;
   if (finderMatch) return <PhoneFinder lang="hu" />;
+  if (roWishlistMatch) return <StockShowcase lang="ro" wishlistOnly />;
+  if (wishlistMatch) return <StockShowcase lang="hu" wishlistOnly />;
   if (roStockMatch) return <StockShowcase lang="ro" />;
   if (stockMatch) return <StockShowcase lang="hu" />;
   // Ismeretlen útvonal a publikus oldalon — a személyzeti admin ide már nem tartozik

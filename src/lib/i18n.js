@@ -1,7 +1,7 @@
 export const STRINGS = {
   hu: {
     navStock: "Telefonok", navBuyback: "Eladás", navRepair: "Szerviz",
-    navStatus: "Nyomonkövetés", navLogin: "Bejelentkezés", navSearch: "Keresés", langSwitch: "RO",
+    navStatus: "Nyomonkövetés", navLogin: "Bejelentkezés", navSearch: "Keresés", navWishlist: "Kedvencek", langSwitch: "RO",
 
     // Készlet-vitrin
     searchPlaceholder: "Keresés — pl. iPhone 13...", filters: "Szűrők",
@@ -19,6 +19,7 @@ export const STRINGS = {
     saveLabel: (n) => `Spórolsz ${n} Lei`,
     backToStock: "Vissza a készlethez", soldOut: "Ez a darab már elkelt, vagy nem található.",
     wishlistToggle: "Kedvencekhez adás",
+    wishlistPageTitle: "Kedvenceid", wishlistEmpty: "Még nincs mentett kedvenc telefonod — a listánál a szív ikonra kattintva mentheted el.",
     trustWarrantyTitle: "Akár 2 év garancia",
     trustReturnTitle: "14 napos visszaküldés",
     trustTestedTitle: "Tesztelt, ellenőrzött",
@@ -160,7 +161,7 @@ export const STRINGS = {
   },
   ro: {
     navStock: "Telefoane", navBuyback: "Vinde", navRepair: "Service",
-    navStatus: "Urmărire", navLogin: "Autentificare", navSearch: "Căutare", langSwitch: "HU",
+    navStatus: "Urmărire", navLogin: "Autentificare", navSearch: "Căutare", navWishlist: "Favorite", langSwitch: "HU",
 
     searchPlaceholder: "Căutare — ex. iPhone 13...", filters: "Filtre",
     allBrands: "Toate mărcile", allConditions: "Toate stările", os: "Sistem de operare",
@@ -177,6 +178,7 @@ export const STRINGS = {
     saveLabel: (n) => `Economisești ${n} Lei`,
     backToStock: "Înapoi la stoc", soldOut: "Această bucată s-a vândut deja sau nu a fost găsită.",
     wishlistToggle: "Adaugă la favorite",
+    wishlistPageTitle: "Favoritele tale", wishlistEmpty: "Nu ai încă telefoane favorite salvate — apasă pe inimioară la un telefon pentru a-l salva.",
     trustWarrantyTitle: "Garanție până la 2 ani",
     trustReturnTitle: "Retur în 14 zile",
     trustTestedTitle: "Testat, verificat",

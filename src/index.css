@@ -1123,7 +1123,8 @@ tr:hover td{background:#FAFAFA}
   .pub-bnav-item.active .pub-bnav-ic{color:var(--pub-accent)}
   .pub-bnav-badge{position:absolute; top:-4px; right:-7px; background:var(--pub-accent); color:#fff; font-size:9.5px; font-weight:800; min-width:14px; height:14px; border-radius:999px; display:inline-flex; align-items:center; justify-content:center; padding:0 3px; border:1.5px solid #fff}
 }
-.pub-announce-bar{background:#1A2420;color:#fff;overflow:hidden}
+.pub-announce-bar{position:relative;background:linear-gradient(120deg,#141D19 0%,#1F2E27 55%,#17211D 100%);color:#fff;overflow:hidden}
+.pub-announce-bar::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.05;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 .pub-announce-inner{max-width:1180px;margin:0 auto;padding:20px 40px;position:relative;height:18px;display:flex;align-items:center;justify-content:center;text-align:center}
 .pub-announce-msg{position:absolute;left:0;right:0;color:#fff;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;text-decoration-color:#fff;font-size:13px;font-weight:500;line-height:1.6;white-space:nowrap;overflow:visible;opacity:0;transform:translateY(6px);transition:opacity .35s,transform .35s;pointer-events:none}
 .pub-announce-msg.active{opacity:1;transform:translateY(0);pointer-events:auto}
@@ -1142,22 +1143,21 @@ tr:hover td{background:#FAFAFA}
 .pub-wordmark{display:flex;align-items:center;flex-shrink:0}
 .pub-logo-img{height:23px;width:auto;display:block}
 .pub-nav{display:flex;align-items:center;gap:4px}
-.pub-nav-link{display:inline-flex;align-items:center;font-size:13px;font-weight:600;color:var(--pub-ink-soft);text-decoration:none;padding:8px 12px;border-radius:9px;transition:background .12s,color .12s;white-space:nowrap}
-.pub-nav-link:hover{background:var(--pub-paper-raised);color:var(--pub-ink)}
-.pub-nav-link.active{color:var(--pub-accent-ink);background:var(--pub-accent-soft)}
+/* Gymshark-mintás alsó vonal: nincs kitöltött háttér/gomb-hatás, csak egy vékony
+   vonal jelenik meg hover/aktív állapotban, színátmenettel. A vonalat egy abszolút
+   pozícionált ::after adja, hogy NE vegyen részt a sor flex-magasságában — így a
+   szöveg középre igazítása a logóhoz/ikonokhoz képest nem csúszik el a vonaltól. */
+.pub-nav-link{position:relative;display:inline-flex;align-items:center;font-size:15px;font-weight:600;color:var(--pub-ink-soft);text-decoration:none;white-space:nowrap;margin-top:3px}
+.pub-nav-link::after{content:"";position:absolute;left:0;right:0;bottom:-7px;height:2px;background:transparent;transition:background-color .15s}
+.pub-nav-link:hover{color:var(--pub-ink)}
+.pub-nav-link:hover::after{background-color:var(--pub-line)}
+.pub-nav-link.active{color:var(--pub-ink)}
+.pub-nav-link.active::after{background-color:var(--pub-ink)}
 .pub-lang-switch{display:inline-flex;align-items:center;border:1px solid var(--pub-line);border-radius:9px;overflow:hidden;margin:0 2px}
 .pub-lang-opt{padding:6px 10px;font-size:11.5px;font-weight:700;letter-spacing:.03em;color:var(--pub-ink-soft);text-decoration:none}
 a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-ink)}
 .pub-lang-opt.pub-lang-active{background:var(--pub-accent-soft);color:var(--pub-accent-ink)}
-.pub-nav-link.pub-nav-cta{border:none;background:var(--pub-accent);color:#fff;margin-left:4px;padding:9px 16px;border-radius:12px;box-shadow:0 4px 12px rgba(29,185,84,.25)}
-.pub-nav-link.pub-nav-cta:hover{opacity:.88;background:var(--pub-accent);color:#fff}
-.pub-nav-link.pub-nav-icon{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;padding:0;border:1px solid var(--pub-line);background:var(--pub-paper-raised);border-radius:9px;flex-shrink:0;position:relative}
 .pub-cart-badge{position:absolute;top:-7px;right:-8px;background:var(--pub-accent);color:#fff;font-size:10.5px;font-weight:800;min-width:18px;height:18px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid #fff;box-shadow:0 1px 3px rgba(16,24,40,.18)}
-.pub-nav-link.pub-nav-icon:hover{border-color:var(--pub-accent);color:var(--pub-accent-ink)}
-.pub-nav-link.pub-nav-icon.active{background:var(--pub-accent-soft)}
-.pub-nav-icon-label{display:none}
-.pub-nav-link-icon{display:inline-flex;margin-right:6px;flex-shrink:0}
-.pub-nav-link.pub-nav-icon .pub-nav-link-icon{margin-right:0}
 .pub-mobile-left{display:none;align-items:center}
 .pub-mobile-icons{display:none;align-items:center}
 .pub-mobile-icon{display:flex;align-items:center;justify-content:center;color:var(--pub-ink);position:relative;text-decoration:none;border:none;background:none;padding:0;cursor:pointer;font-family:inherit}
@@ -1169,36 +1169,27 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-menu-toggle.open span:nth-child(2){opacity:0}
 .pub-menu-toggle.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
 
-/* Asztali két sávos fejléc (Flip.ro-mintára): 1. sor logó+keresés+fiók/kosár, 2. sor menüpontok+CTA.
-   Mobilon (≤640px) ez a két elem rejtve marad, ott a hamburger-menü (.pub-nav.open) viszi tovább
-   a navigációt, ahogy eddig is. */
+/* Asztali egysoros fejléc (Gymshark-mintára): logó, menüpontok és a fiók/kosár ikonok
+   egy sorban; a kereső csak ikon, kattintásra nyílik le egy második, teljes szélességű
+   sorba (ugyanaz a mechanizmus, mint mobilon). Mobilon (≤640px) ez rejtve marad, ott a
+   hamburger-menü (.pub-nav.open) viszi tovább a navigációt, ahogy eddig is. */
 .pub-account-links{display:none}
-.pub-header-row2{display:none}
+.pub-row2-nav{display:none}
 @media (min-width:641px){
   .pub-nav{display:none}
   .pub-header-inner{
     display:grid;
     grid-template-columns:auto 1fr auto;
-    grid-template-areas:"brand search account" "row2 row2 row2";
+    grid-template-areas:"brand nav account" "search search search";
     align-items:center;
     row-gap:10px;
-    column-gap:20px;
+    column-gap:32px;
   }
   .pub-brand-row{grid-area:brand}
-  .pub-header-children{grid-area:search}
-  .pub-account-links{grid-area:account;display:flex;align-items:center;gap:10px}
-  .pub-account-links .pub-lang-switch{margin:0}
-  .pub-header-row2{
-    grid-area:row2;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:16px;
-  }
-  .pub-row2-nav{display:flex;align-items:center;gap:4px}
-  .pub-row2-right{display:flex;align-items:center;gap:8px}
-  .pub-account-link{display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px;border:1px solid var(--pub-line);border-radius:10px;font-size:12.5px;font-weight:700;color:var(--pub-ink-soft);text-decoration:none;white-space:nowrap;transition:border-color .12s,color .12s}
-  .pub-account-link:hover,.pub-account-link.active{border-color:var(--pub-accent);color:var(--pub-accent-ink)}
+  .pub-header-children{grid-area:search;display:none;margin-top:10px}
+  .pub-header-children.open{display:block}
+  .pub-row2-nav{grid-area:nav;display:flex;align-items:center;gap:20px}
+  .pub-account-links{grid-area:account;display:flex;align-items:center;gap:20px}
 }
 
 @media (max-width:640px){
@@ -1589,6 +1580,8 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-footer-payment-badges{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:14px;padding:24px 0}
 .pub-footer-payment-badges img{height:22px;width:auto;display:block}
 
+.pub-footer-lang-mobile-only{display:flex;justify-content:center;padding-bottom:20px}
+
 .pub-footer-bottom{border-top:1px solid var(--pub-line);padding-top:18px;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:11.5px;text-align:center}
 
 @media (min-width:761px){
@@ -1608,6 +1601,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
   .pub-footer-payment-social-block{display:flex;flex-direction:column;gap:18px}
   .pub-footer-payment-badges{padding:0;justify-content:flex-start}
   .pub-footer-payment-badges-mobile-only{display:none}
+  .pub-footer-lang-mobile-only{display:none}
   .pub-footer-social-desktop{display:flex}
   .pub-footer-accordions{display:contents}
   .pub-footer-bottom{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:16px;text-align:left}

@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { t } from "../lib/i18n";
-import { UserIcon, PhoneCaseIcon, ServiceIcon, ClockIcon, BuybackIcon, CartIcon, SearchIcon, CloseIcon, ChevronRightIcon, PinIcon } from "./icons";
+import { UserIcon, PhoneCaseIcon, ServiceIcon, ClockIcon, BuybackIcon, CartIcon, SearchIcon, HeartIcon, CloseIcon, ChevronRightIcon, PinIcon } from "./icons";
 import { useCart } from "../lib/cart";
+import { useWishlist } from "../lib/wishlist";
 import { markLangChosen } from "../lib/langPref";
 
 // Menü fölötti rotáló ajánlat-sáv — ez az első szöveg, amit minden látogató elolvas,
@@ -39,6 +40,7 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const cartCount = useCart().length;
+  const wishlistCount = useWishlist().length;
   const [announceIdx, setAnnounceIdx] = useState(0);
   const [announcePaused, setAnnouncePaused] = useState(false);
   useEffect(() => {
@@ -93,6 +95,7 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
     return () => ro.disconnect();
   }, [minimal, hideAnnounce]);
   const stockHref = lang === "ro" ? "/ro/telefoane" : "/";
+  const wishlistHref = lang === "ro" ? "/ro/favorite" : "/kedvencek";
   const repairHref = lang === "ro" ? "/ro/estimare" : "/becsles";
   const otherLang = lang === "ro" ? "hu" : "ro";
   const defaultTarget = DEFAULT_LANG_TARGETS[activeNav] || FALLBACK_LANG_TARGET;
@@ -197,6 +200,10 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
             <img src="/logo.png" alt="Telefonos" className="pub-logo-img" />
           </a>
           <div className="pub-mobile-icons">
+            <a className={`pub-mobile-icon${activeNav === "wishlist" ? " active" : ""}`} href={wishlistHref} aria-label={s.navWishlist} title={s.navWishlist}>
+              <HeartIcon width={18} height={18} />
+              {wishlistCount > 0 && <span className="pub-cart-badge">{wishlistCount}</span>}
+            </a>
             <a className={`pub-mobile-icon${activeNav === "login" ? " active" : ""}`} href="/fiok" aria-label={s.navLogin} title={s.navLogin}>
               <UserIcon width={18} height={18} />
             </a>
@@ -209,21 +216,41 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
 
         <div className={`pub-header-children${mobileSearchOpen ? " open" : ""}`}>{children}</div>
 
-        <div className="pub-account-links">
-          {langSwitch}
-          <a className={`pub-account-link${activeNav === "login" ? " active" : ""}`} href="/fiok"><UserIcon width={15} height={15} />{s.navLogin}</a>
-        </div>
+        <nav className="pub-row2-nav">
+          <a className={`pub-nav-link${activeNav === "stock" ? " active" : ""}`} href={stockHref}>{s.navStock}</a>
+          <a className={`pub-nav-link${activeNav === "buyback" ? " active" : ""}`} href="/eladom">{s.navBuyback}</a>
+          <a className={`pub-nav-link${activeNav === "repair" ? " active" : ""}`} href={repairHref}>{s.navRepair}</a>
+          <a className={`pub-nav-link${activeNav === "status" ? " active" : ""}`} href="/status">{s.navStatus}</a>
+        </nav>
 
-        <div className="pub-header-row2">
-          <nav className="pub-row2-nav">
-            <a className={`pub-nav-link${activeNav === "stock" ? " active" : ""}`} href={stockHref}><PhoneCaseIcon className="pub-nav-link-icon" width={16} height={16} />{s.navStock}</a>
-            <a className={`pub-nav-link${activeNav === "buyback" ? " active" : ""}`} href="/eladom">{s.navBuyback}</a>
-            <a className={`pub-nav-link${activeNav === "repair" ? " active" : ""}`} href={repairHref}>{s.navRepair}</a>
-            <a className={`pub-nav-link${activeNav === "status" ? " active" : ""}`} href="/status">{s.navStatus}</a>
-          </nav>
-          <div className="pub-row2-right">
-            <a className={`pub-account-link${activeNav === "cart" ? " active" : ""}`} href="/kosar"><CartIcon width={15} height={15} />Kosár{cartCount > 0 ? ` (${cartCount})` : ""}</a>
-          </div>
+        <div className="pub-account-links">
+          {children ? (
+            <button
+              type="button"
+              className={`pub-mobile-icon${mobileSearchOpen ? " active" : ""}`}
+              aria-label={s.navSearch}
+              title={s.navSearch}
+              aria-expanded={mobileSearchOpen}
+              onClick={() => setMobileSearchOpen((v) => !v)}
+            >
+              <SearchIcon width={20} height={20} stroke="currentColor" />
+            </button>
+          ) : (
+            <a className="pub-mobile-icon" href={stockHref} aria-label={s.navSearch} title={s.navSearch}>
+              <SearchIcon width={20} height={20} stroke="currentColor" />
+            </a>
+          )}
+          <a className={`pub-mobile-icon${activeNav === "wishlist" ? " active" : ""}`} href={wishlistHref} aria-label={s.navWishlist} title={s.navWishlist}>
+            <HeartIcon width={20} height={20} />
+            {wishlistCount > 0 && <span className="pub-cart-badge">{wishlistCount}</span>}
+          </a>
+          <a className={`pub-mobile-icon${activeNav === "login" ? " active" : ""}`} href="/fiok" aria-label={s.navLogin} title={s.navLogin}>
+            <UserIcon width={20} height={20} />
+          </a>
+          <a className={`pub-mobile-icon${activeNav === "cart" ? " active" : ""}`} href="/kosar" aria-label="Kosár" title="Kosár">
+            <CartIcon width={21} height={21} />
+            {cartCount > 0 && <span className="pub-cart-badge">{cartCount}</span>}
+          </a>
         </div>
       </div>
     </header>
@@ -237,20 +264,7 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
         <a className="pub-mnav-wordmark" href={stockHref} aria-label="Telefonos" onClick={() => setMenuOpen(false)}>
           <img src="/logo.png" alt="Telefonos" className="pub-logo-img" />
         </a>
-        {resolvedLangHref ? (
-          <div className="pub-lang-switch pub-lang-switch-mobile" role="group" aria-label="Nyelv">
-            {lang === "ro" ? (
-              <a className="pub-lang-opt" href={resolvedLangHref} onClick={() => markLangChosen("hu")}>HU</a>
-            ) : (
-              <span className="pub-lang-opt pub-lang-active">HU</span>
-            )}
-            {lang === "ro" ? (
-              <span className="pub-lang-opt pub-lang-active">RO</span>
-            ) : (
-              <a className="pub-lang-opt" href={resolvedLangHref} onClick={() => markLangChosen("ro")}>RO</a>
-            )}
-          </div>
-        ) : <span className="pub-mnav-top-spacer" />}
+        <span className="pub-mnav-top-spacer" />
       </div>
 
       <a className="pub-mnav-search" href={stockHref} onClick={() => setMenuOpen(false)}>
@@ -295,6 +309,14 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
               {cartCount > 0 && <span className="pub-cart-badge">{cartCount}</span>}
             </span>
             <span className="pub-mnav-link-label">Kosár{cartCount > 0 ? ` (${cartCount})` : ""}</span>
+            <ChevronRightIcon />
+          </a>
+          <a className={`pub-mnav-link pub-mnav-link-sm${activeNav === "wishlist" ? " active" : ""}`} href={wishlistHref} onClick={() => setMenuOpen(false)}>
+            <span className="pub-mnav-link-ic">
+              <HeartIcon width={17} height={17} />
+              {wishlistCount > 0 && <span className="pub-cart-badge">{wishlistCount}</span>}
+            </span>
+            <span className="pub-mnav-link-label">{s.navWishlist}{wishlistCount > 0 ? ` (${wishlistCount})` : ""}</span>
             <ChevronRightIcon />
           </a>
           <a className={`pub-mnav-link pub-mnav-link-sm${activeNav === "login" ? " active" : ""}`} href="/fiok" onClick={() => setMenuOpen(false)}>

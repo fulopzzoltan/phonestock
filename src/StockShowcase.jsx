@@ -47,7 +47,7 @@ function SidebarGroup({ label, open, onToggle, children }) {
   );
 }
 
-export default function StockShowcase({ lang = "hu" }) {
+export default function StockShowcase({ lang = "hu", wishlistOnly = false }) {
   const s = t(lang);
   const [phones, setPhones] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -150,6 +150,7 @@ export default function StockShowcase({ lang = "hu" }) {
 
   const filtered = useMemo(() => {
     let items = phones.filter((p) => {
+      if (wishlistOnly && !wishlist.includes(p.id)) return false;
       if (selectedBrands.length > 0 && !selectedBrands.includes(p.brand)) return false;
       if (selectedConditions.length > 0 && !selectedConditions.includes(p.condition)) return false;
       if (selectedStorages.length > 0 && !selectedStorages.includes(normalizeStorage(p.storage))) return false;
@@ -164,7 +165,7 @@ export default function StockShowcase({ lang = "hu" }) {
       return a.brand.localeCompare(b.brand) || a.model.localeCompare(b.model);
     });
     return items;
-  }, [phones, selectedBrands, selectedConditions, selectedStorages, selectedOS, q, sort]);
+  }, [phones, wishlistOnly, wishlist, selectedBrands, selectedConditions, selectedStorages, selectedOS, q, sort]);
 
   const BASE_PAGE_SIZE = 30;
   const [page, setPage] = useState(1);
@@ -269,7 +270,7 @@ export default function StockShowcase({ lang = "hu" }) {
           } : {}),
         })}</script>
       </Helmet>
-      <PublicHeader activeNav="stock" lang={lang}>
+      <PublicHeader activeNav={wishlistOnly ? "wishlist" : "stock"} lang={lang}>
         <div className="pub-search-row">
           <div className="pub-search-box">
             <svg viewBox="0 0 24 24" style={{ width: 15, height: 15, stroke: "var(--pub-ink-soft)", fill: "none", strokeWidth: 2 }}><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
@@ -404,7 +405,7 @@ export default function StockShowcase({ lang = "hu" }) {
             {loading ? (
               <LoadingState />
             ) : filtered.length === 0 ? (
-              <EmptyState icon={SearchIcon}>{s.noResults}</EmptyState>
+              <EmptyState icon={wishlistOnly ? HeartIcon : SearchIcon}>{wishlistOnly ? s.wishlistEmpty : s.noResults}</EmptyState>
             ) : (
               <div className="pub-grid">
                 {pagedItems.map((p, i) => {

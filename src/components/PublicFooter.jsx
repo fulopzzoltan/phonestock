@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { t } from "../lib/i18n";
 import { PinIcon, FacebookIcon, InstagramIcon, YoutubeIcon, TiktokIcon } from "./icons";
+import { markLangChosen } from "../lib/langPref";
 
 const SOCIAL_LINKS = [
   { Icon: FacebookIcon, href: "https://www.facebook.com/telefonos.ro", label: "Facebook" },
@@ -72,6 +73,24 @@ export default function PublicFooter({ lang = "hu", minimal = false, onContactCl
   // route rájuk, de a ?lang=ro jelzéssel legalább a fejléc/lábléc (és a nyelvváltó) a
   // látogató nyelvén marad, ahelyett hogy a teljes oldal csendben visszaváltana magyarra.
   const legalLangQuery = lang === "ro" ? "?lang=ro" : "";
+  // A fejlécből ide költözött nyelvváltó — a konkrét oldal fordítottját nem ismeri
+  // (a lábléc minden oldalon ugyanaz a komponens, saját props nélkül), ezért mindig
+  // a telefonlistára visz a másik nyelven, mint a fejléc alapértelmezett esete.
+  const otherLangHref = lang === "ro" ? "/" : "/ro/telefoane";
+  const footerLangSwitch = (
+    <div className="pub-lang-switch" role="group" aria-label="Nyelv">
+      {lang === "ro" ? (
+        <a className="pub-lang-opt" href={otherLangHref} onClick={() => markLangChosen("hu")}>HU</a>
+      ) : (
+        <span className="pub-lang-opt pub-lang-active">HU</span>
+      )}
+      {lang === "ro" ? (
+        <span className="pub-lang-opt pub-lang-active">RO</span>
+      ) : (
+        <a className="pub-lang-opt" href={otherLangHref} onClick={() => markLangChosen("ro")}>RO</a>
+      )}
+    </div>
+  );
 
   useEffect(() => {
     (async () => {
@@ -144,6 +163,7 @@ export default function PublicFooter({ lang = "hu", minimal = false, onContactCl
                 </a>
               ))}
             </div>
+            {footerLangSwitch}
           </div>
 
           <div className="pub-footer-accordions">
@@ -176,6 +196,8 @@ export default function PublicFooter({ lang = "hu", minimal = false, onContactCl
           <img src="/Mastercard-Logo.png" alt="Mastercard" />
           <img src="/visacolor-telefonos.png" alt="Visa" />
         </div>
+
+        <div className="pub-footer-lang-mobile-only">{footerLangSwitch}</div>
 
         <div className="pub-footer-bottom">
           <span className="pub-footer-legal">
