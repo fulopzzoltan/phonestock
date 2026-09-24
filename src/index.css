@@ -1610,8 +1610,8 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
   .pub-footer-backtotop{display:none}
   .pub-footer-brand-block{display:none}
   .pub-footer-top{display:grid;grid-template-columns:repeat(4,1fr);gap:32px;align-items:start;margin-bottom:12px}
-  .pub-footer-payment-social-block{display:flex;flex-direction:column;gap:18px}
-  .pub-footer-payment-badges{padding:0;justify-content:flex-start}
+  .pub-footer-payment-social-block{display:flex;flex-direction:column;gap:18px;align-items:flex-end}
+  .pub-footer-payment-badges{padding:0;justify-content:flex-end}
   .pub-footer-payment-badges-mobile-only{display:none}
   .pub-footer-lang-mobile-only{display:none}
   .pub-footer-social-desktop{display:flex}
