@@ -2126,18 +2126,20 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .bb-landing-tab{background:none;border:none;font-family:inherit;font-size:13.5px;font-weight:700;color:var(--pub-ink-soft);padding-bottom:12px;border-bottom:2px solid transparent;cursor:pointer;margin-bottom:-1px}
 .bb-landing-tab.active{color:var(--pub-ink);border-bottom-color:var(--pub-ink)}
 
-.bb-landing-values{margin-top:56px}
+/* Apple Trade In mintájára: nem szabadon lebegő szöveg+táblázat, hanem egy
+   kontúros, lekerekített, kitöltött kártya — a teljes ár-szekció egy dobozban él. */
+.bb-landing-values{margin-top:56px;background:var(--pub-paper);border-radius:24px;padding:44px 44px 40px}
 .bb-landing-values-title{font-size:22px;font-weight:800;letter-spacing:-.3px;color:var(--pub-ink)}
 .bb-landing-values-title span{color:var(--pub-accent-ink)}
 .bb-landing-values-sub{margin:4px 0 0;font-size:13.5px;color:var(--pub-ink-soft)}
-.bb-landing-values-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:32px;margin-top:20px}
+.bb-landing-values-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:32px;margin-top:24px}
 .bb-landing-values-table{display:flex;flex-direction:column;align-items:flex-start}
 .bb-landing-val-row{width:100%;display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--pub-line)}
 .bb-landing-val-row span{font-size:14.5px;font-weight:700;color:var(--pub-ink)}
 .bb-landing-val-row b{font-size:14.5px;font-weight:800;color:var(--pub-ink)}
-.bb-landing-values-link{margin-top:16px;background:none;border:none;font-family:inherit;font-size:13px;font-weight:800;color:var(--pub-ink);text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:0}
+.bb-landing-values-link{margin-top:16px;background:none;border:none;font-family:inherit;font-size:13px;font-weight:800;color:var(--pub-accent-ink);text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:0}
 .bb-landing-values-side{display:flex;flex-direction:column;gap:14px}
-.bb-landing-status-box{display:flex;flex-direction:column;gap:4px;background:var(--pub-paper);border-radius:var(--radius-lg);padding:16px 18px;text-decoration:none;color:inherit}
+.bb-landing-status-box{display:flex;flex-direction:column;gap:4px;background:var(--pub-paper-raised);border-radius:var(--radius-lg);padding:16px 18px;text-decoration:none;color:inherit}
 .bb-landing-status-box span{font-size:12.5px;font-weight:700;color:var(--pub-ink)}
 .bb-landing-status-box b{font-size:12.5px;font-weight:700;color:var(--pub-ink-soft)}
 
@@ -2171,6 +2173,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 @media (max-width:760px){
   .bb-landing-title{font-size:32px}
   .bb-landing-tabs{gap:18px}
+  .bb-landing-values{padding:26px 22px}
   .bb-landing-values-grid{grid-template-columns:1fr}
   .bb-landing-trust{grid-template-columns:1fr;padding:26px}
   .bb-landing-final-cta{padding:26px}
