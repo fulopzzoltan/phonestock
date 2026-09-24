@@ -243,7 +243,7 @@ export default function BuybackFlow() {
   }
 
   return (
-    <div className="pub-shop">
+    <div className={`pub-shop${step === "intro" ? " bb-landing-page" : ""}`}>
       <PublicHeader activeNav="buyback" />
       <main className={step === "intro" ? "pub-main" : "bb-main"}>
         <button type="button" className="pub-back-link" onClick={goBack}>← Vissza</button>

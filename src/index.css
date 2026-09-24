@@ -1146,7 +1146,7 @@ tr:hover td{background:#FAFAFA}
    ez a korrekció visszatriggereli a lenti scroll-figyelőt, ami visszaváltja a sávot, ami
    megint scrollY-korrekciót okoz: végtelen remegő ciklus. Ez a szabály törli a hurkot. */
 .pub-topbar{position:sticky;top:0;z-index:20;overflow-anchor:none}
-.pub-header{background:var(--pub-paper-raised);border-bottom:1px solid var(--pub-line);box-shadow:0 1px 0 rgba(16,24,40,.02),0 4px 14px rgba(16,24,40,.04)}
+.pub-header{background:#FBFBFC;border-bottom:1px solid var(--pub-line);box-shadow:0 1px 0 rgba(16,24,40,.02),0 4px 14px rgba(16,24,40,.04)}
 .pub-header-standalone{position:sticky;top:0;z-index:20}
 .pub-header-inner{max-width:1180px;margin:0 auto;padding:18px 24px 14px;display:flex;flex-direction:column;gap:14px}
 .pub-brand-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
@@ -2115,7 +2115,10 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 
 /* Eladás oldal — teljes szélességű "landing" nyitány (Apple Trade In szerkezete alapján),
    csak a BuybackLandingIntro-ban él, a .bb-main-es varázsló-lépésektől eltérően .pub-main
-   szélességben fut. */
+   szélességben fut. A .bb-landing-page csak az "intro" lépésen kerül a .pub-shop-ra —
+   a varázsló többi lépése marad a szokásos --pub-paper szürkén, hogy a .bb-card panelek
+   látszódjanak a hátterükön. */
+.bb-landing-page{background:#fff}
 .bb-landing-hero{text-align:center;padding:12px 0 8px}
 .bb-landing-title{margin:0;font-size:44px;line-height:1.08;font-weight:800;letter-spacing:-1px;color:var(--pub-ink)}
 .bb-landing-sub{margin:20px auto 0;font-size:15.5px;line-height:1.55;color:var(--pub-ink-soft);max-width:520px}
