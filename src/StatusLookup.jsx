@@ -8,7 +8,8 @@ import PublicBottomNav from "./components/PublicBottomNav";
 import SignaturePad from "./components/SignaturePad";
 import FoliaUpsellBanner from "./components/FoliaUpsellBanner";
 import WarrantyTermsToggle from "./components/WarrantyTermsToggle";
-import { CallIcon, PhoneCaseIcon, ChevronLeftIcon, ClockIcon, PinIcon, WhatsappIcon, CardIcon } from "./components/icons";
+import { CallIcon, PhoneCaseIcon, ChevronLeftIcon, ClockIcon, PinIcon, WhatsappIcon } from "./components/icons";
+import StatusLandingIntro from "./components/StatusLandingIntro";
 
 // Központi ügyfélszolgálati szám — ugyanaz, mint a lábléc "minimal" nézetében.
 const SUPPORT_PHONE = "0773985278";
@@ -103,22 +104,6 @@ function ContactPanel({ s, lang, locations, onBack }) {
       <a href={`tel:${SUPPORT_PHONE}`} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, color: "var(--pub-ink-soft)", fontWeight: 600, fontSize: 12.5, padding: "10px 0", marginTop: 14, textDecoration: "none" }}>
         <CallIcon width={12} height={12} /> {s.contactCallAlt}
       </a>
-    </div>
-  );
-}
-
-// Egy funkció-ismertető sor a nyomonkövetés kezdőoldalán (kereső alatt) — miért érdemes
-// itt keresni, mielőtt bármi eredmény van.
-function FeatureRow({ icon: Icon, title, desc, last = false }) {
-  return (
-    <div className="ticket-extra-card" style={{ width: "100%", display: "flex", alignItems: "flex-start", gap: 14, marginBottom: last ? 0 : 10 }}>
-      <span style={{ width: 36, height: 36, borderRadius: 0, background: "var(--primary-soft)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-        <Icon width={17} height={17} style={{ color: "var(--primary-ink)" }} />
-      </span>
-      <div>
-        <div style={{ fontSize: 13.5, fontWeight: 800, color: "var(--pub-ink)", marginBottom: 3 }}>{title}</div>
-        <div style={{ fontSize: 12, color: "var(--pub-ink-soft)", lineHeight: 1.5 }}>{desc}</div>
-      </div>
     </div>
   );
 }
@@ -555,28 +540,17 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
           </div>
         </div>
       ) : (!token && !shortCode && !result && !matches) ? (
-        <div style={{ width: "100%", maxWidth: 400, margin: "0 auto" }}>
-          <div style={{ fontSize: 22, fontWeight: 800, color: "var(--pub-ink)", marginBottom: 18 }}>{s.landingHeadline}</div>
-
-          <div className="ticket-extra-card" style={{ width: "100%" }}>
-            <div style={{ fontSize: 16, fontWeight: 800, color: "var(--pub-ink)", marginBottom: 6 }}>{s.searchCardTitle}</div>
-            <div style={{ fontSize: 12.5, color: "var(--pub-ink-soft)", lineHeight: 1.5, marginBottom: 16 }}>{s.searchCardDesc}</div>
-            {error && <div className="errbar" style={{ marginBottom: 12 }}>{error}</div>}
-            <form onSubmit={submit}>
-              <div className="field" style={{ marginBottom: 12 }}>
-                <label>{s.phoneLabel}</label>
-                <input required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={s.statusPhonePlaceholder} />
-              </div>
-              <button className="btn" style={{ width: "100%", justifyContent: "center" }} disabled={busy} type="submit">
-                {busy ? s.statusSearching : s.statusViewBtn}
-              </button>
-            </form>
-          </div>
-
-          <div style={{ fontSize: 14, fontWeight: 800, color: "var(--pub-ink)", margin: "26px 0 12px" }}>{s.featuresTitle}</div>
-          <FeatureRow icon={ClockIcon} title={s.feature1Title} desc={s.feature1Desc} />
-          <FeatureRow icon={WhatsappIcon} title={s.feature2Title} desc={s.feature2Desc} />
-          <FeatureRow icon={CardIcon} title={s.feature3Title} desc={s.feature3Desc} last />
+        <div style={{ width: "100%" }}>
+          <StatusLandingIntro
+            s={s}
+            phone={phone}
+            setPhone={setPhone}
+            busy={busy}
+            error={error}
+            onSubmit={submit}
+            whatsappHref={`https://wa.me/${SUPPORT_WHATSAPP}`}
+            supportPhone={SUPPORT_PHONE}
+          />
         </div>
       ) : (
       <div className="login-card" style={{ maxWidth: 460 }}>
