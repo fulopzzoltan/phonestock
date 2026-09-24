@@ -8,13 +8,19 @@ import { findBuybackValue, isRepairUneconomical, recommendNearBudget } from "./l
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 import PhoneMiniCard from "./components/PhoneMiniCard";
-import { CallIcon, PinIcon, WarningIcon, ClockIcon, WarrantyIcon } from "./components/icons";
+import { CallIcon, PinIcon, WarningIcon } from "./components/icons";
 import { EmptyState, LoadingState } from "./components/EmptyState";
 import { ReviewsBadge } from "./components/PublicReviews";
+import RepairLandingIntro from "./components/RepairLandingIntro";
 
 const SITE = "https://phonestock-manager.netlify.app";
 const OTHER_PROBLEMS = PROBLEM_TAGS.filter((tag) => !PRICED_PROBLEMS.includes(tag));
-const STEP_ORDER = ["model", "problem", "result"];
+// "intro" külön lépés a modell-kereső elé (ugyanaz a minta, mint a BuybackFlow-nál) —
+// egyetlen üzenetet mutat, mielőtt bármit kérdezne, message-match célból (ld.
+// KONCEPCIO_ELADOM_REDESIGN.md és a landing-oldal kutatás). Az "intro" nincs benne a
+// pöttyös progress-sorban (ahogy a BuybackFlow-nál sincs), csak a 3 valódi lépés.
+const STEP_ORDER = ["intro", "model", "problem", "result"];
+const DOT_STEPS = ["model", "problem", "result"];
 
 export default function RepairEstimator({ lang = "hu" }) {
   const s = t(lang);
@@ -26,7 +32,7 @@ export default function RepairEstimator({ lang = "hu" }) {
   const [buybackModels, setBuybackModels] = useState([]);
   const [stockPhones, setStockPhones] = useState([]);
 
-  const [step, setStep] = useState("model");
+  const [step, setStep] = useState("intro");
   const [query, setQuery] = useState("");
   const [selectedModel, setSelectedModel] = useState(null); // { brand, model, family }
   const [problem, setProblem] = useState(null);
@@ -119,9 +125,10 @@ export default function RepairEstimator({ lang = "hu" }) {
   }
   const stockHref = lang === "ro" ? "/ro/telefoane" : "/";
   function goBack() {
-    if (step === "model") { window.location.href = stockHref; return; }
+    if (step === "intro") { window.location.href = stockHref; return; }
     setSubmitError("");
-    if (step === "problem") setStep("model");
+    if (step === "model") setStep("intro");
+    else if (step === "problem") setStep("model");
     else if (step === "result") setStep("problem");
     else if (step === "custom") { setStep("model"); }
   }
@@ -236,17 +243,19 @@ export default function RepairEstimator({ lang = "hu" }) {
   );
 
   return (
-    <div className="pub-shop">
+    <div className={`pub-shop${step === "intro" ? " bb-landing-page" : ""}`}>
       {seoHead}
       <PublicHeader activeNav="repair" lang={lang} />
-      <main className="bb-main">
-        <ReviewsBadge lang={lang} style={{ marginBottom: 12 }} />
-        {step !== "custom" ? (
+      <main className={step === "intro" ? "pub-main" : "bb-main"}>
+        {step !== "intro" && <ReviewsBadge lang={lang} style={{ marginBottom: 12 }} />}
+        {step === "intro" ? (
+          <button type="button" className="pub-back-link" onClick={goBack}>{s.back}</button>
+        ) : step !== "custom" ? (
           <div className="pub-wizard-steprow">
             <button type="button" className="pub-back-link pub-wizard-back" onClick={goBack}>{s.back}</button>
             <div className="pub-steps">
-              {STEP_ORDER.map((st, i) => (
-                <div key={st} className={`pub-step${STEP_ORDER.indexOf(step) === i ? " active" : ""}`} />
+              {DOT_STEPS.map((st, i) => (
+                <div key={st} className={`pub-step${DOT_STEPS.indexOf(step) === i ? " active" : ""}`} />
               ))}
             </div>
             <span />
@@ -255,16 +264,8 @@ export default function RepairEstimator({ lang = "hu" }) {
           <button type="button" className="pub-back-link" onClick={goBack}>{s.back}</button>
         )}
 
-        {step === "model" && (
-          <div className="bb-repair-intro" style={{ marginBottom: 16 }}>
-            <div className="bb-hero-title" style={{ fontSize: 20 }}>{s.repairLandingHeadline}</div>
-            <p className="bb-hero-sub">{s.repairLandingIntro}</p>
-            <div className="bb-trust-row">
-              <div className="bb-trust-item"><ClockIcon width={15} height={15} />{s.repairTrust1}</div>
-              <div className="bb-trust-item"><WarrantyIcon width={15} height={15} />{s.repairTrust2}</div>
-              <div className="bb-trust-item"><PinIcon width={15} height={15} />{s.repairTrust3}</div>
-            </div>
-          </div>
+        {step === "intro" && (
+          <RepairLandingIntro prices={prices} onCta={() => setStep("model")} />
         )}
 
         {step === "model" && (
