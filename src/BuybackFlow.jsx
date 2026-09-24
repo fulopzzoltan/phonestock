@@ -7,9 +7,10 @@ import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 import PhoneMiniCard from "./components/PhoneMiniCard";
 import BuybackPriceBar from "./components/BuybackPriceBar";
-import { ClockIcon, FinanceIcon, CallIcon, PinIcon, PartsIcon, WarningIcon, BuybackIcon, WarrantyIcon, TransferIcon } from "./components/icons";
+import { ClockIcon, FinanceIcon, CallIcon, PinIcon, PartsIcon, WarningIcon, BuybackIcon } from "./components/icons";
 import { EmptyState, LoadingState } from "./components/EmptyState";
 import { ReviewsBadge } from "./components/PublicReviews";
+import BuybackLandingIntro from "./components/BuybackLandingIntro";
 
 const COLORS = ["Fekete", "Fehér", "Kék", "Zöld", "Ezüst", "Egyéb"];
 
@@ -121,6 +122,13 @@ export default function BuybackFlow() {
     const opts = models.filter((m) => m.brand === group.brand && m.model === group.model);
     setVariant(opts.length === 1 ? opts[0] : null);
     setStepIndex(STEP_KEYS.indexOf("specs"));
+  }
+
+  function seeAllForBrand(b) {
+    setBrand(b);
+    setModelName(null);
+    setVariant(null);
+    setStepIndex(STEP_KEYS.indexOf("model"));
   }
 
   function goNext() { setStepIndex((i) => Math.min(i + 1, STEP_KEYS.length - 1)); }
@@ -237,33 +245,12 @@ export default function BuybackFlow() {
   return (
     <div className="pub-shop">
       <PublicHeader activeNav="buyback" />
-      <main className="bb-main">
+      <main className={step === "intro" ? "pub-main" : "bb-main"}>
         <button type="button" className="pub-back-link" onClick={goBack}>← Vissza</button>
         {step !== "intro" && step !== "brand" && <ReviewsBadge style={{ marginBottom: 12 }} />}
 
         {step === "intro" && (
-          <>
-            <div className="bb-hero-band">
-              <h1 className="bb-hero-title">Add be a régi telefonod</h1>
-              <p className="bb-hero-sub">2 perc alatt látod, mennyit ér — a pénzt még aznap a kezedben tarthatod.</p>
-              <ReviewsBadge style={{ color: "var(--pub-accent-ink)", fontWeight: 700 }} />
-            </div>
-            <div className="bb-steps">
-              <div className="bb-step"><span className="bb-step-num">1</span><div><b>Válaszd ki a modellt és az állapotát</b><p>2 perc, nem kell hozzá regisztráció</p></div></div>
-              <div className="bb-step"><span className="bb-step-num">2</span><div><b>Azonnal látod az ajánlatot</b><p>Készpénz, kredit-egyenleg vagy bizomány — te választasz</p></div></div>
-              <div className="bb-step"><span className="bb-step-num">3</span><div><b>Hozd be, vagy küldd el postán</b><p>Elfogadás után a pénz azonnal a tiéd</p></div></div>
-            </div>
-            <div className="bb-trust-row" style={{ marginTop: 18 }}>
-              <div className="bb-trust-item"><ClockIcon width={15} height={15} />Azonnali fizetés, helyben</div>
-              <div className="bb-trust-item"><WarrantyIcon width={15} height={15} />Törött telefont is beveszünk</div>
-              <div className="bb-trust-item"><PinIcon width={15} height={15} />2 fizikai üzletünkben</div>
-            </div>
-            <div className="bb-intro-databox">
-              <TransferIcon width={16} height={16} />
-              Ha nálunk veszel telefont, az adataidat ingyen átmásoljuk a régiről az újra — nem kell magadnak bajlódnod vele.
-            </div>
-            <button type="button" className="btn" style={{ marginTop: 18, width: "100%", justifyContent: "center" }} onClick={goNext}>Kezdjük</button>
-          </>
+          <BuybackLandingIntro brands={brands} models={models} onCta={goNext} onSeeAll={seeAllForBrand} />
         )}
 
         {step !== "intro" && (

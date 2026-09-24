@@ -2113,7 +2113,65 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .bb-intro-databox{display:flex;align-items:flex-start;gap:8px;background:var(--primary-soft);color:var(--primary-ink);border-radius:12px;padding:12px 14px;margin-top:16px;font-size:12.5px;font-weight:600;line-height:1.5}
 .bb-intro-databox svg{flex-shrink:0;margin-top:1px}
 
-.bb-faq{margin-top:26px}
+/* Eladás oldal — teljes szélességű "landing" nyitány (Apple Trade In szerkezete alapján),
+   csak a BuybackLandingIntro-ban él, a .bb-main-es varázsló-lépésektől eltérően .pub-main
+   szélességben fut. */
+.bb-landing-hero{text-align:center;padding:12px 0 8px}
+.bb-landing-title{margin:0;font-size:44px;line-height:1.08;font-weight:800;letter-spacing:-1px;color:var(--pub-ink)}
+.bb-landing-sub{margin:20px auto 0;font-size:15.5px;line-height:1.55;color:var(--pub-ink-soft);max-width:520px}
+.bb-landing-tabs{display:flex;justify-content:center;flex-wrap:wrap;gap:28px;margin-top:38px;border-bottom:1px solid var(--pub-line)}
+.bb-landing-tab{background:none;border:none;font-family:inherit;font-size:13.5px;font-weight:700;color:var(--pub-ink-soft);padding-bottom:12px;border-bottom:2px solid transparent;cursor:pointer;margin-bottom:-1px}
+.bb-landing-tab.active{color:var(--pub-ink);border-bottom-color:var(--pub-ink)}
+
+.bb-landing-values{margin-top:56px}
+.bb-landing-values-title{font-size:22px;font-weight:800;letter-spacing:-.3px;color:var(--pub-ink)}
+.bb-landing-values-title span{color:var(--pub-accent-ink)}
+.bb-landing-values-sub{margin:4px 0 0;font-size:13.5px;color:var(--pub-ink-soft)}
+.bb-landing-values-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:32px;margin-top:20px}
+.bb-landing-values-table{display:flex;flex-direction:column;align-items:flex-start}
+.bb-landing-val-row{width:100%;display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--pub-line)}
+.bb-landing-val-row span{font-size:14.5px;font-weight:700;color:var(--pub-ink)}
+.bb-landing-val-row b{font-size:14.5px;font-weight:800;color:var(--pub-ink)}
+.bb-landing-values-link{margin-top:16px;background:none;border:none;font-family:inherit;font-size:13px;font-weight:800;color:var(--pub-ink);text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:0}
+.bb-landing-values-side{display:flex;flex-direction:column;gap:14px}
+.bb-landing-status-box{display:flex;flex-direction:column;gap:4px;background:var(--pub-paper);border-radius:var(--radius-lg);padding:16px 18px;text-decoration:none;color:inherit}
+.bb-landing-status-box span{font-size:12.5px;font-weight:700;color:var(--pub-ink)}
+.bb-landing-status-box b{font-size:12.5px;font-weight:700;color:var(--pub-ink-soft)}
+
+.bb-landing-steps{margin-top:70px;text-align:center}
+.bb-landing-steps-title{font-size:24px;font-weight:800;letter-spacing:-.3px;color:var(--pub-ink)}
+.bb-landing-step-list{max-width:640px;margin:24px auto 0;text-align:left}
+.bb-landing-step-row{display:flex;gap:22px;padding:22px 0;border-top:1px solid var(--pub-line)}
+.bb-landing-step-row:last-child{border-bottom:1px solid var(--pub-line)}
+.bb-landing-step-num{flex:0 0 72px;font-size:11px;font-weight:800;color:var(--pub-accent-ink);text-transform:uppercase;letter-spacing:.06em}
+.bb-landing-step-row b{display:block;font-size:15.5px;font-weight:800;color:var(--pub-ink);margin-bottom:6px}
+.bb-landing-step-row p{margin:0;font-size:13px;color:var(--pub-ink-soft);line-height:1.55}
+
+.bb-landing-trust{margin-top:64px;background:var(--pub-paper);border-radius:var(--radius-lg);padding:40px;display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.bb-landing-trust-item svg{color:var(--pub-accent-ink)}
+.bb-landing-trust-item b{display:block;font-size:14px;font-weight:800;color:var(--pub-ink);margin:12px 0 4px}
+.bb-landing-trust-item p{margin:0;font-size:12.5px;color:var(--pub-ink-soft);line-height:1.5}
+
+.bb-faq{margin-top:70px}
+.bb-faq-list{max-width:640px;margin:0 auto}
+.bb-faq-row{border-top:1px solid var(--pub-line)}
+.bb-faq-row:last-child{border-bottom:1px solid var(--pub-line)}
+.bb-faq-q{width:100%;display:flex;align-items:center;justify-content:space-between;gap:16px;background:none;border:none;font-family:inherit;text-align:left;padding:20px 0;font-size:14.5px;font-weight:700;color:var(--pub-ink);cursor:pointer}
+.bb-faq-q svg{flex-shrink:0;color:var(--pub-ink-soft);transition:transform .15s}
+.bb-faq-a{margin:-8px 0 20px;font-size:13px;color:var(--pub-ink-soft);line-height:1.6;max-width:560px}
+
+.bb-landing-final-cta{margin-top:64px;background:var(--pub-accent-soft);border-radius:var(--radius-lg);padding:34px 36px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.bb-landing-final-cta-title{font-size:18px;font-weight:800;color:var(--pub-ink)}
+.bb-landing-final-cta-row{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px}
+.bb-landing-final-cta-row span{font-size:12.5px;font-weight:700;color:var(--pub-accent-ink)}
+
+@media (max-width:760px){
+  .bb-landing-title{font-size:32px}
+  .bb-landing-tabs{gap:18px}
+  .bb-landing-values-grid{grid-template-columns:1fr}
+  .bb-landing-trust{grid-template-columns:1fr;padding:26px}
+  .bb-landing-final-cta{padding:26px}
+}
 
 .leave-warn{background:#FEF2F2;border:1px solid #FECACA;border-radius:14px;padding:14px 16px;margin-bottom:18px}
 .leave-warn-title{font-size:12.5px;font-weight:700;color:#B91C1C;margin-bottom:6px}
