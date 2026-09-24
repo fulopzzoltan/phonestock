@@ -1140,7 +1140,11 @@ tr:hover td{background:#FAFAFA}
   .pub-announce-inner{padding:17px 16px}
   .pub-announce-msg{font-size:12px}
 }
-.pub-topbar{position:sticky;top:0;z-index:20}
+/* overflow-anchor:none: enélkül a böngésző "scroll anchoring"-ja kompenzálja a hirdetési
+   sáv max-height animációja miatt zsugorodó/növő tartalmat egy apró scrollY-korrekcióval —
+   ez a korrekció visszatriggereli a lenti scroll-figyelőt, ami visszaváltja a sávot, ami
+   megint scrollY-korrekciót okoz: végtelen remegő ciklus. Ez a szabály törli a hurkot. */
+.pub-topbar{position:sticky;top:0;z-index:20;overflow-anchor:none}
 .pub-header{background:var(--pub-paper-raised);border-bottom:1px solid var(--pub-line);box-shadow:0 1px 0 rgba(16,24,40,.02),0 4px 14px rgba(16,24,40,.04)}
 .pub-header-standalone{position:sticky;top:0;z-index:20}
 .pub-header-inner{max-width:1180px;margin:0 auto;padding:18px 24px 14px;display:flex;flex-direction:column;gap:14px}

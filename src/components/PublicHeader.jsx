@@ -63,8 +63,8 @@ export default function PublicHeader({ children, activeNav = "stock", lang = "hu
       requestAnimationFrame(() => {
         const y = window.scrollY;
         if (y <= 4) setHideAnnounce(false);
-        else if (y > lastY + 2) setHideAnnounce(true);
-        else if (y < lastY - 2) setHideAnnounce(false);
+        else if (y > lastY + 10) setHideAnnounce(true);
+        else if (y < lastY - 10) setHideAnnounce(false);
         lastY = y;
         ticking = false;
       });
