@@ -1152,7 +1152,7 @@ tr:hover td{background:#FAFAFA}
    vonal jelenik meg hover/aktív állapotban, színátmenettel. A vonalat egy abszolút
    pozícionált ::after adja, hogy NE vegyen részt a sor flex-magasságában — így a
    szöveg középre igazítása a logóhoz/ikonokhoz képest nem csúszik el a vonaltól. */
-.pub-nav-link{position:relative;display:inline-flex;align-items:center;font-size:13.5px;font-weight:600;color:var(--pub-ink-soft);text-decoration:none;white-space:nowrap;margin-top:3px}
+.pub-nav-link{position:relative;display:inline-flex;align-items:center;font-size:13.5px;font-weight:600;color:var(--pub-ink-soft);text-decoration:none;white-space:nowrap}
 .pub-nav-link::after{content:"";position:absolute;left:0;right:0;bottom:-7px;height:2px;background:transparent;transition:background-color .15s}
 .pub-nav-link:hover{color:var(--pub-ink)}
 .pub-nav-link:hover::after{background-color:var(--pub-line)}
