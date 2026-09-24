@@ -3549,7 +3549,7 @@ function AppShell() {
           customers={customersTable}
           stock={stock}
           tickets={tickets}
-          defaultLocId={defaultLocId}
+          defaultLocId={myLocationId}
           onClose={() => { setTicketModal(null); setRepairLeadConvert(null); }}
           busy={busy}
           onSave={(data, locId) => (editingTicket ? saveTicketEdit(editingTicket.id, data, locId) : addTicket(data, locId))}
