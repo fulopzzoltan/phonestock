@@ -56,6 +56,8 @@ export const STRINGS = {
     reviewsBasedOn: (n) => n === 1 ? "1 vélemény alapján" : `${n} vélemény alapján`,
     reviewsViewAll: (n) => `Mind a(z) ${n} vélemény megtekintése →`,
     reviewsEmpty: "Hamarosan itt lesznek az első véleményeink.",
+    reviewsRatingWord: (avg) => avg >= 4.5 ? "Kiváló" : avg >= 3.5 ? "Nagyon jó" : avg >= 2.5 ? "Átlagos" : avg >= 1.5 ? "Gyenge" : "Rossz",
+    reviewsReplyLabel: "Telefonos válasza",
 
     // Telefon-részletoldal
     storageLabel: "Tárhely", colorLabel: "Szín", batteryLabel: "Akkumulátor", warrantyLabel: "Garancia",
@@ -212,6 +214,8 @@ export const STRINGS = {
     reviewsBasedOn: (n) => n === 1 ? "pe baza a 1 recenzie" : `pe baza a ${n} recenzii`,
     reviewsViewAll: (n) => `Vezi toate cele ${n} recenzii →`,
     reviewsEmpty: "În curând vor apărea aici primele noastre recenzii.",
+    reviewsRatingWord: (avg) => avg >= 4.5 ? "Excelent" : avg >= 3.5 ? "Foarte bun" : avg >= 2.5 ? "Mediu" : avg >= 1.5 ? "Slab" : "Rău",
+    reviewsReplyLabel: "Răspunsul Telefonos",
 
     storageLabel: "Stocare", colorLabel: "Culoare", batteryLabel: "Baterie", warrantyLabel: "Garanție",
     detailTrustWarranty: (w) => `Garanție ${w}`, detailTrustWarrantySub: "Pentru dispozitiv și piesele incluse",
