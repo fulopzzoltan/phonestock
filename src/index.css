@@ -1558,6 +1558,13 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .pub-footer-anpc{display:block;flex:none}
 .pub-footer-anpc img{height:26px;width:auto;display:block}
 
+.pub-footer-lang{display:inline-flex;align-items:center;gap:9px;border:1px solid var(--pub-line);border-radius:9px;padding:7px 12px;font-size:12px;font-weight:700;color:var(--pub-ink-soft);width:fit-content}
+.pub-footer-lang svg{flex-shrink:0;color:var(--pub-ink-soft)}
+.pub-footer-lang a{color:var(--pub-ink-soft);text-decoration:none}
+.pub-footer-lang a:hover{color:var(--pub-accent-ink)}
+.pub-footer-lang .active{color:var(--pub-ink)}
+.pub-footer-lang-sep{width:1px;height:12px;background:var(--pub-line);flex-shrink:0}
+
 /* Gymshark-mintás lábléc: brand blokk felül, "vissza a tetejére" link,
    mobilon összecsukható (+/−) szekciók, alul középre rendezett jogi sáv. */
 .pub-footer-top{display:contents}

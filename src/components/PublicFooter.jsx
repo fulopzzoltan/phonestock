@@ -78,16 +78,18 @@ export default function PublicFooter({ lang = "hu", minimal = false, onContactCl
   // a telefonlistára visz a másik nyelven, mint a fejléc alapértelmezett esete.
   const otherLangHref = lang === "ro" ? "/" : "/ro/telefoane";
   const footerLangSwitch = (
-    <div className="pub-lang-switch" role="group" aria-label="Nyelv">
+    <div className="pub-footer-lang" role="group" aria-label="Nyelv">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c2.5 2.5 3.8 5.7 3.8 9s-1.3 6.5-3.8 9c-2.5-2.5-3.8-5.7-3.8-9S9.5 5.5 12 3z" /></svg>
       {lang === "ro" ? (
-        <a className="pub-lang-opt" href={otherLangHref} onClick={() => markLangChosen("hu")}>HU</a>
+        <a href={otherLangHref} onClick={() => markLangChosen("hu")}>HU</a>
       ) : (
-        <span className="pub-lang-opt pub-lang-active">HU</span>
+        <span className="active">HU</span>
       )}
+      <span className="pub-footer-lang-sep" />
       {lang === "ro" ? (
-        <span className="pub-lang-opt pub-lang-active">RO</span>
+        <span className="active">RO</span>
       ) : (
-        <a className="pub-lang-opt" href={otherLangHref} onClick={() => markLangChosen("ro")}>RO</a>
+        <a href={otherLangHref} onClick={() => markLangChosen("ro")}>RO</a>
       )}
     </div>
   );
