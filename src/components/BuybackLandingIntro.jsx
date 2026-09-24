@@ -1,11 +1,30 @@
 import { useMemo, useState } from "react";
-import { PinIcon, WarrantyIcon, TransferIcon } from "./icons";
-import { ReviewsBadge } from "./PublicReviews";
+import { PinIcon, WarrantyIcon, TransferIcon, ClockIcon, CardIcon, ConsignmentIcon } from "./icons";
 
 const STEPS = [
   { title: "Válaszd ki a modellt és az állapotát.", desc: "2 perc alatt megvan a becsült érték — nem kell hozzá regisztráció, csak pár kattintás." },
-  { title: "Fogadd el, és válaszd ki, hogyan kéred.", desc: "Készpénz azonnal, kredit-egyenleg +10%, vagy bizomány +15% — te döntesz." },
+  { title: "Fogadd el, és válaszd ki, hogyan kéred.", desc: "3 rugalmas kifizetési mód közül választhatsz — attól függően, mi számít neked." },
   { title: "Küldd el postán, vagy hozd be.", desc: "Elfogadás után a pénz azonnal a tiéd — postánál az átvétel napján utaljuk." },
+];
+
+const PAYOUT_WAYS = [
+  {
+    icon: ClockIcon,
+    title: "Gyors kifizetés",
+    desc: "Hozd be üzleteinkbe, és a pénz azonnal a tiéd — postai beküldésnél az átvétel napján utaljuk.",
+  },
+  {
+    icon: CardIcon,
+    title: "Levásárolható kredit",
+    badge: "+10%",
+    desc: "Számítsd be a régi készülékedet egy újéba — a kredit-egyenleg azonnal jóváíródik, és nálunk bármikor elkölthető.",
+  },
+  {
+    icon: ConsignmentIcon,
+    title: "Bizományosi értékesítés",
+    badge: "+15%",
+    desc: "Nem sürgős? Bízd ránk az eladást — amint megtaláljuk az új gazdát, a legmagasabb árat kapod érte.",
+  },
 ];
 
 const FAQ_ITEMS = [
@@ -37,9 +56,8 @@ export default function BuybackLandingIntro({ brands, models, onCta, onSeeAll })
     <div className="bb-landing">
       <div className="bb-landing-hero">
         <div className="pub-promo-eyebrow" style={{ marginBottom: 18 }}>Telefonos · Eladás</div>
-        <h1 className="bb-landing-title">Add be. Cserélj.<br />Nyerj.</h1>
-        <p className="bb-landing-sub">Azonnal látod, mennyit ér a régi telefonod — a pénzt vagy kedvezményt még aznap felhasználhatod egy újra, boltban vagy postán keresztül.</p>
-        <ReviewsBadge style={{ justifyContent: "center", marginTop: 14 }} />
+        <h1 className="bb-landing-title">Add el a régi készüléked —<br />pont úgy, ahogy neked kényelmes.</h1>
+        <p className="bb-landing-sub">Intézd online 2 perc alatt, vagy gyere be hozzánk — válassz a 3 rugalmas eladási lehetőség közül, és hozd ki a legtöbbet a régi telefonodból.</p>
 
         {brands.length > 1 && (
           <div className="bb-landing-tabs">
@@ -68,7 +86,7 @@ export default function BuybackLandingIntro({ brands, models, onCta, onSeeAll })
               <button type="button" className="bb-landing-values-link" onClick={() => onSeeAll(activeBrand)}>Összes modell és ár megtekintése →</button>
             </div>
             <div className="bb-landing-values-side">
-              <button type="button" className="btn" style={{ justifyContent: "center" }} onClick={onCta}>Kérd az ajánlatod</button>
+              <button type="button" className="btn" style={{ justifyContent: "center" }} onClick={onCta}>Kérek azonnali ajánlatot</button>
               <a href="/status" className="bb-landing-status-box">
                 <span>Már elküldted a telefonod?</span>
                 <b>Nézd meg az állapotát →</b>
@@ -77,6 +95,25 @@ export default function BuybackLandingIntro({ brands, models, onCta, onSeeAll })
           </div>
         </div>
       )}
+
+      <div className="bb-landing-payout">
+        <div style={{ textAlign: "center" }}>
+          <div className="bb-landing-steps-title">Te döntsd el, hogyan kéred az árát.</div>
+          <p className="bb-landing-values-sub" style={{ textAlign: "center" }}>Sebesség, extra érték vagy a legmagasabb ár — válaszd a neked legjobbat.</p>
+        </div>
+        <div className="bb-landing-payout-grid">
+          {PAYOUT_WAYS.map((w) => (
+            <div className="bb-landing-payout-card" key={w.title}>
+              <div className="bb-landing-payout-top">
+                <div className="bb-landing-payout-ic"><w.icon width={20} height={20} /></div>
+                {w.badge && <span className="bb-landing-badge">{w.badge}</span>}
+              </div>
+              <b>{w.title}</b>
+              <p>{w.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
 
       <div className="bb-landing-steps">
         <div className="bb-landing-steps-title">Hogyan add el?</div>
@@ -136,7 +173,7 @@ export default function BuybackLandingIntro({ brands, models, onCta, onSeeAll })
             <span>✓ Biztonságos adatkezelés</span>
           </div>
         </div>
-        <button type="button" className="btn" onClick={onCta}>Kezdjük →</button>
+        <button type="button" className="btn" onClick={onCta}>Kérek azonnali ajánlatot →</button>
       </div>
     </div>
   );
