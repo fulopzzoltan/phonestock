@@ -84,9 +84,10 @@ export default function BuybackLandingIntro({ brands, models, onCta, onSeeAll })
                 </div>
               ))}
               <button type="button" className="bb-landing-values-link" onClick={() => onSeeAll(activeBrand)}>Összes modell és ár megtekintése →</button>
+              <button type="button" className="btn" style={{ justifyContent: "center", marginTop: 18 }} onClick={onCta}>Kérek azonnali ajánlatot</button>
             </div>
             <div className="bb-landing-values-side">
-              <button type="button" className="btn" style={{ justifyContent: "center" }} onClick={onCta}>Kérek azonnali ajánlatot</button>
+              <img className="bb-landing-values-img" src="/Gemini_Generated_Image_iso2nyiso2nyiso2.jpeg" alt="Felvásárolt iPhone-ok" />
               <a href="/status" className="bb-landing-status-box">
                 <span>Már elküldted a telefonod?</span>
                 <b>Nézd meg az állapotát →</b>
