@@ -2140,7 +2140,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .bb-landing-values-side{display:flex;flex-direction:column}
 /* A doboz háttere a feltöltött termékfotó saját (krém) hátterének színe, hogy a kép
    varrat nélkül simuljon bele, ne csak rá legyen "vágva" a keretbe. */
-.bb-landing-values-photo{background:#F7F4ED;border-radius:var(--radius-lg);height:220px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.bb-landing-values-photo{background:#F7F3EA;border-radius:var(--radius-lg);height:220px;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .bb-landing-values-img{width:100%;height:100%;object-fit:cover;display:block}
 
 .bb-landing-payout{margin-top:70px}
