@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { money, STATUSES, SUB_STATUSES, statusLabel, statusCls, subStatusCls, subStatusLabel, displayName, ticketCode, daysOnShelf, slaInfo, isStaleReady } from "../lib/utils";
-import { SearchIcon, ServiceIcon, ClockIcon, WarrantyIcon, FoliaIcon, DropletIcon, ChevronRightIcon, ChevronDownIcon, CheckIcon, ScanIcon, PartsIcon, PhoneCaseIcon, MoreIcon, PrintIcon } from "../components/icons";
+import { money, STATUSES, SUB_STATUSES, statusLabel, statusCls, subStatusCls, subStatusLabel, displayName, ticketCode, daysOnShelf, slaInfo, isStaleReady, partCode } from "../lib/utils";
+import { SearchIcon, ServiceIcon, WarrantyIcon, ChevronRightIcon, ChevronDownIcon, CheckIcon, ScanIcon, MoreIcon, PrintIcon, PlusIcon, CloseIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import ResponsiveTable from "../components/ResponsiveTable";
 import HandoverPaymentModal from "../components/HandoverPaymentModal";
@@ -56,9 +56,67 @@ function StatusPicker({ ticket, cls, label, disabled, onChange }) {
   );
 }
 
+// Gyors alkatrész-hozzárendelés a listából — Rögzítve státuszú munkalapoknál a "Következő
+// állapot" nyíl helyett, mert a státuszváltás már a Státusz-választóból is elérhető, itt
+// hasznosabb egy azonnali "+" az első alkatrész felvételére (nem kell a munkalapot megnyitni).
+function PartAddPopover({ ticket, parts, onAddPart, disabled }) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [selPartId, setSelPartId] = useState("");
+  const [qty, setQty] = useState(1);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) { setQuery(""); setSelPartId(""); setQty(1); return; }
+    function onDocMouseDown(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false); }
+    document.addEventListener("mousedown", onDocMouseDown);
+    return () => document.removeEventListener("mousedown", onDocMouseDown);
+  }, [open]);
+
+  const availableParts = (parts || []).filter((p) => Number(p.quantity) > 0);
+  const q = query.trim().toLowerCase();
+  const shownParts = q
+    ? availableParts.filter((p) => (p.name || "").toLowerCase().includes(q) || (partCode(p.partNo) || "").toLowerCase().includes(q))
+    : availableParts;
+  const selPart = availableParts.find((p) => p.id === selPartId);
+
+  function add() {
+    if (!selPart) return;
+    onAddPart(ticket.id, selPart, qty);
+    setOpen(false); setQuery(""); setSelPartId(""); setQty(1);
+  }
+
+  return (
+    <div className="wl-status-wrap" ref={ref} onClick={(e) => e.stopPropagation()}>
+      <button type="button" className="btn sec sm icon-only" disabled={disabled} title="Alkatrész hozzáadása" onClick={() => setOpen((v) => !v)}>
+        <PlusIcon width={13} height={13} />
+      </button>
+      {open && (
+        <div className="wl-status-menu part-add-menu">
+          <input
+            type="text" autoFocus placeholder="Keresés név vagy kód szerint..."
+            value={query} onChange={(e) => setQuery(e.target.value)}
+            style={{ marginBottom: 6, width: "100%", background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 9, padding: "8px 10px", fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }}
+          />
+          <select value={selPartId} onChange={(e) => setSelPartId(e.target.value)} style={{ width: "100%", marginBottom: 6 }}>
+            <option value="">— Alkatrész ({shownParts.length}) —</option>
+            {shownParts.map((p) => <option key={p.id} value={p.id}>{partCode(p.partNo)} — {p.name} ({p.quantity} db)</option>)}
+          </select>
+          <div style={{ display: "flex", gap: 6 }}>
+            <input type="number" min="1" max={selPart?.quantity || 1} value={qty} onChange={(e) => setQty(Number(e.target.value))}
+              style={{ width: 56, background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 9, padding: "9px 8px", fontFamily: "inherit", fontSize: 13 }} />
+            <button type="button" className="btn sm" disabled={!selPart || disabled} onClick={add} style={{ flex: 1 }}>Hozzáadás</button>
+            <button type="button" className="iconbtn" onClick={() => setOpen(false)}><CloseIcon width={14} height={14} /></button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ServiceTab({
   effectiveLocFilter, locName, busy, setTicketModal, svcSearch, setSvcSearch, onScan,
-  loadingData, activeTickets, setDetailId, handedOverTickets, onStatusChange, onPrint,
+  loadingData, activeTickets, setDetailId, handedOverTickets, onStatusChange, onPrint, parts, onAddPart,
 }) {
   const [handoverPrompt, setHandoverPrompt] = useState(null);
   const [showHandedOver, setShowHandedOver] = useState(false);
@@ -85,22 +143,22 @@ export default function ServiceTab({
     return (
       <>
         {(probsOf(t).includes("Beázás") || t.waterDamage) && (
-          <span className="svc-flag-chip svc-flag-water"><DropletIcon width={11} height={11} />Ázott</span>
+          <span className="svc-flag-chip svc-flag-water">Ázott</span>
         )}
         {t.isWarranty && (
-          <span className="svc-flag-chip svc-flag-warranty" title={t.warrantyKind === "termék" ? "Garanciális — termék" : "Garanciális — szerviz"}><WarrantyIcon width={11} height={11} />Garanciális</span>
+          <span className="svc-flag-chip svc-flag-warranty" title={t.warrantyKind === "termék" ? "Garanciális — termék" : "Garanciális — szerviz"}>Garanciális</span>
         )}
         {partWait && (
-          <span className="svc-flag-chip svc-flag-part"><PartsIcon width={11} height={11} />Alkatrészre vár</span>
+          <span className="svc-flag-chip svc-flag-part">Alkatrészre vár</span>
         )}
         {deviceWait && (
-          <span className="svc-flag-chip svc-flag-device"><PhoneCaseIcon width={11} height={11} />Készülékre vár</span>
+          <span className="svc-flag-chip svc-flag-device">Készülékre vár</span>
         )}
         {t.folia && (
-          <span className="svc-flag-chip svc-flag-folia"><FoliaIcon width={12} height={12} />Fólia felhelyezve</span>
+          <span className="svc-flag-chip svc-flag-folia">Fólia felhelyezve</span>
         )}
         {sla && (
-          <span className={`svc-flag-chip svc-flag-due-${sla.level}`}><ClockIcon width={11} height={11} />{sla.label}</span>
+          <span className={`svc-flag-chip svc-flag-due-${sla.level}`}>{sla.label}</span>
         )}
       </>
     );
@@ -175,7 +233,9 @@ export default function ServiceTab({
             <PrintIcon width={13} height={13} />
           </button>
         )}
-        {nextActionOf(t) && (() => {
+        {t.status === "Átvett" && onAddPart ? (
+          <PartAddPopover ticket={t} parts={parts} onAddPart={onAddPart} disabled={busy} />
+        ) : nextActionOf(t) && (() => {
           const na = nextActionOf(t);
           return (
             <button className="btn sec sm icon-only" disabled={busy} title={na.title} onClick={() => runAction(t, na)}>

@@ -438,7 +438,7 @@ tr:hover td{background:#FAFAFA}
 .svc-flag-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:999px;font-size:13px;font-weight:600;white-space:nowrap}
 .svc-flag-chip.svc-flag-water{background:var(--info-soft);color:var(--info-ink)}
 .svc-flag-chip.svc-flag-warranty{background:#EDE9FE;color:#6D28D9}
-.svc-flag-chip.svc-flag-part{background:#F5F3FF;color:#7C3AED}
+.svc-flag-chip.svc-flag-part{background:#FFEDD5;color:#C2410C}
 .svc-flag-chip.svc-flag-device{background:#CFFAFE;color:#0E7490}
 .svc-flag-chip.svc-flag-folia{background:var(--primary-soft);color:var(--primary-ink)}
 .svc-flag-chip.svc-flag-due-ok{background:#F3F4F6;color:#4B5563}
@@ -555,6 +555,7 @@ tr:hover td{background:#FAFAFA}
   box-shadow:0 10px 30px rgba(16,24,40,.14);padding:5px;z-index:6}
 .wl-status-opt{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;font-size:12px;font-weight:600;color:#6B7280;cursor:pointer}
 .wl-status-opt .dot{width:7px;height:7px;border-radius:999px;flex-shrink:0}
+.part-add-menu{width:260px;padding:10px}
 .wl-status-opt:hover{background:#F9FAFB}
 .wl-status-opt.current{background:#F3F4F6;color:#111827}
 

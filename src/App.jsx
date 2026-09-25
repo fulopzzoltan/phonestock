@@ -3344,6 +3344,7 @@ function AppShell() {
             svcSearch={svcSearch} setSvcSearch={setSvcSearch} onScan={() => setScannerOpen(true)}
             loadingData={loadingData} activeTickets={activeTickets} setDetailId={setDetailId}
             handedOverTickets={handedOverTickets} onStatusChange={setTicketStatus} onPrint={printTicketSlip}
+            parts={parts} onAddPart={addPartToTicket}
           />
         )}
 
