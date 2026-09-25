@@ -13,7 +13,7 @@ const GREETINGS = ["Szia!", "Hello!", "Üdv újra!", "Szevasz!", "Jó munkát ma
 export default function PultTab({
   effectiveLocFilter, filteredTickets, setDetailId,
   notes, addNote, completeNote, deleteNote, updateNote,
-  waitingItems, addWaitingItem, advanceWaiting,
+  waitingItems, addWaitingItem, advanceWaiting, updateWaitingItem,
   users, currentUserId, tickets, stock, parts, customersTable, warranties, locName,
   upcomingLeave,
   webOrders, confirmWebOrder, cancelWebOrder, completeWebOrder, generateWebOrderAwb,
@@ -165,7 +165,7 @@ export default function PultTab({
       </div>
 
       <div className="pult-section">
-        <WaitingList items={activeWaiting} closedItems={closedWaiting} customers={customersTable} onAdd={addWaitingItem} onAdvance={advanceWaiting} />
+        <WaitingList items={activeWaiting} closedItems={closedWaiting} customers={customersTable} onAdd={addWaitingItem} onAdvance={advanceWaiting} onUpdate={updateWaitingItem} />
       </div>
     </div>
   );

@@ -515,6 +515,12 @@ tr:hover td{background:#FAFAFA}
 .wl-row:first-child{border-top:none}
 .wl-text{font-size:12.5px;color:#111827;overflow-wrap:anywhere;flex:1;min-width:0}
 .wl-supplier{color:#9CA3AF}
+.wl-row-btn{width:22px;height:22px;border-radius:999px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;color:#9CA3AF;cursor:pointer;padding:0;flex-shrink:0;transition:background .12s,color .12s}
+.wl-row-btn:hover{background:#F3F4F6;color:#374151}
+.wl-row-edit{gap:6px}
+.wl-edit-input{font-size:12.5px;font-family:inherit;border:1px solid #E5E7EB;border-radius:8px;padding:5px 8px;outline:none;flex:1;min-width:0;background:#F9FAFB}
+.wl-edit-input:focus{border-color:var(--accent);background:#fff}
+.wl-edit-supplier{flex:0 0 100px}
 .wl-cust-wrap{position:relative;flex-shrink:0}
 .wl-cust-btn{width:26px;height:26px;border-radius:999px;border:1px solid #E5E7EB;background:#fff;color:#9CA3AF;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
 .wl-cust-btn:hover{color:var(--primary-ink);border-color:var(--primary-soft);background:var(--primary-soft)}

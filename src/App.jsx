@@ -1912,6 +1912,12 @@ function AppShell() {
       setWaitingItems((prev) => prev.map((w) => (w.id === id ? waitingFromApi(r[0]) : w)));
     });
   }
+  async function updateWaitingItem(id, data) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("waiting_items").update({ description: data.description, supplier: data.supplier || null }).eq("id", id).select());
+      setWaitingItems((prev) => prev.map((w) => (w.id === id ? waitingFromApi(r[0]) : w)));
+    });
+  }
   async function deleteWaitingItem(id) {
     await withBusy(async () => { unwrap(await supabase.from("waiting_items").delete().eq("id", id)); setWaitingItems((prev) => prev.filter((w) => w.id !== id)); });
   }
@@ -3231,7 +3237,7 @@ function AppShell() {
           <PultTab
             effectiveLocFilter={effectiveLocFilter} locName={locName} filteredTickets={filteredTickets} setDetailId={setDetailId}
             notes={notes} addNote={addNote} completeNote={completeNote} reopenNote={reopenNote} deleteNote={deleteNote} updateNote={updateNote}
-            waitingItems={waitingItems} addWaitingItem={addWaitingItem} advanceWaiting={advanceWaiting}
+            waitingItems={waitingItems} addWaitingItem={addWaitingItem} advanceWaiting={advanceWaiting} updateWaitingItem={updateWaitingItem}
             users={users} currentUserId={profile?.id} tickets={tickets} stock={stock} parts={parts} customersTable={customersTable} warranties={warranties}
             upcomingLeave={upcomingLeave}
             customerRequests={customerRequests} advanceCustomerRequest={advanceCustomerRequest}
