@@ -985,11 +985,7 @@ tr:hover td{background:#FAFAFA}
 .wf2-date{flex:1;display:flex;align-items:center;justify-content:flex-end;gap:4px;min-width:0}
 .wf2-date input{flex:1;min-width:0;position:relative}
 .wf2-date input::-webkit-calendar-picker-indicator{position:absolute;inset:0;width:100%;opacity:0;cursor:pointer;margin:0}
-.wf2-row.wf2-split{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
-.wf2-split-col{display:flex;flex-direction:column;gap:3px;min-width:0}
-.wf2-split-lbl{font-size:11px;color:#8A8A8E;font-weight:500}
-.wf2-split-val{font-size:15px;color:#111827;text-align:left;background:none;border:none;outline:none;font-family:inherit;padding:0;width:100%}
-.wf2-split-val::placeholder{color:#C7C7CC}
+.wf2-top-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .modal.wf2{scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.18) transparent}
 .modal.wf2::-webkit-scrollbar{width:6px}
 .modal.wf2::-webkit-scrollbar-track{background:transparent}
