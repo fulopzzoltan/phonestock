@@ -318,6 +318,68 @@ tr:hover td{background:#FAFAFA}
 .svc-days.today{color:#111827}
 .svc-days-lbl{color:#9CA3AF;font-weight:400;margin-left:3px}
 .svc-probs{display:flex;flex-wrap:nowrap;gap:4px;overflow:hidden}
+
+/* Új munkalap — inline tábla-sor (nem forma-kártya): a "+" gomb egy szerkeszthető sort told a
+   tábla tetejére, a másodlagos mezők pedig egy sűrű, aláhúzásos "cella"-sávban jelennek meg
+   alatta — vékony elválasztó, apró oszlopfejléc-szerű mikro-címke, nem kártya-doboz. Zöld
+   háttérmosás helyett csak egy vékony bal szegély jelzi az aktív sort. */
+.svc-nr-stack{display:flex;flex-direction:column;gap:6px}
+.svc-nr-top{width:100%;font-size:13px;font-family:inherit;border:1px solid #E1E4E9;background:#fff;border-radius:7px;padding:7px 9px;box-sizing:border-box;color:#111827;transition:border-color .12s,box-shadow .12s}
+.svc-nr-top:focus{outline:none;border-color:#1DB954;box-shadow:0 0 0 3px rgba(29,185,84,.12)}
+.svc-nr-top::placeholder{color:#ADB1B8}
+.svc-nr-chip{display:inline-flex;padding:5px 12px;border-radius:8px;font-size:13px;font-weight:600;background:#F3F4F6;color:#4B5563;cursor:pointer;border:1px solid transparent}
+.svc-nr-chip.on{background:#E8FBEF;color:#0F7A36;border-color:#1DB954}
+.svc-nr-more-toggle{display:flex;align-items:center;gap:6px;width:100%;padding:9px 16px;font-size:11.5px;font-weight:700;color:#6B7280;background:none;border:none;border-top:1px solid #F1F2F4;font-family:inherit;cursor:pointer}
+.svc-nr-more-toggle:hover{color:#374151;background:#FAFBFC}
+.svc-nr-more-toggle .chev{transition:transform .15s;flex-shrink:0}
+.svc-nr-more-toggle.open .chev{transform:rotate(90deg)}
+.svc-nr-rr{padding:14px 16px 16px;background:#FAFBFC}
+.svc-nr-rr-grid{display:grid;gap:18px;align-items:end}
+.svc-nr-rr-4{grid-template-columns:repeat(4,1fr)}
+.svc-nr-rr-5{grid-template-columns:repeat(5,1fr)}
+.svc-nr-rr-lbl{display:block;font-size:9.5px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.svc-nr-cell{width:100%;font-size:12.5px;font-family:inherit;border:none;border-bottom:1.5px solid #D8DBE0;background:transparent;padding:3px 1px 7px;box-sizing:border-box;color:#111827;appearance:none;border-radius:0;transition:border-color .12s}
+.svc-nr-cell:hover{border-bottom-color:#B7BCC4}
+.svc-nr-cell:focus{outline:none;border-bottom-color:#1DB954}
+.svc-nr-cell::placeholder{color:#C7CBD1}
+.svc-nr-cell:disabled{color:#C7CBD1;cursor:default}
+select.svc-nr-cell{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 1px center;background-size:11px;padding-right:16px}
+input[type="date"].svc-nr-cell{cursor:pointer}
+input[type="date"].svc-nr-cell::-webkit-calendar-picker-indicator{opacity:.45;cursor:pointer;transition:opacity .12s}
+input[type="date"].svc-nr-cell:hover::-webkit-calendar-picker-indicator{opacity:.8}
+.svc-nr-flag{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#6B7280;cursor:pointer;white-space:nowrap}
+.svc-nr-flag input[type="checkbox"]{appearance:none;-webkit-appearance:none;width:15px;height:15px;margin:0;border-radius:4px;border:1.5px solid #D1D5DB;background:#fff;flex-shrink:0;position:relative;cursor:pointer;transition:background .12s,border-color .12s}
+.svc-nr-flag input[type="checkbox"]:checked{background:#1DB954;border-color:#1DB954}
+.svc-nr-flag input[type="checkbox"]:checked::after{content:"";position:absolute;left:4px;top:1px;width:4px;height:8px;border:solid #fff;border-width:0 1.5px 1.5px 0;transform:rotate(45deg)}
+.svc-nr-flag.on{color:#0F7A36}
+.svc-nr-row:last-of-type .svc-nr-rr{border-radius:0 0 17px 17px}
+.svc-nr-row td{border-left:3px solid #1DB954}
+.svc-nr-row td:not(:first-child){border-left:none}
+
+/* "+" gomb -> "beleesik" a táblába (a gomb ikonja eltűnik, a tábla tetején zöld fény-impulzus
+   fut végig), majd a sor onnan bomlik ki lefelé — lásd az "Új munkalap — táblázat-érzés"
+   design artifact animált verzióját. */
+.svc-plus-drop{animation:svcPlusDrop .34s cubic-bezier(.4,0,.7,1) forwards}
+.svc-plus-pop{animation:svcPlusPop .3s cubic-bezier(.34,1.56,.64,1) forwards}
+@keyframes svcPlusDrop{
+  0%{transform:translateY(0) scale(1) rotate(0deg);opacity:1}
+  45%{transform:translateY(3px) scale(.85) rotate(20deg);opacity:1}
+  100%{transform:translateY(16px) scale(.25) rotate(60deg);opacity:0}
+}
+@keyframes svcPlusPop{
+  0%{transform:translateY(-10px) scale(.3) rotate(-40deg);opacity:0}
+  60%{transform:translateY(0) scale(1.15) rotate(6deg);opacity:1}
+  100%{transform:translateY(0) scale(1) rotate(0deg);opacity:1}
+}
+.svc-table-ripple{position:relative}
+.svc-table-ripple::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:#1DB954;transform:scaleX(0);transform-origin:right center;opacity:0;pointer-events:none}
+.svc-table-ripple.pulse::before{animation:svcRipple .5s ease-out}
+@keyframes svcRipple{
+  0%{transform:scaleX(0);opacity:.9}
+  60%{transform:scaleX(1);opacity:.5}
+  100%{transform:scaleX(1);opacity:0}
+}
+.svc-nr-reveal{overflow:hidden;transition:max-height .38s cubic-bezier(.4,0,.2,1),opacity .3s ease}
 .row-price{font-family:'Roboto Mono',monospace;font-weight:700;font-size:13px;color:#111827;white-space:nowrap}
 .row-price-sub{font-family:'Inter',sans-serif;font-weight:600;font-size:10px;color:#9CA3AF;white-space:nowrap;margin-top:1px}
 .toggle-link:hover{color:var(--accent-dark)}

@@ -1,15 +1,19 @@
 import { useState, useRef, useEffect } from "react";
-import { money, STATUSES, SUB_STATUSES, statusLabel, statusCls, subStatusCls, subStatusLabel, displayName, ticketCode, daysOnShelf, slaInfo, isStaleReady, partCode, titleCase } from "../lib/utils";
+import { money, STATUSES, SUB_STATUSES, statusLabel, statusCls, subStatusCls, subStatusLabel, displayName, ticketCode, daysOnShelf, slaInfo, isStaleReady, partCode, titleCase, PROBLEM_TAGS, WARRANTIES } from "../lib/utils";
 import { SearchIcon, ServiceIcon, WarrantyIcon, ChevronRightIcon, ChevronDownIcon, CheckIcon, ScanIcon, MoreIcon, PrintIcon, PlusIcon, CloseIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import ResponsiveTable from "../components/ResponsiveTable";
 import HandoverPaymentModal from "../components/HandoverPaymentModal";
+import CustomerAutocomplete from "../components/CustomerAutocomplete";
 
 const STATUS_KEYS = STATUSES.map((s) => s.key);
 // BoardUI-ból kinyert valódi színek — ugyanezt használja a StatusPicker trigger pöttye és a
 // legördülő menü sorai is, hogy ne legyen eltérés a kettő között.
 const STATUS_DOT_COLOR = { "Átvett": "#F0B100", "Javítás alatt": "#F54A00", "Minőségellenőrzés": "#00B8DB", "Átadásra": "#00C950" };
 const SIKERTELEN_DOT_COLOR = "#A50036";
+// Ugyanaz a top-5 leggyakoribb hiba, mint a TicketFormModal-ban — a maradék "Egyéb" szabad
+// szöveggel érhető el, hogy az inline sor ne váljon zsúfolttá.
+const TOP_PROBLEM_TAGS = PROBLEM_TAGS.filter((t) => t !== "Egyéb").slice(0, 5);
 function nextActionOf(t) {
   const idx = STATUS_KEYS.indexOf(t.status);
   if (idx !== -1 && idx < STATUS_KEYS.length - 1) {
@@ -139,14 +143,247 @@ function PartAddPopover({ ticket, parts, onAddPart, disabled }) {
   );
 }
 
+// Új munkalap — nem forma-kártya popup, hanem a táblázat folytatódik lefelé: egy szerkeszthető
+// sor a lista tetején, ugyanolyan oszlopokkal, mint a valódi sorok, plusz egy sűrű,
+// aláhúzásos "cella"-sáv a ritkábban kellő mezőknek ("Új munkalap — táblázat-érzés" design
+// artifact alapján — lásd a "+Egyéb" chip / IMEI-feloldás-anyagköltség sáv elrendezését).
+function NewTicketRow({ open, onCancel, onCreate, customers, defaultLocId, busy }) {
+  const [brand, setBrand] = useState("");
+  const [model, setModel] = useState("");
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [customerId, setCustomerId] = useState(null);
+  const [price, setPrice] = useState("");
+  const [tags, setTags] = useState([]);
+  const [extra, setExtra] = useState("");
+  const [showExtra, setShowExtra] = useState(false);
+  const [imei, setImei] = useState("");
+  const [unlockType, setUnlockType] = useState("");
+  const [unlockCode, setUnlockCode] = useState("");
+  const [matCost, setMatCost] = useState("");
+  const [isWarranty, setIsWarranty] = useState(false);
+  const [waterDamage, setWaterDamage] = useState(false);
+  const [folia, setFolia] = useState(false);
+  const [warranty, setWarranty] = useState("1 hó");
+  const [dueDate, setDueDate] = useState("");
+  const [handoverDate, setHandoverDate] = useState("");
+  const [moreOpen, setMoreOpen] = useState(false);
+  // A "+" gomb belepottyan a táblába, ez a sor pedig onnan bomlik ki — minden cella-tartalom
+  // saját max-height/opacity átmenettel nyúlik ki, ugyanazzal az időzítéssel, hogy a sor
+  // egységesen "kinyíljon", ahelyett hogy csak felugorna/eltűnne.
+  const revealStyle = (maxH) => ({ maxHeight: open ? maxH : 0, opacity: open ? 1 : 0 });
+
+  const toggleTag = (tag) => setTags((t) => (t.includes(tag) ? t.filter((x) => x !== tag) : [...t, tag]));
+  const hasIssue = tags.length > 0 || extra.trim();
+  const valid = customerName.trim() && brand.trim() && defaultLocId && hasIssue;
+
+  function submit() {
+    if (!valid || busy) return;
+    const issue = [tags.join(","), extra.trim()].filter(Boolean).join(",");
+    onCreate({
+      ticketKind: "Ügyfél", productId: null,
+      customerName, customerPhone, customerId,
+      brand, model, imei,
+      price, matCost,
+      warranty, handoverDate, dueDate,
+      folia, status: "Átvett", subStatus: null,
+      isWarranty, warrantyKind: "szerviz", waterDamage,
+      unlockType, unlockCode, assignedTo: null,
+      consentAt: null, extra, issue, ticketNo: "",
+    }, defaultLocId);
+  }
+
+  return (
+    <>
+      <tr className="svc-nr-row">
+        <td className="mono col-serial" style={{ padding: 0 }}>
+          <div className="svc-nr-reveal" style={{ ...revealStyle(90), color: "#B7BCC4", padding: "11px 16px" }}>—</div>
+        </td>
+        <td style={{ padding: 0 }}>
+          <div className="svc-nr-reveal" style={{ ...revealStyle(90), color: "#B7BCC4", padding: "11px 16px" }}>Ma</div>
+        </td>
+        <td style={{ padding: 0 }}>
+          <div className="svc-nr-reveal" style={{ ...revealStyle(90), padding: "11px 16px" }}>
+            <div className="svc-nr-stack">
+              <input className="svc-nr-top" placeholder="Márka (Samsung)" value={brand} onChange={(e) => setBrand(e.target.value)} autoFocus disabled={busy} />
+              <input className="svc-nr-top" placeholder="Modell (A53)" value={model} onChange={(e) => setModel(e.target.value)} disabled={busy} />
+            </div>
+          </div>
+        </td>
+        <td style={{ padding: 0 }}>
+          <div className="svc-nr-reveal" style={{ ...revealStyle(90), padding: "11px 16px" }}>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {TOP_PROBLEM_TAGS.map((tag) => (
+                <span key={tag} className={`svc-nr-chip${tags.includes(tag) ? " on" : ""}`} onClick={() => !busy && toggleTag(tag)}>{tag}</span>
+              ))}
+              <span className={`svc-nr-chip${showExtra ? " on" : ""}`} onClick={() => !busy && setShowExtra((v) => !v)}>+ Egyéb</span>
+              {showExtra && (
+                <input className="svc-nr-top" style={{ marginTop: 6, width: "100%" }} placeholder="Egyedi probléma leírása" value={extra} onChange={(e) => setExtra(e.target.value)} disabled={busy} />
+              )}
+            </div>
+          </div>
+        </td>
+        <td style={{ padding: 0 }}>
+          <div className="svc-nr-reveal" style={{ ...revealStyle(90), padding: "11px 16px" }}>
+            <div className="svc-nr-stack">
+              <CustomerAutocomplete
+                customers={customers}
+                name={customerName}
+                onChangeName={(name) => { setCustomerName(name); setCustomerId(null); }}
+                onSelect={(c) => { setCustomerName(c.name); setCustomerPhone(c.phone || customerPhone); setCustomerId(c.id); }}
+                placeholder="Kliens neve"
+                className="svc-nr-top"
+              />
+              <input className="svc-nr-top" placeholder="07xx xxx xxx" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} disabled={busy} />
+            </div>
+          </div>
+        </td>
+        <td className="col-status" style={{ padding: 0 }}>
+          <div className="svc-nr-reveal" style={{ ...revealStyle(90), padding: "11px 16px" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 600, color: "#111827" }}>
+              <span style={{ width: 6, height: 6, borderRadius: 999, background: STATUS_DOT_COLOR["Átvett"] }} />Rögzítve
+            </span>
+          </div>
+        </td>
+        <td className="row-price" style={{ padding: 0 }}>
+          <div className="svc-nr-reveal" style={{ ...revealStyle(90), padding: "11px 16px" }}>
+            <input className="svc-nr-top" style={{ textAlign: "right" }} placeholder="0 Lei" value={price} onChange={(e) => setPrice(e.target.value)} disabled={busy} />
+          </div>
+        </td>
+        <td className="stk-actions" style={{ padding: 0 }}>
+          <div className="svc-nr-reveal" style={{ ...revealStyle(90), padding: "11px 16px", display: "flex", gap: 6, justifyContent: "flex-end" }}>
+            <button
+              type="button" title="Mentés" disabled={!valid || busy} onClick={submit}
+              style={{ width: 28, height: 28, borderRadius: 999, border: "none", background: valid ? "#1DB954" : "#D1D5DB", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: valid ? "pointer" : "default", flexShrink: 0 }}
+            >
+              <CheckIcon width={13} height={13} />
+            </button>
+            <button
+              type="button" title="Mégse" disabled={busy} onClick={onCancel}
+              style={{ width: 28, height: 28, borderRadius: 999, border: "1px solid #E5E7EB", background: "#fff", color: "#9CA3AF", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}
+            >
+              <CloseIcon width={12} height={12} />
+            </button>
+          </div>
+        </td>
+      </tr>
+      <tr className="svc-nr-row">
+        <td colSpan={8} style={{ padding: 0 }}>
+          <div className="svc-nr-reveal" style={revealStyle(40)}>
+            <button type="button" className={`svc-nr-more-toggle${moreOpen ? " open" : ""}`} onClick={() => setMoreOpen((v) => !v)}>
+              <ChevronRightIcon className="chev" width={9} height={9} />
+              Több adat (IMEI, feloldás, anyagköltség, állapot)
+            </button>
+          </div>
+          {open && moreOpen && (
+            <div className="svc-nr-rr">
+              <div className="svc-nr-rr-grid svc-nr-rr-4">
+                <div>
+                  <span className="svc-nr-rr-lbl">IMEI</span>
+                  <input className="svc-nr-cell" placeholder="35xxxxxxxxxxxxx" value={imei} onChange={(e) => setImei(e.target.value)} disabled={busy} />
+                </div>
+                <div>
+                  <span className="svc-nr-rr-lbl">Feloldás típusa</span>
+                  <select className="svc-nr-cell" value={unlockType} onChange={(e) => setUnlockType(e.target.value)} disabled={busy}>
+                    <option value="">— nincs megadva —</option>
+                    <option value="PIN kód">PIN kód</option>
+                    <option value="Jelszó">Jelszó</option>
+                    <option value="Mintarajzolat">Mintarajzolat</option>
+                    <option value="Nincs">Nincs (nem zárolt)</option>
+                  </select>
+                </div>
+                <div>
+                  <span className="svc-nr-rr-lbl">Feloldó kód</span>
+                  <input className="svc-nr-cell" placeholder="pl. 1234" value={unlockCode} onChange={(e) => setUnlockCode(e.target.value)} disabled={busy || unlockType === "" || unlockType === "Nincs"} />
+                </div>
+                <div>
+                  <span className="svc-nr-rr-lbl">Anyagköltség</span>
+                  <input className="svc-nr-cell" placeholder="0 Lei" value={matCost} onChange={(e) => setMatCost(e.target.value)} disabled={busy} />
+                </div>
+              </div>
+              <div className="svc-nr-rr-grid svc-nr-rr-5" style={{ marginTop: 12 }}>
+                <div style={{ gridColumn: "span 2" }}>
+                  <span className="svc-nr-rr-lbl">Állapot</span>
+                  <div style={{ display: "flex", gap: 14, flexWrap: "wrap", paddingTop: 2 }}>
+                    <label className={`svc-nr-flag${isWarranty ? " on" : ""}`}>
+                      <input type="checkbox" checked={isWarranty} onChange={(e) => setIsWarranty(e.target.checked)} disabled={busy} />Garancia
+                    </label>
+                    <label className={`svc-nr-flag${waterDamage ? " on" : ""}`}>
+                      <input type="checkbox" checked={waterDamage} onChange={(e) => setWaterDamage(e.target.checked)} disabled={busy} />Ázott
+                    </label>
+                    <label className={`svc-nr-flag${folia ? " on" : ""}`}>
+                      <input type="checkbox" checked={folia} onChange={(e) => setFolia(e.target.checked)} disabled={busy} />Kér fóliát
+                    </label>
+                  </div>
+                </div>
+                <div>
+                  <span className="svc-nr-rr-lbl">Garancia hossza</span>
+                  <select className="svc-nr-cell" value={warranty} onChange={(e) => setWarranty(e.target.value)} disabled={busy}>
+                    <option value="">—</option>
+                    {WARRANTIES.map((w) => <option key={w} value={w}>{w}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <span className="svc-nr-rr-lbl">Határidő (SLA)</span>
+                  <input className="svc-nr-cell" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} disabled={busy} />
+                </div>
+                <div>
+                  <span className="svc-nr-rr-lbl">Átadás dátuma</span>
+                  <input className="svc-nr-cell" type="date" value={handoverDate} onChange={(e) => setHandoverDate(e.target.value)} disabled={busy} />
+                </div>
+              </div>
+            </div>
+          )}
+        </td>
+      </tr>
+    </>
+  );
+}
+
 export default function ServiceTab({
-  effectiveLocFilter, locName, busy, setTicketModal, svcSearch, setSvcSearch, onScan,
+  effectiveLocFilter, locName, busy, svcSearch, setSvcSearch, onScan,
   loadingData, activeTickets, setDetailId, handedOverTickets, onStatusChange, onPrint, parts, onAddPart,
+  customers, defaultLocId, onCreateTicket,
 }) {
   const [handoverPrompt, setHandoverPrompt] = useState(null);
   const [showHandedOver, setShowHandedOver] = useState(false);
   const [handedOverQuery, setHandedOverQuery] = useState("");
   const [dateSort, setDateSort] = useState(null); // null | "asc" | "desc"
+  // Új munkalap sor: addMounted amíg a sor a DOM-ban van (a záró animáció alatt is),
+  // addOpen a vizuálisan kinyílt állapot (ez vezérli a cellák max-height átmenetét),
+  // addAnimPhase a "+" gomb ikonjának csepp-be/pop-ki animációja.
+  const [addMounted, setAddMounted] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [addAnimPhase, setAddAnimPhase] = useState("idle"); // idle | dropping | popping
+  const [tableRipple, setTableRipple] = useState(false);
+  const addTimersRef = useRef([]);
+
+  useEffect(() => () => addTimersRef.current.forEach(clearTimeout), []);
+
+  function clearAddTimers() {
+    addTimersRef.current.forEach(clearTimeout);
+    addTimersRef.current = [];
+  }
+  function openAddRow() {
+    clearAddTimers();
+    setAddMounted(true);
+    setAddAnimPhase("dropping");
+    setTableRipple(true);
+    addTimersRef.current.push(
+      setTimeout(() => setAddOpen(true), 20),
+      setTimeout(() => setAddAnimPhase("idle"), 360),
+      setTimeout(() => setTableRipple(false), 540),
+    );
+  }
+  function closeAddRow() {
+    clearAddTimers();
+    setAddAnimPhase("popping");
+    setAddOpen(false);
+    addTimersRef.current.push(
+      setTimeout(() => setAddAnimPhase("idle"), 320),
+      setTimeout(() => setAddMounted(false), 420),
+    );
+  }
 
   function runAction(t, na) {
     if (na.subStatus === "Átadva" && (Number(t.price) || 0) > 0) {
@@ -230,7 +467,20 @@ export default function ServiceTab({
     { key: "d", label: "Eszköz" }, { key: "p", label: "Probléma", className: "col-grow" }, { key: "c", label: "Kliens" },
     { key: "s", label: "Státusz", className: "col-status" }, { key: "a", label: "Ár", className: "num-col" }, { key: "x", label: "" },
   ];
-  const renderTicketRow = (t) => (
+  const renderTicketRow = (t) => t.__newRow ? (
+    <NewTicketRow
+      key="__new__"
+      open={addOpen}
+      customers={customers}
+      defaultLocId={defaultLocId}
+      busy={busy}
+      onCancel={closeAddRow}
+      onCreate={async (data, locId) => {
+        const created = await onCreateTicket(data, locId);
+        if (created) closeAddRow();
+      }}
+    />
+  ) : (
     <tr key={t.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
       <td className="mono col-serial" style={{ color: "#9CA3AF", whiteSpace: "nowrap" }}>{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</td>
       <td>{daysOf(t)}</td>
@@ -272,7 +522,7 @@ export default function ServiceTab({
       </td>
     </tr>
   );
-  const renderTicketMobileRow = (t) => (
+  const renderTicketMobileRow = (t) => t.__newRow ? null : (
     <div className="mob-row svc-row-lg mob-row-coded" onClick={() => setDetailId(t.id)}>
       <div className={`mob-code-col ${statusClsOf(t)}`}>
         {String(t.ticketNo).split("").map((ch, i) => <span key={i}>{ch}</span>)}
@@ -332,8 +582,9 @@ export default function ServiceTab({
         </button>
         {onScan && <button type="button" className="btn sec scan-trigger" onClick={onScan} title="QR/vonalkód szkennelése"><ScanIcon width={16} height={16} /></button>}
         <div className="searchbar" style={{ marginLeft: "auto" }}><SearchIcon /><input value={svcSearch} onChange={(e) => setSvcSearch(e.target.value)} /></div>
-        <button type="button" className="btn header-add-btn" disabled={busy} title="Új munkalap" onClick={() => setTicketModal("add")}>
-          <span className="header-add-ring" /><span className="header-add-ring ring2" /><PlusIcon width={16} height={16} />
+        <button type="button" className="btn header-add-btn" disabled={busy || addMounted} title="Új munkalap" onClick={openAddRow}>
+          <span className="header-add-ring" /><span className="header-add-ring ring2" />
+          <PlusIcon width={16} height={16} className={addAnimPhase === "dropping" ? "svc-plus-drop" : addAnimPhase === "popping" ? "svc-plus-pop" : ""} />
         </button>
       </div>
 
@@ -366,7 +617,7 @@ export default function ServiceTab({
       )}
 
       {!showHandedOver && (
-        <div className="tw tw-apple svc-table">
+        <div className={`tw tw-apple svc-table svc-table-ripple${tableRipple ? " pulse" : ""}`}>
         {loadingData ? <LoadingState /> : (
           (() => {
             const items = dateSort
@@ -376,12 +627,13 @@ export default function ServiceTab({
                   if (byStatus !== 0) return byStatus;
                   return (daysOnShelf(a.dateIn) ?? -1) - (daysOnShelf(b.dateIn) ?? -1);
                 });
-            if (items.length === 0) return <EmptyState icon={ServiceIcon}>Nincs munkalap.</EmptyState>;
+            const rows = addMounted ? [{ id: "__new__", __newRow: true }, ...items] : items;
+            if (rows.length === 0) return <EmptyState icon={ServiceIcon}>Nincs munkalap.</EmptyState>;
             return (
               <ResponsiveTable
                 wrap={false}
                 columns={TICKET_COLUMNS}
-                rows={items}
+                rows={rows}
                 rowKey={(t) => t.id}
                 renderRow={renderTicketRow}
                 renderMobileRow={renderTicketMobileRow}

@@ -3337,11 +3337,13 @@ function AppShell() {
 
         {!noLocationAssigned && tab === "service" && (
           <ServiceTab
-            effectiveLocFilter={effectiveLocFilter} locName={locName} busy={busy} setTicketModal={setTicketModal}
+            effectiveLocFilter={effectiveLocFilter} locName={locName} busy={busy}
             svcSearch={svcSearch} setSvcSearch={setSvcSearch} onScan={() => setScannerOpen(true)}
             loadingData={loadingData} activeTickets={activeTickets} setDetailId={setDetailId}
             handedOverTickets={handedOverTickets} onStatusChange={setTicketStatus} onPrint={printTicketSlip}
             parts={parts} onAddPart={addPartToTicket}
+            customers={customersTable}
+            defaultLocId={myLocationId || defaultLocId} onCreateTicket={addTicket}
           />
         )}
 
