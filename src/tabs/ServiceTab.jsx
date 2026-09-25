@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { money, STATUSES, SUB_STATUSES, statusLabel, statusCls, subStatusCls, subStatusLabel, displayName, ticketCode, daysOnShelf, slaInfo, isStaleReady } from "../lib/utils";
-import { SearchIcon, ServiceIcon, ClockIcon, WarrantyIcon, FoliaIcon, DropletIcon, ChevronRightIcon, CheckIcon, ScanIcon, PartsIcon, PhoneCaseIcon, MoreIcon } from "../components/icons";
+import { SearchIcon, ServiceIcon, ClockIcon, WarrantyIcon, FoliaIcon, DropletIcon, ChevronRightIcon, ChevronDownIcon, CheckIcon, ScanIcon, PartsIcon, PhoneCaseIcon, MoreIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import ResponsiveTable from "../components/ResponsiveTable";
 import HandoverPaymentModal from "../components/HandoverPaymentModal";
@@ -16,6 +16,44 @@ function nextActionOf(t) {
     return { status: t.status, subStatus: "Átadva", icon: CheckIcon, label: "Átadás", title: "Munkalap átadása a vevőnek" };
   }
   return null;
+}
+
+// Kattintható státusz-jelvény a lista Státusz oszlopában — a BoardUI table-komponensének
+// "Purchase" oszlopa alapján: a jelvény maga a dropdown trigger, kattintásra egy kis lista
+// nyílik a 4 fő státusszal, hogy ne kelljen a munkalapot megnyitni csak a státuszváltáshoz.
+function StatusPicker({ ticket, cls, label, disabled, onChange }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onDocMouseDown(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false); }
+    document.addEventListener("mousedown", onDocMouseDown);
+    return () => document.removeEventListener("mousedown", onDocMouseDown);
+  }, [open]);
+
+  return (
+    <div className="wl-status-wrap" ref={ref} onClick={(e) => e.stopPropagation()}>
+      <button type="button" className={`st st-fill status-picker-trigger ${cls}`} disabled={disabled} onClick={() => setOpen((v) => !v)}>
+        {label}
+        <ChevronDownIcon width={11} height={11} style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform .12s" }} />
+      </button>
+      {open && (
+        <div className="wl-status-menu">
+          {STATUSES.map((s) => (
+            <div
+              key={s.key}
+              className={`wl-status-opt${s.key === ticket.status ? " current" : ""}`}
+              onClick={() => { setOpen(false); if (s.key !== ticket.status) onChange(ticket.id, s.key, SUB_STATUSES[s.key]?.[0]?.key ?? null); }}
+            >
+              <span className="dot" style={{ background: s.color }} />{s.label}
+              {s.key === ticket.status && <CheckIcon width={13} height={13} style={{ marginLeft: "auto", flexShrink: 0 }} />}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function ServiceTab({
@@ -95,6 +133,7 @@ export default function ServiceTab({
   };
   const isPartDeviceWait = (t) => t.status === "Átvett" && (t.subStatus === "Alkatrészre vár" || t.subStatus === "Készülékre vár" || t.subStatus === "Alkatrészre és készülékre vár");
   const statusClsOf = (t) => (t.subStatus && !isPartDeviceWait(t) ? subStatusCls(t.status, t.subStatus) : statusCls(t.status));
+  const statusLabelOf = (t) => (t.subStatus && !isPartDeviceWait(t) ? subStatusLabel(t.status, t.subStatus) : statusLabel(t.status));
   const statusPill = (t) => (t.subStatus && !isPartDeviceWait(t) ? (
     <span className={`st st-fill ${subStatusCls(t.status, t.subStatus)}`}>{subStatusLabel(t.status, t.subStatus)}</span>
   ) : (
@@ -116,7 +155,9 @@ export default function ServiceTab({
       </td>
       <td style={{ whiteSpace: "nowrap" }}>{kliensOf(t)}</td>
       <td>{daysOf(t)}</td>
-      <td className="col-status" style={{ whiteSpace: "nowrap" }}>{statusPill(t)}</td>
+      <td className="col-status" style={{ whiteSpace: "nowrap" }}>
+        <StatusPicker ticket={t} cls={statusClsOf(t)} label={statusLabelOf(t)} disabled={busy} onChange={onStatusChange} />
+      </td>
       <td className="row-price">
         {(Number(t.depositPaid) || 0) > 0 ? (
           <>
