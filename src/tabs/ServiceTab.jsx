@@ -227,7 +227,7 @@ export default function ServiceTab({
       <td className="col-status" style={{ whiteSpace: "nowrap" }}>
         <StatusPicker ticket={t} dotColor={dotColorOf(t)} label={statusLabelOf(t)} disabled={busy} onChange={onStatusChange} />
       </td>
-      <td className="row-price">
+      <td className="row-price" style={{ color: (Number(t.depositPaid) || 0) > 0 ? undefined : (Number(t.price) || 0) === 0 ? "#9CA3AF" : undefined }}>
         {(Number(t.depositPaid) || 0) > 0 ? (
           <>
             {money(t.price - t.depositPaid)}
