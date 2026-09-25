@@ -309,7 +309,7 @@ tr:hover td{background:#FAFAFA}
 .mode-pill.expense.active{background:#FEE2E2;border-color:#FCA5A5;color:#B91C1C}
 .mode-pill.income.active{background:#DCFCE7;border-color:#86EFAC;color:#15803D}
 
-.svc-table td,.svc-table th{font-size:13px}
+.svc-table td,.svc-table th{font-size:13px;padding-left:10px;padding-right:10px}
 .svc-table th{height:auto;padding:12px 16px;text-transform:none;font-weight:600;letter-spacing:normal}
 .svc-table .col-serial{padding-right:8px}
 .svc-table .stk-actions{justify-content:flex-end}
