@@ -276,7 +276,6 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
                 <PatternLockPad value={f.unlockCode} onChange={(v) => setF({ ...f, unlockCode: v })} />
               </div>
             )}
-            <div className="wf2-foot">IMEI, feloldókód és a munkalap egyedi sorszáma.</div>
             {hasImeiMatch && (
               <div className="wf2-grp" style={{ marginTop: 10, padding: "10px 14px", background: "var(--primary-soft)", fontSize: 12.5 }}>
                 <div style={{ fontWeight: 700, marginBottom: 4, color: "var(--primary-ink)" }}>Ezzel a készülékkel már dolgoztunk:</div>
