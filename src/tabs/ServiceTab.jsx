@@ -34,7 +34,8 @@ function StatusPicker({ ticket, cls, label, disabled, onChange }) {
 
   return (
     <div className="wl-status-wrap" ref={ref} onClick={(e) => e.stopPropagation()}>
-      <button type="button" className={`st st-fill status-picker-trigger ${cls}`} disabled={disabled} onClick={() => setOpen((v) => !v)}>
+      <button type="button" className={`status-picker-trigger ${cls}`} disabled={disabled} onClick={() => setOpen((v) => !v)}>
+        <span className="status-dot" />
         {label}
         <ChevronDownIcon width={11} height={11} style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform .12s" }} />
       </button>
@@ -76,7 +77,7 @@ function PartAddPopover({ ticket, parts, onAddPart, disabled }) {
   const availableParts = (parts || []).filter((p) => Number(p.quantity) > 0);
   const q = query.trim().toLowerCase();
   const shownParts = q
-    ? availableParts.filter((p) => (p.name || "").toLowerCase().includes(q) || (partCode(p.partNo) || "").toLowerCase().includes(q))
+    ? availableParts.filter((p) => [p.name, p.brand, p.modelFit, partCode(p.partNo)].filter(Boolean).join(" ").toLowerCase().includes(q))
     : availableParts;
   const selPart = availableParts.find((p) => p.id === selPartId);
 
@@ -100,7 +101,10 @@ function PartAddPopover({ ticket, parts, onAddPart, disabled }) {
           />
           <select value={selPartId} onChange={(e) => setSelPartId(e.target.value)} style={{ width: "100%", marginBottom: 6 }}>
             <option value="">— Alkatrész ({shownParts.length}) —</option>
-            {shownParts.map((p) => <option key={p.id} value={p.id}>{partCode(p.partNo)} — {p.name} ({p.quantity} db)</option>)}
+            {shownParts.map((p) => {
+              const fit = [p.brand, p.modelFit].filter(Boolean).join(" ");
+              return <option key={p.id} value={p.id}>{partCode(p.partNo)} — {p.name}{fit ? ` · ${fit}` : ""} ({p.quantity} db)</option>;
+            })}
           </select>
           <div style={{ display: "flex", gap: 6 }}>
             <input type="number" min="1" max={selPart?.quantity || 1} value={qty} onChange={(e) => setQty(Number(e.target.value))}
