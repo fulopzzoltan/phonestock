@@ -180,22 +180,22 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
             <div className="wf2-sec">
               <div className="wf2-cap">Ügyfél</div>
               <div className="wf2-grp">
-                <div className="wf2-row">
-                  <span className="wf2-row-lbl">Név</span>
-                  <div className="wf2-flex1">
+                <div className="wf2-row wf2-split">
+                  <div className="wf2-split-col">
+                    <span className="wf2-split-lbl">Név</span>
                     <CustomerAutocomplete
                       customers={customers}
                       name={f.customerName}
                       onChangeName={(name) => setF({ ...f, customerName: name, customerId: null })}
                       onSelect={(c) => setF({ ...f, customerName: c.name, customerPhone: c.phone || f.customerPhone, customerId: c.id })}
                       placeholder="Kliens neve"
-                      className="wf2-row-val"
+                      className="wf2-split-val"
                     />
                   </div>
-                </div>
-                <div className="wf2-row">
-                  <span className="wf2-row-lbl">Telefonszám</span>
-                  <input className="wf2-row-val" value={f.customerPhone} onChange={set("customerPhone")} placeholder="07xx xxx xxx" />
+                  <div className="wf2-split-col">
+                    <span className="wf2-split-lbl">Telefonszám</span>
+                    <input className="wf2-split-val" value={f.customerPhone} onChange={set("customerPhone")} placeholder="07xx xxx xxx" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -347,13 +347,15 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
           <div className="wf2-sec">
             <div className="wf2-cap">Ár és határidő</div>
             <div className="wf2-grp">
-              <div className="wf2-row">
-                <span className="wf2-row-lbl">Árajánlat</span>
-                <input className="wf2-row-val" type="number" value={f.price} onChange={set("price")} placeholder="0 Lei" />
-              </div>
-              <div className="wf2-row">
-                <span className="wf2-row-lbl">Anyagköltség</span>
-                <input className="wf2-row-val" type="number" value={f.matCost} onChange={set("matCost")} placeholder="0 Lei" />
+              <div className="wf2-row wf2-split">
+                <div className="wf2-split-col">
+                  <span className="wf2-split-lbl">Árajánlat</span>
+                  <input className="wf2-split-val" type="number" value={f.price} onChange={set("price")} placeholder="0 Lei" />
+                </div>
+                <div className="wf2-split-col">
+                  <span className="wf2-split-lbl">Anyagköltség</span>
+                  <input className="wf2-split-val" type="number" value={f.matCost} onChange={set("matCost")} placeholder="0 Lei" />
+                </div>
               </div>
               <div className="wf2-row">
                 <span className="wf2-row-lbl">Garancia</span>
@@ -365,11 +367,17 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
               </div>
               <div className="wf2-row">
                 <span className="wf2-row-lbl">Határidő (SLA)</span>
-                <input className="wf2-row-val" type="date" value={f.dueDate} onChange={set("dueDate")} />
+                <div className="wf2-date">
+                  <input className="wf2-row-val" type="date" value={f.dueDate} onChange={set("dueDate")} />
+                  <ChevronRightIcon className="wf2-chev" />
+                </div>
               </div>
               <div className="wf2-row">
                 <span className="wf2-row-lbl">Átadás dátuma</span>
-                <input className="wf2-row-val" type="date" value={f.handoverDate} onChange={set("handoverDate")} />
+                <div className="wf2-date">
+                  <input className="wf2-row-val" type="date" value={f.handoverDate} onChange={set("handoverDate")} />
+                  <ChevronRightIcon className="wf2-chev" />
+                </div>
               </div>
             </div>
           </div>

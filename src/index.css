@@ -972,12 +972,29 @@ tr:hover td{background:#FAFAFA}
 .wf2-row .dd-trigger{background:none;border:none;padding:0;font-size:15px;color:#8A8A8E;justify-content:flex-end;gap:6px}
 .wf2-row .dd-trigger:focus{box-shadow:none;background:none}
 .wf2-row .dd-trigger > span:first-child{color:inherit}
+.wf2-row .dd-trigger svg{transform:rotate(-90deg)!important;color:#C7C7CC!important}
 .wf2-row input,.wf2-row select{width:100%;background:none;border:none;outline:none;font-size:15px;text-align:right;color:#8A8A8E;padding:0;font-family:inherit;box-shadow:none!important}
 .wf2-row input::placeholder{color:#C7C7CC}
 .wf2-row input:disabled{opacity:.5}
+.wf2-row input[type="number"]::-webkit-outer-spin-button,
+.wf2-row input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.wf2-row input[type="number"]{-moz-appearance:textfield}
 .wf2-row .autocomplete-list{left:auto;right:0;width:260px;text-align:left}
 .wf2-row .autocomplete-list input{text-align:left;color:#111827}
 .wf2-tags{display:flex;flex-wrap:wrap;gap:7px;padding:14px 16px}
+.wf2-date{flex:1;display:flex;align-items:center;justify-content:flex-end;gap:4px;min-width:0}
+.wf2-date input{flex:1;min-width:0;position:relative}
+.wf2-date input::-webkit-calendar-picker-indicator{position:absolute;inset:0;width:100%;opacity:0;cursor:pointer;margin:0}
+.wf2-row.wf2-split{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.wf2-split-col{display:flex;flex-direction:column;gap:3px;min-width:0}
+.wf2-split-lbl{font-size:11px;color:#8A8A8E;font-weight:500}
+.wf2-split-val{font-size:15px;color:#111827;text-align:left;background:none;border:none;outline:none;font-family:inherit;padding:0;width:100%}
+.wf2-split-val::placeholder{color:#C7C7CC}
+.modal.wf2{scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.18) transparent}
+.modal.wf2::-webkit-scrollbar{width:6px}
+.modal.wf2::-webkit-scrollbar-track{background:transparent}
+.modal.wf2::-webkit-scrollbar-thumb{background:rgba(0,0,0,.18);border-radius:999px}
+.modal.wf2::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.28)}
 @media (max-width:640px){.wf2-row .autocomplete-list{width:220px}}
 
 /* LOGIN */
