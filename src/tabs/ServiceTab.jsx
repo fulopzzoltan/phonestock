@@ -187,7 +187,7 @@ export default function ServiceTab({
     <span className={`st st-fill ${statusCls(t.status)}`}>{statusLabel(t.status)}</span>
   ));
   const TICKET_COLUMNS = [
-    { key: "n", label: "Sorszám", className: "col-serial" },
+    { key: "n", label: "Szám", className: "col-serial" },
     {
       key: "i",
       label: (
