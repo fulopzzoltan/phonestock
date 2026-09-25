@@ -1880,6 +1880,12 @@ function AppShell() {
       setNotes((prev) => prev.map((n) => (n.id === id ? noteFromApi(r[0]) : n)));
     });
   }
+  async function updateNote(id, body) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("board_notes").update({ body }).eq("id", id).select());
+      setNotes((prev) => prev.map((n) => (n.id === id ? noteFromApi(r[0]) : n)));
+    });
+  }
   async function deleteNote(id) {
     await withBusy(async () => { unwrap(await supabase.from("board_notes").delete().eq("id", id)); setNotes((prev) => prev.filter((n) => n.id !== id)); });
   }
@@ -3224,7 +3230,7 @@ function AppShell() {
         {!noLocationAssigned && tab === "pult" && (
           <PultTab
             effectiveLocFilter={effectiveLocFilter} locName={locName} filteredTickets={filteredTickets} setDetailId={setDetailId}
-            notes={notes} addNote={addNote} completeNote={completeNote} reopenNote={reopenNote} deleteNote={deleteNote}
+            notes={notes} addNote={addNote} completeNote={completeNote} reopenNote={reopenNote} deleteNote={deleteNote} updateNote={updateNote}
             waitingItems={waitingItems} addWaitingItem={addWaitingItem} advanceWaiting={advanceWaiting}
             users={users} currentUserId={profile?.id} tickets={tickets} stock={stock} parts={parts} customersTable={customersTable} warranties={warranties}
             upcomingLeave={upcomingLeave}

@@ -594,6 +594,7 @@ tr:hover td{background:#FAFAFA}
 .note-card.done{opacity:.55}
 .note-card-tape{position:absolute;top:-9px;left:16px;width:44px;height:17px;transform:rotate(-6deg);border-radius:2px;background:repeating-linear-gradient(45deg,rgba(255,255,255,.85) 0 4px,rgba(255,255,255,.4) 4px 8px);box-shadow:0 2px 3px rgba(0,0,0,.08)}
 .note-card-body{font-family:'Kalam',cursive;font-weight:700;font-size:16px;line-height:1.32;margin:8px 0 10px;overflow-wrap:anywhere;word-break:break-word}
+.note-card-edit{font-family:'Kalam',cursive;font-weight:700;font-size:16px;line-height:1.32;margin:8px 0 10px;overflow-wrap:anywhere;word-break:break-word;width:100%;flex:1;resize:none;border:none;outline:none;background:rgba(255,255,255,.35);border-radius:6px;padding:2px 4px;min-height:52px}
 .note-card-link{align-self:flex-start;display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.65);border:none;border-radius:999px;padding:3px 10px 3px 8px;font-size:10.5px;font-weight:700;font-family:'Inter',sans-serif;margin-bottom:10px;cursor:pointer}
 .note-card-meta{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:6px}
 .note-card-meta .iconbtn{color:inherit;padding:0}

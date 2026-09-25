@@ -12,7 +12,7 @@ const GREETINGS = ["Szia!", "Hello!", "Üdv újra!", "Szevasz!", "Jó munkát ma
 
 export default function PultTab({
   effectiveLocFilter, filteredTickets, setDetailId,
-  notes, addNote, completeNote, deleteNote,
+  notes, addNote, completeNote, deleteNote, updateNote,
   waitingItems, addWaitingItem, advanceWaiting,
   users, currentUserId, tickets, stock, parts, customersTable, warranties, locName,
   upcomingLeave,
@@ -153,7 +153,7 @@ export default function PultTab({
         {openNotes.length === 0 ? <EmptyState icon={NoteIcon}>Nincs nyitott cetli.</EmptyState> : (
           <div className="stk-grid">
             {openNotes.map((n) => (
-              <NoteCard key={n.id} note={n} users={users} currentUserId={currentUserId} onComplete={() => completeNote(n.id)} onDelete={() => deleteNote(n.id)}
+              <NoteCard key={n.id} note={n} users={users} currentUserId={currentUserId} onComplete={() => completeNote(n.id)} onDelete={() => deleteNote(n.id)} onEdit={(body) => updateNote(n.id, body)}
                 onOpenLink={{ ticket: onOpenTicket, product: onOpenProduct, part: onOpenPart, customer: onOpenCustomer, warranty: onOpenWarranty }} />
             ))}
           </div>
