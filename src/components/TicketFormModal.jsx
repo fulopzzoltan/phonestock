@@ -206,6 +206,46 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
           </div>
 
           <div className="wf2-sec">
+            <div className="wf2-cap">Probléma</div>
+            <div className="wf2-grp">
+              <div className="wf2-seg">
+                {TOP_PROBLEM_TAGS.map((tag) => {
+                  const on = tags.includes(tag);
+                  return (
+                    <button key={tag} type="button" className={`wf2-seg-btn${on ? " on" : ""}`} aria-pressed={on} onClick={() => toggleTag(tag)}>{tag}</button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="wf2-grp" style={{ marginTop: 10 }}>
+              <button type="button" className="wf2-row" style={{ width: "100%", background: "none", border: "none", textAlign: "left", font: "inherit", cursor: "pointer" }} onClick={() => setShowMoreProbs((v) => !v)}>
+                <span className="wf2-row-lbl" style={{ flex: 1, color: "#1DB954", fontWeight: 600 }}>Egyéb, {REST_PROBLEM_TAGS.length} további hiba</span>
+                <ChevronRightIcon className="wf2-chev" style={{ transform: showMoreProbs ? "rotate(90deg)" : "none" }} />
+              </button>
+            </div>
+            {showMoreProbs && (
+              <>
+                <div className="wf2-grp" style={{ marginTop: 10 }}>
+                  {REST_PROBLEM_TAGS.map((tag) => {
+                    const on = tags.includes(tag);
+                    return (
+                      <button key={tag} type="button" className="wf2-row" style={{ width: "100%", background: "none", border: "none", textAlign: "left", font: "inherit", cursor: "pointer" }} onClick={() => toggleTag(tag)}>
+                        <span className="wf2-row-lbl" style={{ flex: 1, fontWeight: 400 }}>{tag}</span>
+                        <span className={`wf2-check${on ? " on" : ""}`}>{on && <CheckIcon width={12} height={12} strokeWidth={2.4} />}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="wf2-grp" style={{ marginTop: 10 }}>
+                  <div className="wf2-row">
+                    <input className="wf2-row-val" style={{ textAlign: "left", color: "#000" }} value={f.extra} onChange={set("extra")} placeholder="Egyedi probléma leírása, ha nincs a listában" />
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="wf2-sec">
             <div className="wf2-cap">Készülék</div>
             <div className="wf2-grp">
               {isOwnStock && (
@@ -308,45 +348,6 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
               </div>
             </div>
           )}
-
-          <div className="wf2-sec">
-            <div className="wf2-cap">Probléma</div>
-            <div className="wf2-grp">
-              {TOP_PROBLEM_TAGS.map((tag) => {
-                const on = tags.includes(tag);
-                return (
-                  <button key={tag} type="button" className="wf2-row" style={{ width: "100%", background: "none", border: "none", textAlign: "left", font: "inherit", cursor: "pointer" }} onClick={() => toggleTag(tag)}>
-                    <span className="wf2-row-lbl" style={{ flex: 1 }}>{tag}</span>
-                    <span className={`wf2-check${on ? " on" : ""}`}>{on && <CheckIcon width={12} height={12} strokeWidth={2.4} />}</span>
-                  </button>
-                );
-              })}
-              <button type="button" className="wf2-row" style={{ width: "100%", background: "none", border: "none", textAlign: "left", font: "inherit", cursor: "pointer" }} onClick={() => setShowMoreProbs((v) => !v)}>
-                <span className="wf2-row-lbl" style={{ flex: 1, color: "#1DB954", fontWeight: 600 }}>Egyéb, {REST_PROBLEM_TAGS.length} további hiba</span>
-                <ChevronRightIcon className="wf2-chev" style={{ transform: showMoreProbs ? "rotate(90deg)" : "none" }} />
-              </button>
-            </div>
-            {showMoreProbs && (
-              <>
-                <div className="wf2-grp" style={{ marginTop: 10 }}>
-                  {REST_PROBLEM_TAGS.map((tag) => {
-                    const on = tags.includes(tag);
-                    return (
-                      <button key={tag} type="button" className="wf2-row" style={{ width: "100%", background: "none", border: "none", textAlign: "left", font: "inherit", cursor: "pointer" }} onClick={() => toggleTag(tag)}>
-                        <span className="wf2-row-lbl" style={{ flex: 1, fontWeight: 400 }}>{tag}</span>
-                        <span className={`wf2-check${on ? " on" : ""}`}>{on && <CheckIcon width={12} height={12} strokeWidth={2.4} />}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-                <div className="wf2-grp" style={{ marginTop: 10 }}>
-                  <div className="wf2-row">
-                    <input className="wf2-row-val" style={{ textAlign: "left", color: "#000" }} value={f.extra} onChange={set("extra")} placeholder="Egyedi probléma leírása, ha nincs a listában" />
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
 
           <div className="wf2-sec">
             <div className="wf2-cap">Garancia és határidő</div>
