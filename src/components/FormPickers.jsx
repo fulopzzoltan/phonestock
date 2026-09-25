@@ -47,6 +47,11 @@ export function DropdownField({ label, hint, value, onChange, options, placehold
   }, [open]);
 
   const current = options.find((o) => o.key === value);
+  // Egy "nincs megadva"-jellegű opció (üres/"" vagy null kulcs) funkcionálisan kiválasztott
+  // érték, de vizuálisan ugyanúgy placeholder-szürkével jelenjen meg, mint egy tényleg üres
+  // mező — különben ugyanaz a "még nincs eldöntve" állapot választótól függően hol szürkén,
+  // hol feketén jelenne meg.
+  const hasRealValue = current && current.key !== "" && current.key != null;
   const q = query.trim().toLowerCase();
   const filtered = q ? options.filter((o) => o.label.toLowerCase().includes(q)) : options;
 
@@ -54,7 +59,7 @@ export function DropdownField({ label, hint, value, onChange, options, placehold
     <div className="field" ref={ref} style={{ position: "relative" }}>
       <label>{label} {hint}</label>
       <button type="button" className="dd-trigger" onClick={() => setOpen((v) => !v)}>
-        <span style={{ color: current ? "#111827" : "#9CA3AF" }}>{current ? current.label : placeholder}</span>
+        <span style={{ color: hasRealValue ? "#111827" : "#9CA3AF" }}>{current ? current.label : placeholder}</span>
         <ChevronDownIcon style={{ color: "#9CA3AF", flexShrink: 0, transition: "transform .12s", transform: open ? "rotate(180deg)" : "none" }} />
       </button>
       {open && (
