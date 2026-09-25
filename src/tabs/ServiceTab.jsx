@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { money, STATUSES, SUB_STATUSES, statusLabel, statusCls, subStatusCls, subStatusLabel, displayName, ticketCode, daysOnShelf, slaInfo, isStaleReady, partCode, titleCase, PROBLEM_TAGS, WARRANTIES } from "../lib/utils";
+import { money, STATUSES, SUB_STATUSES, statusLabel, statusCls, subStatusCls, subStatusLabel, displayName, ticketCode, daysOnShelf, slaInfo, isStaleReady, partCode, titleCase, PROBLEM_TAGS, WARRANTIES, PHONE_BRANDS } from "../lib/utils";
 import { SearchIcon, ServiceIcon, WarrantyIcon, ChevronRightIcon, ChevronDownIcon, CheckIcon, ScanIcon, MoreIcon, PrintIcon, PlusIcon, CloseIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import ResponsiveTable from "../components/ResponsiveTable";
@@ -143,6 +143,63 @@ function PartAddPopover({ ticket, parts, onAddPart, disabled }) {
   );
 }
 
+// Márka-választó gomb az inline sorhoz — ugyanaz a lista/"Egyéb" logika, mint a BrandField-nél
+// (nincs elgépelés-lehetőség a leggyakoribb márkáknál), csak a sor "cella"-stílusához (svc-nr-top)
+// igazított kinézettel, felirat nélkül, mert az oszlopfejléc ("Eszköz") már jelzi, mi ez a mező.
+function BrandPickerButton({ value, onChange, disabled }) {
+  const knownCustom = value !== "" && !PHONE_BRANDS.includes(value);
+  const [customPicked, setCustomPicked] = useState(knownCustom);
+  const isCustom = customPicked || knownCustom;
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onDocMouseDown(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false); }
+    document.addEventListener("mousedown", onDocMouseDown);
+    return () => document.removeEventListener("mousedown", onDocMouseDown);
+  }, [open]);
+
+  const q = query.trim().toLowerCase();
+  const filtered = q ? PHONE_BRANDS.filter((b) => b.toLowerCase().includes(q)) : PHONE_BRANDS;
+  const label = isCustom ? "Egyéb" : value;
+
+  return (
+    <div>
+      <div style={{ position: "relative" }} ref={ref}>
+        <button
+          type="button" disabled={disabled} onClick={() => setOpen((v) => !v)}
+          className="svc-nr-top" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, cursor: "pointer" }}
+        >
+          <span style={{ color: label ? "#111827" : "#ADB1B8" }}>{label ? (label === "Apple" ? "iPhone" : label) : "Márka"}</span>
+          <ChevronDownIcon width={11} height={11} style={{ color: "#9CA3AF", flexShrink: 0, transform: open ? "rotate(180deg)" : "none", transition: "transform .12s" }} />
+        </button>
+        {open && (
+          <div className="autocomplete-list" style={{ padding: 5 }}>
+            <input
+              autoFocus type="text" placeholder="Keresés..." value={query} onChange={(e) => setQuery(e.target.value)}
+              style={{ width: "100%", marginBottom: 4, background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 8, padding: "7px 9px", fontFamily: "inherit", fontSize: 12.5, boxSizing: "border-box" }}
+            />
+            {filtered.map((b) => (
+              <div
+                key={b} className="autocomplete-item" style={{ borderRadius: 7, background: b === value || (b === "Egyéb" && isCustom) ? "#F3F4F6" : undefined }}
+                onClick={() => { setCustomPicked(b === "Egyéb"); onChange(b === "Egyéb" ? "" : b); setOpen(false); setQuery(""); }}
+              >
+                {b === "Apple" ? "iPhone" : b}
+              </div>
+            ))}
+            {filtered.length === 0 && <div style={{ padding: "9px 12px", fontSize: 12.5, color: "#9CA3AF" }}>Nincs találat</div>}
+          </div>
+        )}
+      </div>
+      {isCustom && (
+        <input autoFocus className="svc-nr-top" style={{ marginTop: 6 }} placeholder="Márka neve" value={value} onChange={(e) => onChange(e.target.value)} disabled={disabled} />
+      )}
+    </div>
+  );
+}
+
 // Új munkalap — nem forma-kártya popup, hanem a táblázat folytatódik lefelé: egy szerkeszthető
 // sor a lista tetején, ugyanolyan oszlopokkal, mint a valódi sorok, plusz egy sűrű,
 // aláhúzásos "cella"-sáv a ritkábban kellő mezőknek ("Új munkalap — táblázat-érzés" design
@@ -168,14 +225,32 @@ function NewTicketRow({ open, onCancel, onCreate, customers, defaultLocId, busy 
   const [dueDate, setDueDate] = useState("");
   const [handoverDate, setHandoverDate] = useState("");
   const [moreOpen, setMoreOpen] = useState(false);
+  // Amíg a sor nyílik/csukódik, a cellák overflow:hidden-nel vágják a tartalmat, hogy a
+  // max-height átmenet működjön — de ez a Márka-választó (és bármelyik) legördülő menüjét is
+  // levágná, ha nyitva marad. Ezért az animáció végeztével "settled"-re váltunk, ahol a
+  // cellák overflow:visible-lé válnak, hogy a legördülők szabadon kilógjanak.
+  const [settled, setSettled] = useState(false);
+  useEffect(() => {
+    if (!open) { setSettled(false); return; }
+    const t = setTimeout(() => setSettled(true), 400);
+    return () => clearTimeout(t);
+  }, [open]);
   // A "+" gomb belepottyan a táblába, ez a sor pedig onnan bomlik ki — minden cella-tartalom
   // saját max-height/opacity átmenettel nyúlik ki, ugyanazzal az időzítéssel, hogy a sor
   // egységesen "kinyíljon", ahelyett hogy csak felugorna/eltűnne.
-  const revealStyle = (maxH) => ({ maxHeight: open ? maxH : 0, opacity: open ? 1 : 0 });
+  const revealStyle = (maxH) => ({ maxHeight: open ? maxH : 0, opacity: open ? 1 : 0, overflow: settled ? "visible" : "hidden" });
 
   const toggleTag = (tag) => setTags((t) => (t.includes(tag) ? t.filter((x) => x !== tag) : [...t, tag]));
   const hasIssue = tags.length > 0 || extra.trim();
-  const valid = customerName.trim() && brand.trim() && defaultLocId && hasIssue;
+  // A mentés gomb inaktív állapota önmagában nem árulja el, mi hiányzik — ezért a title
+  // felsorolja, hogy a felhasználó ne "nem enged menteni" hibaként élje meg a hiányzó mezőt.
+  const missing = [
+    !customerName.trim() && "ügyfél neve",
+    !brand.trim() && "márka",
+    !hasIssue && "probléma",
+    !defaultLocId && "helyszín",
+  ].filter(Boolean);
+  const valid = missing.length === 0;
 
   function submit() {
     if (!valid || busy) return;
@@ -197,21 +272,21 @@ function NewTicketRow({ open, onCancel, onCreate, customers, defaultLocId, busy 
     <>
       <tr className="svc-nr-row">
         <td className="mono col-serial" style={{ padding: 0 }}>
-          <div className="svc-nr-reveal" style={{ ...revealStyle(90), color: "#B7BCC4", padding: "11px 16px" }}>—</div>
+          <div className="svc-nr-reveal" style={{ ...revealStyle(140), color: "#B7BCC4", padding: "11px 16px" }}>—</div>
         </td>
         <td style={{ padding: 0 }}>
-          <div className="svc-nr-reveal" style={{ ...revealStyle(90), color: "#B7BCC4", padding: "11px 16px" }}>Ma</div>
+          <div className="svc-nr-reveal" style={{ ...revealStyle(140), color: "#B7BCC4", padding: "11px 16px" }}>Ma</div>
         </td>
         <td style={{ padding: 0 }}>
-          <div className="svc-nr-reveal" style={{ ...revealStyle(90), padding: "11px 16px" }}>
+          <div className="svc-nr-reveal" style={{ ...revealStyle(140), padding: "11px 16px" }}>
             <div className="svc-nr-stack">
-              <input className="svc-nr-top" placeholder="Márka (Samsung)" value={brand} onChange={(e) => setBrand(e.target.value)} autoFocus disabled={busy} />
+              <BrandPickerButton value={brand} onChange={setBrand} disabled={busy} />
               <input className="svc-nr-top" placeholder="Modell (A53)" value={model} onChange={(e) => setModel(e.target.value)} disabled={busy} />
             </div>
           </div>
         </td>
         <td style={{ padding: 0 }}>
-          <div className="svc-nr-reveal" style={{ ...revealStyle(90), padding: "11px 16px" }}>
+          <div className="svc-nr-reveal" style={{ ...revealStyle(140), padding: "11px 16px" }}>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               {TOP_PROBLEM_TAGS.map((tag) => (
                 <span key={tag} className={`svc-nr-chip${tags.includes(tag) ? " on" : ""}`} onClick={() => !busy && toggleTag(tag)}>{tag}</span>
@@ -224,7 +299,7 @@ function NewTicketRow({ open, onCancel, onCreate, customers, defaultLocId, busy 
           </div>
         </td>
         <td style={{ padding: 0 }}>
-          <div className="svc-nr-reveal" style={{ ...revealStyle(90), padding: "11px 16px" }}>
+          <div className="svc-nr-reveal" style={{ ...revealStyle(140), padding: "11px 16px" }}>
             <div className="svc-nr-stack">
               <CustomerAutocomplete
                 customers={customers}
@@ -239,21 +314,21 @@ function NewTicketRow({ open, onCancel, onCreate, customers, defaultLocId, busy 
           </div>
         </td>
         <td className="col-status" style={{ padding: 0 }}>
-          <div className="svc-nr-reveal" style={{ ...revealStyle(90), padding: "11px 16px" }}>
+          <div className="svc-nr-reveal" style={{ ...revealStyle(140), padding: "11px 16px" }}>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 600, color: "#111827" }}>
               <span style={{ width: 6, height: 6, borderRadius: 999, background: STATUS_DOT_COLOR["Átvett"] }} />Rögzítve
             </span>
           </div>
         </td>
         <td className="row-price" style={{ padding: 0 }}>
-          <div className="svc-nr-reveal" style={{ ...revealStyle(90), padding: "11px 16px" }}>
+          <div className="svc-nr-reveal" style={{ ...revealStyle(140), padding: "11px 16px" }}>
             <input className="svc-nr-top" style={{ textAlign: "right" }} placeholder="0 Lei" value={price} onChange={(e) => setPrice(e.target.value)} disabled={busy} />
           </div>
         </td>
         <td className="stk-actions" style={{ padding: 0 }}>
-          <div className="svc-nr-reveal" style={{ ...revealStyle(90), padding: "11px 16px", display: "flex", gap: 6, justifyContent: "flex-end" }}>
+          <div className="svc-nr-reveal" style={{ ...revealStyle(140), padding: "11px 16px", display: "flex", gap: 6, justifyContent: "flex-end" }}>
             <button
-              type="button" title="Mentés" disabled={!valid || busy} onClick={submit}
+              type="button" title={valid ? "Mentés" : `Hiányzik: ${missing.join(", ")}`} disabled={!valid || busy} onClick={submit}
               style={{ width: 28, height: 28, borderRadius: 999, border: "none", background: valid ? "#1DB954" : "#D1D5DB", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: valid ? "pointer" : "default", flexShrink: 0 }}
             >
               <CheckIcon width={13} height={13} />
