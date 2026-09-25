@@ -372,10 +372,11 @@ tr:hover td{background:#FAFAFA}
 .paid-toggle{display:flex;align-items:center;gap:5px;border:1.5px solid #E5E7EB;background:#fff;border-radius:999px;padding:6px 12px;font-size:11px;font-weight:700;color:#9CA3AF;cursor:pointer;white-space:nowrap;width:118px;justify-content:center;font-family:inherit}
 .paid-toggle.done{border-color:transparent;background:var(--primary-soft);color:var(--primary-ink)}
 .st{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:600}
-.status-picker-trigger{display:inline-flex;align-items:center;gap:6px;border:1px solid;padding:6px 13px 6px 11px;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:600}
+.status-picker-trigger{display:inline-flex;align-items:center;gap:7px;background:none;border:none;color:#111827;padding:6px 4px;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:600}
 .status-picker-trigger:disabled{cursor:default;opacity:.6}
-.status-picker-trigger svg{opacity:.7;flex-shrink:0}
-.status-picker-trigger .status-dot{width:7px;height:7px;border-radius:999px;flex-shrink:0}
+.status-picker-trigger svg{color:#C7CBD1;flex-shrink:0}
+.status-picker-trigger .status-dot-halo{width:12px;height:12px;border-radius:999px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center}
+.status-picker-trigger .status-dot{width:6px;height:6px;border-radius:999px;flex-shrink:0}
 .st-beveve{background:#E0E7FF;color:#4338CA;--pill-bg:#E0E7FF;--pill-fg:#4338CA}
 .st-alkatresz{background:var(--info-soft);color:var(--info-ink);--pill-bg:var(--info-soft);--pill-fg:var(--info-ink)}
 .st-javitas{background:var(--warning-soft);color:var(--warning-ink);--pill-bg:var(--warning-soft);--pill-fg:var(--warning-ink)}

@@ -34,14 +34,10 @@ function StatusPicker({ ticket, dotColor, label, disabled, onChange }) {
 
   return (
     <div className="wl-status-wrap" ref={ref} onClick={(e) => e.stopPropagation()}>
-      <button
-        type="button"
-        className="status-picker-trigger"
-        disabled={disabled}
-        onClick={() => setOpen((v) => !v)}
-        style={{ background: `color-mix(in srgb, ${dotColor} 16%, white)`, borderColor: dotColor, color: dotColor }}
-      >
-        <span className="status-dot" style={{ background: dotColor }} />
+      <button type="button" className="status-picker-trigger" disabled={disabled} onClick={() => setOpen((v) => !v)}>
+        <span className="status-dot-halo" style={{ background: `color-mix(in srgb, ${dotColor} 22%, white)` }}>
+          <span className="status-dot" style={{ background: dotColor }} />
+        </span>
         {label}
         <ChevronDownIcon width={11} height={11} style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform .12s" }} />
       </button>
