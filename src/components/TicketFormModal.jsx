@@ -216,9 +216,7 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
                   );
                 })}
               </div>
-            </div>
-            <div className="wf2-grp" style={{ marginTop: 10 }}>
-              <button type="button" className="wf2-row" style={{ width: "100%", background: "none", border: "none", textAlign: "left", font: "inherit", cursor: "pointer" }} onClick={() => setShowMoreProbs((v) => !v)}>
+              <button type="button" className="wf2-row" style={{ width: "100%", background: "none", border: "none", borderTop: "1px solid #E5E5EA", textAlign: "left", font: "inherit", cursor: "pointer" }} onClick={() => setShowMoreProbs((v) => !v)}>
                 <span className="wf2-row-lbl" style={{ flex: 1, color: "#1DB954", fontWeight: 600 }}>Egyéb, {REST_PROBLEM_TAGS.length} további hiba</span>
                 <ChevronRightIcon className="wf2-chev" style={{ transform: showMoreProbs ? "rotate(90deg)" : "none" }} />
               </button>
