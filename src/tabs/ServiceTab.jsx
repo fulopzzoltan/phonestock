@@ -208,7 +208,7 @@ export default function ServiceTab({
     <tr key={t.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
       <td className="mono col-serial" style={{ color: "#9CA3AF", whiteSpace: "nowrap" }}>{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</td>
       <td>{daysOf(t)}</td>
-      <td className="stk-name" style={{ whiteSpace: "nowrap" }}>{displayName(t.brand, t.model) || "—"}</td>
+      <td style={{ whiteSpace: "nowrap" }}><span className="stk-name">{displayName(t.brand, t.model) || "—"}</span></td>
       <td>
         <div className="svc-flags">
           {probsOf(t).map((p, i) => <span key={i} className="prob-pill">{p}</span>)}
