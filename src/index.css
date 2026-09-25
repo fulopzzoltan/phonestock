@@ -397,11 +397,12 @@ tr:hover td{background:#FAFAFA}
 .liquid-toggle:disabled{cursor:default;opacity:.55}
 .lt-track{position:absolute;inset:0;border-radius:999px;background:#1DB954;transition:background .32s ease}
 .liquid-toggle.on .lt-track{background:#DC2626}
-.lt-blobs{position:absolute;inset:0}
-.lt-thumb,.lt-drop{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transform:translateX(20px)}
-.lt-thumb{transition:transform .38s cubic-bezier(.34,1.56,.64,1)}
-.lt-drop{transition:transform .46s cubic-bezier(.22,.9,.4,1) .05s}
-.liquid-toggle.on .lt-thumb,.liquid-toggle.on .lt-drop{transform:translateX(0)}
+.lt-thumb{position:absolute;top:50%;left:3px;right:auto;width:20px;height:20px;border-radius:999px;background:#fff;
+  box-shadow:0 3px 8px rgba(0,0,0,.18),0 1px 2px rgba(0,0,0,.22);
+  transform:translateY(-50%);
+  transition:left .32s cubic-bezier(.34,1.56,.64,1),right .32s cubic-bezier(.34,1.56,.64,1),width .16s ease,height .16s ease}
+.liquid-toggle.on .lt-thumb{left:auto;right:3px}
+.liquid-toggle:active:not(:disabled) .lt-thumb{width:34px;height:24px}
 .badge-expense{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700;background:#FEE2E2;color:#B91C1C}
 .badge-refurb{display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:#fff;color:#C2410C;border:1px solid #FDBA74}
 .badge-new{display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:#fff;color:#6D28D9;border:1px solid #DDD6FE}
@@ -937,6 +938,47 @@ tr:hover td{background:#FAFAFA}
 .wf-sectitle{font-size:13.5px;font-weight:800;line-height:1.3;margin-bottom:12px}
 .dd-trigger{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:11px;padding:10px 12px;color:#111827;font-family:inherit;font-size:13px;cursor:pointer;text-align:left}
 .dd-trigger:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(29,185,84,.1)}
+
+/* Szerviz munkalap űrlap — Apple Settings-stílusú csoportosított lista (design: "Szerviz munkalap
+   űrlap — konzisztens redesign" artifact, C tábla, jóváhagyva). Csak a TicketFormModal-ban él,
+   "wf2-" előtaggal elkülönítve a StockModal is használta régi .wf-sec/.wf-sectitle rendszertől. */
+.modal.wf2{max-width:640px;background:#F2F2F7;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',Inter,sans-serif}
+.wf2-body{display:flex;flex-direction:column;gap:26px}
+.wf2-sec{display:flex;flex-direction:column}
+.wf2-cap{font-size:12px;font-weight:600;color:#6D6D72;text-transform:uppercase;letter-spacing:.03em;padding:0 18px 6px 16px}
+.wf2-cap.ic{padding-left:48px}
+.wf2-foot{font-size:12px;color:#8A8A8E;line-height:1.45;padding:6px 18px 0 16px}
+.wf2-grp{background:#fff;border-radius:12px;overflow:visible}
+.wf2-row{display:flex;align-items:center;gap:12px;padding:11px 16px;min-height:22px;position:relative}
+.wf2-row+.wf2-row{border-top:1px solid #E5E5EA}
+.wf2-row-lbl{font-size:15px;color:#000;flex-shrink:0}
+.wf2-row-val{flex:1;text-align:right;font-size:15px;color:#8A8A8E}
+.wf2-ic{width:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#8A8A8E}
+.wf2-check{width:20px;height:20px;border-radius:999px;border:1.5px solid #D1D1D6;flex-shrink:0;background:none;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff}
+.wf2-check.on{border-color:#1DB954;background:#1DB954}
+.wf2-sw{position:relative;width:46px;height:26px;border-radius:999px;background:#E5E5EA;flex-shrink:0;border:none;padding:0;cursor:pointer}
+.wf2-sw.on{background:#1DB954}
+.wf2-sw:disabled{opacity:.5;cursor:default}
+.wf2-sw-th{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:999px;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.18);transition:left .18s}
+.wf2-sw.on .wf2-sw-th{left:23px}
+.wf2-chev{color:#C7C7CC;flex-shrink:0;display:flex}
+.wf2-row-btn{all:unset;display:flex;align-items:center;gap:12px;flex:1;cursor:pointer;min-width:0}
+/* natív field/dropdown komponensek (DropdownField, CustomerAutocomplete, BrandField) újrahasznosítva,
+   csak vizuálisan "sor"-formába igazítva — a working logika (kattintás-kívülre zárás, keresés, stb.)
+   változatlan marad */
+.wf2-row .field{margin:0;flex:1;min-width:0}
+.wf2-flex1{flex:1;min-width:0}
+.wf2-row .field label{display:none}
+.wf2-row .dd-trigger{background:none;border:none;padding:0;font-size:15px;color:#8A8A8E;justify-content:flex-end;gap:6px}
+.wf2-row .dd-trigger:focus{box-shadow:none;background:none}
+.wf2-row .dd-trigger > span:first-child{color:inherit}
+.wf2-row input,.wf2-row select{width:100%;background:none;border:none;outline:none;font-size:15px;text-align:right;color:#8A8A8E;padding:0;font-family:inherit;box-shadow:none!important}
+.wf2-row input::placeholder{color:#C7C7CC}
+.wf2-row input:disabled{opacity:.5}
+.wf2-row .autocomplete-list{left:auto;right:0;width:260px;text-align:left}
+.wf2-row .autocomplete-list input{text-align:left;color:#111827}
+.wf2-tags{display:flex;flex-wrap:wrap;gap:7px;padding:14px 16px}
+@media (max-width:640px){.wf2-row .autocomplete-list{width:220px}}
 
 /* LOGIN */
 .login-shell{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(160deg,#12332B 0%,#0B2018 100%)}
