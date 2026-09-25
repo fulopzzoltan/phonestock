@@ -312,6 +312,8 @@ tr:hover td{background:#FAFAFA}
 .svc-table td,.svc-table th{font-size:13px}
 .svc-table th{height:auto;padding:12px 16px;text-transform:none;font-weight:600;letter-spacing:normal}
 .svc-table .col-serial{padding-right:8px}
+.svc-table .stk-actions{justify-content:flex-end}
+.svc-filter-row .searchbar,.svc-filter-row .history-toolbar-btn{border-radius:18px}
 .svc-days{font-weight:600;color:#111827;white-space:nowrap}
 .svc-days.today{color:#111827}
 .svc-days-lbl{color:#9CA3AF;font-weight:400;margin-left:3px}
@@ -370,10 +372,10 @@ tr:hover td{background:#FAFAFA}
 .paid-toggle{display:flex;align-items:center;gap:5px;border:1.5px solid #E5E7EB;background:#fff;border-radius:999px;padding:6px 12px;font-size:11px;font-weight:700;color:#9CA3AF;cursor:pointer;white-space:nowrap;width:118px;justify-content:center;font-family:inherit}
 .paid-toggle.done{border-color:transparent;background:var(--primary-soft);color:var(--primary-ink)}
 .st{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:600}
-.status-picker-trigger{display:inline-flex;align-items:center;gap:6px;background:#fff!important;border:1px solid var(--pill-fg);color:#374151!important;padding:7px 10px 7px 9px;border-radius:8px;cursor:pointer;font-family:inherit}
+.status-picker-trigger{display:inline-flex;align-items:center;gap:6px;border:1px solid;padding:6px 13px 6px 11px;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:600}
 .status-picker-trigger:disabled{cursor:default;opacity:.6}
 .status-picker-trigger svg{opacity:.7;flex-shrink:0}
-.status-picker-trigger .status-dot{width:7px;height:7px;border-radius:999px;background:var(--pill-fg);flex-shrink:0}
+.status-picker-trigger .status-dot{width:7px;height:7px;border-radius:999px;flex-shrink:0}
 .st-beveve{background:#E0E7FF;color:#4338CA;--pill-bg:#E0E7FF;--pill-fg:#4338CA}
 .st-alkatresz{background:var(--info-soft);color:var(--info-ink);--pill-bg:var(--info-soft);--pill-fg:var(--info-ink)}
 .st-javitas{background:var(--warning-soft);color:var(--warning-ink);--pill-bg:var(--warning-soft);--pill-fg:var(--warning-ink)}
@@ -415,7 +417,7 @@ tr:hover td{background:#FAFAFA}
 .badge-new{display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:#fff;color:#6D28D9;border:1px solid #DDD6FE}
 .badge-buyin{display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:#fff;color:#1D4ED8;border:1px solid #BFDBFE}
 .badge-service{display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:#fff;color:#EA580C;border:1px solid #FED7AA}
-.prob-pill{display:inline-flex;padding:4px 9px;border-radius:8px;font-size:13px;font-weight:600;background:#F3F4F6;color:#4B5563;margin:1px}
+.prob-pill{display:inline-flex;padding:2px 12px;border-radius:8px;font-size:13px;font-weight:600;background:#F3F4F6;color:#4B5563;margin:1px}
 
 /* ====== BELÉPÉSEK (jelszókezelő) ====== */
 .vault-list{display:flex;flex-direction:column;gap:10px}
@@ -438,11 +440,11 @@ tr:hover td{background:#FAFAFA}
 /* Szerviz állapotsáv (Probléma/Státusz között) — egységes, szöveges chipek:
    Ázott, Garanciális, Alkatrészre vár, Készülékre vár, Fólia (.svc-flag-folia), Ígért határidő. */
 .svc-flags{display:flex;align-items:center;flex-wrap:wrap;gap:5px}
-.svc-flag-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:8px;font-size:13px;font-weight:600;white-space:nowrap}
-.svc-flag-chip.svc-flag-water{background:var(--info-soft);color:var(--info-ink)}
-.svc-flag-chip.svc-flag-warranty{background:#EDE9FE;color:#6D28D9}
-.svc-flag-chip.svc-flag-part{background:#FFEDD5;color:#C2410C}
-.svc-flag-chip.svc-flag-device{background:#CFFAFE;color:#0E7490}
+.svc-flag-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 12px;border-radius:8px;font-size:13px;font-weight:600;white-space:nowrap}
+.svc-flag-chip.svc-flag-water{background:#DBEAFE;color:#1E40AF}
+.svc-flag-chip.svc-flag-warranty{background:#E0E7FF;color:#3730A3}
+.svc-flag-chip.svc-flag-part{background:#F3E8FF;color:#6B21A8}
+.svc-flag-chip.svc-flag-device{background:#CFFAFE;color:#155E75}
 .svc-flag-chip.svc-flag-folia{background:var(--primary-soft);color:var(--primary-ink)}
 .svc-flag-chip.svc-flag-due-ok{background:#F3F4F6;color:#4B5563}
 .svc-flag-chip.svc-flag-due-warn{background:var(--warning-soft);color:var(--warning-ink)}
@@ -701,7 +703,7 @@ tr:hover td{background:#FAFAFA}
 .t-card-kind-prep .t-kind-pill{background:#F1F5F9;color:#475569}
 .t-card-kind-warranty{background:#FDF2F8;border-left:3px solid #DB2777}
 .t-card-kind-warranty .t-kind-pill{background:#FCE7F3;color:#BE185D}
-.t-kind-pill{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:700;padding:4px 9px;border-radius:8px;margin-bottom:4px}
+.t-kind-pill{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:700;padding:2px 12px;border-radius:8px;margin-bottom:4px}
 .t-kind-pill svg{flex-shrink:0}
 .t-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .t-sn{font-size:10px;font-weight:700;color:#9CA3AF;font-family:'Roboto Mono',monospace}

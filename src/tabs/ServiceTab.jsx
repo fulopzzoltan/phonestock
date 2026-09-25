@@ -21,7 +21,7 @@ function nextActionOf(t) {
 // Kattintható státusz-jelvény a lista Státusz oszlopában — a BoardUI table-komponensének
 // "Purchase" oszlopa alapján: a jelvény maga a dropdown trigger, kattintásra egy kis lista
 // nyílik a 4 fő státusszal, hogy ne kelljen a munkalapot megnyitni csak a státuszváltáshoz.
-function StatusPicker({ ticket, cls, label, disabled, onChange }) {
+function StatusPicker({ ticket, dotColor, label, disabled, onChange }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -34,8 +34,14 @@ function StatusPicker({ ticket, cls, label, disabled, onChange }) {
 
   return (
     <div className="wl-status-wrap" ref={ref} onClick={(e) => e.stopPropagation()}>
-      <button type="button" className={`status-picker-trigger ${cls}`} disabled={disabled} onClick={() => setOpen((v) => !v)}>
-        <span className="status-dot" />
+      <button
+        type="button"
+        className="status-picker-trigger"
+        disabled={disabled}
+        onClick={() => setOpen((v) => !v)}
+        style={{ background: `color-mix(in srgb, ${dotColor} 16%, white)`, borderColor: dotColor, color: dotColor }}
+      >
+        <span className="status-dot" style={{ background: dotColor }} />
         {label}
         <ChevronDownIcon width={11} height={11} style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform .12s" }} />
       </button>
@@ -159,7 +165,7 @@ export default function ServiceTab({
           <span className="svc-flag-chip svc-flag-device">Készülékre vár</span>
         )}
         {t.folia && (
-          <span className="svc-flag-chip svc-flag-folia">Fólia felhelyezve</span>
+          <span className="svc-flag-chip svc-flag-folia">Fóliát kér</span>
         )}
         {sla && (
           <span className={`svc-flag-chip svc-flag-due-${sla.level}`}>{sla.label}</span>
@@ -185,6 +191,8 @@ export default function ServiceTab({
   const isPartDeviceWait = (t) => t.status === "Átvett" && (t.subStatus === "Alkatrészre vár" || t.subStatus === "Készülékre vár" || t.subStatus === "Alkatrészre és készülékre vár");
   const statusClsOf = (t) => (t.subStatus && !isPartDeviceWait(t) ? subStatusCls(t.status, t.subStatus) : statusCls(t.status));
   const statusLabelOf = (t) => (t.subStatus && !isPartDeviceWait(t) ? subStatusLabel(t.status, t.subStatus) : statusLabel(t.status));
+  const STATUS_DOT_COLOR = { "Átvett": "#F0B100", "Javítás alatt": "#F54A00", "Minőségellenőrzés": "#00B8DB", "Átadásra": "#00C950" };
+  const dotColorOf = (t) => (t.subStatus === "Sikertelen" ? "#A50036" : STATUS_DOT_COLOR[t.status] || "#6B7280");
   const statusPill = (t) => (t.subStatus && !isPartDeviceWait(t) ? (
     <span className={`st st-fill ${subStatusCls(t.status, t.subStatus)}`}>{subStatusLabel(t.status, t.subStatus)}</span>
   ) : (
@@ -221,7 +229,7 @@ export default function ServiceTab({
       </td>
       <td style={{ whiteSpace: "nowrap" }}>{kliensOf(t)}</td>
       <td className="col-status" style={{ whiteSpace: "nowrap" }}>
-        <StatusPicker ticket={t} cls={statusClsOf(t)} label={statusLabelOf(t)} disabled={busy} onChange={onStatusChange} />
+        <StatusPicker ticket={t} dotColor={dotColorOf(t)} label={statusLabelOf(t)} disabled={busy} onChange={onStatusChange} />
       </td>
       <td className="row-price">
         {(Number(t.depositPaid) || 0) > 0 ? (
@@ -339,30 +347,32 @@ export default function ServiceTab({
         </div>
       )}
 
-      <div className="tw tw-apple svc-table">
-      {loadingData ? <LoadingState /> : (
-        (() => {
-          const items = dateSort
-            ? [...activeTickets].sort((a, b) => (dateSort === "asc" ? (a.dateIn || "").localeCompare(b.dateIn || "") : (b.dateIn || "").localeCompare(a.dateIn || "")))
-            : [...activeTickets].sort((a, b) => {
-                const byStatus = STATUS_KEYS.indexOf(a.status) - STATUS_KEYS.indexOf(b.status);
-                if (byStatus !== 0) return byStatus;
-                return (daysOnShelf(a.dateIn) ?? -1) - (daysOnShelf(b.dateIn) ?? -1);
-              });
-          if (items.length === 0) return <EmptyState icon={ServiceIcon}>Nincs munkalap.</EmptyState>;
-          return (
-            <ResponsiveTable
-              wrap={false}
-              columns={TICKET_COLUMNS}
-              rows={items}
-              rowKey={(t) => t.id}
-              renderRow={renderTicketRow}
-              renderMobileRow={renderTicketMobileRow}
-            />
-          );
-        })()
+      {!showHandedOver && (
+        <div className="tw tw-apple svc-table">
+        {loadingData ? <LoadingState /> : (
+          (() => {
+            const items = dateSort
+              ? [...activeTickets].sort((a, b) => (dateSort === "asc" ? (a.dateIn || "").localeCompare(b.dateIn || "") : (b.dateIn || "").localeCompare(a.dateIn || "")))
+              : [...activeTickets].sort((a, b) => {
+                  const byStatus = STATUS_KEYS.indexOf(a.status) - STATUS_KEYS.indexOf(b.status);
+                  if (byStatus !== 0) return byStatus;
+                  return (daysOnShelf(a.dateIn) ?? -1) - (daysOnShelf(b.dateIn) ?? -1);
+                });
+            if (items.length === 0) return <EmptyState icon={ServiceIcon}>Nincs munkalap.</EmptyState>;
+            return (
+              <ResponsiveTable
+                wrap={false}
+                columns={TICKET_COLUMNS}
+                rows={items}
+                rowKey={(t) => t.id}
+                renderRow={renderTicketRow}
+                renderMobileRow={renderTicketMobileRow}
+              />
+            );
+          })()
+        )}
+        </div>
       )}
-      </div>
       {handoverPrompt && (
         <HandoverPaymentModal
           ticket={handoverPrompt}
