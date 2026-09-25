@@ -1914,7 +1914,15 @@ function AppShell() {
   }
   async function updateWaitingItem(id, data) {
     await withBusy(async () => {
-      const r = unwrap(await supabase.from("waiting_items").update({ description: data.description, supplier: data.supplier || null }).eq("id", id).select());
+      let customerId = null;
+      if (data.customerPhone) {
+        const { data: cid } = await supabase.rpc("upsert_customer", { p_name: data.customerName, p_phone: data.customerPhone });
+        customerId = cid || null;
+      }
+      const r = unwrap(await supabase.from("waiting_items").update({
+        description: data.description, supplier: data.supplier || null,
+        customer_name: data.customerName || null, customer_phone: data.customerPhone || null, customer_id: customerId,
+      }).eq("id", id).select());
       setWaitingItems((prev) => prev.map((w) => (w.id === id ? waitingFromApi(r[0]) : w)));
     });
   }

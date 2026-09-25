@@ -109,24 +109,41 @@ function WaitingRow({ w, onAdvance, onUpdate }) {
   const [editing, setEditing] = useState(false);
   const [desc, setDesc] = useState(w.description);
   const [supplier, setSupplier] = useState(w.supplier || "");
+  const [customerName, setCustomerName] = useState(w.customerName || "");
+  const [customerPhone, setCustomerPhone] = useState(w.customerPhone || "");
 
-  function startEdit() { setDesc(w.description); setSupplier(w.supplier || ""); setEditing(true); }
+  function startEdit() {
+    setDesc(w.description); setSupplier(w.supplier || "");
+    setCustomerName(w.customerName || ""); setCustomerPhone(w.customerPhone || "");
+    setEditing(true);
+  }
   function save() {
     const trimmed = desc.trim();
-    if (trimmed) onUpdate?.(w.id, { description: trimmed, supplier: supplier.trim() });
+    if (trimmed) onUpdate?.(w.id, { description: trimmed, supplier: supplier.trim(), customerName: customerName.trim(), customerPhone: customerPhone.trim() });
     setEditing(false);
   }
-  function cancel() { setDesc(w.description); setSupplier(w.supplier || ""); setEditing(false); }
+  function cancel() {
+    setDesc(w.description); setSupplier(w.supplier || "");
+    setCustomerName(w.customerName || ""); setCustomerPhone(w.customerPhone || "");
+    setEditing(false);
+  }
+  const onEnterKey = (e) => { if (e.key === "Enter") save(); if (e.key === "Escape") cancel(); };
 
   if (editing) {
     return (
       <div className="wl-row wl-row-edit">
-        <input className="wl-edit-input" value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="Mit várunk" autoFocus
-          onKeyDown={(e) => { if (e.key === "Enter") save(); if (e.key === "Escape") cancel(); }} />
-        <input className="wl-edit-input wl-edit-supplier" value={supplier} onChange={(e) => setSupplier(e.target.value)} placeholder="Forrás"
-          onKeyDown={(e) => { if (e.key === "Enter") save(); if (e.key === "Escape") cancel(); }} />
-        <button type="button" className="wl-row-btn" title="Mentés" onClick={save}><CheckIcon width={13} height={13} strokeWidth={2.4} /></button>
-        <button type="button" className="wl-row-btn" title="Mégse" onClick={cancel}><CloseIcon width={13} height={13} /></button>
+        <div className="wl-edit-fields">
+          <input className="wl-edit-input" value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="Mit várunk" autoFocus onKeyDown={onEnterKey} />
+          <div className="wl-edit-line2">
+            <input className="wl-edit-input" value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Kinek (név)" onKeyDown={onEnterKey} />
+            <input className="wl-edit-input" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="Telefonszám" onKeyDown={onEnterKey} />
+            <input className="wl-edit-input wl-edit-supplier" value={supplier} onChange={(e) => setSupplier(e.target.value)} placeholder="Forrás" onKeyDown={onEnterKey} />
+          </div>
+        </div>
+        <div className="wl-edit-actions">
+          <button type="button" className="wl-row-btn" title="Mentés" onClick={save}><CheckIcon width={13} height={13} strokeWidth={2.4} /></button>
+          <button type="button" className="wl-row-btn" title="Mégse" onClick={cancel}><CloseIcon width={13} height={13} /></button>
+        </div>
       </div>
     );
   }

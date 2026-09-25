@@ -517,7 +517,10 @@ tr:hover td{background:#FAFAFA}
 .wl-supplier{color:#9CA3AF}
 .wl-row-btn{width:22px;height:22px;border-radius:999px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;color:#9CA3AF;cursor:pointer;padding:0;flex-shrink:0;transition:background .12s,color .12s}
 .wl-row-btn:hover{background:#F3F4F6;color:#374151}
-.wl-row-edit{gap:6px}
+.wl-row-edit{align-items:flex-start;gap:6px}
+.wl-edit-fields{display:flex;flex-direction:column;gap:6px;flex:1;min-width:0}
+.wl-edit-line2{display:flex;gap:6px}
+.wl-edit-actions{display:flex;gap:2px;flex-shrink:0;padding-top:1px}
 .wl-edit-input{font-size:12.5px;font-family:inherit;border:1px solid #E5E7EB;border-radius:8px;padding:5px 8px;outline:none;flex:1;min-width:0;background:#F9FAFB}
 .wl-edit-input:focus{border-color:var(--accent);background:#fff}
 .wl-edit-supplier{flex:0 0 100px}
