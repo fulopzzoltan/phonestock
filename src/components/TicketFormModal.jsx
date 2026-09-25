@@ -179,11 +179,20 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
           <div className="wf2-sec">
             <div className="wf2-cap">Állapot</div>
             <div className="wf2-grp">
-              <div className="wf2-row">
-                <span className="wf2-row-lbl" style={{ flex: 1 }}>Garancia</span>
-                <button type="button" className={`wf2-sw${f.isWarranty ? " on" : ""}`} aria-pressed={f.isWarranty} onClick={() => setF({ ...f, isWarranty: !f.isWarranty })}><span className="wf2-sw-th" /></button>
+              <div className="wf2-seg">
+                <button type="button" className={`wf2-seg-btn${f.isWarranty ? " on" : ""}`} aria-pressed={f.isWarranty} onClick={() => setF({ ...f, isWarranty: !f.isWarranty })}>Garancia</button>
+                <button type="button" className={`wf2-seg-btn${f.waterDamage ? " on" : ""}`} aria-pressed={f.waterDamage} onClick={() => setF({ ...f, waterDamage: !f.waterDamage })}>Ázott</button>
+                {showPartDeviceFlags && (
+                  <>
+                    <button type="button" className={`wf2-seg-btn${partOn ? " on" : ""}`} aria-pressed={partOn} onClick={() => setPartDevice(!partOn, deviceOn)}>Alkatrészre vár</button>
+                    <button type="button" className={`wf2-seg-btn${deviceOn ? " on" : ""}`} aria-pressed={deviceOn} onClick={() => setPartDevice(partOn, !deviceOn)}>Készülékre vár</button>
+                  </>
+                )}
+                <button type="button" className={`wf2-seg-btn${f.folia ? " on" : ""}`} aria-pressed={f.folia} onClick={() => setF({ ...f, folia: !f.folia })}>Kér fóliát</button>
               </div>
-              {f.isWarranty && (
+            </div>
+            {f.isWarranty && (
+              <div className="wf2-grp" style={{ marginTop: 10 }}>
                 <div className="wf2-row">
                   <span className="wf2-row-lbl">Garancia típusa</span>
                   <DropdownField
@@ -192,28 +201,8 @@ export default function TicketFormModal({ ticket, prefill, locations, users = []
                     options={[{ key: "szerviz", label: "Szerviz" }, { key: "termék", label: "Értékesített telefon" }]}
                   />
                 </div>
-              )}
-              <div className="wf2-row">
-                <span className="wf2-row-lbl" style={{ flex: 1 }}>Ázott</span>
-                <button type="button" className={`wf2-sw${f.waterDamage ? " on" : ""}`} aria-pressed={f.waterDamage} onClick={() => setF({ ...f, waterDamage: !f.waterDamage })}><span className="wf2-sw-th" /></button>
               </div>
-              {showPartDeviceFlags && (
-                <>
-                  <div className="wf2-row">
-                    <span className="wf2-row-lbl" style={{ flex: 1 }}>Alkatrészre vár</span>
-                    <button type="button" className={`wf2-sw${partOn ? " on" : ""}`} aria-pressed={partOn} onClick={() => setPartDevice(!partOn, deviceOn)}><span className="wf2-sw-th" /></button>
-                  </div>
-                  <div className="wf2-row">
-                    <span className="wf2-row-lbl" style={{ flex: 1 }}>Készülékre vár</span>
-                    <button type="button" className={`wf2-sw${deviceOn ? " on" : ""}`} aria-pressed={deviceOn} onClick={() => setPartDevice(partOn, !deviceOn)}><span className="wf2-sw-th" /></button>
-                  </div>
-                </>
-              )}
-              <div className="wf2-row">
-                <span className="wf2-row-lbl" style={{ flex: 1 }}>Kér fóliát</span>
-                <button type="button" className={`wf2-sw${f.folia ? " on" : ""}`} aria-pressed={f.folia} onClick={() => setF({ ...f, folia: !f.folia })}><span className="wf2-sw-th" /></button>
-              </div>
-            </div>
+            )}
           </div>
 
           <div className="wf2-sec">

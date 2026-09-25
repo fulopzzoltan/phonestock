@@ -959,6 +959,9 @@ tr:hover td{background:#FAFAFA}
 .wf2-sw{position:relative;width:46px;height:26px;border-radius:999px;background:#E5E5EA;flex-shrink:0;border:none;padding:0;cursor:pointer}
 .wf2-sw.on{background:#1DB954}
 .wf2-sw:disabled{opacity:.5;cursor:default}
+.wf2-seg{display:flex;flex-wrap:wrap;gap:7px;padding:14px 16px}
+.wf2-seg-btn{border:1px solid #E5E5EA;background:#fff;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:500;color:#3C3C43;cursor:pointer;font-family:inherit;white-space:nowrap;transition:background .15s ease,border-color .15s ease,color .15s ease}
+.wf2-seg-btn.on{background:#1DB954;border-color:#1DB954;color:#fff;font-weight:600}
 .wf2-sw-th{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:999px;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.18);transition:left .18s}
 .wf2-sw.on .wf2-sw-th{left:23px}
 .wf2-chev{color:#C7C7CC;flex-shrink:0;display:flex}
