@@ -6,6 +6,10 @@ import ResponsiveTable from "../components/ResponsiveTable";
 import HandoverPaymentModal from "../components/HandoverPaymentModal";
 
 const STATUS_KEYS = STATUSES.map((s) => s.key);
+// BoardUI-ból kinyert valódi színek — ugyanezt használja a StatusPicker trigger pöttye és a
+// legördülő menü sorai is, hogy ne legyen eltérés a kettő között.
+const STATUS_DOT_COLOR = { "Átvett": "#F0B100", "Javítás alatt": "#F54A00", "Minőségellenőrzés": "#00B8DB", "Átadásra": "#00C950" };
+const SIKERTELEN_DOT_COLOR = "#A50036";
 function nextActionOf(t) {
   const idx = STATUS_KEYS.indexOf(t.status);
   if (idx !== -1 && idx < STATUS_KEYS.length - 1) {
@@ -42,17 +46,32 @@ function StatusPicker({ ticket, dotColor, label, disabled, onChange }) {
         <ChevronDownIcon width={11} height={11} style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform .12s" }} />
       </button>
       {open && (
-        <div className="wl-status-menu">
-          {STATUSES.map((s) => (
-            <div
-              key={s.key}
-              className={`wl-status-opt${s.key === ticket.status ? " current" : ""}`}
-              onClick={() => { setOpen(false); if (s.key !== ticket.status) onChange(ticket.id, s.key, SUB_STATUSES[s.key]?.[0]?.key ?? null); }}
-            >
-              <span className="dot" style={{ background: s.color }} />{s.label}
-              {s.key === ticket.status && <CheckIcon width={13} height={13} style={{ marginLeft: "auto", flexShrink: 0 }} />}
-            </div>
-          ))}
+        <div className="wl-status-menu status-drop-menu">
+          {STATUSES.map((s) => {
+            const isCurrent = s.key === ticket.status && !(s.key === "Átadásra" && ticket.subStatus === "Sikertelen");
+            return (
+              <div
+                key={s.key}
+                className={`wl-status-opt${isCurrent ? " current" : ""}`}
+                onClick={() => { setOpen(false); if (!isCurrent) onChange(ticket.id, s.key, SUB_STATUSES[s.key]?.[0]?.key ?? null); }}
+              >
+                <span className="dot" style={{ background: STATUS_DOT_COLOR[s.key] }} />{s.label}
+                {isCurrent && <CheckIcon width={13} height={13} style={{ marginLeft: "auto", flexShrink: 0 }} />}
+              </div>
+            );
+          })}
+          {(() => {
+            const isCurrent = ticket.status === "Átadásra" && ticket.subStatus === "Sikertelen";
+            return (
+              <div
+                className={`wl-status-opt${isCurrent ? " current" : ""}`}
+                onClick={() => { setOpen(false); if (!isCurrent) onChange(ticket.id, "Átadásra", "Sikertelen"); }}
+              >
+                <span className="dot" style={{ background: SIKERTELEN_DOT_COLOR }} />Sikertelen
+                {isCurrent && <CheckIcon width={13} height={13} style={{ marginLeft: "auto", flexShrink: 0 }} />}
+              </div>
+            );
+          })()}
         </div>
       )}
     </div>
@@ -187,8 +206,7 @@ export default function ServiceTab({
   const isPartDeviceWait = (t) => t.status === "Átvett" && (t.subStatus === "Alkatrészre vár" || t.subStatus === "Készülékre vár" || t.subStatus === "Alkatrészre és készülékre vár");
   const statusClsOf = (t) => (t.subStatus && !isPartDeviceWait(t) ? subStatusCls(t.status, t.subStatus) : statusCls(t.status));
   const statusLabelOf = (t) => (t.subStatus && !isPartDeviceWait(t) ? subStatusLabel(t.status, t.subStatus) : statusLabel(t.status));
-  const STATUS_DOT_COLOR = { "Átvett": "#F0B100", "Javítás alatt": "#F54A00", "Minőségellenőrzés": "#00B8DB", "Átadásra": "#00C950" };
-  const dotColorOf = (t) => (t.subStatus === "Sikertelen" ? "#A50036" : STATUS_DOT_COLOR[t.status] || "#6B7280");
+  const dotColorOf = (t) => (t.subStatus === "Sikertelen" ? SIKERTELEN_DOT_COLOR : STATUS_DOT_COLOR[t.status] || "#6B7280");
   const statusPill = (t) => (t.subStatus && !isPartDeviceWait(t) ? (
     <span className={`st st-fill ${subStatusCls(t.status, t.subStatus)}`}>{subStatusLabel(t.status, t.subStatus)}</span>
   ) : (
@@ -302,16 +320,20 @@ export default function ServiceTab({
   return (
     <div className="apple-page">
       <div className="filter-row svc-filter-row">
-        <div className="searchbar"><SearchIcon /><input value={svcSearch} onChange={(e) => setSvcSearch(e.target.value)} /></div>
-        {onScan && <button type="button" className="btn sec scan-trigger" onClick={onScan} title="QR/vonalkód szkennelése"><ScanIcon width={16} height={16} /></button>}
         <button
           type="button"
           className={`history-toolbar-btn${showHandedOver ? " active" : ""}`}
+          style={{ marginLeft: 0 }}
           onClick={() => setShowHandedOver((v) => !v)}
           title="Átadott munkák"
         >
           <MoreIcon className="history-toolbar-btn-dots" width={16} height={16} />
           <span className="history-toolbar-btn-text">Átadott munkák <span className="cnt">{handedOverTickets.length}</span></span>
+        </button>
+        {onScan && <button type="button" className="btn sec scan-trigger" onClick={onScan} title="QR/vonalkód szkennelése"><ScanIcon width={16} height={16} /></button>}
+        <div className="searchbar" style={{ marginLeft: "auto" }}><SearchIcon /><input value={svcSearch} onChange={(e) => setSvcSearch(e.target.value)} /></div>
+        <button type="button" className="btn header-add-btn" disabled={busy} title="Új munkalap" onClick={() => setTicketModal("add")}>
+          <span className="header-add-ring" /><span className="header-add-ring ring2" /><PlusIcon width={16} height={16} />
         </button>
       </div>
 
