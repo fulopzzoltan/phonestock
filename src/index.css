@@ -310,7 +310,7 @@ tr:hover td{background:#FAFAFA}
 .mode-pill.income.active{background:#DCFCE7;border-color:#86EFAC;color:#15803D}
 
 .svc-table td,.svc-table th{font-size:13px}
-.svc-table th{height:auto;padding:12px 16px}
+.svc-table th{height:auto;padding:12px 16px;text-transform:none;font-weight:600;letter-spacing:normal}
 .svc-table .col-serial{padding-right:8px}
 .svc-days{font-weight:600;color:#111827;white-space:nowrap}
 .svc-days.today{color:#111827}
