@@ -79,42 +79,30 @@ export default function ServiceTab({
   // napja átvehető, de el nem vitt munkalapokat is az "ígért határidő" jelzésbe soroljuk,
   // mert azok is azonnali odafigyelést igényelnek.
   const flagsOf = (t) => {
-    const sla = slaInfo(t) || (isStaleReady(t) ? { level: "overdue", label: "90+ napja várja az átvételt" } : null);
+    const sla = slaInfo(t) || (isStaleReady(t) ? { level: "overdue", label: "90+ napja" } : null);
     const partWait = t.status === "Átvett" && (t.subStatus === "Alkatrészre vár" || t.subStatus === "Alkatrészre és készülékre vár");
     const deviceWait = t.status === "Átvett" && (t.subStatus === "Készülékre vár" || t.subStatus === "Alkatrészre és készülékre vár");
     return (
-      <span className="svc-flags">
+      <>
         {(probsOf(t).includes("Beázás") || t.waterDamage) && (
-          <span className="svc-flag svc-flag-water" title="Ázott készülék">
-            <DropletIcon width={11} height={11} />
-          </span>
+          <span className="svc-flag-chip svc-flag-water"><DropletIcon width={11} height={11} />Ázott</span>
         )}
         {t.isWarranty && (
-          <span className="svc-flag svc-flag-warranty" title={t.warrantyKind === "termék" ? "Garanciális — termék" : "Garanciális — szerviz"}>
-            <WarrantyIcon width={11} height={11} />
-          </span>
+          <span className="svc-flag-chip svc-flag-warranty" title={t.warrantyKind === "termék" ? "Garanciális — termék" : "Garanciális — szerviz"}><WarrantyIcon width={11} height={11} />Garanciális</span>
         )}
         {partWait && (
-          <span className="svc-flag svc-flag-part" title="Alkatrészre vár">
-            <PartsIcon width={11} height={11} />
-          </span>
+          <span className="svc-flag-chip svc-flag-part"><PartsIcon width={11} height={11} />Alkatrészre vár</span>
         )}
         {deviceWait && (
-          <span className="svc-flag svc-flag-device" title="Készülékre vár">
-            <PhoneCaseIcon width={11} height={11} />
-          </span>
+          <span className="svc-flag-chip svc-flag-device"><PhoneCaseIcon width={11} height={11} />Készülékre vár</span>
         )}
         {t.folia && (
-          <span className="t-folia" title="Fólia felhelyezve">
-            <FoliaIcon width={12} height={12} />
-          </span>
+          <span className="svc-flag-chip svc-flag-folia"><FoliaIcon width={12} height={12} />Fólia felhelyezve</span>
         )}
         {sla && (
-          <span className={`svc-flag svc-flag-due-${sla.level}`} title={sla.label}>
-            <ClockIcon width={11} height={11} />
-          </span>
+          <span className={`svc-flag-chip svc-flag-due-${sla.level}`}><ClockIcon width={11} height={11} />{sla.label}</span>
         )}
-      </span>
+      </>
     );
   };
   const daysOf = (t) => {
@@ -141,7 +129,7 @@ export default function ServiceTab({
     <span className={`st st-fill ${statusCls(t.status)}`}>{statusLabel(t.status)}</span>
   ));
   const TICKET_COLUMNS = [
-    { key: "n", label: "Sorszám", className: "col-serial" }, { key: "d", label: "Eszköz", className: "col-grow" }, { key: "c", label: "Kliens" },
+    { key: "n", label: "Sorszám", className: "col-serial" },
     {
       key: "i",
       label: (
@@ -155,20 +143,21 @@ export default function ServiceTab({
         </button>
       ),
     },
+    { key: "d", label: "Eszköz" }, { key: "p", label: "Probléma", className: "col-grow" }, { key: "c", label: "Kliens" },
     { key: "s", label: "Státusz", className: "col-status" }, { key: "a", label: "Ár", className: "num-col" }, { key: "x", label: "" },
   ];
   const renderTicketRow = (t) => (
     <tr key={t.id} style={{ cursor: "pointer" }} onClick={() => setDetailId(t.id)}>
       <td className="mono col-serial" style={{ color: "#9CA3AF", whiteSpace: "nowrap" }}>{ticketCode(t.ticketNo, locName(t.intakeLocationId || t.locationId))}</td>
+      <td>{daysOf(t)}</td>
+      <td className="stk-name" style={{ whiteSpace: "nowrap" }}>{displayName(t.brand, t.model) || "—"}</td>
       <td>
-        <div className="stk-name">
-          {displayName(t.brand, t.model) || "—"}
+        <div className="svc-flags">
           {probsOf(t).map((p, i) => <span key={i} className="prob-pill">{p}</span>)}
           {flagsOf(t)}
         </div>
       </td>
       <td style={{ whiteSpace: "nowrap" }}>{kliensOf(t)}</td>
-      <td>{daysOf(t)}</td>
       <td className="col-status" style={{ whiteSpace: "nowrap" }}>
         <StatusPicker ticket={t} cls={statusClsOf(t)} label={statusLabelOf(t)} disabled={busy} onChange={onStatusChange} />
       </td>
@@ -259,7 +248,7 @@ export default function ServiceTab({
       </div>
 
       {showHandedOver && (
-        <div className="tw tw-apple" style={{ marginBottom: 16 }}>
+        <div className="tw tw-apple svc-table" style={{ marginBottom: 16 }}>
           <div style={{ padding: "10px 12px", borderBottom: "1px solid #F3F4F6" }}>
             <div className="searchbar" style={{ margin: 0, maxWidth: "none" }}>
               <SearchIcon width={13} height={13} />
@@ -286,7 +275,7 @@ export default function ServiceTab({
         </div>
       )}
 
-      <div className="tw tw-apple">
+      <div className="tw tw-apple svc-table">
       {loadingData ? <LoadingState /> : (
         (() => {
           const items = dateSort

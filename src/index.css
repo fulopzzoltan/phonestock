@@ -309,6 +309,7 @@ tr:hover td{background:#FAFAFA}
 .mode-pill.expense.active{background:#FEE2E2;border-color:#FCA5A5;color:#B91C1C}
 .mode-pill.income.active{background:#DCFCE7;border-color:#86EFAC;color:#15803D}
 
+.svc-table td,.svc-table th{font-size:13px}
 .svc-days{font-weight:600;color:#111827;white-space:nowrap}
 .svc-days.today{color:#111827}
 .svc-days-lbl{color:#9CA3AF;font-weight:400;margin-left:3px}
@@ -411,7 +412,7 @@ tr:hover td{background:#FAFAFA}
 .badge-new{display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:#fff;color:#6D28D9;border:1px solid #DDD6FE}
 .badge-buyin{display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:#fff;color:#1D4ED8;border:1px solid #BFDBFE}
 .badge-service{display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:#fff;color:#EA580C;border:1px solid #FED7AA}
-.prob-pill{display:inline-flex;padding:2px 7px;border-radius:var(--radius-pill);font-size:10.5px;font-weight:500;background:#F3F4F6;color:#374151;margin:1px}
+.prob-pill{display:inline-flex;padding:2px 9px;border-radius:var(--radius-pill);font-size:13px;font-weight:600;background:#F3F4F6;color:#4B5563;margin:1px}
 
 /* ====== BELÉPÉSEK (jelszókezelő) ====== */
 .vault-list{display:flex;flex-direction:column;gap:10px}
@@ -431,17 +432,18 @@ tr:hover td{background:#FAFAFA}
 .sla-badge.sla-warn{background:#FEF3C7;color:#92400E}
 .sla-badge.sla-overdue{background:#FEE2E2;color:#B91C1C}
 
-/* Szerviz állapotsáv (Probléma/Státusz között) — egységes, kitöltött színes körök:
-   Ázott, Garanciális, Alkatrészre vár, Készülékre vár, Fólia (.t-folia), Ígért határidő. */
-.svc-flags{display:flex;align-items:center;gap:5px}
-.svc-flag{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:999px;color:#fff;flex-shrink:0}
-.svc-flag-water{background:#0EA5E9}
-.svc-flag-warranty{background:#4F46E5}
-.svc-flag-part{background:#7C3AED}
-.svc-flag-device{background:#0891B2}
-.svc-flag-due-ok{background:#60A5FA}
-.svc-flag-due-warn{background:#F59E0B}
-.svc-flag-due-overdue{background:#DC2626}
+/* Szerviz állapotsáv (Probléma/Státusz között) — egységes, szöveges chipek:
+   Ázott, Garanciális, Alkatrészre vár, Készülékre vár, Fólia (.svc-flag-folia), Ígért határidő. */
+.svc-flags{display:flex;align-items:center;flex-wrap:wrap;gap:5px}
+.svc-flag-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:999px;font-size:13px;font-weight:600;white-space:nowrap}
+.svc-flag-chip.svc-flag-water{background:var(--info-soft);color:var(--info-ink)}
+.svc-flag-chip.svc-flag-warranty{background:#EDE9FE;color:#6D28D9}
+.svc-flag-chip.svc-flag-part{background:#F5F3FF;color:#7C3AED}
+.svc-flag-chip.svc-flag-device{background:#CFFAFE;color:#0E7490}
+.svc-flag-chip.svc-flag-folia{background:var(--primary-soft);color:var(--primary-ink)}
+.svc-flag-chip.svc-flag-due-ok{background:#F3F4F6;color:#4B5563}
+.svc-flag-chip.svc-flag-due-warn{background:var(--warning-soft);color:var(--warning-ink)}
+.svc-flag-chip.svc-flag-due-overdue{background:var(--failed-soft);color:var(--failed)}
 
 /* STOCK TAB — redesigned rows/cards */
 .stk-row{display:flex;align-items:center;gap:11px}
@@ -657,6 +659,7 @@ tr:hover td{background:#FAFAFA}
 .stk-actions{display:flex;gap:6px;align-items:center}
 .col-grow{width:100%}
 .col-status{width:1%;white-space:nowrap}
+.svc-table .st.st-fill{font-size:13px}
 .col-device{min-width:230px}
 .col-serial{padding-right:6px;text-align:right}
 .stk-repair-badge{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:999px;background:var(--danger);color:#fff;flex-shrink:0}
@@ -694,7 +697,7 @@ tr:hover td{background:#FAFAFA}
 .t-card-kind-prep .t-kind-pill{background:#F1F5F9;color:#475569}
 .t-card-kind-warranty{background:#FDF2F8;border-left:3px solid #DB2777}
 .t-card-kind-warranty .t-kind-pill{background:#FCE7F3;color:#BE185D}
-.t-kind-pill{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;margin-bottom:4px}
+.t-kind-pill{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:700;padding:2px 9px;border-radius:999px;margin-bottom:4px}
 .t-kind-pill svg{flex-shrink:0}
 .t-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .t-sn{font-size:10px;font-weight:700;color:#9CA3AF;font-family:'Roboto Mono',monospace}
@@ -1090,9 +1093,6 @@ tr:hover td{background:#FAFAFA}
 .mob-row-sub{margin-top:5px;font-size:11.5px;color:#6B7280;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 /* Szerviz munkalap-kártya: mindent egy hajszálnyit nagyobbra, a gomb kivételével. */
 .svc-row-lg .st{font-size:11.5px;padding:3.5px 10px}
-.svc-row-lg .svc-flag{width:21px;height:21px}
-.svc-row-lg .svc-flag svg{width:12px;height:12px}
-.svc-row-lg .t-folia svg{width:13px;height:13px}
 /* Kódos kártya-elrendezés: a sorszám számjegyei egy státusz-színű, teljes magasságú
    csíkban futnak a kártya bal szélén, minden más tartalom egy közös oszlopból indul
    jobbra tőle — közös minta Szerviz/Alkatrész/Telefon mobil kártyákhoz. */
