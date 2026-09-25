@@ -232,7 +232,7 @@ export default function ServiceTab({
         ) : money(t.price)}
       </td>
       <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
-        {onPrint && (
+        {onPrint && t.status !== "Átvett" && (
           <button className="btn sec sm icon-only" disabled={busy} title="Nyomtatás" onClick={() => onPrint(t)}>
             <PrintIcon width={13} height={13} />
           </button>
