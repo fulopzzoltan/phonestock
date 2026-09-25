@@ -81,7 +81,7 @@ export function DropdownField({ label, hint, value, onChange, options, placehold
               <div
                 key={o.key ?? "__null"}
                 className="autocomplete-item"
-                style={active ? { background: "var(--primary-soft)", color: "var(--primary-ink)", fontWeight: 700 } : undefined}
+                style={active ? { fontWeight: 700 } : undefined}
                 onMouseDown={() => { onChange(o.key); setOpen(false); }}
               >
                 <span>{o.label}</span>
