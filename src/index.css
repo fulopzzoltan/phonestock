@@ -60,7 +60,7 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
 .loc-drop{width:100%;display:flex;align-items:center;justify-content:space-between;gap:6px;border:1px solid #E8EAEF;background:#F8FAFB;border-radius:9px;padding:7px 9px;font-size:11.5px;font-weight:700;color:#101828;cursor:pointer;font-family:inherit}
 .loc-drop.static{cursor:default}
 .loc-drop-left{display:flex;align-items:center;gap:6px;color:#5B6472;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.loc-drop-menu{position:absolute;top:calc(100% + 4px);left:0;min-width:100%;width:max-content;background:#fff;border:1px solid #E8EAEF;border-radius:10px;box-shadow:0 8px 24px rgba(16,24,40,.12);padding:4px;z-index:20}
+.loc-drop-menu{position:absolute;top:calc(100% + 4px);left:0;min-width:100%;width:max-content;background:#fff;border:1px solid #E8EAEF;border-radius:10px;box-shadow:0 8px 24px rgba(16,24,40,.12);padding:4px;z-index:20;display:flex;flex-direction:column;gap:4px}
 .loc-drop-item{display:block;width:100%;text-align:left;border:none;background:none;font-family:inherit;font-size:12px;font-weight:600;color:#5B6472;padding:8px 9px;border-radius:7px;cursor:pointer;white-space:nowrap}
 .loc-drop-item:hover{background:#F1F2F6}
 .loc-drop-item.active{background:#F1F2F6;color:#111827}
@@ -561,7 +561,7 @@ tr:hover td{background:#FAFAFA}
 :root{--wl-blue-dot:#3B82F6;--wl-purple-dot:#8B5CF6;--wl-green-dot:#22C55E;--wl-grey-dot:#9CA3AF}
 
 .wl-status-menu{position:absolute;right:0;top:38px;width:196px;background:#fff;border:1px solid #EEF0F2;border-radius:14px;
-  box-shadow:0 10px 30px rgba(16,24,40,.14);padding:6px;z-index:6}
+  box-shadow:0 10px 30px rgba(16,24,40,.14);padding:6px;z-index:6;display:flex;flex-direction:column;gap:4px}
 .wl-status-menu.status-drop-menu{right:auto;left:0}
 .wl-status-opt{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:13px;font-weight:600;color:#374151;cursor:pointer}
 .wl-status-opt .dot{width:8px;height:8px;border-radius:999px;flex-shrink:0}
@@ -2300,7 +2300,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .shell.mac-pult .content-col{
   position:relative;
   flex:none;width:calc(100% - 48px);max-width:1360px;margin:24px auto;
-  background:#fff;border-radius:20px;border:1px solid rgba(255,255,255,.6);
+  background:#fff;border-radius:20px;
   box-shadow:0 40px 90px rgba(20,20,25,.28), 0 2px 8px rgba(20,20,25,.08);
   height:calc(100vh - 48px);display:flex;flex-direction:column;
 }
@@ -2309,6 +2309,10 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
   background:linear-gradient(#fafafb,#f5f5f7);
   border-top-left-radius:20px;border-top-right-radius:20px;flex-shrink:0;
 }
+/* Oldalanként eltérő háttérszín-átmenet a topbaron — a bottomnav (MacDock) ikon saját
+   gradiens-színeihez igazítva (fentről lefelé fade fehér felé), hogy a topbar egyértelműen
+   visszajelezze, melyik fülön vagyunk. */
+.shell.mac-pult .content-topbar.tab-service{background:linear-gradient(180deg, color-mix(in srgb, #FB923C 60%, white), color-mix(in srgb, #EA580C 42%, white))}
 .shell.mac-pult .content-topbar .ctb-inner{height:100%;max-width:1400px;margin-left:auto;margin-right:auto}
 .shell.mac-pult .content-topbar .ctb-search-wrap{margin:0 auto}
 .shell.mac-pult .content-topbar .ctb-search{background:#eef0f3;border:1px solid rgba(0,0,0,.08);border-radius:999px;box-shadow:none;padding:7px 14px}

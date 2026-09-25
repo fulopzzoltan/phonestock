@@ -137,7 +137,7 @@ export default function ContentTopbar({
     : (myLocationId ? locName(myLocationId) : "Nincs helyszín");
 
   return (
-    <div className="content-topbar">
+    <div className={`content-topbar tab-${tab}`}>
     <div className="ctb-inner">
       <div className="ctb-side ctb-side-left" />
       <div className="ctb-title-center">{pageHeader}</div>
