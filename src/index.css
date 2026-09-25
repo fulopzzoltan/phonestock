@@ -557,13 +557,13 @@ tr:hover td{background:#FAFAFA}
 .wl-status-pill.grey .dot{background:var(--wl-dot)}
 :root{--wl-blue-dot:#3B82F6;--wl-purple-dot:#8B5CF6;--wl-green-dot:#22C55E;--wl-grey-dot:#9CA3AF}
 
-.wl-status-menu{position:absolute;right:0;top:36px;width:172px;background:#fff;border:1px solid #EEF0F2;border-radius:12px;
-  box-shadow:0 10px 30px rgba(16,24,40,.14);padding:5px;z-index:6}
-.wl-status-opt{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;font-size:12px;font-weight:600;color:#6B7280;cursor:pointer}
-.wl-status-opt .dot{width:7px;height:7px;border-radius:999px;flex-shrink:0}
+.wl-status-menu{position:absolute;right:0;top:38px;width:196px;background:#fff;border:1px solid #EEF0F2;border-radius:14px;
+  box-shadow:0 10px 30px rgba(16,24,40,.14);padding:6px;z-index:6}
+.wl-status-opt{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:13px;font-weight:600;color:#374151;cursor:pointer}
+.wl-status-opt .dot{width:8px;height:8px;border-radius:999px;flex-shrink:0}
 .part-add-menu{width:260px;padding:10px}
-.wl-status-opt:hover{background:#F9FAFB}
-.wl-status-opt.current{background:#F3F4F6;color:#111827}
+.wl-status-opt:hover{background:#F5F5F7}
+.wl-status-opt.current{background:#F5F5F7;color:#111827}
 
 .wl-foot{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
 .wl-kebab{width:30px;height:30px;border-radius:999px;border:1px solid #EEF0F2;background:#fff;display:flex;align-items:center;justify-content:center;color:#6B7280;cursor:pointer;padding:0}
@@ -2301,7 +2301,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
   height:calc(100vh - 48px);display:flex;flex-direction:column;
 }
 .shell.mac-pult .content-topbar{
-  height:52px;padding:0 30px;border-bottom:1px solid rgba(0,0,0,.08);
+  height:52px;padding:0 10px;border-bottom:1px solid rgba(0,0,0,.08);
   background:linear-gradient(#fafafb,#f5f5f7);
   border-top-left-radius:20px;border-top-right-radius:20px;flex-shrink:0;
 }
@@ -2316,7 +2316,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .shell.mac-pult .content-topbar .user-chip{background:#fff;border-radius:999px;border-color:rgba(0,0,0,.08);padding:3px 12px 3px 4px}
 .shell.mac-pult .content-topbar .user-avatar{background:linear-gradient(135deg,#0A84FF,#7db8ff);color:#fff}
 
-.mac-pult-content{background:#f6f7f9;padding:26px 30px 150px;scrollbar-width:none;border-bottom-left-radius:20px;border-bottom-right-radius:20px}
+.mac-pult-content{background:#f6f7f9;padding:26px 10px 150px;scrollbar-width:none;border-bottom-left-radius:20px;border-bottom-right-radius:20px}
 .mac-pult-content::-webkit-scrollbar{display:none}
 .mac-pult-content > *{max-width:1400px;margin-left:auto;margin-right:auto}
 .mac-pult-content .pult-section{border-radius:14px;border-color:rgba(0,0,0,.08);box-shadow:0 1px 2px rgba(16,24,40,.04), 0 10px 24px rgba(16,24,40,.05)}
