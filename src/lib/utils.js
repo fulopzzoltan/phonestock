@@ -132,16 +132,15 @@ export function normalizeStorage(raw) {
   if (!m) return raw.trim();
   return `${m[1]} ${(m[2] || "GB").toUpperCase()}`;
 }
-const TICKET_LOCATION_LETTERS = { "Gyimes": "GY", "Szentgyörgy": "CS" };
 // locationName = a felvétel (intake) helyszínének neve — ez a munkalap létrehozásakor
 // örökre rögzül (intake_location_id), nem változik akkor sem, ha a javítás közben
 // másik boltba kerül a telefon (location_id az él, azt mutatja a helyszín-címke).
-// Formátum: szám elöl, utána a helyszín-rövidítés, végén "S" (=szerviz) — pl. 2199GYS, 2227CSS
-// (CS = Csíkszentgyörgy).
+// Csak a szám jelenik meg, helyszín-rövidítés (korábbi "-GYS"/"-CSS" utótag) nélkül;
+// a szentgyörgyi sorszámok mind "2"-vel kezdődnek, ezt is levágjuk a rövidebb megjelenésért.
 export function ticketCode(ticketNo, locationName) {
   if (ticketNo == null) return null;
-  const letter = TICKET_LOCATION_LETTERS[locationName] || "";
-  return `${ticketNo}-${letter}S`;
+  const raw = String(ticketNo);
+  return locationName === "Szentgyörgy" ? raw.replace(/^2/, "") : raw;
 }
 
 // "key" = adatbázisban tárolt érték (ne változtasd, meglévő sorok erre hivatkoznak),
