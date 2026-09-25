@@ -132,10 +132,7 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
 
 .content-col{flex:1;display:flex;flex-direction:column;min-width:0}
 .content-topbar{flex-shrink:0;padding:16px 30px 0}
-.ctb-inner{display:flex;align-items:center;width:100%}
-.ctb-side{flex:1;display:flex;align-items:center;min-width:0}
-.ctb-side-right{justify-content:flex-end;gap:8px}
-.ctb-title-center{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.ctb-inner{display:flex;align-items:center;gap:8px}
 .content-topbar .loc-drop-wrap{flex:0 0 auto;width:auto}
 .content-topbar .loc-drop{width:auto;height:34px;box-sizing:border-box}
 .content-topbar .loc-drop.static{border:1px solid #E8EAEF;background:#F8FAFB;border-radius:9px;padding:6px 9px;height:34px;box-sizing:border-box}
@@ -2309,10 +2306,6 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
   background:linear-gradient(#fafafb,#f5f5f7);
   border-top-left-radius:20px;border-top-right-radius:20px;flex-shrink:0;
 }
-/* Oldalanként eltérő háttérszín-átmenet a topbaron — a bottomnav (MacDock) ikon saját
-   gradiens-színeihez igazítva (fentről lefelé fade fehér felé), hogy a topbar egyértelműen
-   visszajelezze, melyik fülön vagyunk. */
-.shell.mac-pult .content-topbar.tab-service{background:linear-gradient(180deg, color-mix(in srgb, #FB923C 60%, white), color-mix(in srgb, #EA580C 42%, white))}
 .shell.mac-pult .content-topbar .ctb-inner{height:100%;max-width:1400px;margin-left:auto;margin-right:auto}
 .shell.mac-pult .content-topbar .ctb-search-wrap{margin:0 auto}
 .shell.mac-pult .content-topbar .ctb-search{background:#eef0f3;border:1px solid rgba(0,0,0,.08);border-radius:999px;box-shadow:none;padding:7px 14px}

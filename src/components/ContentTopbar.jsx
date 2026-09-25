@@ -137,73 +137,72 @@ export default function ContentTopbar({
     : (myLocationId ? locName(myLocationId) : "Nincs helyszín");
 
   return (
-    <div className={`content-topbar tab-${tab}`}>
+    <div className="content-topbar">
     <div className="ctb-inner">
-      <div className="ctb-side ctb-side-left" />
-      <div className="ctb-title-center">{pageHeader}</div>
-      <div className="ctb-side ctb-side-right">
-        {hasSearchData && tab === "pult" && (
-          <GlobalSearch
-            stock={stock} tickets={tickets} customersTable={customersTable} parts={parts} warranties={warranties}
-            onOpenProduct={onOpenProduct} onOpenTicket={onOpenTicket} onOpenCustomer={onOpenCustomer} onOpenPart={onOpenPart} onOpenWarranty={onOpenWarranty}
-          />
-        )}
+      {pageHeader}
+      <div className="ctb-spacer" />
 
-        {contextNav}
+      {hasSearchData && tab === "pult" && (
+        <GlobalSearch
+          stock={stock} tickets={tickets} customersTable={customersTable} parts={parts} warranties={warranties}
+          onOpenProduct={onOpenProduct} onOpenTicket={onOpenTicket} onOpenCustomer={onOpenCustomer} onOpenPart={onOpenPart} onOpenWarranty={onOpenWarranty}
+        />
+      )}
 
-        {isAdmin ? (
-          <div className="loc-drop-wrap" ref={locMenuRef}>
-            <button type="button" className="loc-drop" onClick={() => setLocMenuOpen((v) => !v)}>
-              <span className="loc-drop-left"><PinIcon width={11} height={11} />{currentLocLabel}</span>
-              <ChevronDownIcon width={9} height={9} />
-            </button>
-            {locMenuOpen && (
-              <div className="loc-drop-menu">
-                <button type="button" className={`loc-drop-item${locFilter === "all" ? " active" : ""}`} onClick={() => { setLocFilter("all"); setLocMenuOpen(false); }}>Mind</button>
-                {allowedLocations.map((l) => (
-                  <button key={l.id} type="button" className={`loc-drop-item${locFilter === l.id ? " active" : ""}`} onClick={() => { setLocFilter(l.id); setLocMenuOpen(false); }}>{l.name}</button>
-                ))}
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="loc-drop static"><span className="loc-drop-left"><PinIcon width={11} height={11} />{currentLocLabel}</span></div>
-        )}
+      {contextNav}
 
-        <a className="util-icon-btn" href={SITE_URL} target="_blank" rel="noopener noreferrer" title="Webshop megtekintése">
-          <ExternalLinkIcon width={13} height={13} />
-        </a>
-
-        <button
-          type="button"
-          className="util-icon-btn ctb-chat-btn"
-          title="Csapat-chat"
-          onClick={() => { setChatOpen((o) => !o); if (!chatOpen) markChatRead(); }}
-        >
-          <ChatIcon width={14} height={14} />
-          {chatUnread > 0 && <span className="ctb-chat-badge">{chatUnread > 9 ? "9+" : chatUnread}</span>}
-        </button>
-
-        <div className="user-chip-wrap" ref={userMenuRef}>
-          <button type="button" className="user-chip" onClick={() => setUserMenuOpen((v) => !v)}>
-            <div className="user-avatar">{(profile?.fullName || user?.email || "?").slice(0, 1).toUpperCase()}</div>
-            <div className="user-meta">
-              <div className="user-name">{profile?.fullName || user?.email}</div>
-              <div className="user-role">{roleLabel}</div>
-            </div>
+      {isAdmin ? (
+        <div className="loc-drop-wrap" ref={locMenuRef}>
+          <button type="button" className="loc-drop" onClick={() => setLocMenuOpen((v) => !v)}>
+            <span className="loc-drop-left"><PinIcon width={11} height={11} />{currentLocLabel}</span>
             <ChevronDownIcon width={9} height={9} />
           </button>
-          {userMenuOpen && (
-            <div className="loc-drop-menu user-chip-menu">
-              <button type="button" className="loc-drop-item" onClick={() => { setTab("settings"); setUserMenuOpen(false); }}>
-                <SettingsIcon width={13} height={13} /> Beállítások
-              </button>
-              <button type="button" className="loc-drop-item" onClick={signOut}>
-                <LogoutIcon width={13} height={13} /> Kijelentkezés
-              </button>
+          {locMenuOpen && (
+            <div className="loc-drop-menu">
+              <button type="button" className={`loc-drop-item${locFilter === "all" ? " active" : ""}`} onClick={() => { setLocFilter("all"); setLocMenuOpen(false); }}>Mind</button>
+              {allowedLocations.map((l) => (
+                <button key={l.id} type="button" className={`loc-drop-item${locFilter === l.id ? " active" : ""}`} onClick={() => { setLocFilter(l.id); setLocMenuOpen(false); }}>{l.name}</button>
+              ))}
             </div>
           )}
         </div>
+      ) : (
+        <div className="loc-drop static"><span className="loc-drop-left"><PinIcon width={11} height={11} />{currentLocLabel}</span></div>
+      )}
+
+      <a className="util-icon-btn" href={SITE_URL} target="_blank" rel="noopener noreferrer" title="Webshop megtekintése">
+        <ExternalLinkIcon width={13} height={13} />
+      </a>
+
+      <button
+        type="button"
+        className="util-icon-btn ctb-chat-btn"
+        title="Csapat-chat"
+        onClick={() => { setChatOpen((o) => !o); if (!chatOpen) markChatRead(); }}
+      >
+        <ChatIcon width={14} height={14} />
+        {chatUnread > 0 && <span className="ctb-chat-badge">{chatUnread > 9 ? "9+" : chatUnread}</span>}
+      </button>
+
+      <div className="user-chip-wrap" ref={userMenuRef}>
+        <button type="button" className="user-chip" onClick={() => setUserMenuOpen((v) => !v)}>
+          <div className="user-avatar">{(profile?.fullName || user?.email || "?").slice(0, 1).toUpperCase()}</div>
+          <div className="user-meta">
+            <div className="user-name">{profile?.fullName || user?.email}</div>
+            <div className="user-role">{roleLabel}</div>
+          </div>
+          <ChevronDownIcon width={9} height={9} />
+        </button>
+        {userMenuOpen && (
+          <div className="loc-drop-menu user-chip-menu">
+            <button type="button" className="loc-drop-item" onClick={() => { setTab("settings"); setUserMenuOpen(false); }}>
+              <SettingsIcon width={13} height={13} /> Beállítások
+            </button>
+            <button type="button" className="loc-drop-item" onClick={signOut}>
+              <LogoutIcon width={13} height={13} /> Kijelentkezés
+            </button>
+          </div>
+        )}
       </div>
     </div>
     </div>
