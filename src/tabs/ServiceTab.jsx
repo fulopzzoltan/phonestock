@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { money, STATUSES, SUB_STATUSES, statusLabel, statusCls, subStatusCls, subStatusLabel, displayName, ticketCode, daysOnShelf, slaInfo, isStaleReady } from "../lib/utils";
-import { SearchIcon, ServiceIcon, ClockIcon, WarrantyIcon, FoliaIcon, DropletIcon, ChevronRightIcon, ChevronDownIcon, CheckIcon, ScanIcon, PartsIcon, PhoneCaseIcon, MoreIcon } from "../components/icons";
+import { SearchIcon, ServiceIcon, ClockIcon, WarrantyIcon, FoliaIcon, DropletIcon, ChevronRightIcon, ChevronDownIcon, CheckIcon, ScanIcon, PartsIcon, PhoneCaseIcon, MoreIcon, PrintIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import ResponsiveTable from "../components/ResponsiveTable";
 import HandoverPaymentModal from "../components/HandoverPaymentModal";
@@ -58,11 +58,12 @@ function StatusPicker({ ticket, cls, label, disabled, onChange }) {
 
 export default function ServiceTab({
   effectiveLocFilter, locName, busy, setTicketModal, svcSearch, setSvcSearch, onScan,
-  loadingData, activeTickets, setDetailId, handedOverTickets, onStatusChange,
+  loadingData, activeTickets, setDetailId, handedOverTickets, onStatusChange, onPrint,
 }) {
   const [handoverPrompt, setHandoverPrompt] = useState(null);
   const [showHandedOver, setShowHandedOver] = useState(false);
   const [handedOverQuery, setHandedOverQuery] = useState("");
+  const [dateSort, setDateSort] = useState(null); // null | "asc" | "desc"
 
   function runAction(t, na) {
     if (na.subStatus === "Átadva" && (Number(t.price) || 0) > 0) {
@@ -140,7 +141,20 @@ export default function ServiceTab({
     <span className={`st st-fill ${statusCls(t.status)}`}>{statusLabel(t.status)}</span>
   ));
   const TICKET_COLUMNS = [
-    { key: "n", label: "Sorszám", className: "col-serial" }, { key: "d", label: "Eszköz", className: "col-grow" }, { key: "c", label: "Kliens" }, { key: "i", label: "Bejött" },
+    { key: "n", label: "Sorszám", className: "col-serial" }, { key: "d", label: "Eszköz", className: "col-grow" }, { key: "c", label: "Kliens" },
+    {
+      key: "i",
+      label: (
+        <button
+          type="button"
+          onClick={() => setDateSort((d) => (d === "asc" ? "desc" : d === "desc" ? null : "asc"))}
+          style={{ display: "flex", alignItems: "center", gap: 3, background: "none", border: "none", padding: 0, font: "inherit", color: "inherit", cursor: "pointer" }}
+        >
+          Bejött
+          {dateSort && <ChevronDownIcon width={10} height={10} style={{ transform: dateSort === "asc" ? "rotate(180deg)" : "none" }} />}
+        </button>
+      ),
+    },
     { key: "s", label: "Státusz", className: "col-status" }, { key: "a", label: "Ár", className: "num-col" }, { key: "x", label: "" },
   ];
   const renderTicketRow = (t) => (
@@ -167,6 +181,11 @@ export default function ServiceTab({
         ) : money(t.price)}
       </td>
       <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
+        {onPrint && (
+          <button className="btn sec sm icon-only" disabled={busy} title="Nyomtatás" onClick={() => onPrint(t)}>
+            <PrintIcon width={13} height={13} />
+          </button>
+        )}
         {nextActionOf(t) && (() => {
           const na = nextActionOf(t);
           return (
@@ -270,11 +289,13 @@ export default function ServiceTab({
       <div className="tw tw-apple">
       {loadingData ? <LoadingState /> : (
         (() => {
-          const items = [...activeTickets].sort((a, b) => {
-            const byStatus = STATUS_KEYS.indexOf(a.status) - STATUS_KEYS.indexOf(b.status);
-            if (byStatus !== 0) return byStatus;
-            return (daysOnShelf(a.dateIn) ?? -1) - (daysOnShelf(b.dateIn) ?? -1);
-          });
+          const items = dateSort
+            ? [...activeTickets].sort((a, b) => (dateSort === "asc" ? (a.dateIn || "").localeCompare(b.dateIn || "") : (b.dateIn || "").localeCompare(a.dateIn || "")))
+            : [...activeTickets].sort((a, b) => {
+                const byStatus = STATUS_KEYS.indexOf(a.status) - STATUS_KEYS.indexOf(b.status);
+                if (byStatus !== 0) return byStatus;
+                return (daysOnShelf(a.dateIn) ?? -1) - (daysOnShelf(b.dateIn) ?? -1);
+              });
           if (items.length === 0) return <EmptyState icon={ServiceIcon}>Nincs munkalap.</EmptyState>;
           return (
             <ResponsiveTable

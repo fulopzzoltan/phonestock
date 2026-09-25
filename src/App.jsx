@@ -3343,7 +3343,7 @@ function AppShell() {
             effectiveLocFilter={effectiveLocFilter} locName={locName} busy={busy} setTicketModal={setTicketModal}
             svcSearch={svcSearch} setSvcSearch={setSvcSearch} onScan={() => setScannerOpen(true)}
             loadingData={loadingData} activeTickets={activeTickets} setDetailId={setDetailId}
-            handedOverTickets={handedOverTickets} onStatusChange={setTicketStatus}
+            handedOverTickets={handedOverTickets} onStatusChange={setTicketStatus} onPrint={printTicketSlip}
           />
         )}
 
