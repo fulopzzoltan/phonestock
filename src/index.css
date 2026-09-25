@@ -418,7 +418,7 @@ tr:hover td{background:#FAFAFA}
 .badge-new{display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:#fff;color:#6D28D9;border:1px solid #DDD6FE}
 .badge-buyin{display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:#fff;color:#1D4ED8;border:1px solid #BFDBFE}
 .badge-service{display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:#fff;color:#EA580C;border:1px solid #FED7AA}
-.prob-pill{display:inline-flex;padding:2px 12px;border-radius:8px;font-size:13px;font-weight:600;background:#F3F4F6;color:#4B5563;margin:1px}
+.prob-pill{display:inline-flex;padding:5px 12px;border-radius:8px;font-size:13px;font-weight:600;background:#F3F4F6;color:#4B5563;margin:1px}
 
 /* ====== BELÉPÉSEK (jelszókezelő) ====== */
 .vault-list{display:flex;flex-direction:column;gap:10px}
@@ -441,7 +441,7 @@ tr:hover td{background:#FAFAFA}
 /* Szerviz állapotsáv (Probléma/Státusz között) — egységes, szöveges chipek:
    Ázott, Garanciális, Alkatrészre vár, Készülékre vár, Fólia (.svc-flag-folia), Ígért határidő. */
 .svc-flags{display:flex;align-items:center;flex-wrap:wrap;gap:5px}
-.svc-flag-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 12px;border-radius:8px;font-size:13px;font-weight:600;white-space:nowrap}
+.svc-flag-chip{display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:8px;font-size:13px;font-weight:600;white-space:nowrap}
 .svc-flag-chip.svc-flag-water{background:#DBEAFE;color:#1E40AF}
 .svc-flag-chip.svc-flag-warranty{background:#E0E7FF;color:#3730A3}
 .svc-flag-chip.svc-flag-part{background:#F3E8FF;color:#6B21A8}
@@ -704,7 +704,7 @@ tr:hover td{background:#FAFAFA}
 .t-card-kind-prep .t-kind-pill{background:#F1F5F9;color:#475569}
 .t-card-kind-warranty{background:#FDF2F8;border-left:3px solid #DB2777}
 .t-card-kind-warranty .t-kind-pill{background:#FCE7F3;color:#BE185D}
-.t-kind-pill{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:700;padding:2px 12px;border-radius:8px;margin-bottom:4px}
+.t-kind-pill{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:700;padding:5px 12px;border-radius:8px;margin-bottom:4px}
 .t-kind-pill svg{flex-shrink:0}
 .t-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .t-sn{font-size:10px;font-weight:700;color:#9CA3AF;font-family:'Roboto Mono',monospace}
