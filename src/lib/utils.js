@@ -123,6 +123,12 @@ export function normalizeImei(imei) {
 export function normalizeBrand(raw) {
   return (raw || "").trim();
 }
+// Csak megjelenítéshez — az adatbázisban tárolt ügyfélnevet nem módosítja, csak a kiírt
+// szöveget alakítja "Nagy Kezdőbetűs" formára (pl. "fiko barna" -> "Fiko Barna"), hogy a
+// gépelés közben elmaradt nagybetűzés ne látsszon a listákon.
+export function titleCase(str) {
+  return (str || "").toLowerCase().replace(/(^|[\s-])\S/g, (c) => c.toUpperCase());
+}
 // A products.storage szabad szöveg — "32 GB", "32GB", "64" mind ugyanazt jelentheti,
 // mert admin oldalon szabadon gépelhető be. Ezt egységesítjük a webshop szűrőiben/listáiban,
 // hogy ne szerepeljen többször ugyanaz az érték.

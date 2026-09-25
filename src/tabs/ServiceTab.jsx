@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { money, STATUSES, SUB_STATUSES, statusLabel, statusCls, subStatusCls, subStatusLabel, displayName, ticketCode, daysOnShelf, slaInfo, isStaleReady, partCode } from "../lib/utils";
+import { money, STATUSES, SUB_STATUSES, statusLabel, statusCls, subStatusCls, subStatusLabel, displayName, ticketCode, daysOnShelf, slaInfo, isStaleReady, partCode, titleCase } from "../lib/utils";
 import { SearchIcon, ServiceIcon, WarrantyIcon, ChevronRightIcon, ChevronDownIcon, CheckIcon, ScanIcon, MoreIcon, PrintIcon, PlusIcon, CloseIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import ResponsiveTable from "../components/ResponsiveTable";
@@ -180,7 +180,7 @@ export default function ServiceTab({
     if (t.ticketKind === "Saját készlet - garanciális") {
       return <span className="t-kind-pill" style={{ background: "#FCE7F3", color: "#BE185D" }}><WarrantyIcon width={11} height={11} />Saját — garanciális</span>;
     }
-    return t.customerName || "—";
+    return titleCase(t.customerName) || "—";
   };
   const isPartDeviceWait = (t) => t.status === "Átvett" && (t.subStatus === "Alkatrészre vár" || t.subStatus === "Készülékre vár" || t.subStatus === "Alkatrészre és készülékre vár");
   const statusClsOf = (t) => (t.subStatus && !isPartDeviceWait(t) ? subStatusCls(t.status, t.subStatus) : statusCls(t.status));
