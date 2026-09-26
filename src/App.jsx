@@ -79,6 +79,7 @@ import ContentTopbar from "./components/ContentTopbar";
 import InviteEmployeeModal from "./components/InviteEmployeeModal";
 import ChangePasswordModal from "./components/ChangePasswordModal";
 import { useInternalChat } from "./lib/useInternalChat";
+import { useLiveSync } from "./lib/useLiveSync";
 
 function NoStaffAccess() {
   const { signOut } = useAuth();
@@ -355,11 +356,11 @@ function AppShell() {
   }
 
   // Háttér-frissítés (visibilitychange + focus egyszerre, nyomtatás/fájlválasztó bezárása)
-  // ne fusson duplán, és ne ismétlődjön pár másodpercen belül.
+  // ne fusson duplán. Az élő változásokat a Realtime hozza, ez csak ritka felzárkózás.
   const loadInFlightRef = useRef(false);
   const lastLoadAtRef = useRef(0);
   async function loadAll({ silent = false } = {}) {
-    if (silent && (loadInFlightRef.current || Date.now() - lastLoadAtRef.current < 30000)) return;
+    if (silent && (loadInFlightRef.current || Date.now() - lastLoadAtRef.current < 5 * 60 * 1000)) return;
     loadInFlightRef.current = true;
     if (!silent) setLoadingData(true);
     try {
@@ -483,13 +484,8 @@ function AppShell() {
 
   useEffect(() => { loadAll(); }, []);
 
-  // Más eszközön/kollégánál mentett munkalap, alkatrész stb. eddig csak kézi újratöltésre
-  // jelent meg — csendben (loading-villanás nélkül) frissítünk, amikor a tab újra láthatóvá
-  // válik (visszaváltasz rá). Nincs időzített háttér-lekérdezés — ha több eszközön/fülön
-  // is nyitva van az admin, ne terheljék feleslegesen egymást; a visszaváltás ténye már
-  // magától elegendő jelzés a frissítésre. Ez sima REST lekérés (ugyanaz, mint a kezdeti
-  // betöltés), NEM Realtime websocket-csatorna — azt korábban kivettük, mert a folyamatosan
-  // nyitva tartott websocket rontotta a be-/kijelentkezés megbízhatóságát.
+  // Visszaváltáskor csendes felzárkózó újratöltés (pl. alvó laptop után) — a folyamatos
+  // változásokat a lenti useLiveSync hozza, ez csak biztonsági háló (loadAll-ban throttle-olva).
   useEffect(() => {
     function onVisible() {
       if (document.visibilityState === "visible") loadAll({ silent: true });
@@ -502,44 +498,9 @@ function AppShell() {
     };
   }, []);
 
-  // A fenti fókusz/láthatóság-alapú frissítés csak akkor sül el, ha valaki elhagyja, majd
-  // visszavált erre a böngészőlapra — ha valaki egyfolytában az appban dolgozik (más fülön,
-  // pl. Szerviz), egy közben beérkező ügyfél-WhatsApp-üzenetről nem szerezne tudomást, amíg
-  // nem frissít kézzel. Websocket helyett (ld. fenti megjegyzés a Realtime-ról) egy rövid,
-  // csak látható böngészőlapon futó pollozással pótoljuk ezt — ez sima REST-lekérés, nem
-  // tartós kapcsolat, tehát nem okozza a korábban tapasztalt bejelentkezési megbízhatósági gondot.
-  // A tranzakciók és napi zárások is ide kerültek: ha ketten dolgoznak egyszerre (pl. mindketten
-  // az Árulás/Cashflow fülön), egy kolléga rögzítése eddig csak kézi frissítésre jelent meg a
-  // másiknál. Ugyanaz a csendes, csak-látható-lapon futó pollozás, NEM Realtime websocket (ld. a
-  // fenti megjegyzést) — a tranzakciólista lekérdezése pontosan az kezdeti betöltéssel egyezik.
-  // Csak akkor cseréljük az állapotot, ha a letöltött adat tényleg változott — különben minden
-  // 30 mp-ben az összes tőle függő számítás és a teljes felület újrafutna feleslegesen.
-  const pollSigRef = useRef({ chat: "", tx: "", dc: "" });
-  useEffect(() => {
-    const id = setInterval(async () => {
-      if (document.visibilityState !== "visible") return;
-      try {
-        const [chatRows, txRows, dayCloseRows] = await Promise.all([
-          fetchAllRows(() => supabase.from("chat_messages").select("*").order("created_at", { ascending: true })),
-          fetchAllRows(() => supabase.from("transactions").select("*, smartbill_documents(*), signatures(*)").is("deleted_at", null).order("date", { ascending: false })),
-          fetchAllRows(() => supabase.from("day_closes").select("*").order("date", { ascending: false })),
-        ]);
-        const chat = unwrap(chatRows) || [];
-        const tx = unwrap(txRows) || [];
-        const dc = unwrap(dayCloseRows) || [];
-        const sig = pollSigRef.current;
-        const chatSig = JSON.stringify(chat);
-        const txSig = JSON.stringify(tx);
-        const dcSig = JSON.stringify(dc);
-        if (chatSig !== sig.chat) { sig.chat = chatSig; setInboxMessages(chat.map(chatMessageFromApi)); }
-        if (txSig !== sig.tx) { sig.tx = txSig; setTransactions(tx.map(txFromApi)); }
-        if (dcSig !== sig.dc) { sig.dc = dcSig; setDayCloses(dc.map(dayCloseFromApi)); }
-      } catch {
-        // csendes háttérfrissítés — hálózati hiba esetén a következő körben újrapróbálja
-      }
-    }, 30000);
-    return () => clearInterval(id);
-  }, []);
+  // Élő szinkron (Supabase Realtime): a kollégák mentései a változott sorként érkeznek,
+  // teljes újratöltés nélkül. Kapcsolat-kiesés után a hook egy csendes loadAll-lal pótol.
+  useLiveSync({ enabled: !!profile, setTickets, setTransactions, setDayCloses, setInboxMessages, setStock, loadAll });
 
   async function loadTrash() {
     setTrashLoading(true);
