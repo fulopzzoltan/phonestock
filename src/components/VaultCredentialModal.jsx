@@ -61,7 +61,7 @@ export default function VaultCredentialModal({ credential, onClose, onSave, onCh
             value={f.notes}
             onChange={(e) => setF({ ...f, notes: e.target.value })}
             placeholder="Pl. melyik fiókkal jelentkezz be, mire szolgál..."
-            style={{ width: "100%", minHeight: 56, background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 9, padding: "9px 10px", fontFamily: "inherit", fontSize: 13, resize: "vertical" }}
+            style={{ width: "100%", minHeight: 56, background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 8, padding: "9px 10px", fontFamily: "inherit", fontSize: 13, resize: "vertical" }}
           />
         </div>
         <div className="field">
@@ -82,7 +82,7 @@ export default function VaultCredentialModal({ credential, onClose, onSave, onCh
                 {pwBusy ? "Csere..." : "Csere"}
               </button>
             </div>
-            {pwDone && <div style={{ fontSize: 11.5, color: "#15803D", marginTop: 4 }}>✓ Jelszó lecserélve.</div>}
+            {pwDone && <div style={{ fontSize: 12, color: "var(--positive)", marginTop: 4 }}>✓ Jelszó lecserélve.</div>}
           </div>
         )}
 

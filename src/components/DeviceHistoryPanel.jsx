@@ -24,14 +24,14 @@ export default function DeviceHistoryPanel({ history, onClose }) {
           {repeatCount > 1 && (
             <div className="statcard warn" style={{ marginBottom: 16 }}>
               <div className="lbl">Figyelem</div>
-              <div className="val" style={{ fontSize: 13.5, lineHeight: 1.4 }}>
+              <div className="val" style={{ fontSize: 14, lineHeight: 1.4 }}>
                 Ez az IMEI eddig {repeatCount} alkalommal került be hozzánk termékként — érdemes átnézni, mi történik ezzel a készülékkel.
               </div>
             </div>
           )}
           <div className="dp-section">
             <div className="dp-section-title">Idővonal ({timeline.length} esemény)</div>
-            {timeline.length === 0 && <div style={{ color: "#9CA3AF", fontSize: 12.5 }}>Nincs rögzített esemény.</div>}
+            {timeline.length === 0 && <div style={{ color: "#9CA3AF", fontSize: 13 }}>Nincs rögzített esemény.</div>}
             {timeline.map((e, i) => (
               <div key={i} className="dp-row" style={{ alignItems: "center", cursor: e.onOpen ? "pointer" : undefined }} onClick={e.onOpen}>
                 <span className="dp-key">{e.date || "—"} · <span className={`st ${KIND_BADGE[e.kind]}`} style={{ marginLeft: 4 }}>{e.label}</span></span>

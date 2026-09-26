@@ -90,7 +90,7 @@ export function useBasketBar({ defaultLocId, onCheckout, date }) {
 // gyorsgombokkal — ez a kártyán KÍVÜL, fölötte ül.
 export function BasketTopBar({ bb, defaultLocId, busy, smartQuickItems, onImportPdf, historyToggle }) {
   if (!defaultLocId) {
-    return <div style={{ fontSize: 12.5, color: "#B91C1C" }}>Válassz helyszínt a bal oldali sávban a rögzítéshez.</div>;
+    return <div style={{ fontSize: 13, color: "#B91C1C" }}>Válassz helyszínt a bal oldali sávban a rögzítéshez.</div>;
   }
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>

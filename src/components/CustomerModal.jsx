@@ -35,7 +35,7 @@ export default function CustomerModal({ customer, customers, onClose, onSave, bu
             value={f.notes}
             onChange={(e) => setF({ ...f, notes: e.target.value })}
             placeholder="Pl. nehezen elérhető, visszatérő reklamáció, kedvezményes ügyfél..."
-            style={{ width: "100%", minHeight: 64, background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 9, padding: "9px 10px", fontFamily: "inherit", fontSize: 13, resize: "vertical" }}
+            style={{ width: "100%", minHeight: 64, background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 8, padding: "9px 10px", fontFamily: "inherit", fontSize: 13, resize: "vertical" }}
           />
         </div>
         <div className="field">
@@ -55,7 +55,7 @@ export default function CustomerModal({ customer, customers, onClose, onSave, bu
               placeholder="Meglévő ügyfél neve vagy telefonszáma"
             />
             {f.referrerName && !f.referredByCustomerId && (
-              <div style={{ fontSize: 11.5, color: "#B91C1C", marginTop: 4 }}>Válassz egy meglévő ügyfelet a listából, különben nem rögzül az ajánlás.</div>
+              <div style={{ fontSize: 12, color: "#B91C1C", marginTop: 4 }}>Válassz egy meglévő ügyfelet a listából, különben nem rögzül az ajánlás.</div>
             )}
           </div>
         )}

@@ -73,8 +73,8 @@ export default function RepairLandingIntro({ prices, onCta }) {
                 <div style={{ width: 40, height: 40, borderRadius: 12, background: "var(--pub-accent-soft)", color: "var(--pub-accent-ink)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <WarrantyIcon width={20} height={20} />
                 </div>
-                <b style={{ fontSize: 15, fontWeight: 800, color: "var(--pub-ink)" }}>Garancia minden elvégzett javításra</b>
-                <p style={{ margin: 0, fontSize: 12.5, color: "var(--pub-ink-soft)", lineHeight: 1.5 }}>Nem csak az alkatrészre — a munkára is teljes garanciát vállalunk.</p>
+                <b style={{ fontSize: 16, fontWeight: 800, color: "var(--pub-ink)" }}>Garancia minden elvégzett javításra</b>
+                <p style={{ margin: 0, fontSize: 13, color: "var(--pub-ink-soft)", lineHeight: 1.5 }}>Nem csak az alkatrészre — a munkára is teljes garanciát vállalunk.</p>
               </div>
             </div>
           </div>

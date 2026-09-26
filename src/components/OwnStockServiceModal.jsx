@@ -44,7 +44,7 @@ export default function OwnStockServiceModal({ product, kind, locations, users =
           {kind === "Saját készlet - garanciális" ? "Garanciális javítás felvétele" : "Szerviz előkészítés indítása"}
           <button className="iconbtn" onClick={onClose}><CloseIcon /></button>
         </h2>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", border: "1px solid #E5E7EB", borderRadius: 8, marginBottom: 14, fontSize: 13.5, fontWeight: 600 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", border: "1px solid #E5E7EB", borderRadius: 8, marginBottom: 14, fontSize: 14, fontWeight: 600 }}>
           {product.brand} {product.model}{product.imei ? ` — IMEI ${product.imei}` : ""}
         </div>
         <LocationField locations={locations} value={locId} onChange={setLocId} />

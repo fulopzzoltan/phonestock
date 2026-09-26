@@ -36,7 +36,7 @@ export default function ProductDetailPanel({
               {isConsignment && (
                 <>
                   <Row k="Kifizetendő" v={money(acq.consignorPayoutAmount)} />
-                  <Row k="Kifizetés" v={acq.payoutStatus === "kifizetve" ? <span style={{ color: "var(--primary)", fontWeight: 700 }}>✓ Kifizetve ({acq.payoutDate})</span> : <span className="st st-alkatresz">Fizetésre vár</span>} />
+                  <Row k="Kifizetés" v={acq.payoutStatus === "kifizetve" ? <span style={{ color: "var(--positive)", fontWeight: 700 }}>✓ Kifizetve ({acq.payoutDate})</span> : <span className="st st-alkatresz">Fizetésre vár</span>} />
                 </>
               )}
               <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
@@ -111,7 +111,7 @@ export default function ProductDetailPanel({
               </div>
             )}
             <Row k="Eladási ár" v={money(product.salePrice)} />
-            <Row k={isSold ? "Profit" : "Várható profit"} v={<span style={{ color: "var(--primary)", fontWeight: 700 }}>{money(profit)}</span>} />
+            <Row k={isSold ? "Profit" : "Várható profit"} v={<span style={{ color: "var(--positive)", fontWeight: 700 }}>{money(profit)}</span>} />
           </div>
           {isSold && (
             <div className="dp-section">

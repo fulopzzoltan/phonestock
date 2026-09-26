@@ -84,7 +84,7 @@ export default function DetailPanel({ ticket, locName, parts, stock, users = [],
             ) : null} />
             <Row k="Helyszín" v={locName(ticket.locationId)} />
             {ticketCustomer && (ticketCustomer.loyaltyPointsBalance || 0) > 0 && (
-              <div style={{ fontSize: 12, color: "var(--primary-ink)", background: "var(--primary-soft)", borderRadius: 9, padding: "8px 12px", marginTop: 4 }}>
+              <div style={{ fontSize: 12, color: "var(--primary-ink)", background: "var(--primary-soft)", borderRadius: 8, padding: "8px 12px", marginTop: 4 }}>
                 Ennek az ügyfélnek {ticketCustomer.loyaltyPointsBalance} pontja van
                 {redeemableForCustomer.length > 0 ? <> — beváltható: {redeemableForCustomer.map((r) => r.label).join(", ")} (a Kliens-lapon)</> : "."}
               </div>
@@ -133,7 +133,7 @@ export default function DetailPanel({ ticket, locName, parts, stock, users = [],
             <Row k="Probléma" v={probs.length ? probs.map((p, i) => <span key={i} className="prob-pill">{p}</span>) : null} />
             <Row k="Garancia" v={ticket.warranty ? <span className="gar-pill">{ticket.warranty}</span> : null} />
             <Row k="Fólia" v={ticket.folia ? (
-              <span style={{ color: "var(--primary)", fontWeight: 700 }}>
+              <span style={{ color: "var(--positive)", fontWeight: 700 }}>
                 ✓ Igen{ticket.foliaUpsellRequested ? ` (ügyfél kérte online, +${money(ticket.foliaUpsellPrice)})` : ""}
               </span>
             ) : "Nem"} />
@@ -151,8 +151,8 @@ export default function DetailPanel({ ticket, locName, parts, stock, users = [],
           <div className="dp-section">
             <div className="dp-section-title">Minőség &amp; nyomon követhetőség</div>
             <Row k="Technikus" v={ticket.assignedTo ? userName(ticket.assignedTo) : null} />
-            <Row k="Ügyfél beleegyezése" v={ticket.consentAt ? <span style={{ color: "var(--primary)", fontWeight: 700 }}>✓ Elfogadva ({formatDate(ticket.consentAt)})</span> : <span style={{ color: "#DC2626" }}>Nincs rögzítve</span>} />
-            <Row k="Minőségellenőrzés" v={ticket.qcAt ? <span style={{ color: "var(--primary)", fontWeight: 700 }}>✓ {userName(ticket.qcBy)} ({formatDate(ticket.qcAt)})</span> : null} />
+            <Row k="Ügyfél beleegyezése" v={ticket.consentAt ? <span style={{ color: "var(--positive)", fontWeight: 700 }}>✓ Elfogadva ({formatDate(ticket.consentAt)})</span> : <span style={{ color: "#DC2626" }}>Nincs rögzítve</span>} />
+            <Row k="Minőségellenőrzés" v={ticket.qcAt ? <span style={{ color: "var(--positive)", fontWeight: 700 }}>✓ {userName(ticket.qcBy)} ({formatDate(ticket.qcAt)})</span> : null} />
             {ticket.status === "Minőségellenőrzés" && (
               <div className="row2" style={{ marginTop: 8, alignItems: "flex-end" }}>
                 <div className="field" style={{ margin: 0 }}>
@@ -195,7 +195,7 @@ export default function DetailPanel({ ticket, locName, parts, stock, users = [],
                       placeholder="Keresés név vagy kód szerint (pl. A123)..."
                       value={partFilter}
                       onChange={(e) => setPartFilter(e.target.value)}
-                      style={{ marginBottom: 6, width: "100%", background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 9, padding: "8px 10px", fontFamily: "inherit", fontSize: 12.5 }}
+                      style={{ marginBottom: 6, width: "100%", background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 8, padding: "8px 10px", fontFamily: "inherit", fontSize: 13 }}
                     />
                     <div className="row2" style={{ alignItems: "flex-end" }}>
                       <div className="field" style={{ margin: 0 }}>
@@ -206,7 +206,7 @@ export default function DetailPanel({ ticket, locName, parts, stock, users = [],
                       </div>
                       <div style={{ display: "flex", gap: 6 }}>
                         <input type="number" min="1" max={selPart?.quantity || 1} value={qty} onChange={(e) => setQty(Number(e.target.value))}
-                          style={{ width: 56, background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 9, padding: "9px 8px", fontFamily: "inherit", fontSize: 13 }} />
+                          style={{ width: 56, background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 8, padding: "9px 8px", fontFamily: "inherit", fontSize: 13 }} />
                         <button className="btn sm" disabled={!selPart || busy} onClick={() => { if (selPart) { onAddPart(ticket.id, selPart, qty); setShowAddPart(false); setSelPartId(""); setQty(1); setPartFilter(""); } }}>OK</button>
                         <button className="iconbtn" onClick={() => { setShowAddPart(false); setPartFilter(""); }}><CloseIcon width={14} height={14} /></button>
                       </div>
@@ -222,7 +222,7 @@ export default function DetailPanel({ ticket, locName, parts, stock, users = [],
             <div className="dp-section-title">Pénzügyek</div>
             <Row k="Árajánlat" v={money(ticket.price)} />
             <Row k="Anyagköltség" v={money(ticket.matCost)} />
-            <Row k="Profit" v={<span style={{ color: "var(--primary)", fontWeight: 700 }}>{money(profit)}</span>} />
+            <Row k="Profit" v={<span style={{ color: "var(--positive)", fontWeight: 700 }}>{money(profit)}</span>} />
             {ticket.ticketKind === "Saját készlet - előkészítés" && ticket.productId && (
               <Row k="Telefon beszerzési ára most" v={<span style={{ fontWeight: 700 }}>{money(stock?.find((p) => p.id === ticket.productId)?.costPrice)}</span>} />
             )}

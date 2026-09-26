@@ -39,17 +39,17 @@ export default function BrandPickerButton({ value, onChange, disabled }) {
           <div className="autocomplete-list" style={{ padding: 5 }}>
             <input
               autoFocus type="text" placeholder="Keresés..." value={query} onChange={(e) => setQuery(e.target.value)}
-              style={{ width: "100%", marginBottom: 4, background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 8, padding: "7px 9px", fontFamily: "inherit", fontSize: 12.5, boxSizing: "border-box" }}
+              style={{ width: "100%", marginBottom: 4, background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 8, padding: "7px 9px", fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }}
             />
             {filtered.map((b) => (
               <div
-                key={b} className="autocomplete-item" style={{ borderRadius: 7, background: b === value || (b === "Egyéb" && isCustom) ? "#F3F4F6" : undefined }}
+                key={b} className="autocomplete-item" style={{ borderRadius: 8, background: b === value || (b === "Egyéb" && isCustom) ? "#F3F4F6" : undefined }}
                 onClick={() => { setCustomPicked(b === "Egyéb"); onChange(b === "Egyéb" ? "" : b); setOpen(false); setQuery(""); }}
               >
                 {b === "Apple" ? "iPhone" : b}
               </div>
             ))}
-            {filtered.length === 0 && <div style={{ padding: "9px 12px", fontSize: 12.5, color: "#9CA3AF" }}>Nincs találat</div>}
+            {filtered.length === 0 && <div style={{ padding: "9px 12px", fontSize: 13, color: "#9CA3AF" }}>Nincs találat</div>}
           </div>
         )}
       </div>

@@ -61,7 +61,7 @@ export default function WarrantyModal({ initial, locations, customers = [], onCl
             value={f.note}
             onChange={(e) => setF({ ...f, note: e.target.value })}
             placeholder="Opcionális — pl. korábbi/papíralapú eset utólagos rögzítése"
-            style={{ width: "100%", minHeight: 64, background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 9, padding: "9px 10px", fontFamily: "inherit", fontSize: 13, resize: "vertical" }}
+            style={{ width: "100%", minHeight: 64, background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 8, padding: "9px 10px", fontFamily: "inherit", fontSize: 13, resize: "vertical" }}
           />
         </div>
         <div className="modal-actions">

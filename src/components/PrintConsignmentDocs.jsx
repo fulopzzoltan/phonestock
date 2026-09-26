@@ -8,7 +8,7 @@ function fmtDate(iso) {
 // A4 oldalra férjen — a Borderou és a Bon mostantól egy táblázatot is tartalmaz,
 // úgyhogy ezeknél sem maradhat annyi levegő, mint korábban.
 const pageStyle = { fontFamily: "Inter, sans-serif", color: "#111827", padding: "20px 30px", fontSize: 11, lineHeight: 1.4, maxWidth: 760 };
-const h1 = { fontSize: 15, fontWeight: 800, marginBottom: 10, textAlign: "center" };
+const h1 = { fontSize: 16, fontWeight: 800, marginBottom: 10, textAlign: "center" };
 const label = { fontWeight: 700 };
 // A Szerződés és a GDPR-nyilatkozat a leghosszabb oldalak — ezeknél kisebb betűmérettel
 // és szűkebb bekezdés-térközzel biztosítjuk, hogy egy nyomtatott A4 oldalra férjenek.
@@ -17,7 +17,7 @@ const denseH1 = { ...h1, fontSize: 14, marginBottom: 8 };
 const denseP = { margin: "5px 0" };
 // A Szerződés (Art. 1-5 + Anexă) a leghosszabb tartalom az összes dokumentum közül —
 // ennek külön, még szűkebb stílust adunk, hogy biztosan egy oldalra férjen.
-const contractPageStyle = { ...densePageStyle, fontSize: 9.5, lineHeight: 1.25, padding: "14px 26px" };
+const contractPageStyle = { ...densePageStyle, fontSize: 10, lineHeight: 1.25, padding: "14px 26px" };
 const contractP = { margin: "4px 0" };
 
 const thStyle = { border: "1px solid #D1D5DB", padding: 3, textAlign: "left" };
@@ -115,7 +115,7 @@ export default function PrintConsignmentDocs({ product, acquisition, settings, l
           prevederile legale îmi asum orice consecințe financiare și nonfinanciare ce pot să apară pe acest considerent!
         </p>
         <div style={{ marginTop: 22 }}>Semnatura {sellerName}: ______________________</div>
-        <div style={{ marginTop: 22, borderTop: "1px solid #E5E7EB", paddingTop: 8, fontSize: 10.5 }}>
+        <div style={{ marginTop: 22, borderTop: "1px solid #E5E7EB", paddingTop: 8, fontSize: 11 }}>
           <div>Companie - {companyName}</div>
           <div>CUI - {companyCui}</div>
           <div>Adresa - {companyAddress}</div>
@@ -133,7 +133,7 @@ export default function PrintConsignmentDocs({ product, acquisition, settings, l
         </div>
         <div style={{ marginTop: 26 }}>Predat pretuitor: ______________________</div>
         <div style={{ marginTop: 20 }}>Primit gestionar: ______________________</div>
-        <div style={{ marginTop: 20, borderTop: "1px solid #E5E7EB", paddingTop: 8, fontSize: 10.5 }}>
+        <div style={{ marginTop: 20, borderTop: "1px solid #E5E7EB", paddingTop: 8, fontSize: 11 }}>
           <div>Companie - {companyName}</div>
           <div>CUI - {companyCui}</div>
           <div>Adresa - {companyAddress}</div>
@@ -154,7 +154,7 @@ export default function PrintConsignmentDocs({ product, acquisition, settings, l
         <div>Semnătura deponentului: ______________________</div>
         <p style={{ marginTop: 12 }}>Am primit spre vanzare in consignatie obiectele menționate mai sus.</p>
         <div>Semnătura pretuitorului: ______________________</div>
-        <div style={{ marginTop: 20, borderTop: "1px solid #E5E7EB", paddingTop: 8, fontSize: 10.5 }}>
+        <div style={{ marginTop: 20, borderTop: "1px solid #E5E7EB", paddingTop: 8, fontSize: 11 }}>
           <div>Companie - {companyName}</div>
           <div>CUI - {companyCui}</div>
           <div>Adresa - {companyAddress}</div>

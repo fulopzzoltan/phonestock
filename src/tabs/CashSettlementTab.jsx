@@ -272,7 +272,7 @@ export default function CashSettlementTab({
   return (
     <>
       {justSaved && (
-        <div style={{ fontSize: 13, color: "#15803D", background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: "var(--radius-md)", padding: "10px 14px", marginBottom: 16 }}>
+        <div style={{ fontSize: 13, color: "var(--positive)", background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: "var(--radius-md)", padding: "10px 14px", marginBottom: 16 }}>
           Az elszámolás rögzítve. Az alábbi új időszak a következő elszámoláshoz készült elő — csak akkor nyomd meg újra a "Rögzítés" gombot, ha ehhez is van elszámolnivaló.
         </div>
       )}
@@ -301,7 +301,7 @@ export default function CashSettlementTab({
             <span className="sep">–</span>
             <input type="date" value={periodEnd} onChange={(e) => { setCustomEnd(e.target.value); setJustSaved(false); }} />
           </div>
-          {periodValid && <span className="cnt-text" style={{ fontWeight: 500, fontSize: 12.5, color: "#9CA3AF" }}>{daysBetweenInclusive(periodStart, periodEnd)} nap</span>}
+          {periodValid && <span className="cnt-text" style={{ fontWeight: 500, fontSize: 13, color: "#9CA3AF" }}>{daysBetweenInclusive(periodStart, periodEnd)} nap</span>}
           <div className="seg">
             <button type="button" className={dailyView === "table" ? "active" : ""} onClick={() => setDailyView("table")}>Tábla</button>
             <button type="button" className={dailyView === "cards" ? "active" : ""} onClick={() => setDailyView("cards")}>Kártyák</button>

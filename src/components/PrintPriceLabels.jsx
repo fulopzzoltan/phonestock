@@ -32,14 +32,14 @@ function Label({ p }) {
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>Új</span>
       )}
-      <div style={{ fontSize: 17, fontWeight: 800, color: "#111827", lineHeight: 1.2 }}>{labelTitle(p)}</div>
-      {p.storage && <div style={{ fontSize: 15, fontWeight: 700, color: "#111827" }}>{p.storage}</div>}
-      {p.ram && p.brand !== "Apple" && <div style={{ fontSize: 15, fontWeight: 700, color: "#111827" }}>{p.ram} RAM</div>}
-      {showBattery && <div style={{ fontSize: 15, fontWeight: 700, color: "#111827" }}>Baterie: {Math.round(Number(p.batteryHealth))}%</div>}
-      {p.warranty && <div style={{ fontSize: 15, fontWeight: 700, color: "#159C46" }}>Garantie: {warrantyRo(p.warranty)}</div>}
+      <div style={{ fontSize: 18, fontWeight: 800, color: "#111827", lineHeight: 1.2 }}>{labelTitle(p)}</div>
+      {p.storage && <div style={{ fontSize: 16, fontWeight: 700, color: "#111827" }}>{p.storage}</div>}
+      {p.ram && p.brand !== "Apple" && <div style={{ fontSize: 16, fontWeight: 700, color: "#111827" }}>{p.ram} RAM</div>}
+      {showBattery && <div style={{ fontSize: 16, fontWeight: 700, color: "#111827" }}>Baterie: {Math.round(Number(p.batteryHealth))}%</div>}
+      {p.warranty && <div style={{ fontSize: 16, fontWeight: 700, color: "#159C46" }}>Garantie: {warrantyRo(p.warranty)}</div>}
       <div style={{
         marginTop: 5, background: "#E11D3F", color: "#fff", fontWeight: 800, fontSize: 18,
-        borderRadius: 9, padding: "7px 20px", display: "inline-block",
+        borderRadius: 8, padding: "7px 20px", display: "inline-block",
       }}>
         {(Number(p.salePrice) || 0).toFixed(2)} Lei
       </div>

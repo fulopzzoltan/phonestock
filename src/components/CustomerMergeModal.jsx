@@ -33,7 +33,7 @@ export default function CustomerMergeModal({ primaryCustomer, customers, busy, o
       <div className="modal" style={{ maxWidth: 480 }} onClick={(e) => e.stopPropagation()}>
         <h2>Ügyfélkártya összevonása <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
 
-        <div style={{ fontSize: 12.5, color: "#6B7280", marginBottom: 16 }}>
+        <div style={{ fontSize: 13, color: "#6B7280", marginBottom: 16 }}>
           Megtartott kártya: <b style={{ color: "#111827" }}>{primaryCustomer.name || "Névtelen"}</b>
           {primaryCustomer.phone ? ` · ${formatPhone(primaryCustomer.phone)}` : ""}
         </div>
@@ -55,7 +55,7 @@ export default function CustomerMergeModal({ primaryCustomer, customers, busy, o
           </div>
         ) : (
           <>
-            <div style={{ padding: "10px 12px", background: "var(--warning-soft, #FEF3C7)", border: "1px solid var(--warning, #F59E0B)", borderRadius: 10, fontSize: 12.5, marginBottom: 14 }}>
+            <div style={{ padding: "10px 12px", background: "var(--warning-soft, #FEF3C7)", border: "1px solid var(--warning, #F59E0B)", borderRadius: 12, fontSize: 13, marginBottom: 14 }}>
               <div style={{ fontWeight: 700, marginBottom: 4, color: "var(--warning-ink, #92400E)" }}>
                 Ez a kártya megszűnik: {dup.name || "Névtelen"}{dup.phone ? ` · ${formatPhone(dup.phone)}` : ""}
               </div>

@@ -26,7 +26,7 @@ const KpiStrip = ({ items }) => (
         <div key={it.label} style={{ padding: "16px 18px", borderRight: i < items.length - 1 ? "1px solid #F1F2F6" : "none" }}>
           <div className="lbl">{it.label}</div>
           <div className="val" style={{ color: it.color || "#111827" }}>{it.value}</div>
-          {it.sub && <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 2 }}>{it.sub}</div>}
+          {it.sub && <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 2 }}>{it.sub}</div>}
         </div>
       ))}
     </div>
@@ -41,7 +41,7 @@ const USED_COLOR = "#6B7280";
 const SplitBars = ({ items }) => (
   items.length ? items.map((b) => (
     <div key={b.name} style={{ marginBottom: 10 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 4 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
         <span style={{ fontWeight: 600, color: "#374151" }}>{b.name}</span>
         <span style={{ color: "#6B7280" }}>
           <span style={{ color: NEW_COLOR }}>Új {b.newPct}%</span>
@@ -55,13 +55,13 @@ const SplitBars = ({ items }) => (
         <div style={{ width: `${b.usedPct}%`, height: "100%", background: USED_COLOR }} />
       </div>
     </div>
-  )) : <div style={{ fontSize: 12.5, color: "#9CA3AF" }}>Nincs adat</div>
+  )) : <div style={{ fontSize: 13, color: "#9CA3AF" }}>Nincs adat</div>
 );
 
 const BreakdownBars = ({ items }) => (
   items.length ? items.map((b) => (
     <div key={b.name} style={{ marginBottom: 10 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 4 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
         <span style={{ fontWeight: 600, color: "#374151" }}>{b.name}</span>
         <span style={{ color: "#6B7280" }}>{b.pct}% <span style={{ color: "#9CA3AF" }}>({b.count} db)</span></span>
       </div>
@@ -69,7 +69,7 @@ const BreakdownBars = ({ items }) => (
         <div style={{ width: `${b.pct}%`, height: "100%", background: "var(--primary)", borderRadius: 999 }} />
       </div>
     </div>
-  )) : <div style={{ fontSize: 12.5, color: "#9CA3AF" }}>Nincs adat</div>
+  )) : <div style={{ fontSize: 13, color: "#9CA3AF" }}>Nincs adat</div>
 );
 
 const TABS = [
@@ -184,7 +184,7 @@ export default function DashboardTab({
   const svcCountItems = [
     { label: "Összes", value: svcStats.total },
     { label: "Aktív (ügyfél)", value: svcStats.active },
-    { label: "Kész (ügyfél)", value: svcStats.kesz, color: "#15803D" },
+    { label: "Kész (ügyfél)", value: svcStats.kesz, color: "var(--positive)" },
     { label: "Sikertelen (ügyfél)", value: svcStats.sikertelen, color: "#9D174D" },
     { label: "Kiadva", value: svcStats.kiadva },
   ];
@@ -226,14 +226,14 @@ export default function DashboardTab({
       {(showFinance || showMetrics) && !financeUnlocked && (
         <div className="statcard" style={{ marginBottom: 22, textAlign: "center", padding: "36px 24px" }}>
           <LockIcon width={22} height={22} style={{ color: "#9CA3AF", marginBottom: 10 }} />
-          <div style={{ fontSize: 13.5, fontWeight: 700, marginBottom: 4 }}>{showMetrics ? "Mérőszámok zárolva" : "Bevétel & Kiadás zárolva"}</div>
+          <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>{showMetrics ? "Mérőszámok zárolva" : "Bevétel & Kiadás zárolva"}</div>
           <div style={{ fontSize: 12, color: "#6B7280", marginBottom: 16 }}>Érzékeny adat — add meg újra a jelszavad a megtekintéshez.</div>
           <form onSubmit={unlockFinance} style={{ maxWidth: 260, margin: "0 auto" }}>
             {lockError && <div className="errbar" style={{ marginBottom: 10 }}>{lockError}</div>}
             <input
               type="password" autoComplete="current-password" placeholder="Jelszó" value={lockPw}
               onChange={(e) => setLockPw(e.target.value)}
-              style={{ width: "100%", background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 11, padding: "10px 12px", fontFamily: "inherit", fontSize: 13, marginBottom: 10, color: "#111827" }}
+              style={{ width: "100%", background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 12, padding: "10px 12px", fontFamily: "inherit", fontSize: 13, marginBottom: 10, color: "#111827" }}
             />
             <button className="btn" type="submit" disabled={lockBusy} style={{ width: "100%", justifyContent: "center" }}>
               {lockBusy ? "Ellenőrzés..." : "Feloldás"}
@@ -260,15 +260,15 @@ export default function DashboardTab({
         <div style={{ display: "flex", gap: 36, marginTop: 22, flexWrap: "wrap" }}>
           <div>
             <div style={{ fontSize: 10, fontWeight: 600, color: "#5B6472", textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 5 }}>Bevétel</div>
-            <div style={{ fontSize: 17, fontWeight: 800, color: "#4ADE80" }}>{money(heroStats.income)}</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: "#4ADE80" }}>{money(heroStats.income)}</div>
           </div>
           <div>
             <div style={{ fontSize: 10, fontWeight: 600, color: "#5B6472", textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 5 }}>Kiadás</div>
-            <div style={{ fontSize: 17, fontWeight: 800, color: "#F87171" }}>{money(heroStats.expense)}</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: "#F87171" }}>{money(heroStats.expense)}</div>
           </div>
           <div>
             <div style={{ fontSize: 10, fontWeight: 600, color: "#5B6472", textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 5 }}>Tranzakciók</div>
-            <div style={{ fontSize: 17, fontWeight: 800 }}>{heroStats.count}</div>
+            <div style={{ fontSize: 18, fontWeight: 800 }}>{heroStats.count}</div>
           </div>
         </div>
       </div>
@@ -285,7 +285,7 @@ export default function DashboardTab({
           type="button"
           onClick={() => setTrendPeriod("12m")}
           style={{
-            border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 11.5, fontWeight: 700,
+            border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700,
             padding: "5px 11px", borderRadius: 999,
             background: trendPeriod === "12m" ? "var(--primary-soft)" : "#fff",
             color: trendPeriod === "12m" ? "var(--primary-ink)" : "#6B7280",
@@ -300,7 +300,7 @@ export default function DashboardTab({
             type="button"
             onClick={() => setTrendPeriod(y)}
             style={{
-              border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 11.5, fontWeight: 700,
+              border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700,
               padding: "5px 11px", borderRadius: 999,
               background: trendPeriod === y ? "var(--primary-soft)" : "#fff",
               color: trendPeriod === y ? "var(--primary-ink)" : "#6B7280",
@@ -314,7 +314,7 @@ export default function DashboardTab({
           type="button"
           onClick={() => setTrendPeriod("all")}
           style={{
-            border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 11.5, fontWeight: 700,
+            border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700,
             padding: "5px 11px", borderRadius: 999,
             background: trendPeriod === "all" ? "var(--primary-soft)" : "#fff",
             color: trendPeriod === "all" ? "var(--primary-ink)" : "#6B7280",
@@ -380,7 +380,7 @@ export default function DashboardTab({
               </button>
             )}
             {soldPhoneStats.total > 0 && (
-              <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 4 }}>
+              <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>
                 Összesen {soldPhoneStats.total} eladott telefon alapján
               </div>
             )}
@@ -417,7 +417,7 @@ export default function DashboardTab({
               <div className="dp-section-title">Leggyakoribb probléma</div>
               <BreakdownBars items={svcStats.topProblems} />
               {svcStats.problemsTotal > 0 && (
-                <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 8 }}>
+                <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 8 }}>
                   {svcStats.problemsSample} / {svcStats.problemsTotal} munkalapon van rögzítve probléma-típus
                 </div>
               )}
@@ -437,7 +437,7 @@ export default function DashboardTab({
                 </button>
               )}
               {svcStats.brandTotal > 0 && (
-                <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 4 }}>
+                <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>
                   Összesen {svcStats.brandTotal} átadott munkalap alapján
                 </div>
               )}

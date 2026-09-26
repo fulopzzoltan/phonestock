@@ -46,7 +46,7 @@ export default function IssueInvoiceModal({ transactions, locName, onClose, onIs
               <label>Tranzakció keresése</label>
               <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Leírás vagy vevő neve..." autoFocus />
             </div>
-            <div style={{ maxHeight: 320, overflowY: "auto", border: "1px solid #E5E7EB", borderRadius: 10 }}>
+            <div style={{ maxHeight: 320, overflowY: "auto", border: "1px solid #E5E7EB", borderRadius: 12 }}>
               {candidates.length === 0 && (
                 <div style={{ padding: 16, color: "#6B7280", fontSize: 13 }}>Nincs találat.</div>
               )}
@@ -57,12 +57,12 @@ export default function IssueInvoiceModal({ transactions, locName, onClose, onIs
                   style={{ padding: "10px 12px", borderBottom: "1px solid #F1F2F6", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}
                 >
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: 13.5, color: "#111827" }}>{t.description}</div>
+                    <div style={{ fontWeight: 600, fontSize: 14, color: "#111827" }}>{t.description}</div>
                     <div style={{ fontSize: 12, color: "#6B7280" }}>{t.date} · {locName(t.locationId)}{t.customerName ? ` · ${t.customerName}` : ""}</div>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    {t.smartbillDoc?.status === "issued" && <span className="badge-loc" style={{ color: "#15803D" }}>Van számla</span>}
-                    <div className="mono" style={{ fontWeight: 700, color: "#15803D" }}>+{money(t.amount)}</div>
+                    {t.smartbillDoc?.status === "issued" && <span className="badge-loc" style={{ color: "var(--positive)" }}>Van számla</span>}
+                    <div className="mono" style={{ fontWeight: 700, color: "var(--positive)" }}>+{money(t.amount)}</div>
                   </div>
                 </div>
               ))}

@@ -150,7 +150,7 @@ export default function StockModal({ product, prefill, locations, onClose, onSav
           <PicklistField label="Szín" value={f.color} onChange={(v) => setF({ ...f, color: v })} options={PHONE_COLORS} placeholder="Válassz színt..." />
           <div className="field"><label>IMEI</label><input value={f.imei} onChange={set("imei")} placeholder="35xxxxxxxxxxxxx" /></div>
           {hasImeiMatch && (
-            <div style={{ padding: "10px 12px", background: "var(--warning-soft, #FEF3C7)", border: "1px solid var(--warning, #F59E0B)", borderRadius: 10, fontSize: 12.5, marginBottom: 12 }}>
+            <div style={{ padding: "10px 12px", background: "var(--warning-soft, #FEF3C7)", border: "1px solid var(--warning, #F59E0B)", borderRadius: 12, fontSize: 13, marginBottom: 12 }}>
               <div style={{ fontWeight: 700, marginBottom: 4, color: "var(--warning-ink, #92400E)" }}>Ez az IMEI már szerepel a rendszerben:</div>
               {imeiMatch.products.map((p) => (
                 <div key={p.id}>— raktári tétel: {p.brand} {p.model} ({p.condition === "New" ? "új" : "felújított"}, {p.status === "sold" ? "eladva" : "raktáron"})</div>

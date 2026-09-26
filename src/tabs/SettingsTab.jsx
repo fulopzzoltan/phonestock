@@ -107,7 +107,7 @@ function SmartBillSettings({ settings, updateSettings, busy, locations }) {
         </button>
         {testState && testState !== "busy" && (
           testState.ok
-            ? <span style={{ color: "var(--primary)", fontWeight: 700 }}>✓ OK</span>
+            ? <span style={{ color: "var(--positive)", fontWeight: 700 }}>✓ OK</span>
             : <span style={{ color: "#EF4444", fontWeight: 700 }}>✗ {testState.error}</span>
         )}
       </div>
@@ -120,7 +120,7 @@ function LocationReviewUrlRow({ loc, editLocation, busy }) {
   const dirty = value !== (loc.google_review_url || "");
   return (
     <div className="settings-row" style={{ alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-      <div style={{ minWidth: 90, fontWeight: 600, fontSize: 12.5 }}>{loc.name}</div>
+      <div style={{ minWidth: 90, fontWeight: 600, fontSize: 13 }}>{loc.name}</div>
       <input
         value={value} onChange={(e) => setValue(e.target.value)}
         placeholder="https://g.page/r/.../review" style={{ flex: 1, minWidth: 160 }}
@@ -137,7 +137,7 @@ function LocationSamedayPickupRow({ loc, editLocation, busy }) {
   const dirty = value !== (loc.sameday_pickup_point_id || "");
   return (
     <div className="settings-row" style={{ alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-      <div style={{ minWidth: 90, fontWeight: 600, fontSize: 12.5 }}>{loc.name}</div>
+      <div style={{ minWidth: 90, fontWeight: 600, fontSize: 13 }}>{loc.name}</div>
       <input
         value={value} onChange={(e) => setValue(e.target.value)}
         placeholder="pont ID" style={{ flex: 1, minWidth: 120, maxWidth: 180 }}

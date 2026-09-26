@@ -130,7 +130,7 @@ export function CalendarPicker({ cal, isAdmin }) {
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 2 }}>
         {WEEKDAYS.map((w) => (
-          <div key={w} style={{ textAlign: "center", fontSize: 9, fontWeight: 700, color: "#9CA3AF", padding: "2px 0" }}>{w}</div>
+          <div key={w} style={{ textAlign: "center", fontSize: 10, fontWeight: 700, color: "#9CA3AF", padding: "2px 0" }}>{w}</div>
         ))}
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}>
@@ -158,7 +158,7 @@ export function CalendarPicker({ cal, isAdmin }) {
               onClick={() => selectDay(dateStr)}
               title={isTooOld ? "Csak admin láthatja a 30 napnál régebbi napokat" : undefined}
               style={{
-                aspectRatio: "1", borderRadius: "50%", fontSize: 10.5, fontFamily: "inherit", fontWeight: isToday || isSelected ? 700 : 500,
+                aspectRatio: "1", borderRadius: "50%", fontSize: 11, fontFamily: "inherit", fontWeight: isToday || isSelected ? 700 : 500,
                 background: bg, color, border, cursor: disabled ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0,
               }}
             >
@@ -206,7 +206,7 @@ export function CalendarDetail({
                       type="button"
                       className="btn sec sm"
                       disabled={busy}
-                      style={dc ? { background: "#DCFCE7", borderColor: "#86EFAC", color: "#15803D" } : undefined}
+                      style={dc ? { background: "#DCFCE7", borderColor: "#86EFAC", color: "var(--positive)" } : undefined}
                       onClick={() => (dc ? reopenDay(dc.id) : closeDay(selectedDay, loc.id))}
                     >
                       {loc.name}: {dc ? "✓ Lezárva" : "Lezárás"}
@@ -228,8 +228,8 @@ export function CalendarDetail({
 
           {selectedStats && (
             <div className="statrow c5" style={{ marginBottom: 14 }}>
-              <div className="statcard"><div className="lbl">Bevétel (készpénz)</div><div className="val" style={{ color: "#15803D" }}>{money(selectedStats.incomeCash)}</div></div>
-              <div className="statcard"><div className="lbl">Bevétel (kártya)</div><div className="val" style={{ color: "#15803D" }}>{money(selectedStats.incomeCard)}</div></div>
+              <div className="statcard"><div className="lbl">Bevétel (készpénz)</div><div className="val" style={{ color: "var(--positive)" }}>{money(selectedStats.incomeCash)}</div></div>
+              <div className="statcard"><div className="lbl">Bevétel (kártya)</div><div className="val" style={{ color: "var(--positive)" }}>{money(selectedStats.incomeCard)}</div></div>
               <div className="statcard"><div className="lbl">Kiadás</div><div className="val" style={{ color: "#B91C1C" }}>{money(selectedStats.expenseReal)}</div></div>
               <div className="statcard"><div className="lbl">Árrés</div><div className="val">{money(selectedStats.margin)}</div></div>
               <div className="statcard accent"><div className="lbl">Kézpénz maradt</div><div className="val">{money(selectedStats.cashOnHand)}</div></div>
@@ -256,8 +256,8 @@ export function CalendarDetail({
                   {archiveMonths.map((mo) => (
                     <tr key={mo.key}>
                       <td style={{ fontWeight: 500, color: "#111827", textTransform: "capitalize" }}>{monthLabel(mo.y, mo.m)}</td>
-                      <td className="num-col" style={{ color: "#15803D" }}>{money(mo.incomeCash)}</td>
-                      <td className="num-col" style={{ color: "#15803D" }}>{money(mo.incomeCard)}</td>
+                      <td className="num-col" style={{ color: "var(--positive)" }}>{money(mo.incomeCash)}</td>
+                      <td className="num-col" style={{ color: "var(--positive)" }}>{money(mo.incomeCard)}</td>
                       <td className="num-col" style={{ color: "#B91C1C" }}>{money(mo.expenseReal)}</td>
                       <td className="num-col">{money(mo.margin)}</td>
                       <td>

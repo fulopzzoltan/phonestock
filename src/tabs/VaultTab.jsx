@@ -115,7 +115,7 @@ export default function VaultTab({ credentials, isAdmin, modal, setModal, onDele
                     </span>
                   </div>
                   {c.siteUrl && (
-                    <a href={c.siteUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11.5, color: "#6B7280", display: "inline-flex", alignItems: "center", gap: 4, marginTop: 2 }}>
+                    <a href={c.siteUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: "#6B7280", display: "inline-flex", alignItems: "center", gap: 4, marginTop: 2 }}>
                       <ExternalLinkIcon width={11} height={11} />{c.siteUrl.replace(/^https?:\/\//, "")}
                     </a>
                   )}

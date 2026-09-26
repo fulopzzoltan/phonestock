@@ -64,7 +64,7 @@ export default function PhonePartsPicker({ usedParts = [], availableParts = [], 
               <div key={pin.category} style={{ marginBottom: 10 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }} onClick={() => openPicker(pin.category)}>
                   <span style={{ width: 8, height: 8, borderRadius: "50%", background: items.length ? "var(--primary)" : "#D1D5DB", flexShrink: 0 }} />
-                  <span style={{ fontSize: 12.5, fontWeight: 600, color: "#374151" }}>{pin.label}</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>{pin.label}</span>
                   {items.length > 0 && (
                     <span style={{ fontSize: 12, color: "#9CA3AF" }}>
                       — {items.map((sp) => money((Number(sp.costPrice) || 0) * (Number(sp.quantity) || 0))).join(" + ")}
@@ -91,7 +91,7 @@ export default function PhonePartsPicker({ usedParts = [], availableParts = [], 
                     </div>
                     <div style={{ display: "flex", gap: 6 }}>
                       <input type="number" min="1" value={qty} onChange={(e) => setQty(Number(e.target.value))}
-                        style={{ width: 56, background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 9, padding: "9px 8px", fontFamily: "inherit", fontSize: 13 }} />
+                        style={{ width: 56, background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 8, padding: "9px 8px", fontFamily: "inherit", fontSize: 13 }} />
                       <button type="button" className="btn sm" disabled={!selPartId || busy} onClick={() => handleAdd(pin.category)}>Hozzáadás</button>
                       <button type="button" className="iconbtn" onClick={() => setOpenPin(null)}><CloseIcon width={14} height={14} /></button>
                     </div>

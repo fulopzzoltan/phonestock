@@ -31,7 +31,7 @@ export function SmartBillBadge({ doc }) {
         rel="noreferrer"
         onClick={(e) => e.stopPropagation()}
         className="badge-loc"
-        style={{ color: "#15803D", textDecoration: "none" }}
+        style={{ color: "var(--positive)", textDecoration: "none" }}
         title={`Számla: ${doc.smartbillSeries || ""}${doc.smartbillNumber ? "-" + doc.smartbillNumber : ""}`}
       >
         Számla {doc.smartbillSeries}-{doc.smartbillNumber}
@@ -218,14 +218,14 @@ export default function TransactionsPeriodList({ transactions, locName, onEdit, 
                 </svg>
                 <div style={{ fontSize: 13, fontWeight: 700, color: "#111827" }}>{periodLabel(key, granularity)}</div>
                 {granularity !== "day" && (
-                  <span style={{ fontSize: 10.5, fontWeight: 600, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 8px" }}>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 8px" }}>
                     {granularity === "week" ? "heti összesítő" : granularity === "month" ? "havi összesítő" : "éves összesítő"}
                   </span>
                 )}
               </div>
               <div className="pgh-right">
                 <span className="pgh-hide-mob" style={{ fontSize: 12, color: "#6B7280" }}>{rows.length} tétel</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: "#15803D" }}>+{money(income)}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "var(--positive)" }}>+{money(income)}</span>
                 <span style={{ fontSize: 13, fontWeight: 700, color: "#B91C1C" }}>-{money(expense)}</span>
                 <span className="pgh-hide-mob" style={{ fontSize: 12, color: "#6B7280" }}>haszon {money(margin)}</span>
                 <span style={{ fontSize: 13, fontWeight: 800, color: "#111827" }} title="Profit (bevétel − kiadás)">{money(income - expense)}</span>
@@ -237,8 +237,8 @@ export default function TransactionsPeriodList({ transactions, locName, onEdit, 
                   const stats = summarizeTx(rows);
                   return (
                     <div className="statrow c5" style={{ marginBottom: 14 }}>
-                      <div className="statcard"><div className="lbl">Bevétel (készpénz)</div><div className="val" style={{ color: "#15803D" }}>{money(stats.incomeCash)}</div></div>
-                      <div className="statcard"><div className="lbl">Bevétel (kártya)</div><div className="val" style={{ color: "#15803D" }}>{money(stats.incomeCard)}</div></div>
+                      <div className="statcard"><div className="lbl">Bevétel (készpénz)</div><div className="val" style={{ color: "var(--positive)" }}>{money(stats.incomeCash)}</div></div>
+                      <div className="statcard"><div className="lbl">Bevétel (kártya)</div><div className="val" style={{ color: "var(--positive)" }}>{money(stats.incomeCard)}</div></div>
                       <div className="statcard"><div className="lbl">Kiadás</div><div className="val" style={{ color: "#B91C1C" }}>{money(stats.expenseReal)}</div></div>
                       <div className="statcard"><div className="lbl">Árrés</div><div className="val">{money(stats.margin)}</div></div>
                       <div className="statcard accent"><div className="lbl">Kézpénz maradt</div><div className="val">{money(stats.cashOnHand)}</div></div>

@@ -76,7 +76,7 @@ export default function CategorySplitChart({ months, summaries, locFilter, mode 
 
   const usable = rows.filter((r) => r.hasData);
   if (usable.length === 0) {
-    return <div style={{ fontSize: 12.5, color: "#9CA3AF" }}>Ehhez még nincs kategória-bontású adat.</div>;
+    return <div style={{ fontSize: 13, color: "#9CA3AF" }}>Ehhez még nincs kategória-bontású adat.</div>;
   }
 
   return (
@@ -93,8 +93,8 @@ export default function CategorySplitChart({ months, summaries, locFilter, mode 
         if (!r.hasData) {
           return (
             <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 7 }}>
-              <div style={{ width: 34, fontSize: 10.5, color: "#9CA3AF", fontWeight: r.isLive ? 700 : 400 }}>{MONTH_NAMES[r.month - 1]}</div>
-              <div style={{ flex: 1, height: 16, background: "repeating-linear-gradient(45deg,#F3F4F6,#F3F4F6 5px,#F9FAFB 5px,#F9FAFB 10px)", borderRadius: 4, fontSize: 9.5, color: "#C1C7D0", display: "flex", alignItems: "center", paddingLeft: 6 }}>
+              <div style={{ width: 34, fontSize: 11, color: "#9CA3AF", fontWeight: r.isLive ? 700 : 400 }}>{MONTH_NAMES[r.month - 1]}</div>
+              <div style={{ flex: 1, height: 16, background: "repeating-linear-gradient(45deg,#F3F4F6,#F3F4F6 5px,#F9FAFB 5px,#F9FAFB 10px)", borderRadius: 4, fontSize: 10, color: "#C1C7D0", display: "flex", alignItems: "center", paddingLeft: 6 }}>
                 nincs bontás
               </div>
             </div>
@@ -104,7 +104,7 @@ export default function CategorySplitChart({ months, summaries, locFilter, mode 
         const estimateNote = mode === "margin" && r.isEstimate ? " (becslés — nincs tétel-szintű rés-adat ehhez a hónaphoz)" : "";
         return (
           <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 7 }} title={`${MONTH_NAMES[r.month - 1]} ${r.year} — Telefon: ${money(r.phone)} · Szerviz: ${money(r.service)} · Tartozék: ${money(r.accessory)}${estimateNote}`}>
-            <div style={{ width: 34, fontSize: 10.5, color: r.isLive ? "#111827" : "#6B7280", fontWeight: r.isLive ? 700 : 400 }}>{MONTH_NAMES[r.month - 1]}</div>
+            <div style={{ width: 34, fontSize: 11, color: r.isLive ? "#111827" : "#6B7280", fontWeight: r.isLive ? 700 : 400 }}>{MONTH_NAMES[r.month - 1]}</div>
             <div style={{ flex: 1, height: 16, borderRadius: 4, overflow: "hidden", display: "flex", background: "#F1F2F6" }}>
               {CATS.map((c) => {
                 const v = Math.max(0, r[c.key]);
@@ -113,7 +113,7 @@ export default function CategorySplitChart({ months, summaries, locFilter, mode 
                 return <div key={c.key} style={{ width: `${pct}%`, background: c.color }} />;
               })}
             </div>
-            <div style={{ width: 66, fontSize: 10.5, color: "#6B7280", textAlign: "right" }}>{money(r.total)}</div>
+            <div style={{ width: 66, fontSize: 11, color: "#6B7280", textAlign: "right" }}>{money(r.total)}</div>
           </div>
         );
       })}

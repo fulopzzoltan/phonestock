@@ -29,7 +29,7 @@ export default function PrintWarrantySlip({ w, location }) {
           {row("Garanciaidő", `${w.warranty} (${active ? "érvényes" : "lejárt"} ${expiry}-ig)`)}
         </tbody>
       </table>
-      <div style={{ fontSize: 9.5, color: "#374151", lineHeight: 1.45, whiteSpace: "pre-line", borderTop: "1px solid #E5E7EB", paddingTop: 16 }}>
+      <div style={{ fontSize: 10, color: "#374151", lineHeight: 1.45, whiteSpace: "pre-line", borderTop: "1px solid #E5E7EB", paddingTop: 16 }}>
         {w.kind === "sale" ? SALE_WARRANTY_TERMS : SERVICE_WARRANTY_TERMS}
       </div>
     </div>

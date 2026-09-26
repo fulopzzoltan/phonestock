@@ -114,7 +114,7 @@ export default function ReceiptLookup({ token, signStage, minimal = false, lang 
               </div>
             </div>
             {LOYALTY_LIVE && result.customer_points_balance != null && (
-              <div style={{ background: "var(--primary-soft)", border: "1px solid var(--primary)", borderRadius: 12, padding: "12px 14px", marginTop: 14, fontSize: 12.5, color: "#374151", lineHeight: 1.6 }}>
+              <div style={{ background: "var(--primary-soft)", border: "1px solid var(--primary)", borderRadius: 12, padding: "12px 14px", marginTop: 14, fontSize: 13, color: "#374151", lineHeight: 1.6 }}>
                 <b style={{ color: "var(--primary-ink)" }}>{result.customer_points_balance} pontod van.</b>
                 {result.customer_referral_code && <> Ajánlói kódod: <span className="mono" style={{ fontWeight: 700 }}>{result.customer_referral_code}</span> — add tovább egy barátnak, és ha nálunk vásárol vagy szervizeltet, mindketten +200 pontot kaptok!</>}
               </div>
@@ -127,13 +127,13 @@ export default function ReceiptLookup({ token, signStage, minimal = false, lang 
             {signMode && (
               signature ? (
                 <div className="dp-section" style={{ marginTop: 14, textAlign: "center" }}>
-                  <div style={{ color: "var(--primary)", fontWeight: 700, fontSize: 14 }}>✓ Aláírva — {signature.signer_name}</div>
+                  <div style={{ color: "var(--positive)", fontWeight: 700, fontSize: 14 }}>✓ Aláírva — {signature.signer_name}</div>
                   <div style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}>{new Date(signature.signed_at).toLocaleString("hu-HU")}</div>
                 </div>
               ) : (
                 <div className="dp-section" style={{ marginTop: 14 }}>
                   <div className="dp-section-title">Aláírás</div>
-                  <div style={{ fontSize: 12.5, color: "#374151", marginBottom: 10, lineHeight: 1.5 }}>{SALE_CONSENT_TEXT}</div>
+                  <div style={{ fontSize: 13, color: "#374151", marginBottom: 10, lineHeight: 1.5 }}>{SALE_CONSENT_TEXT}</div>
                   {signError && <div className="errbar" style={{ marginBottom: 10 }}>{signError}</div>}
                   <div className="field" style={{ marginBottom: 10 }}>
                     <label>Aláíró neve</label>

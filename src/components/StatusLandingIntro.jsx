@@ -11,12 +11,12 @@ export default function StatusLandingIntro({ s, phone, setPhone, busy, error, on
       <p className="bb-landing-sub" style={{ maxWidth: 420 }}>{s.statusIntroSub}</p>
 
       <div className="bb-landing-values" style={{ maxWidth: 420, padding: "34px 32px", textAlign: "left" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, fontWeight: 800, color: "var(--pub-accent-ink)", background: "#fff", borderRadius: 999, padding: "6px 12px", width: "fit-content", margin: "0 auto 16px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 800, color: "var(--pub-accent-ink)", background: "#fff", borderRadius: 999, padding: "6px 12px", width: "fit-content", margin: "0 auto 16px" }}>
           <span className="status-live-dot" />
           {s.statusLiveBadge}
         </div>
         <div style={{ fontSize: 16, fontWeight: 800, color: "var(--pub-ink)", textAlign: "center" }}>{s.searchCardTitle}</div>
-        <p style={{ margin: "4px 0 20px", fontSize: 12.5, color: "var(--pub-ink-soft)", textAlign: "center" }}>{s.searchCardDesc}</p>
+        <p style={{ margin: "4px 0 20px", fontSize: 13, color: "var(--pub-ink-soft)", textAlign: "center" }}>{s.searchCardDesc}</p>
         {error && <div className="errbar" style={{ marginBottom: 12 }}>{error}</div>}
         <form onSubmit={onSubmit}>
           <div className="field" style={{ marginBottom: 0 }}>
@@ -46,7 +46,7 @@ export default function StatusLandingIntro({ s, phone, setPhone, busy, error, on
           <WhatsappIcon width={15} height={15} style={{ color: "#fff", flexShrink: 0 }} />
           <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{s.contactWhatsappBtn}</span>
         </a>
-        <a href={`tel:${supportPhone}`} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, color: "var(--pub-ink-soft)", fontWeight: 600, fontSize: 12.5, padding: "10px 0 0", textDecoration: "none" }}>
+        <a href={`tel:${supportPhone}`} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, color: "var(--pub-ink-soft)", fontWeight: 600, fontSize: 13, padding: "10px 0 0", textDecoration: "none" }}>
           <CallIcon width={12} height={12} /> {s.contactCallAlt}
         </a>
       </div>
@@ -57,11 +57,11 @@ export default function StatusLandingIntro({ s, phone, setPhone, busy, error, on
 function FeatureItem({ icon: Icon, title, desc, last = false }) {
   return (
     <div style={{ display: "flex", gap: 14, padding: "14px 0", borderTop: "1px solid var(--pub-line)", borderBottom: last ? "1px solid var(--pub-line)" : "none" }}>
-      <div style={{ flexShrink: 0, width: 36, height: 36, borderRadius: 10, background: "var(--pub-paper)", color: "var(--pub-accent-ink)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ flexShrink: 0, width: 36, height: 36, borderRadius: 12, background: "var(--pub-paper)", color: "var(--pub-accent-ink)", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <Icon width={16} height={16} />
       </div>
       <div>
-        <b style={{ display: "block", fontSize: 13.5, fontWeight: 800, color: "var(--pub-ink)" }}>{title}</b>
+        <b style={{ display: "block", fontSize: 14, fontWeight: 800, color: "var(--pub-ink)" }}>{title}</b>
         <p style={{ margin: "2px 0 0", fontSize: 12, color: "var(--pub-ink-soft)", lineHeight: 1.5 }}>{desc}</p>
       </div>
     </div>

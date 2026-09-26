@@ -105,7 +105,7 @@ export default function SellModal({ item, locName, customers = [], rewards = [],
           </label>
         </div>
         {selectedCustomer && (selectedCustomer.loyaltyPointsBalance || 0) > 0 && (
-          <div style={{ fontSize: 12, color: "var(--primary-ink)", background: "var(--primary-soft)", borderRadius: 9, padding: "8px 12px", marginBottom: 12 }}>
+          <div style={{ fontSize: 12, color: "var(--primary-ink)", background: "var(--primary-soft)", borderRadius: 8, padding: "8px 12px", marginBottom: 12 }}>
             Ennek az ügyfélnek {selectedCustomer.loyaltyPointsBalance} pontja van
             {redeemableForCustomer.length > 0 ? <> — beváltható: {redeemableForCustomer.map((r) => r.label).join(", ")} (a Kliens-lapon)</> : "."}
           </div>

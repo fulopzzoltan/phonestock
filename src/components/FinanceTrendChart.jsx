@@ -133,7 +133,7 @@ export default function FinanceTrendChart({ months, summaries, liveMonth, locFil
           style={{
             position: "absolute", top: 30, pointerEvents: "none",
             left: `${Math.min(Math.max((xFor(hover) / W) * 100, 14), 86)}%`, transform: "translateX(-50%)",
-            background: "#111113", color: "#fff", borderRadius: 10, padding: "10px 12px", fontSize: 11.5,
+            background: "#111113", color: "#fff", borderRadius: 12, padding: "10px 12px", fontSize: 12,
             whiteSpace: "nowrap", boxShadow: "0 4px 12px rgba(0,0,0,.2)", zIndex: 5,
           }}
         >

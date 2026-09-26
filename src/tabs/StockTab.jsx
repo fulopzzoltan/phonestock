@@ -571,7 +571,7 @@ export default function StockTab({
           display: "flex", alignItems: "center", gap: 10, background: "var(--primary-soft)",
           border: "1px solid var(--primary)", borderRadius: 12, padding: "8px 12px", marginBottom: 10,
         }}>
-          <span style={{ fontWeight: 700, fontSize: 12.5, color: "var(--primary-ink)" }}>{selectedIds.size} telefon kiválasztva</span>
+          <span style={{ fontWeight: 700, fontSize: 13, color: "var(--primary-ink)" }}>{selectedIds.size} telefon kiválasztva</span>
           <button
             type="button" className="btn sec sm" style={{ marginLeft: "auto" }}
             onClick={() => { onPrintLabels?.(selectedItems); setSelectedIds(new Set()); }}

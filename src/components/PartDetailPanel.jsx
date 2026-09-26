@@ -16,7 +16,7 @@ function UnitStatusEditor({ unit, busy, onSave, onCancel }) {
   const [status, setStatus] = useState(unit.status === "felhasznalva" ? "hibás" : unit.status);
   const [note, setNote] = useState(unit.rmaNote || "");
   return (
-    <div style={{ marginTop: 6, padding: 10, background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 10 }}>
+    <div style={{ marginTop: 6, padding: 10, background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 12 }}>
       <div className="row2" style={{ marginBottom: 6 }}>
         <div className="field" style={{ margin: 0 }}>
           <label>Státusz</label>
@@ -102,7 +102,7 @@ export default function PartDetailPanel({ part, allUnits = [], onClose, onEdit, 
                       {partCode(u.partNo)} <span className={STATUS_BADGE[u.status] || "gar-pill"} style={{ marginLeft: 6 }}>{u.status}</span>
                     </span>
                     <span className="dp-val" style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "flex-end" }}>
-                      {u.rmaNote && <span style={{ color: "#9CA3AF", fontSize: 11.5 }}>{u.rmaNote}</span>}
+                      {u.rmaNote && <span style={{ color: "#9CA3AF", fontSize: 12 }}>{u.rmaNote}</span>}
                       <button type="button" className="btn sec sm" disabled={busy} onClick={() => setEditingUnitId(editingUnitId === u.id ? null : u.id)}>
                         {editingUnitId === u.id ? "Bezár" : "Státusz"}
                       </button>
@@ -123,7 +123,7 @@ export default function PartDetailPanel({ part, allUnits = [], onClose, onEdit, 
           <div className="dp-section">
             <div className="dp-section-title">Felhasználási előzmény</div>
             {partUsage.length === 0 ? (
-              <div style={{ fontSize: 12.5, color: "#9CA3AF" }}>Ez az alkatrész-típus még nem lett felhasználva munkalapon.</div>
+              <div style={{ fontSize: 13, color: "#9CA3AF" }}>Ez az alkatrész-típus még nem lett felhasználva munkalapon.</div>
             ) : partUsage.map((sp) => (
               <div key={sp.id} className="dp-row" style={{ cursor: "pointer" }} onClick={() => onOpenTicket(sp.ticket.id)}>
                 <span className="dp-key">{ticketCode(sp.ticket.ticketNo, locName(sp.ticket.intakeLocationId || sp.ticket.locationId))} — {[sp.ticket.brand, sp.ticket.model].filter(Boolean).join(" ")}</span>

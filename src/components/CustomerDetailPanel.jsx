@@ -82,7 +82,7 @@ export default function CustomerDetailPanel({ customer, locName, ledger, rewards
           )}
           <div className="dp-section">
             <div className="dp-section-title">Előzmények</div>
-            {events.length === 0 && <div style={{ color: "#9CA3AF", fontSize: 12.5 }}>Nincs rögzített esemény.</div>}
+            {events.length === 0 && <div style={{ color: "#9CA3AF", fontSize: 13 }}>Nincs rögzített esemény.</div>}
             {events.map((e, i) => {
               const clickable = e.kind === "ticket" ? !!onOpenTicket : !!(onOpenProduct && e.record.productId);
               const onRowClick = () => {

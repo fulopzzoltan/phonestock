@@ -37,7 +37,7 @@ export default function PrintReceiptSlip({ tx, location }) {
         </tbody>
       </table>
       {tx.warranty && (
-        <div style={{ fontSize: 9.5, color: "#374151", lineHeight: 1.45, whiteSpace: "pre-line", borderTop: "1px solid #E5E7EB", paddingTop: 16 }}>
+        <div style={{ fontSize: 10, color: "#374151", lineHeight: 1.45, whiteSpace: "pre-line", borderTop: "1px solid #E5E7EB", paddingTop: 16 }}>
           {SALE_WARRANTY_TERMS}
         </div>
       )}

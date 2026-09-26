@@ -124,7 +124,7 @@ function PartAddPopover({ ticket, parts, onAddPart, disabled }) {
           <input
             type="text" autoFocus placeholder="Keresés név vagy kód szerint..."
             value={query} onChange={(e) => setQuery(e.target.value)}
-            style={{ marginBottom: 6, width: "100%", background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 9, padding: "8px 10px", fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }}
+            style={{ marginBottom: 6, width: "100%", background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 8, padding: "8px 10px", fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }}
           />
           <select value={selPartId} onChange={(e) => setSelPartId(e.target.value)} style={{ width: "100%", marginBottom: 6 }}>
             <option value="">— Alkatrész ({shownParts.length}) —</option>
@@ -135,7 +135,7 @@ function PartAddPopover({ ticket, parts, onAddPart, disabled }) {
           </select>
           <div style={{ display: "flex", gap: 6 }}>
             <input type="number" min="1" max={selPart?.quantity || 1} value={qty} onChange={(e) => setQty(Number(e.target.value))}
-              style={{ width: 56, background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 9, padding: "9px 8px", fontFamily: "inherit", fontSize: 13 }} />
+              style={{ width: 56, background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 8, padding: "9px 8px", fontFamily: "inherit", fontSize: 13 }} />
             <button type="button" className="btn sm" disabled={!selPart || disabled} onClick={add} style={{ flex: 1 }}>Hozzáadás</button>
             <button type="button" className="iconbtn" onClick={() => setOpen(false)}><CloseIcon width={14} height={14} /></button>
           </div>
@@ -552,7 +552,7 @@ export default function ServiceTab({
             {money((Number(t.depositPaid) || 0) > 0 ? ticketRemaining(t) : t.price)}
           </div>
         </div>
-        <div className="mob-row-sub" style={{ marginTop: 13, fontSize: 12.5 }}>
+        <div className="mob-row-sub" style={{ marginTop: 13, fontSize: 13 }}>
           <span>{kliensOf(t)}</span>
           <span>{daysOf(t)}</span>
         </div>

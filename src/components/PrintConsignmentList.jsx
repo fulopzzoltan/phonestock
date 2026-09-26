@@ -7,8 +7,8 @@ function fmtDate(iso) {
 }
 
 const pageStyle = { fontFamily: "Inter, sans-serif", color: "#111827", padding: "20px 30px", fontSize: 11, lineHeight: 1.4, maxWidth: 760 };
-const h1 = { fontSize: 15, fontWeight: 800, marginBottom: 2, textAlign: "center" };
-const sub = { fontSize: 10.5, color: "#6B7280", textAlign: "center", marginBottom: 16 };
+const h1 = { fontSize: 16, fontWeight: 800, marginBottom: 2, textAlign: "center" };
+const sub = { fontSize: 11, color: "#6B7280", textAlign: "center", marginBottom: 16 };
 const thStyle = { border: "1px solid #D1D5DB", padding: "5px 6px", textAlign: "left", background: "#F3F4F6" };
 const tdStyle = { border: "1px solid #D1D5DB", padding: "5px 6px" };
 
@@ -39,7 +39,7 @@ export default function PrintConsignmentList({ items = [], locations = [] }) {
             <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 6 }}>
               {seller}{rows[0]?.acquisition?.sellerPhone ? ` — ${rows[0].acquisition.sellerPhone}` : ""}
             </div>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 10.5 }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
               <thead>
                 <tr>
                   {["Eszköz", "IMEI", "Helyszín", "Bekerülés", "Okmány szám", "Összeg"].map((h) => (

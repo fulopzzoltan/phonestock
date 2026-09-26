@@ -58,11 +58,11 @@ function ContactPanel({ s, lang, locations, onBack }) {
           <a key={l.id} href={mapsHref(l.name)} target="_blank" rel="noopener noreferrer" className="ticket-extra-card" style={{ display: "flex", gap: 12, textDecoration: "none", color: "inherit" }}>
             <PinIcon width={18} height={18} style={{ color: "var(--primary-ink)", flexShrink: 0, marginTop: 2 }} />
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13.5, fontWeight: 800, color: "var(--pub-ink)", marginBottom: 2 }}>{l.name}</div>
+              <div style={{ fontSize: 14, fontWeight: 800, color: "var(--pub-ink)", marginBottom: 2 }}>{l.name}</div>
               <div style={{ fontSize: 12, color: "var(--pub-ink-soft)", lineHeight: 1.5, marginBottom: 8 }}>
                 {hours.map((line, i) => <div key={i}>{line}</div>)}
               </div>
-              <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--primary-ink)" }}>{l.phone || SUPPORT_PHONE}</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "var(--primary-ink)" }}>{l.phone || SUPPORT_PHONE}</span>
             </div>
           </a>
         );
@@ -72,15 +72,15 @@ function ContactPanel({ s, lang, locations, onBack }) {
           <PinIcon width={18} height={18} style={{ color: "#A5722A", flexShrink: 0, marginTop: 2 }} />
           <div style={{ flex: 1 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-              <span style={{ fontSize: 13.5, fontWeight: 800, color: "var(--pub-ink)" }}>{l.name}</span>
-              <span style={{ fontSize: 9.5, fontWeight: 700, color: "#A5722A", background: "#F3E6D4", padding: "1px 6px", borderRadius: 999 }}>{s.contactFranchisePartner}</span>
+              <span style={{ fontSize: 14, fontWeight: 800, color: "var(--pub-ink)" }}>{l.name}</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "#A5722A", background: "#F3E6D4", padding: "1px 6px", borderRadius: 999 }}>{s.contactFranchisePartner}</span>
             </div>
             <div style={{ fontSize: 12, color: "var(--pub-ink-soft)" }}>{s.contactFranchiseNote}</div>
           </div>
         </a>
       ))}
 
-      <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.3, textTransform: "uppercase", color: "var(--pub-ink-soft)", margin: "22px 0 10px" }}>{s.contactFaqTitle}</div>
+      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.3, textTransform: "uppercase", color: "var(--pub-ink-soft)", margin: "22px 0 10px" }}>{s.contactFaqTitle}</div>
       <div className="ticket-extra-card">
         <div style={{ paddingBottom: 14, borderBottom: "1px solid var(--pub-line)", marginBottom: 14 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: "var(--pub-ink)", marginBottom: 4 }}>{s.contactFaqQ1}</div>
@@ -96,12 +96,12 @@ function ContactPanel({ s, lang, locations, onBack }) {
         href={`https://wa.me/${SUPPORT_WHATSAPP}`}
         target="_blank"
         rel="noopener noreferrer"
-        style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", background: "#1DB954", borderRadius: 14, padding: "14px 16px", marginTop: 22, boxShadow: "0 4px 12px rgba(29,185,84,.25)", textDecoration: "none" }}
+        style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", background: "#1DB954", borderRadius: 16, padding: "14px 16px", marginTop: 22, boxShadow: "0 4px 12px rgba(29,185,84,.25)", textDecoration: "none" }}
       >
         <WhatsappIcon width={15} height={15} style={{ color: "#fff", flexShrink: 0 }} />
         <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{s.contactWhatsappBtn}</span>
       </a>
-      <a href={`tel:${SUPPORT_PHONE}`} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, color: "var(--pub-ink-soft)", fontWeight: 600, fontSize: 12.5, padding: "10px 0", marginTop: 14, textDecoration: "none" }}>
+      <a href={`tel:${SUPPORT_PHONE}`} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, color: "var(--pub-ink-soft)", fontWeight: 600, fontSize: 13, padding: "10px 0", marginTop: 14, textDecoration: "none" }}>
         <CallIcon width={12} height={12} /> {s.contactCallAlt}
       </a>
     </div>
@@ -130,7 +130,7 @@ function timelineSteps(s) {
 function LoyaltyBox({ balance, code }) {
   if (balance == null) return null;
   return (
-    <div style={{ background: "var(--primary-soft)", border: "1px solid var(--primary)", borderRadius: 12, padding: "12px 14px", marginBottom: 14, fontSize: 12.5, color: "#374151", lineHeight: 1.6 }}>
+    <div style={{ background: "var(--primary-soft)", border: "1px solid var(--primary)", borderRadius: 12, padding: "12px 14px", marginBottom: 14, fontSize: 13, color: "#374151", lineHeight: 1.6 }}>
       <b style={{ color: "var(--primary-ink)" }}>{balance} pontod van.</b>
       {code && <> Ajánlói kódod: <span className="mono" style={{ fontWeight: 700 }}>{code}</span> — add tovább egy barátnak, és ha nálunk vásárol vagy szervizeltet, mindketten +200 pontot kaptok!</>}
     </div>
@@ -142,7 +142,7 @@ function LoyaltyBox({ balance, code }) {
 // szerviz frissít.
 function LiveBadge({ label = "Élő nyomonkövetés" }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10.5, fontWeight: 700, color: "var(--primary-ink)", letterSpacing: 0.3, textTransform: "uppercase" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, color: "var(--primary-ink)", letterSpacing: 0.3, textTransform: "uppercase" }}>
       <span className="status-live-dot" />
       {label}
     </div>
@@ -154,13 +154,13 @@ function LiveBadge({ label = "Élő nyomonkövetés" }) {
 // összevonva, hogy azonnal, egy pillantásra átlátható legyen, miről van szó.
 function EntityTile({ icon: Icon, title, subtitle, statusLabel, statusClass }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 14, padding: 16, borderRadius: 18, background: "var(--pub-paper)", border: "1px solid var(--pub-line)", marginBottom: 22 }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 14, padding: 16, borderRadius: 16, background: "var(--pub-paper)", border: "1px solid var(--pub-line)", marginBottom: 22 }}>
       <div style={{ width: 46, height: 46, borderRadius: 2, background: "var(--primary-soft)", border: "1px solid rgba(29,185,84,.3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
         <Icon width={20} height={20} style={{ color: "var(--primary-ink)" }} />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 15, fontWeight: 800, color: "#111827" }}>{title}</div>
-        <div className="mono" style={{ fontSize: 11.5, color: "#9CA3AF" }}>{subtitle}</div>
+        <div style={{ fontSize: 16, fontWeight: 800, color: "#111827" }}>{title}</div>
+        <div className="mono" style={{ fontSize: 12, color: "#9CA3AF" }}>{subtitle}</div>
       </div>
       {statusLabel && <span className={`st ${statusClass}`} style={{ flexShrink: 0 }}>{statusLabel}</span>}
     </div>
@@ -172,7 +172,7 @@ function EntityTile({ icon: Icon, title, subtitle, statusLabel, statusClass }) {
 function StatChip({ label, children }) {
   return (
     <div style={{ flex: 1, padding: "13px 14px", borderRadius: 0, background: "var(--pub-paper)", border: "1px solid var(--pub-line)" }}>
-      <div style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", color: "#9CA3AF", marginBottom: 5 }}>{label}</div>
+      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", color: "#9CA3AF", marginBottom: 5 }}>{label}</div>
       <div>{children}</div>
     </div>
   );
@@ -197,7 +197,7 @@ function StatusTimeline({ status, handedOver, s }) {
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 18 }}>
-        <span style={{ fontSize: 15, fontWeight: 800, color: "var(--pub-ink)" }}>{title}</span>
+        <span style={{ fontSize: 16, fontWeight: 800, color: "var(--pub-ink)" }}>{title}</span>
         <span className="status-live-dot" style={{ width: 5, height: 5 }} />
       </div>
 
@@ -217,7 +217,7 @@ function StatusTimeline({ status, handedOver, s }) {
           const reached = i <= activeStep;
           const current = i === activeStep && !handedOver;
           return (
-            <span key={step.label} style={{ flex: 1, textAlign: "center", fontSize: 10.5, fontWeight: current ? 800 : 600, color: current ? "var(--pub-ink)" : reached ? "var(--pub-ink-soft)" : "#C1C6CC" }}>
+            <span key={step.label} style={{ flex: 1, textAlign: "center", fontSize: 11, fontWeight: current ? 800 : 600, color: current ? "var(--pub-ink)" : reached ? "var(--pub-ink-soft)" : "#C1C6CC" }}>
               {step.label}
             </span>
           );
@@ -427,7 +427,7 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
           </button>
           <div className="ticket-extra-card" style={{ width: "100%", marginTop: 18 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-              <span className="mono" style={{ fontSize: 10.5, fontWeight: 700, color: "#6B7280", background: "var(--pub-paper)", padding: "4px 9px", borderRadius: 999 }}>#{result.ticket_no}</span>
+              <span className="mono" style={{ fontSize: 11, fontWeight: 700, color: "#6B7280", background: "var(--pub-paper)", padding: "4px 9px", borderRadius: 999 }}>#{result.ticket_no}</span>
               <LiveBadge label={s.statusLiveBadge} />
               <span className={`st ${statusCls(result.status)}`}>{result.sub_status ? subStatusLabel(result.status, result.sub_status) : result.status}</span>
             </div>
@@ -436,8 +436,8 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
                 <PhoneCaseIcon width={22} height={22} style={{ color: "#9CA3AF" }} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 15, fontWeight: 800, color: "var(--pub-ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{[result.brand, result.model].filter(Boolean).join(" ") || s.statusDeviceFallback}</div>
-                <div style={{ fontSize: 12.5, color: "var(--pub-ink-soft)", marginTop: 1 }}>{result.customer_name}</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: "var(--pub-ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{[result.brand, result.model].filter(Boolean).join(" ") || s.statusDeviceFallback}</div>
+                <div style={{ fontSize: 13, color: "var(--pub-ink-soft)", marginTop: 1 }}>{result.customer_name}</div>
               </div>
             </div>
 
@@ -448,11 +448,11 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
             <div style={{ borderTop: "1px solid var(--pub-line)", marginTop: 18, paddingTop: 18 }}>
               <div style={{ display: "flex", gap: 10 }}>
                 <StatChip label={s.chipRepairCost}>
-                  <span className="mono" style={{ fontSize: 15, fontWeight: 800, color: "var(--pub-ink)" }}>{money(result.price)}</span>
+                  <span className="mono" style={{ fontSize: 16, fontWeight: 800, color: "var(--pub-ink)" }}>{money(result.price)}</span>
                 </StatChip>
                 <StatChip label={s.chipWarranty}>
                   {!handedOver ? (
-                    <span style={{ fontSize: 12.5, fontWeight: 600, color: "#9CA3AF" }}>—</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: "#9CA3AF" }}>—</span>
                   ) : result.warranty ? (
                     <span className={`st ${ticketActive ? "st-kesz" : "st-kiadva"}`}>{ticketActive ? s.warrantyActive : s.warrantyExpired}</span>
                   ) : (
@@ -474,18 +474,18 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
               <FoliaUpsellBanner token={token} deviceLabel={[result.brand, result.model].filter(Boolean).join(" ")} onDone={() => setResult({ ...result, folia: true, folia_upsell_requested: true, folia_upsell_price: 30, price: (Number(result.price) || 0) + 30 })} />
             )}
             {result.folia_upsell_requested && (
-              <div style={{ background: "#F0FDF4", borderRadius: 10, padding: "8px 12px", marginBottom: 24 }}>
-                <div style={{ fontSize: 12, color: "#15803D" }}>
+              <div style={{ background: "#F0FDF4", borderRadius: 12, padding: "8px 12px", marginBottom: 24 }}>
+                <div style={{ fontSize: 12, color: "var(--positive)" }}>
                   {s.foliaOrderedNote(money(result.folia_upsell_price))}
                 </div>
                 {!handedOver && (
                   <>
-                    {foliaCancelError && <div style={{ fontSize: 11.5, color: "#B91C1C", marginTop: 6 }}>{foliaCancelError}</div>}
+                    {foliaCancelError && <div style={{ fontSize: 12, color: "#B91C1C", marginTop: 6 }}>{foliaCancelError}</div>}
                     <button
                       type="button"
                       onClick={cancelFoliaUpsell}
                       disabled={foliaCancelBusy}
-                      style={{ background: "none", border: "none", padding: 0, marginTop: 6, fontSize: 11.5, color: "#6B7280", textDecoration: "underline", cursor: "pointer" }}
+                      style={{ background: "none", border: "none", padding: 0, marginTop: 6, fontSize: 12, color: "#6B7280", textDecoration: "underline", cursor: "pointer" }}
                     >
                       {foliaCancelBusy ? s.foliaCancelling : s.foliaCancelBtn}
                     </button>
@@ -498,7 +498,7 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
             <button
               type="button"
               onClick={() => { setView("contact"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", background: "#1DB954", border: "none", borderRadius: 14, padding: "14px 16px", marginBottom: 28, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 12px rgba(29,185,84,.25)" }}
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", background: "#1DB954", border: "none", borderRadius: 16, padding: "14px 16px", marginBottom: 28, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 12px rgba(29,185,84,.25)" }}
             >
               <WhatsappIcon width={15} height={15} style={{ color: "#fff", flexShrink: 0 }} />
               <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{s.ticketWhatsappTip}</span>
@@ -513,14 +513,14 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
             {signMode && (signStage === "service_intake" || handoverAllowed) && (
               signature ? (
                 <div className="ticket-extra-card" style={{ textAlign: "center" }}>
-                  <div style={{ color: "var(--primary)", fontWeight: 700, fontSize: 14 }}>✓ {s.signedLabel} {signature.signer_name}</div>
+                  <div style={{ color: "var(--positive)", fontWeight: 700, fontSize: 14 }}>✓ {s.signedLabel} {signature.signer_name}</div>
                   <div style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}>{new Date(signature.signed_at).toLocaleString("hu-HU")}</div>
                 </div>
               ) : (
                 <div className="ticket-extra-card">
                   <div className="dp-section-title">{signStage === "service_intake" ? s.intakeSignTitle : s.handoverSignTitle}</div>
                   {signStage === "service_intake" && (
-                    <div style={{ fontSize: 12.5, color: "#374151", marginBottom: 10, lineHeight: 1.5 }}>{INTAKE_CONSENT_TEXT}</div>
+                    <div style={{ fontSize: 13, color: "#374151", marginBottom: 10, lineHeight: 1.5 }}>{INTAKE_CONSENT_TEXT}</div>
                   )}
                   {signError && <div className="errbar" style={{ marginBottom: 10 }}>{signError}</div>}
                   <div className="field" style={{ marginBottom: 10 }}>

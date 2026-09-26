@@ -115,12 +115,12 @@ export default function StockValueChart({ history }) {
             style={{
               position: "absolute", top: 4, pointerEvents: "none",
               left: `${Math.min(Math.max((hp.x / W) * 100, 12), 88)}%`, transform: "translateX(-50%)",
-              background: "#111113", color: "#fff", borderRadius: 8, padding: "6px 10px", fontSize: 11.5,
+              background: "#111113", color: "#fff", borderRadius: 8, padding: "6px 10px", fontSize: 12,
               whiteSpace: "nowrap", boxShadow: "0 4px 12px rgba(0,0,0,.2)",
             }}
           >
             <div style={{ fontWeight: 700 }}>{money(hp.value)}</div>
-            <div style={{ color: "#9CA3AF", fontSize: 10.5 }}>{fmtDate(hp.date)}</div>
+            <div style={{ color: "#9CA3AF", fontSize: 11 }}>{fmtDate(hp.date)}</div>
           </div>
         )}
       </div>

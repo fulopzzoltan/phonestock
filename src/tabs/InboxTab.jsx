@@ -18,7 +18,7 @@ export const LEAD_STAGES = [
   { value: "uj_megkereses", label: "Új megkeresés", color: "#2563EB" },
   { value: "folyamatban", label: "Folyamatban", color: "#A5722A" },
   { value: "ajanlat_kikuldve", label: "Ajánlat kiküldve", color: "#7C3AED" },
-  { value: "ugyfel_lett", label: "Ügyfél lett", color: "#15803D" },
+  { value: "ugyfel_lett", label: "Ügyfél lett", color: "var(--positive)" },
   { value: "nem_relevans", label: "Nem releváns", color: "#9CA3AF" },
 ];
 export const LEAD_SOURCES = [
@@ -119,7 +119,7 @@ function StagePill({ stage }) {
   const s = STAGE_BY_VALUE[stage];
   if (!s) return null;
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10.5, fontWeight: 700, color: s.color }}>
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 700, color: s.color }}>
       <span style={{ width: 6, height: 6, borderRadius: 999, background: s.color }} />
       {s.label}
     </span>
@@ -394,7 +394,7 @@ export default function InboxTab({ messages, customers, tickets = [], repairLead
                   </div>
                   {m.mediaStoragePath && mediaUrls[m.mediaStoragePath] ? (
                     <a href={mediaUrls[m.mediaStoragePath]} target="_blank" rel="noopener noreferrer">
-                      <img src={mediaUrls[m.mediaStoragePath]} alt="melléklet" style={{ maxWidth: 220, maxHeight: 220, borderRadius: 10, display: "block", marginTop: 4 }} />
+                      <img src={mediaUrls[m.mediaStoragePath]} alt="melléklet" style={{ maxWidth: 220, maxHeight: 220, borderRadius: 12, display: "block", marginTop: 4 }} />
                     </a>
                   ) : m.mediaStoragePath ? (
                     <div className="chat-msg-body" style={{ color: "#9CA3AF" }}><CameraIcon className="inline-ic" />Kép betöltése...</div>
@@ -416,7 +416,7 @@ export default function InboxTab({ messages, customers, tickets = [], repairLead
             </div>
             <div className="wa-composer">
               {sendError && <div className="errbar" style={{ marginBottom: 8 }}>{sendError}</div>}
-              <div style={{ fontSize: 10.5, color: "#9CA3AF", marginBottom: 6 }}>
+              <div style={{ fontSize: 11, color: "#9CA3AF", marginBottom: 6 }}>
                 {active.channel === "messenger"
                   ? "Messengeren csak akkor kézbesíthető, ha az ügyfél 24 órán belül írt — utána csak ő tud új üzenetet kezdeményezni."
                   : active.channel === "email"
@@ -435,7 +435,7 @@ export default function InboxTab({ messages, customers, tickets = [], repairLead
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                   placeholder="Írj választ..."
-                  style={{ flex: 1, resize: "none", fontFamily: "inherit", fontSize: 13, border: "1px solid #E5E7EB", borderRadius: 10, padding: "8px 10px" }}
+                  style={{ flex: 1, resize: "none", fontFamily: "inherit", fontSize: 13, border: "1px solid #E5E7EB", borderRadius: 12, padding: "8px 10px" }}
                   onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); } }}
                 />
                 <button type="button" className="btn" disabled={sending || !draft.trim()} onClick={submit}>
@@ -450,7 +450,7 @@ export default function InboxTab({ messages, customers, tickets = [], repairLead
       {active && (
         <div className="wa-side">
           {!active.customerId && (
-            <div style={{ fontSize: 11.5, color: "#9CA3AF", marginBottom: 14 }}>Ehhez a beszélgetéshez még nincs ügyfél-rekord — az első állapot- vagy forrás-választás létrehoz egyet.</div>
+            <div style={{ fontSize: 12, color: "#9CA3AF", marginBottom: 14 }}>Ehhez a beszélgetéshez még nincs ügyfél-rekord — az első állapot- vagy forrás-választás létrehoz egyet.</div>
           )}
           <div className="wa-side-sec">
             <div className="wa-side-lbl">Állapot</div>
@@ -490,10 +490,10 @@ export default function InboxTab({ messages, customers, tickets = [], repairLead
                   <div key={t.id} className="wa-side-ticket" onClick={() => onOpenTicket?.(t.id)}>
                     <ServiceIcon width={14} height={14} style={{ color: "#6B7280", flexShrink: 0 }} />
                     <div style={{ minWidth: 0, flex: 1 }}>
-                      <div style={{ fontSize: 11.5, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{displayName(t.brand, t.model) || "—"}</div>
-                      <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 1 }}>{money(t.price)}</div>
+                      <div style={{ fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{displayName(t.brand, t.model) || "—"}</div>
+                      <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 1 }}>{money(t.price)}</div>
                     </div>
-                    <span className={`st ${statusCls(t.status)}`} style={{ fontSize: 9.5, padding: "2px 7px", flexShrink: 0 }}>{statusLabel(t.status)}</span>
+                    <span className={`st ${statusCls(t.status)}`} style={{ fontSize: 10, padding: "2px 7px", flexShrink: 0 }}>{statusLabel(t.status)}</span>
                   </div>
                 ))}
               </div>
@@ -507,10 +507,10 @@ export default function InboxTab({ messages, customers, tickets = [], repairLead
                   <div key={l.id} className="wa-side-ticket" onClick={() => onOpenRepairLead?.(l.id)}>
                     <RepairPriceIcon width={14} height={14} style={{ color: "#6B7280", flexShrink: 0 }} />
                     <div style={{ minWidth: 0, flex: 1 }}>
-                      <div style={{ fontSize: 11.5, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{displayName(l.brand, l.model) || "—"}{l.problemTag ? ` — ${l.problemTag}` : ""}</div>
-                      <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 1 }}>{l.estimatedPrice ? money(l.estimatedPrice) : "—"}</div>
+                      <div style={{ fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{displayName(l.brand, l.model) || "—"}{l.problemTag ? ` — ${l.problemTag}` : ""}</div>
+                      <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 1 }}>{l.estimatedPrice ? money(l.estimatedPrice) : "—"}</div>
                     </div>
-                    <span className="st" style={{ fontSize: 9.5, padding: "2px 7px", flexShrink: 0 }}>{l.status || "Új"}</span>
+                    <span className="st" style={{ fontSize: 10, padding: "2px 7px", flexShrink: 0 }}>{l.status || "Új"}</span>
                   </div>
                 ))}
               </div>
@@ -524,10 +524,10 @@ export default function InboxTab({ messages, customers, tickets = [], repairLead
                   <div key={o.id} className="wa-side-ticket" onClick={() => onOpenBuybackOffer?.(o.id)}>
                     <BuybackIcon width={14} height={14} style={{ color: "#6B7280", flexShrink: 0 }} />
                     <div style={{ minWidth: 0, flex: 1 }}>
-                      <div style={{ fontSize: 11.5, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{displayName(o.brand, o.model) || "—"}</div>
-                      <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 1 }}>{money(o.finalPrice ?? o.estimatedPrice)}</div>
+                      <div style={{ fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{displayName(o.brand, o.model) || "—"}</div>
+                      <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 1 }}>{money(o.finalPrice ?? o.estimatedPrice)}</div>
                     </div>
-                    <span className="st" style={{ fontSize: 9.5, padding: "2px 7px", flexShrink: 0 }}>{o.status || "Új"}</span>
+                    <span className="st" style={{ fontSize: 10, padding: "2px 7px", flexShrink: 0 }}>{o.status || "Új"}</span>
                   </div>
                 ))}
               </div>

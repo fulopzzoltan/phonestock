@@ -59,7 +59,7 @@ export default function PdfOrderImportModal({ locations, defaultLocId, busy, onC
 
         {rows !== null && (
           <>
-            <div style={{ fontSize: 11.5, color: "#9CA3AF", marginBottom: 10 }}>
+            <div style={{ fontSize: 12, color: "#9CA3AF", marginBottom: 10 }}>
               Minden ár egész Lei-re felfelé kerekítve — az összeg emiatt pár Lei-vel eltérhet a számla végösszegétől, ez szándékos.
             </div>
             <div className="tw" style={{ marginBottom: 10 }}>

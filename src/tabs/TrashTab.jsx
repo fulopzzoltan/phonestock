@@ -17,7 +17,7 @@ export default function TrashTab({
           )}
           {trash.products.length > 0 && (
             <div style={{ marginBottom: 18 }}>
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>Telefonok <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({trash.products.length} db)</span></div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>Telefonok <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({trash.products.length} db)</span></div>
               <ResponsiveTable
                 columns={[{ key: "p", label: "Termék" }, { key: "i", label: "IMEI" }, { key: "a", label: "Ár" }, { key: "x", label: "" }]}
                 rows={trash.products}
@@ -51,7 +51,7 @@ export default function TrashTab({
           )}
           {trash.parts.length > 0 && (
             <div style={{ marginBottom: 18 }}>
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>Alkatrészek <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({trash.parts.length} db)</span></div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>Alkatrészek <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({trash.parts.length} db)</span></div>
               <ResponsiveTable
                 columns={[{ key: "p", label: "Alkatrész" }, { key: "c", label: "Kategória" }, { key: "q", label: "Készlet" }, { key: "x", label: "" }]}
                 rows={trash.parts}
@@ -85,7 +85,7 @@ export default function TrashTab({
           )}
           {trash.transactions.length > 0 && (
             <div style={{ marginBottom: 18 }}>
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>Cashflow <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({trash.transactions.length} db)</span></div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>Cashflow <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({trash.transactions.length} db)</span></div>
               <ResponsiveTable
                 columns={[{ key: "d", label: "Leírás" }, { key: "a", label: "Összeg" }, { key: "dt", label: "Dátum" }, { key: "x", label: "" }]}
                 rows={trash.transactions}
@@ -119,7 +119,7 @@ export default function TrashTab({
           )}
           {trash.tickets.length > 0 && (
             <div style={{ marginBottom: 18 }}>
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>Szerviz munkalapok <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({trash.tickets.length} db)</span></div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#374151", margin: "0 0 8px 2px" }}>Szerviz munkalapok <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({trash.tickets.length} db)</span></div>
               <ResponsiveTable
                 columns={[{ key: "n", label: "#" }, { key: "c", label: "Ügyfél" }, { key: "d", label: "Eszköz" }, { key: "x", label: "" }]}
                 rows={trash.tickets}

@@ -129,7 +129,7 @@ function AuthForm() {
     return (
       <div className="login-card" style={{ maxWidth: 380 }}>
         <div className="login-title">Szia!</div>
-        <p style={{ fontSize: 12.5, color: "#6B7280", textAlign: "center", margin: "0 0 20px", lineHeight: 1.5 }}>
+        <p style={{ fontSize: 13, color: "#6B7280", textAlign: "center", margin: "0 0 20px", lineHeight: 1.5 }}>
           Kezdd az email címed megadásával. Ha még nincs fiókod, a következő lépésben létrehozzuk.
         </p>
         {error && <div className="errbar">{error}</div>}
@@ -151,12 +151,12 @@ function AuthForm() {
       </div>
       {error && <div className="errbar">{error}</div>}
       {step === "register" && (
-        <p style={{ fontSize: 12.5, color: "#6B7280", margin: "0 0 16px", lineHeight: 1.5 }}>
+        <p style={{ fontSize: 13, color: "#6B7280", margin: "0 0 16px", lineHeight: 1.5 }}>
           Ehhez az email címhez még nincs fiókunk — hozzuk létre most.
         </p>
       )}
       {step === "forgot" && (
-        <p style={{ fontSize: 12.5, color: "#6B7280", margin: "0 0 16px", lineHeight: 1.5 }}>
+        <p style={{ fontSize: 13, color: "#6B7280", margin: "0 0 16px", lineHeight: 1.5 }}>
           Küldünk egy linket erre a címre, amivel új jelszót állíthatsz be.
         </p>
       )}
@@ -212,7 +212,7 @@ function ReferralLinkBox({ code, count }) {
         <div style={{ fontSize: 12, color: "#6B7280", fontWeight: 600, whiteSpace: "nowrap" }}>{count} sikeres meghívás</div>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12 }}>
-        <span className="mono" style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", background: "#F9FAFB", border: "1px solid var(--pub-line)", borderRadius: 8, padding: "8px 12px", fontSize: 11.5 }}>{link}</span>
+        <span className="mono" style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", background: "#F9FAFB", border: "1px solid var(--pub-line)", borderRadius: 8, padding: "8px 12px", fontSize: 12 }}>{link}</span>
         <button type="button" className="btn sec sm" style={{ flexShrink: 0 }} onClick={copy}>{copied ? "Másolva!" : "Másolás"}</button>
       </div>
     </div>
@@ -267,7 +267,7 @@ function ChangePasswordForm() {
     <div className="dp-section">
       <div className="dp-section-title">Jelszó módosítása</div>
       {error && <div className="errbar">{error}</div>}
-      {done && <div style={{ fontSize: 12.5, color: "#15803D", fontWeight: 700, marginBottom: 8 }}>✓ A jelszavad megváltozott.</div>}
+      {done && <div style={{ fontSize: 13, color: "var(--positive)", fontWeight: 700, marginBottom: 8 }}>✓ A jelszavad megváltozott.</div>}
       <form onSubmit={submit} style={{ maxWidth: 320 }}>
         <div className="field"><label>Új jelszó</label><input type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" /></div>
         <div className="field"><label>Új jelszó mégegyszer</label><input type="password" autoComplete="new-password" value={password2} onChange={(e) => setPassword2(e.target.value)} placeholder="••••••••" /></div>
@@ -524,7 +524,7 @@ function Dashboard({ profile }) {
                       Még <b>{nextReward.pointCost - loyalty.pointsBalance} pont</b> hiányzik a(z) <b>{nextReward.label}</b> ingyenes választásához!
                     </div>
                   ) : tierGroups.length > 0 ? (
-                    <div className="cp-loyalty-ring-label" style={{ color: "#15803D", fontWeight: 700 }}><GiftIcon className="inline-ic" />Minden elérhető jutalmat kiváltasz a pontjaiddal!</div>
+                    <div className="cp-loyalty-ring-label" style={{ color: "var(--positive)", fontWeight: 700 }}><GiftIcon className="inline-ic" />Minden elérhető jutalmat kiváltasz a pontjaiddal!</div>
                   ) : null}
                 </div>
                 {tierGroups.length > 0 && (

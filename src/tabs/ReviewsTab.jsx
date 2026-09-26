@@ -43,20 +43,20 @@ function BulkImportPanel({ onImport, onCancel, busy }) {
   return (
     <div className="tw" style={{ padding: 16, marginBottom: 18 }}>
       <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 6 }}>Tömeges felvitel</div>
-      <div style={{ fontSize: 12.5, color: "#6B7280", marginBottom: 10 }}>
+      <div style={{ fontSize: 13, color: "#6B7280", marginBottom: 10 }}>
         Soronként egy vélemény, <code>|</code>-vel elválasztva: <b>Név | csillag (1-5) | szöveg | dátum (opcionális, ÉÉÉÉ-HH-NN)</b><br />
         pl.: <code>Kovács János | 5 | Nagyon elégedett voltam a szervizzel! | 2025-11-02</code>
       </div>
-      <textarea rows={8} value={text} onChange={(e) => setText(e.target.value)} placeholder="Illeszd be ide a véleményeket, soronként egyet..." style={{ fontFamily: "monospace", fontSize: 12.5 }} />
+      <textarea rows={8} value={text} onChange={(e) => setText(e.target.value)} placeholder="Illeszd be ide a véleményeket, soronként egyet..." style={{ fontFamily: "monospace", fontSize: 13 }} />
       {preview.length > 0 && (
-        <div style={{ marginTop: 10, fontSize: 12.5, color: validCount === preview.length ? "#15803D" : "#B45309" }}>
+        <div style={{ marginTop: 10, fontSize: 13, color: validCount === preview.length ? "#15803D" : "#B45309" }}>
           {validCount} / {preview.length} sor értelmezhető {validCount !== preview.length && "— a hiányos sorok (nincs név vagy szöveg) kimaradnak"}
         </div>
       )}
       {preview.length > 0 && (
-        <div style={{ marginTop: 10, maxHeight: 220, overflowY: "auto", border: "1px solid #F3F4F6", borderRadius: 10 }}>
+        <div style={{ marginTop: 10, maxHeight: 220, overflowY: "auto", border: "1px solid #F3F4F6", borderRadius: 12 }}>
           {preview.map((p) => (
-            <div key={p.key} style={{ padding: "8px 12px", borderBottom: "1px solid #F3F4F6", fontSize: 12.5, opacity: p.ok ? 1 : 0.4 }}>
+            <div key={p.key} style={{ padding: "8px 12px", borderBottom: "1px solid #F3F4F6", fontSize: 13, opacity: p.ok ? 1 : 0.4 }}>
               <b>{p.authorName || "(nincs név)"}</b> <Stars n={p.rating} /> <span style={{ color: "#6B7280" }}>{p.reviewDate}</span>
               <div style={{ color: "#374151" }}>{p.body || "(nincs szöveg)"}</div>
             </div>
@@ -129,7 +129,7 @@ export default function ReviewsTab({ reviews, locName, editReview, deleteReview,
                   <div className="mob-row-main"><span>{r.authorName}</span></div>
                   <Stars n={r.rating} />
                 </div>
-                <div style={{ fontSize: 12.5, color: "#374151", margin: "4px 0" }}>{r.body}</div>
+                <div style={{ fontSize: 13, color: "#374151", margin: "4px 0" }}>{r.body}</div>
                 <div className="mob-row-sub">
                   <span className="mono">{r.reviewDate}</span>
                   <span>{r.source}</span>

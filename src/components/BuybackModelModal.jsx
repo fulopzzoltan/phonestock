@@ -25,7 +25,7 @@ export default function BuybackModelModal({ model, onClose, onSave, busy }) {
           <div className="field"><label>Tárhely</label><input value={f.storage} onChange={set("storage")} placeholder="64GB (opcionális)" /></div>
           <div className="field"><label>Alapár (Lei)</label><input type="number" value={f.basePrice} onChange={set("basePrice")} placeholder="0" /></div>
         </div>
-        <label style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 12.5, color: "#374151", margin: "2px 0 4px" }}>
+        <label style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 13, color: "#374151", margin: "2px 0 4px" }}>
           <input type="checkbox" checked={f.active} onChange={(e) => setF({ ...f, active: e.target.checked })} />
           Aktív (megjelenik a nyilvános /eladom oldalon)
         </label>

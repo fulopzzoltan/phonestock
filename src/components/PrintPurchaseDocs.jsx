@@ -4,8 +4,8 @@ function fmtDate(iso) {
   return `${d}.${m}.${y}`;
 }
 
-const pageStyle = { fontFamily: "Inter, sans-serif", color: "#111827", padding: "26px 34px", fontSize: 12.5, lineHeight: 1.5, maxWidth: 760 };
-const h1 = { fontSize: 17, fontWeight: 800, marginBottom: 14, textAlign: "center" };
+const pageStyle = { fontFamily: "Inter, sans-serif", color: "#111827", padding: "26px 34px", fontSize: 13, lineHeight: 1.5, maxWidth: 760 };
+const h1 = { fontSize: 18, fontWeight: 800, marginBottom: 14, textAlign: "center" };
 
 export default function PrintPurchaseDocs({ product, acquisition, settings, location }) {
   if (!product || !acquisition) return null;

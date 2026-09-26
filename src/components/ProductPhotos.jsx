@@ -69,7 +69,7 @@ export default function ProductPhotos({ productId }) {
       <div className="dp-section-title">Fotók</div>
       {error && <div className="errbar">{error}</div>}
       {loading ? (
-        <div style={{ fontSize: 12.5, color: "#9CA3AF" }}>Betöltés...</div>
+        <div style={{ fontSize: 13, color: "#9CA3AF" }}>Betöltés...</div>
       ) : (
         <div className="photo-grid">
           {photos.map((p) => (

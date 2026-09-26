@@ -14,13 +14,13 @@ export default function CashOrCardModal({ title, amount, onClose, onConfirm, bus
           Kifizetett összeg: <strong>{money(amount)}</strong>
         </p>
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn sec" style={{ flex: 1, flexDirection: "column", height: 72, gap: 6, fontSize: 12.5 }} disabled={busy} onClick={() => onConfirm("Készpénz")}>
+          <button className="btn sec" style={{ flex: 1, flexDirection: "column", height: 72, gap: 6, fontSize: 13 }} disabled={busy} onClick={() => onConfirm("Készpénz")}>
             <CashIcon width={20} height={20} />Készpénz
           </button>
-          <button className="btn sec" style={{ flex: 1, flexDirection: "column", height: 72, gap: 6, fontSize: 12.5 }} disabled={busy} onClick={() => onConfirm("Kártya")}>
+          <button className="btn sec" style={{ flex: 1, flexDirection: "column", height: 72, gap: 6, fontSize: 13 }} disabled={busy} onClick={() => onConfirm("Kártya")}>
             <CardIcon width={20} height={20} />Kártya
           </button>
-          <button className="btn sec" style={{ flex: 1, flexDirection: "column", height: 72, gap: 6, fontSize: 12.5 }} disabled={busy} onClick={() => onConfirm("Átutalás")} title="Nem a helyszín készpénzéből ment ki — pl. utalással vagy külön elrendezve">
+          <button className="btn sec" style={{ flex: 1, flexDirection: "column", height: 72, gap: 6, fontSize: 13 }} disabled={busy} onClick={() => onConfirm("Átutalás")} title="Nem a helyszín készpénzéből ment ki — pl. utalással vagy külön elrendezve">
             <TransferIcon width={20} height={20} />Átutalás
           </button>
         </div>

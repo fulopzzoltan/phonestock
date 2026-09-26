@@ -97,9 +97,9 @@ export default function InvoicesTab({ transactions, locName, isAdmin, retrySmart
                 <td><span className="badge-loc">{DOC_TYPE_LABELS[d.docType] || d.docType}</span></td>
                 <td style={{ color: "#6B7280" }}>{t.date}</td>
                 <td><span className="badge-loc">{locName(t.locationId)}</span></td>
-                <td className="mono" style={{ fontWeight: 700, color: "#15803D" }}>+{money(t.amount)}</td>
+                <td className="mono" style={{ fontWeight: 700, color: "var(--positive)" }}>+{money(t.amount)}</td>
                 <td>
-                  {d.status === "issued" && <span className="badge-loc" style={{ color: "#15803D" }}>Kiállítva</span>}
+                  {d.status === "issued" && <span className="badge-loc" style={{ color: "var(--positive)" }}>Kiállítva</span>}
                   {d.status === "failed" && <span className="badge-loc" style={{ color: "#B91C1C" }} title={d.errorText || ""}>Hiba{d.errorText ? `: ${d.errorText}` : ""}</span>}
                   {d.status === "pending" && <span className="badge-loc" style={{ color: "#6B7280" }}>Folyamatban</span>}
                 </td>
@@ -123,13 +123,13 @@ export default function InvoicesTab({ transactions, locName, isAdmin, retrySmart
               <div className="mob-row">
                 <div className="mob-row-top">
                   <div className="mob-row-main"><span>{t.description}</span></div>
-                  <div className="mob-row-amount" style={{ color: "#15803D" }}>+{money(t.amount)}</div>
+                  <div className="mob-row-amount" style={{ color: "var(--positive)" }}>+{money(t.amount)}</div>
                 </div>
                 <div className="mob-row-sub">
                   <span className="badge-loc">{DOC_TYPE_LABELS[d.docType] || d.docType}</span>
                   <span>{t.date}</span>
                   <span className="badge-loc">{locName(t.locationId)}</span>
-                  {d.status === "issued" && <span style={{ color: "#15803D" }}>Kiállítva {d.smartbillSeries}-{d.smartbillNumber}</span>}
+                  {d.status === "issued" && <span style={{ color: "var(--positive)" }}>Kiállítva {d.smartbillSeries}-{d.smartbillNumber}</span>}
                   {d.status === "failed" && <span style={{ color: "#B91C1C" }}>Hiba{d.errorText ? `: ${d.errorText}` : ""}</span>}
                   {d.status === "pending" && <span style={{ color: "#6B7280" }}>Folyamatban</span>}
                 </div>
@@ -150,7 +150,7 @@ export default function InvoicesTab({ transactions, locName, isAdmin, retrySmart
       )}
 
       {isAdmin && (
-        <div className="tw" style={{ marginTop: 16, padding: "12px 14px", fontSize: 12.5, color: "#6B7280" }}>
+        <div className="tw" style={{ marginTop: 16, padding: "12px 14px", fontSize: 13, color: "#6B7280" }}>
           A számlasorozat, ÁFA-kulcs és a SmartBill-kapcsolat tesztelése a Beállítások fülön található.
         </div>
       )}

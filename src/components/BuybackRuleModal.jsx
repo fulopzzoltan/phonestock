@@ -47,7 +47,7 @@ export default function BuybackRuleModal({ rule, onClose, onSave, busy }) {
             <input type="number" value={f.deductionValue} onChange={set("deductionValue")} placeholder="0" />
           </div>
         </div>
-        <label style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 12.5, color: "#374151", margin: "2px 0 4px" }}>
+        <label style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 13, color: "#374151", margin: "2px 0 4px" }}>
           <input type="checkbox" checked={f.active} onChange={(e) => setF({ ...f, active: e.target.checked })} />
           Aktív (érvényben van az árazásnál)
         </label>

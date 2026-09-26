@@ -58,7 +58,7 @@ export default function PartUsageModal({ part, tickets, stock, locName, busy, on
           Alkatrész felhasználása
           <button className="iconbtn" onClick={onClose}><CloseIcon width={17} height={17} /></button>
         </h2>
-        <div style={{ fontSize: 12.5, color: "#6B7280", marginBottom: 18 }}>
+        <div style={{ fontSize: 13, color: "#6B7280", marginBottom: 18 }}>
           {part.name}{part.brand ? ` — ${part.brand}` : ""}{part.modelFit ? `, ${part.modelFit}` : ""} · {maxQty} db raktáron
         </div>
 

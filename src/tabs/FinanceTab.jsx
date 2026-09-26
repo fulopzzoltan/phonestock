@@ -42,8 +42,8 @@ function KpiColumn({ loc, locTx, expected, showHeading }) {
         <div className="statcard fin-kpi-margin"><div className="lbl">Árrés</div><div className="val">{money(stats.margin)}</div></div>
       </div>
       <div className="fin-kpi-grid" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        <div className="statcard"><div className="lbl">Készpénz</div><div className="val" style={{ color: "#15803D" }}>{money(stats.incomeCash)}</div></div>
-        <div className="statcard"><div className="lbl">Kártya</div><div className="val" style={{ color: "#15803D" }}>{money(stats.incomeCard)}</div></div>
+        <div className="statcard"><div className="lbl">Készpénz</div><div className="val" style={{ color: "var(--positive)" }}>{money(stats.incomeCash)}</div></div>
+        <div className="statcard"><div className="lbl">Kártya</div><div className="val" style={{ color: "var(--positive)" }}>{money(stats.incomeCard)}</div></div>
         <div className="statcard"><div className="lbl">Kiadás</div><div className="val" style={{ color: "#B91C1C" }}>{money(stats.expenseReal)}</div></div>
       </div>
     </div>

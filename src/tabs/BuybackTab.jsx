@@ -87,7 +87,7 @@ export default function BuybackTab({
       </HistorySection>
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "24px 0 8px 2px" }}>
-        <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151" }}>Modellek <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({buybackModels.length} db)</span></div>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>Modellek <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({buybackModels.length} db)</span></div>
         <button className="btn sec sm" disabled={busy} onClick={() => setBuybackModelModal("add")}>+ Új modell</button>
       </div>
       <div className="tw" style={{ marginBottom: 22 }}>
@@ -133,7 +133,7 @@ export default function BuybackTab({
       </div>
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 0 8px 2px" }}>
-        <div style={{ fontSize: 12.5, fontWeight: 700, color: "#374151" }}>Levonási szabályok <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({buybackRules.length} db)</span></div>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>Levonási szabályok <span style={{ color: "#9CA3AF", fontWeight: 500 }}>({buybackRules.length} db)</span></div>
         <button className="btn sec sm" disabled={busy} onClick={() => setBuybackRuleModal("add")}>+ Új szabály</button>
       </div>
       <div className="tw">
@@ -150,8 +150,8 @@ export default function BuybackTab({
               const opt = q?.options.find((o) => o.key === r.answerKey);
               return (
                 <tr key={r.id}>
-                  <td style={{ color: "#6B7280", fontSize: 12.5 }}>{q?.question || r.questionKey}</td>
-                  <td style={{ fontSize: 12.5 }}>{opt?.label || r.answerKey}</td>
+                  <td style={{ color: "#6B7280", fontSize: 13 }}>{q?.question || r.questionKey}</td>
+                  <td style={{ fontSize: 13 }}>{opt?.label || r.answerKey}</td>
                   <td style={{ fontWeight: 600 }}>{r.label}</td>
                   <td className="mono" style={{ fontWeight: 700, color: "#DC2626" }}>
                     −{r.deductionType === "percent" ? `${r.deductionValue}%` : money(r.deductionValue)}

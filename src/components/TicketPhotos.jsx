@@ -65,7 +65,7 @@ export default function TicketPhotos({ ticketId }) {
       <div className="dp-section-title">Állapotfotók (átvételkor)</div>
       {error && <div className="errbar">{error}</div>}
       {loading ? (
-        <div style={{ fontSize: 12.5, color: "#9CA3AF" }}>Betöltés...</div>
+        <div style={{ fontSize: 13, color: "#9CA3AF" }}>Betöltés...</div>
       ) : (
         <div className="photo-grid">
           {photos.map((p) => (

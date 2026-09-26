@@ -218,14 +218,14 @@ export default function RevenueQualityPanel({ transactions, tickets, locations, 
             const b = d.basketByKind[key];
             return (
               <div key={key} style={{ background: "#F9FAFB", border: "1px solid #F1F2F6", borderRadius: 12, padding: "10px 12px" }}>
-                <div style={{ fontSize: 10.5, color: "#9CA3AF", marginBottom: 4 }}>{label}</div>
-                <div style={{ fontSize: 15, fontWeight: 800 }}>{b.n} db</div>
+                <div style={{ fontSize: 11, color: "#9CA3AF", marginBottom: 4 }}>{label}</div>
+                <div style={{ fontSize: 16, fontWeight: 800 }}>{b.n} db</div>
                 <div style={{ fontSize: 11, color: "#6B7280" }}>{b.n ? money(b.total / b.n) : "—"} átl.</div>
               </div>
             );
           })}
         </div>
-        <div style={{ fontSize: 10.5, color: "#9CA3AF", lineHeight: 1.6 }}>
+        <div style={{ fontSize: 11, color: "#9CA3AF", lineHeight: 1.6 }}>
           {d.basketByKind.mixed.n === 0
             ? "0 vegyes blokk: még senki nem vett telefont+tartozékot vagy telefont+szervizt egy vásárláson belül. Ez konkrét, kihasználatlan lehetőség — ha telefon-eladásnál felkínálsz egy tokot/fóliát, az azonnal emeli a kosárértéket, ráadásul ez a legjobb pillanat rá (a vevő már ott áll a pultnál, épp fizet)."
             : `${d.basketByKind.mixed.n} vegyes blokk volt eddig — ez a kereszteladás, amit érdemes tudatosan növelni.`}
@@ -242,7 +242,7 @@ export default function RevenueQualityPanel({ transactions, tickets, locations, 
             </span>
           ))}
         </div>
-        <div style={{ height: 18, borderRadius: 5, overflow: "hidden", display: "flex", background: "#F1F2F6", marginBottom: 14 }}>
+        <div style={{ height: 18, borderRadius: 8, overflow: "hidden", display: "flex", background: "#F1F2F6", marginBottom: 14 }}>
           {SEG_ORDER.map((k) => {
             const p = pct(d.segs[k].revenue, d.totalRevenue);
             if (p <= 0) return null;
@@ -257,11 +257,11 @@ export default function RevenueQualityPanel({ transactions, tickets, locations, 
             const marginPct = pct(s.margin, s.revenue);
             return (
               <div key={k} style={{ background: "#F9FAFB", border: "1px solid #F1F2F6", borderRadius: 12, padding: "12px 14px" }}>
-                <div style={{ fontSize: 11.5, fontWeight: 800, color: SEG_COLOR[k], marginBottom: 6 }}>{SEG_LABEL[k]}</div>
-                <div style={{ fontSize: 17, fontWeight: 800, color: "#111827" }}>{money(s.revenue)}</div>
-                <div style={{ fontSize: 10.5, color: "#9CA3AF", marginBottom: 8 }}>a bevétel {revPct}%-a · {s.count} tétel</div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: "#15803D" }}>{money(s.margin)} rés</div>
-                <div style={{ fontSize: 10.5, color: "#9CA3AF" }}>{marginPct}% árréshányad</div>
+                <div style={{ fontSize: 12, fontWeight: 800, color: SEG_COLOR[k], marginBottom: 6 }}>{SEG_LABEL[k]}</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: "#111827" }}>{money(s.revenue)}</div>
+                <div style={{ fontSize: 11, color: "#9CA3AF", marginBottom: 8 }}>a bevétel {revPct}%-a · {s.count} tétel</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "var(--positive)" }}>{money(s.margin)} rés</div>
+                <div style={{ fontSize: 11, color: "#9CA3AF" }}>{marginPct}% árréshányad</div>
               </div>
             );
           })}
@@ -270,7 +270,7 @@ export default function RevenueQualityPanel({ transactions, tickets, locations, 
 
       <div className="statcard" style={{ marginBottom: 14 }}>
         <div className="dp-section-title">Ügyfél-azonosítás — Telefon és Szerviz eladásnál</div>
-        <div style={{ fontSize: 11.5, color: "#9CA3AF", marginBottom: 10 }}>
+        <div style={{ fontSize: 12, color: "#9CA3AF", marginBottom: 10 }}>
           A lenti új/visszatérő bontás csak azon a hányadon megbízható, ahol tényleg tudjuk, ki vásárolt — ha ez nem 100%,
           az a jel, hogy a pultnál ki kell kérni az ügyfél nevét/telefonszámát a rendes eladási/átadási folyamatban.
         </div>
@@ -280,7 +280,7 @@ export default function RevenueQualityPanel({ transactions, tickets, locations, 
             const idPct = pct(s.withCustomer, s.count);
             return (
               <div key={k}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 4 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
                   <span style={{ fontWeight: 700, color: "#374151" }}>{SEG_LABEL[k]}</span>
                   <span style={{ color: idPct >= 90 ? "#15803D" : idPct >= 60 ? "#B45309" : "#B91C1C", fontWeight: 700 }}>
                     {idPct}% <span style={{ color: "#9CA3AF", fontWeight: 400 }}>({s.withCustomer}/{s.count})</span>
@@ -305,7 +305,7 @@ export default function RevenueQualityPanel({ transactions, tickets, locations, 
             const retPct = 100 - newPct;
             return (
               <div key={k}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 4 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
                   <span style={{ fontWeight: 700, color: "#374151" }}>{SEG_LABEL[k]}</span>
                   <span style={{ color: "#6B7280" }}>
                     <span style={{ color: "var(--primary)" }}>Új {newPct}%</span>{" · "}
@@ -317,7 +317,7 @@ export default function RevenueQualityPanel({ transactions, tickets, locations, 
                   <div style={{ width: `${newPct}%`, height: "100%", background: "var(--primary)" }} />
                   <div style={{ width: `${retPct}%`, height: "100%", background: "#6B7280" }} />
                 </div>
-                <div style={{ fontSize: 10.5, color: "#9CA3AF" }}>
+                <div style={{ fontSize: 11, color: "#9CA3AF" }}>
                   Új ügyfelektől {money(s.newRevenue)} · Visszatérőktől {money(s.returningRevenue)}
                 </div>
               </div>
@@ -328,24 +328,24 @@ export default function RevenueQualityPanel({ transactions, tickets, locations, 
         <div style={{ display: "flex", gap: 24, paddingTop: 10, borderTop: "1px solid #F1F2F6", flexWrap: "wrap" }}>
           <div>
             <div style={{ fontSize: 10, fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 4 }}>Azonosított ügyfél összesen</div>
-            <div style={{ fontSize: 17, fontWeight: 800 }}>{d.identifiedAll.size} fő</div>
+            <div style={{ fontSize: 18, fontWeight: 800 }}>{d.identifiedAll.size} fő</div>
           </div>
           <div>
             <div style={{ fontSize: 10, fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 4 }}>Ebből most először hoztunk értéket</div>
-            <div style={{ fontSize: 17, fontWeight: 800, color: "var(--primary)" }}>{d.newAll.size} fő</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: "var(--primary)" }}>{d.newAll.size} fő</div>
           </div>
           <div>
             <div style={{ fontSize: 10, fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 4 }}>Átl. bevétel / azonosított ügyfél</div>
-            <div style={{ fontSize: 17, fontWeight: 800 }}>
+            <div style={{ fontSize: 18, fontWeight: 800 }}>
               {money(d.identifiedAll.size ? (d.segs.phone.revenue + d.segs.service.revenue) / d.identifiedAll.size : 0)}
             </div>
           </div>
           <div>
             <div style={{ fontSize: 10, fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 4 }}>Átl. induló rés / új ügyfél</div>
-            <div style={{ fontSize: 17, fontWeight: 800, color: "#15803D" }}>{money(d.avgNewMargin)}</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: "var(--positive)" }}>{money(d.avgNewMargin)}</div>
           </div>
         </div>
-        <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 8 }}>
+        <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 8 }}>
           {d.days} nap alatt még nem valódi élettartamérték (LTV) — csak korai jelzés. Ahogy telik az idő és többször
           visszajönnek ugyanazok az ügyfelek, ez a szám kezdi megmutatni, mennyit ér egy ügyfél hosszú távon. Az "átl.
           induló rés" viszont már most használható plafon: ennyi haszon keletkezik egy új ügyfél ELSŐ vásárlásán/átadásán —
@@ -362,16 +362,16 @@ export default function RevenueQualityPanel({ transactions, tickets, locations, 
           {d.locStats.map((l) => (
             <div key={l.id} style={{ background: "#F9FAFB", border: "1px solid #F1F2F6", borderRadius: 12, padding: "12px 14px" }}>
               <div style={{ fontSize: 12, fontWeight: 800, color: "#111827", marginBottom: 8 }}>{l.name}</div>
-              <div style={{ fontSize: 10.5, color: "#9CA3AF" }}>Bevétel</div>
-              <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>{money(l.revenue)} <span style={{ fontSize: 10, color: "#9CA3AF", fontWeight: 400 }}>({l.count} tétel)</span></div>
-              <div style={{ fontSize: 10.5, color: "#9CA3AF" }}>Kiadás (árubeszerzés + egyéb)</div>
-              <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 6, color: "#B91C1C" }}>{money(l.totalCost)}</div>
-              <div style={{ fontSize: 10.5, color: "#9CA3AF" }}>Nettó</div>
-              <div style={{ fontSize: 17, fontWeight: 800, color: l.net >= 0 ? "#15803D" : "#B91C1C" }}>{money(l.net)} <span style={{ fontSize: 11, fontWeight: 700 }}>({l.marginPct}%)</span></div>
+              <div style={{ fontSize: 11, color: "#9CA3AF" }}>Bevétel</div>
+              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>{money(l.revenue)} <span style={{ fontSize: 10, color: "#9CA3AF", fontWeight: 400 }}>({l.count} tétel)</span></div>
+              <div style={{ fontSize: 11, color: "#9CA3AF" }}>Kiadás (árubeszerzés + egyéb)</div>
+              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 6, color: "#B91C1C" }}>{money(l.totalCost)}</div>
+              <div style={{ fontSize: 11, color: "#9CA3AF" }}>Nettó</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: l.net >= 0 ? "#15803D" : "#B91C1C" }}>{money(l.net)} <span style={{ fontSize: 11, fontWeight: 700 }}>({l.marginPct}%)</span></div>
             </div>
           ))}
         </div>
-        <div style={{ fontSize: 10.5, color: "#9CA3AF", lineHeight: 1.6 }}>
+        <div style={{ fontSize: 11, color: "#9CA3AF", lineHeight: 1.6 }}>
           {d.days} nap még kevés, és a "kiadás" itt nem tartalmazza a tényleges bért/bérleti díjat sem szinte
           egyáltalán (a teljes rendszerben eddig összesen 2 db "Bér" tétel van rögzítve) — a valódi fix költség
           rárakása után mindkét helyszín nettója alacsonyabb lesz, de az arány (melyik visel arányosan nagyobb
@@ -384,25 +384,25 @@ export default function RevenueQualityPanel({ transactions, tickets, locations, 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 10 }}>
           {d.capStats.map((c) => (
             <div key={c.key} style={{ background: "#F9FAFB", border: "1px solid #F1F2F6", borderRadius: 12, padding: "12px 14px" }}>
-              <div style={{ fontSize: 11.5, fontWeight: 800, color: SEG_COLOR[c.key], marginBottom: 8 }}>{SEG_LABEL[c.key]}</div>
+              <div style={{ fontSize: 12, fontWeight: 800, color: SEG_COLOR[c.key], marginBottom: 8 }}>{SEG_LABEL[c.key]}</div>
               {c.capital != null ? (
                 <>
-                  <div style={{ fontSize: 10.5, color: "#9CA3AF" }}>Lekötött tőke{c.isEstimate ? " (becslés)" : ""}</div>
-                  <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>{money(c.capital)}</div>
-                  <div style={{ fontSize: 10.5, color: "#9CA3AF" }}>Forgás (évesített)</div>
-                  <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>{c.turns != null ? `${c.turns.toFixed(1)}×/év` : "—"}</div>
-                  <div style={{ fontSize: 10.5, color: "#9CA3AF" }}>Megtérülés a tőkén (évesített)</div>
-                  <div style={{ fontSize: 17, fontWeight: 800, color: "#15803D" }}>{c.roc != null ? `${Math.round(c.roc * 100)}%` : "—"}</div>
+                  <div style={{ fontSize: 11, color: "#9CA3AF" }}>Lekötött tőke{c.isEstimate ? " (becslés)" : ""}</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>{money(c.capital)}</div>
+                  <div style={{ fontSize: 11, color: "#9CA3AF" }}>Forgás (évesített)</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>{c.turns != null ? `${c.turns.toFixed(1)}×/év` : "—"}</div>
+                  <div style={{ fontSize: 11, color: "#9CA3AF" }}>Megtérülés a tőkén (évesített)</div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: "var(--positive)" }}>{c.roc != null ? `${Math.round(c.roc * 100)}%` : "—"}</div>
                 </>
               ) : (
-                <div style={{ fontSize: 11.5, color: "#B45309", lineHeight: 1.5 }}>
+                <div style={{ fontSize: 12, color: "#B45309", lineHeight: 1.5 }}>
                   Nincs külön nyilvántartott raktár rá — nem tudjuk, mennyi tőke van benne lekötve.
                 </div>
               )}
             </div>
           ))}
         </div>
-        <div style={{ fontSize: 10.5, color: "#9CA3AF", lineHeight: 1.6 }}>
+        <div style={{ fontSize: 11, color: "#9CA3AF", lineHeight: 1.6 }}>
           A telefon-tőke a jelenlegi raktáron lévő készlet beszerzési értéke, a szerviz-tőke a raktáron lévő
           alkatrészek értéke — mindkettő a mostani pillanatkép a rendszerből. A tartozék-tőkére nincs tételes
           nyilvántartás (nincs "termék" rekord egy kábelre/tokra), ott a {money(ACCESSORY_CAPITAL_ESTIMATE)}-es szám
@@ -414,7 +414,7 @@ export default function RevenueQualityPanel({ transactions, tickets, locations, 
 
       {(d.accessoryMislabeled > 0 || d.accessoryProper === 0) && (
         <div className="statcard" style={{ background: "#FFFBEB", border: "1px solid #FDE68A" }}>
-          <div style={{ fontSize: 12.5, fontWeight: 700, color: "#92400E", marginBottom: 4 }}>Adatminőség: Tartozékok kategória nincs használva</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#92400E", marginBottom: 4 }}>Adatminőség: Tartozékok kategória nincs használva</div>
           <div style={{ fontSize: 12, color: "#78350F", lineHeight: 1.6 }}>
             A rendszerben már régóta ott van a <b>"Tartozékok"</b> bevétel-kategória, de {d.days} nap alatt egyszer sem lett
             kiválasztva — helyette {d.accessoryMislabeled} tartozék-jellegű tétel (kábel, tok, fólia stb., {money(d.segs.accessory.revenue)} összesen)

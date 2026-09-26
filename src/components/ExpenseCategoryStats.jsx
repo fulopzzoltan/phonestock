@@ -33,7 +33,7 @@ export default function ExpenseCategoryStats({ summaries, months, locFilter }) {
   }, [summaries, months, locFilter]);
 
   if (!totals.hasAnyBreakdown || totals.total <= 0) {
-    return <div style={{ fontSize: 12.5, color: "#9CA3AF" }}>Ehhez még nincs kategória-bontású kiadás-adat.</div>;
+    return <div style={{ fontSize: 13, color: "#9CA3AF" }}>Ehhez még nincs kategória-bontású kiadás-adat.</div>;
   }
 
   const sorted = CATS.map((c) => ({ ...c, value: totals.out[c.key] })).filter((c) => c.value > 0).sort((a, b) => b.value - a.value);
@@ -44,7 +44,7 @@ export default function ExpenseCategoryStats({ summaries, months, locFilter }) {
         const pct = Math.round((c.value / totals.total) * 100);
         return (
           <div key={c.key} style={{ marginBottom: 10 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 4 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
               <span style={{ fontWeight: 600, color: "#374151" }}>{c.label}</span>
               <span style={{ color: "#6B7280" }}>{money(c.value)} <span style={{ color: "#9CA3AF" }}>({pct}%)</span></span>
             </div>
@@ -54,7 +54,7 @@ export default function ExpenseCategoryStats({ summaries, months, locFilter }) {
           </div>
         );
       })}
-      <div style={{ fontSize: 10.5, color: "#9CA3AF", marginTop: 4 }}>
+      <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>
         Összesen {money(totals.total)} kiadás, {totals.monthCount} hónap alapján
       </div>
     </div>
