@@ -49,11 +49,11 @@ function StockStatusPicker({ item, disabled, onChange }) {
 
   return (
     <div className="wl-status-wrap" ref={ref} onClick={(e) => e.stopPropagation()}>
-      <button type="button" className="status-picker-trigger" disabled={disabled} onClick={() => setOpen((v) => !v)}>
+      <button type="button" className="status-picker-trigger" style={{ width: 92, justifyContent: "flex-start" }} disabled={disabled} onClick={() => setOpen((v) => !v)}>
         <span className="status-dot-halo" style={{ background: `color-mix(in srgb, ${dotColor} 22%, white)` }}>
           <span className="status-dot" style={{ background: dotColor }} />
         </span>
-        <span className="stk-status-w">{stockStatusLabel(item.stockStatus)}</span>
+        {stockStatusLabel(item.stockStatus)}
         <ChevronDownIcon width={11} height={11} style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform .12s" }} />
       </button>
       {open && (
@@ -458,9 +458,9 @@ export default function StockTab({
             <td style={{ whiteSpace: "nowrap" }}>
               <div className="stk-badges" style={{ flexWrap: "nowrap" }}>
                 <span className="stk-sub" style={{ marginTop: 0 }}><span className="stk-spec-w">{i.storage || "—"}</span></span>
-                <span className="stk-sub" style={{ marginTop: 0 }}><span className="stk-spec-w stk-spec-wl">{i.brand === "Apple" ? (i.batteryHealth != null ? `${i.batteryHealth}%` : "—") : (i.ram || "—")}</span></span>
+                <span className="stk-sub" style={{ marginTop: 0 }}><span className="stk-spec-w stk-spec-wl" style={{ width: 34 }}>{i.brand === "Apple" ? (i.batteryHealth != null ? `${i.batteryHealth}%` : "—") : (i.ram || "—")}</span></span>
                 <span className="stk-sub" style={{ marginTop: 0 }}><span className="stk-spec-w stk-spec-wl">{i.color || "—"}</span></span>
-                <span className={`st st-fill ${i.condition === "New" ? "st-kesz" : "st-beveve"}`}>{conditionGradeLabel(i.condition, i.grade)}</span>
+                <span className="prob-pill sm" style={{ marginLeft: 5 }}>{conditionGradeLabel(i.condition, i.grade)}</span>
               </div>
             </td>
             <td className="col-status" style={{ whiteSpace: "nowrap" }}>
@@ -491,7 +491,7 @@ export default function StockTab({
               <div className="mob-row-top">
                 <div className="mob-row-main">
                   <span style={{ flex: 1, minWidth: 0 }}>{displayName(i.brand, i.model)}</span>
-                  <span className={`st st-fill ${i.condition === "New" ? "st-kesz" : "st-beveve"}`} style={{ flexShrink: 0 }}>{conditionGradeLabel(i.condition, i.grade)}</span>
+                  <span className="prob-pill" style={{ flexShrink: 0 }}>{conditionGradeLabel(i.condition, i.grade)}</span>
                 </div>
                 <div className="mob-row-amount">{money(i.salePrice)}</div>
               </div>

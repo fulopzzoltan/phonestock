@@ -485,6 +485,7 @@ input[type="date"].svc-nr-cell:hover::-webkit-calendar-picker-indicator{opacity:
 .badge-buyin{display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:#fff;color:#1D4ED8;border:1px solid #BFDBFE}
 .badge-service{display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:#fff;color:#EA580C;border:1px solid #FED7AA}
 .prob-pill{display:inline-flex;padding:5px 12px;border-radius:8px;font-size:13px;font-weight:600;background:#F3F4F6;color:#4B5563;margin:1px}
+.prob-pill.sm{padding:2px 8px;font-size:11px;margin:0}
 
 /* ====== BELÉPÉSEK (jelszókezelő) ====== */
 .vault-list{display:flex;flex-direction:column;gap:10px}
