@@ -1,9 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { money, displayName, phoneCode, daysOnShelf, isSlowMoving, stockStatusLabel, stockStatusColor, STOCK_STATUSES, conditionGradeLabel, exportToCsv, today } from "../lib/utils";
-import { SearchIcon, PhoneCaseIcon, CartIcon, ScanIcon, PrintIcon, CloseIcon, MoreIcon, ChevronDownIcon, CheckIcon } from "../components/icons";
+import {
+  money, displayName, phoneCode, daysOnShelf, isSlowMoving, stockStatusLabel, stockStatusColor, STOCK_STATUSES,
+  conditionGradeLabel, exportToCsv, today, STORAGE_OPTIONS, RAM_OPTIONS, PHONE_COLORS, SOURCES, WARRANTIES,
+  CONDITION_GRADES, conditionGradeKey, normalizeImei,
+} from "../lib/utils";
+import { SearchIcon, PhoneCaseIcon, CartIcon, ScanIcon, PrintIcon, CloseIcon, MoreIcon, ChevronDownIcon, CheckIcon, PlusIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import HistorySection from "../components/HistorySection";
 import ResponsiveTable from "../components/ResponsiveTable";
+import BrandPickerButton from "../components/BrandPickerButton";
+import CustomerAutocomplete from "../components/CustomerAutocomplete";
 
 const BRAND_PRIORITY = ["Apple", "Samsung", "Huawei"];
 function brandRank(brand) {
@@ -63,11 +69,261 @@ function StockStatusPicker({ item, disabled, onChange }) {
   );
 }
 
+// Új termék — a Szerviz "Új munkalap" inline sorával azonos mintát követve: nem forma-popup,
+// hanem egy szerkeszthető sor a lista tetején, ugyanazokkal a "svc-nr-*" osztályokkal (dobozos
+// elsődleges mezők, aláhúzásos "Több adat" sáv), plusz a StockModal teljes mezőkészlete
+// (beszerzés típusa/eladó adatok bizománynál, IMEI, ár, garancia stb.).
+function NewPhoneRow({ open, onCancel, onCreate, customers, defaultLocId, busy }) {
+  const [brand, setBrand] = useState("");
+  const [model, setModel] = useState("");
+  const [storage, setStorage] = useState("");
+  const [ram, setRam] = useState("");
+  const [color, setColor] = useState("");
+  const [imei, setImei] = useState("");
+  const [costPrice, setCostPrice] = useState("");
+  const [salePrice, setSalePrice] = useState("");
+  const [newPrice, setNewPrice] = useState("");
+  const [warranty, setWarranty] = useState("");
+  const [source, setSource] = useState("");
+  const [stockStatus, setStockStatus] = useState("webshop");
+  const [condition, setCondition] = useState("New");
+  const [grade, setGrade] = useState("A");
+  const [batteryHealth, setBatteryHealth] = useState("");
+  const [productNo, setProductNo] = useState("");
+  const [acqType, setAcqType] = useState("purchase");
+  const [sellerName, setSellerName] = useState("");
+  const [sellerPhone, setSellerPhone] = useState("");
+  const [sellerCustomerId, setSellerCustomerId] = useState(null);
+  const [payoutAmount, setPayoutAmount] = useState("");
+  const [payoutNow, setPayoutNow] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+
+  // Amíg a sor nyílik/csukódik, a cellák overflow:hidden-nel vágják a tartalmat, hogy a
+  // max-height átmenet működjön — de ez a Márka-választó / Állapot-választó legördülőjét is
+  // levágná, ha nyitva marad. Az animáció végeztével "settled"-re váltunk (lásd Szerviz
+  // "Új munkalap" sora), ahol a cellák overflow:visible-lé válnak.
+  const [settled, setSettled] = useState(false);
+  useEffect(() => {
+    if (!open) { setSettled(false); return; }
+    const t = setTimeout(() => setSettled(true), 400);
+    return () => clearTimeout(t);
+  }, [open]);
+  const revealStyle = (maxH) => ({ maxHeight: open ? maxH : 0, opacity: open ? 1 : 0, overflow: settled ? "visible" : "hidden" });
+  const isConsignment = acqType === "consignment";
+  const missing = [
+    !brand.trim() && "márka",
+    !model.trim() && "modell",
+    salePrice === "" && "eladási ár",
+    !defaultLocId && "helyszín",
+    isConsignment && !sellerName.trim() && "eladó neve",
+    isConsignment && !sellerPhone.trim() && "eladó telefonszáma",
+    isConsignment && payoutAmount === "" && "kifizetendő összeg",
+  ].filter(Boolean);
+  const valid = missing.length === 0;
+
+  function submit() {
+    if (!valid || busy) return;
+    const finalF = {
+      brand, model, condition, grade, storage, ram, color, imei,
+      costPrice: isConsignment ? payoutAmount : costPrice,
+      salePrice, warranty, source, batteryHealth, newPrice, stockStatus, productNo,
+    };
+    const acquisition = {
+      acquisitionType: acqType,
+      sellerName: sellerName.trim(), sellerIdDoc: "", sellerCnp: "",
+      sellerPhone: sellerPhone.trim(), sellerAddress: "", sellerCustomerId,
+      consignorPayoutAmount: isConsignment ? payoutAmount : null,
+      payoutNow: isConsignment ? payoutNow : false,
+    };
+    onCreate(finalF, defaultLocId, acquisition);
+  }
+
+  return (
+    <>
+      <tr className="svc-nr-row">
+        <td className="mono col-serial" style={{ padding: 0 }}>
+          <div className="svc-nr-reveal" style={{ ...revealStyle(140), color: "#B7BCC4", padding: "11px 16px" }}>—</div>
+        </td>
+        <td style={{ padding: 0 }}>
+          <div className="svc-nr-reveal" style={{ ...revealStyle(140), padding: "11px 16px" }}>
+            <div className="svc-nr-stack">
+              <BrandPickerButton value={brand} onChange={setBrand} disabled={busy} />
+              <input className="svc-nr-top" placeholder="Modell (pl. Galaxy S23)" value={model} onChange={(e) => setModel(e.target.value)} autoFocus disabled={busy} />
+            </div>
+          </div>
+        </td>
+        <td style={{ padding: 0 }}>
+          <div className="svc-nr-reveal" style={{ ...revealStyle(140), padding: "11px 16px" }}>
+            <div className="svc-nr-stack">
+              <select className="svc-nr-top" value={storage} onChange={(e) => setStorage(e.target.value)} disabled={busy}>
+                <option value="">Tárhely...</option>
+                {STORAGE_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
+              </select>
+              <select className="svc-nr-top" value={color} onChange={(e) => setColor(e.target.value)} disabled={busy}>
+                <option value="">Szín...</option>
+                {PHONE_COLORS.map((o) => <option key={o} value={o}>{o}</option>)}
+              </select>
+            </div>
+          </div>
+        </td>
+        <td className="col-status" style={{ padding: 0 }}>
+          <div className="svc-nr-reveal" style={{ ...revealStyle(140), padding: "11px 16px" }}>
+            <StockStatusPicker item={{ id: null, stockStatus }} disabled={busy} onChange={(_, key) => setStockStatus(key)} />
+          </div>
+        </td>
+        <td className="row-price" style={{ padding: 0 }}>
+          <div className="svc-nr-reveal" style={{ ...revealStyle(140), padding: "11px 16px" }}>
+            <input className="svc-nr-top" style={{ textAlign: "right" }} placeholder="0 Lei" value={salePrice} onChange={(e) => setSalePrice(e.target.value)} disabled={busy} />
+          </div>
+        </td>
+        <td className="stk-actions" style={{ padding: 0 }}>
+          <div className="svc-nr-reveal" style={{ ...revealStyle(140), padding: "11px 16px", display: "flex", gap: 6 }}>
+            <button
+              type="button" title={valid ? "Hozzáadás" : `Hiányzik: ${missing.join(", ")}`} disabled={!valid || busy} onClick={submit}
+              style={{ width: 28, height: 28, borderRadius: 999, border: "none", background: valid ? "#1DB954" : "#D1D5DB", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: valid ? "pointer" : "default", flexShrink: 0 }}
+            >
+              <CheckIcon width={13} height={13} />
+            </button>
+            <button
+              type="button" title="Mégse" disabled={busy} onClick={onCancel}
+              style={{ width: 28, height: 28, borderRadius: 999, border: "1px solid #E5E7EB", background: "#fff", color: "#9CA3AF", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}
+            >
+              <CloseIcon width={12} height={12} />
+            </button>
+          </div>
+        </td>
+      </tr>
+      <tr className="svc-nr-row">
+        <td colSpan={6} style={{ padding: 0 }}>
+          <div className="svc-nr-reveal" style={revealStyle(40)}>
+            <button type="button" className={`svc-nr-more-toggle${moreOpen ? " open" : ""}`} onClick={() => setMoreOpen((v) => !v)}>
+              <ChevronDownIcon className="chev" width={9} height={9} style={{ transform: moreOpen ? "none" : "rotate(-90deg)" }} />
+              Több adat (beszerzés, IMEI, minőség, garancia)
+            </button>
+          </div>
+          {open && moreOpen && (
+            <div className="svc-nr-rr">
+              <div className="svc-nr-rr-grid svc-nr-rr-4">
+                <div>
+                  <span className="svc-nr-rr-lbl">Beszerzés típusa</span>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <span className={`svc-nr-chip${acqType === "purchase" ? " on" : ""}`} onClick={() => !busy && setAcqType("purchase")}>Saját vásárlás</span>
+                    <span className={`svc-nr-chip${acqType === "consignment" ? " on" : ""}`} onClick={() => !busy && setAcqType("consignment")}>Bizomány</span>
+                  </div>
+                </div>
+                <div>
+                  <span className="svc-nr-rr-lbl">IMEI</span>
+                  <input className="svc-nr-cell" placeholder="35xxxxxxxxxxxxx" value={imei} onChange={(e) => setImei(e.target.value)} disabled={busy} />
+                </div>
+                <div>
+                  <span className="svc-nr-rr-lbl">RAM</span>
+                  <select className="svc-nr-cell" value={ram} onChange={(e) => setRam(e.target.value)} disabled={busy}>
+                    <option value="">—</option>
+                    {RAM_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <span className="svc-nr-rr-lbl">Sorszám (kód)</span>
+                  <input className="svc-nr-cell" type="number" placeholder="automatikus" value={productNo} onChange={(e) => setProductNo(e.target.value)} disabled={busy} />
+                </div>
+              </div>
+
+              {isConsignment && (
+                <div className="svc-nr-rr-grid svc-nr-rr-4" style={{ marginTop: 12 }}>
+                  <div>
+                    <span className="svc-nr-rr-lbl">Eladó neve</span>
+                    <CustomerAutocomplete
+                      customers={customers}
+                      name={sellerName}
+                      onChangeName={(name) => { setSellerName(name); setSellerCustomerId(null); }}
+                      onSelect={(c) => { setSellerName(c.name); setSellerPhone(c.phone || sellerPhone); setSellerCustomerId(c.id); }}
+                      placeholder="pl. Kovács János"
+                      className="svc-nr-cell"
+                    />
+                  </div>
+                  <div>
+                    <span className="svc-nr-rr-lbl">Eladó telefonszáma</span>
+                    <input className="svc-nr-cell" placeholder="07xx xxx xxx" value={sellerPhone} onChange={(e) => setSellerPhone(e.target.value)} disabled={busy} />
+                  </div>
+                  <div>
+                    <span className="svc-nr-rr-lbl">Kifizetendő összeg</span>
+                    <input className="svc-nr-cell" placeholder="0 Lei" value={payoutAmount} onChange={(e) => setPayoutAmount(e.target.value)} disabled={busy} />
+                  </div>
+                  <div>
+                    <span className="svc-nr-rr-lbl">Kifizetés most</span>
+                    <label className={`svc-nr-flag${payoutNow ? " on" : ""}`} style={{ paddingTop: 6 }}>
+                      <input type="checkbox" checked={payoutNow} onChange={(e) => setPayoutNow(e.target.checked)} disabled={busy} />Átvételkor, nem eladáskor
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              <div className="svc-nr-rr-grid svc-nr-rr-5" style={{ marginTop: 12 }}>
+                <div style={{ gridColumn: "span 2" }}>
+                  <span className="svc-nr-rr-lbl">Minőség</span>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", paddingTop: 2 }}>
+                    {CONDITION_GRADES.map((g) => {
+                      const key = conditionGradeKey(condition, grade);
+                      const on = key === g.key;
+                      return (
+                        <span
+                          key={g.key} className={`svc-nr-chip${on ? " on" : ""}`}
+                          onClick={() => { if (busy) return; if (g.key === "New") { setCondition("New"); } else { setCondition("Refurbished"); setGrade(g.key); } }}
+                        >
+                          {g.label}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+                {!isConsignment && (
+                  <div>
+                    <span className="svc-nr-rr-lbl">Beszerzési ár</span>
+                    <input className="svc-nr-cell" placeholder="0 Lei" value={costPrice} onChange={(e) => setCostPrice(e.target.value)} disabled={busy} />
+                  </div>
+                )}
+                <div>
+                  <span className="svc-nr-rr-lbl">Becsült új kori ár</span>
+                  <input className="svc-nr-cell" placeholder="pl. 2500" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} disabled={busy} />
+                </div>
+                <div>
+                  <span className="svc-nr-rr-lbl">Garancia</span>
+                  <select className="svc-nr-cell" value={warranty} onChange={(e) => setWarranty(e.target.value)} disabled={busy}>
+                    <option value="">Nincs</option>
+                    {WARRANTIES.map((w) => <option key={w} value={w}>{w}</option>)}
+                  </select>
+                </div>
+                {condition === "Refurbished" && (
+                  <div>
+                    <span className="svc-nr-rr-lbl">Akkuállapot (%)</span>
+                    <input className="svc-nr-cell" type="number" min="0" max="100" placeholder="100" value={batteryHealth} onChange={(e) => setBatteryHealth(e.target.value)} disabled={busy} />
+                  </div>
+                )}
+              </div>
+
+              <div className="svc-nr-rr-grid svc-nr-rr-4" style={{ marginTop: 12 }}>
+                <div>
+                  <span className="svc-nr-rr-lbl">Forrás</span>
+                  <select className="svc-nr-cell" value={source} onChange={(e) => setSource(e.target.value)} disabled={busy}>
+                    <option value="">—</option>
+                    {SOURCES.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+        </td>
+      </tr>
+    </>
+  );
+}
+
 
 export default function StockTab({
   effectiveLocFilter, locName, busy, search, setSearch, onScan, loadingData, filteredStock,
   locations, reserveLocId, setProductDetailId, setSellModal,
   soldStock, isAdmin = true, myLocationId = null, onPrintLabels, onStockStatusChange,
+  customers, defaultLocId, onCreateProduct,
 }) {
   const [condFilter, setCondFilter] = useState("all"); // all | New | Refurbished
   const reserveLoc = locations.find((l) => l.name === "Tartalék");
@@ -83,6 +339,41 @@ export default function StockTab({
     document.addEventListener("mousedown", onClickOutside);
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, [moreOpen]);
+
+  // Új termék: a Szerviz "Új munkalap" sorával azonos "+" -> beleesik a táblába -> kibomlik
+  // animáció. addMounted amíg a sor a DOM-ban van (a záró animáció alatt is), addOpen a
+  // vizuálisan kinyílt állapot, addAnimPhase a "+" gomb ikonjának csepp-be/pop-ki animációja.
+  const [addMounted, setAddMounted] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [addAnimPhase, setAddAnimPhase] = useState("idle"); // idle | dropping | popping
+  const [tableRipple, setTableRipple] = useState(false);
+  const addTimersRef = useRef([]);
+  useEffect(() => () => addTimersRef.current.forEach(clearTimeout), []);
+  function clearAddTimers() {
+    addTimersRef.current.forEach(clearTimeout);
+    addTimersRef.current = [];
+  }
+  function openAddRow() {
+    clearAddTimers();
+    setAddMounted(true);
+    setAddAnimPhase("dropping");
+    setTableRipple(true);
+    addTimersRef.current.push(
+      setTimeout(() => setAddOpen(true), 20),
+      setTimeout(() => setAddAnimPhase("idle"), 360),
+      setTimeout(() => setTableRipple(false), 540),
+    );
+  }
+  function closeAddRow() {
+    clearAddTimers();
+    setAddAnimPhase("popping");
+    setAddOpen(false);
+    addTimersRef.current.push(
+      setTimeout(() => setAddAnimPhase("idle"), 320),
+      setTimeout(() => setAddMounted(false), 420),
+    );
+  }
+
   // Árcimke-nyomtatás: bepipálható telefonok, hogy egyszerre (pl. 4 új felvitel után)
   // egy lapon lehessen kinyomtatni a címkéiket, ahelyett hogy egyesével mennénk.
   const [selectedIds, setSelectedIds] = useState(new Set());
@@ -110,7 +401,20 @@ export default function StockTab({
         columns={[{ key: "n", label: "Szám", className: "col-serial" }, { key: "p", label: "Termék", className: "col-device" }, { key: "s", label: "Specifikáció", className: "col-grow" }, { key: "st", label: "Állapot", className: "col-status" }, { key: "a", label: "Ár", className: "num-col" }, { key: "x", label: "" }]}
         rows={items}
         rowKey={(i) => i.id}
-        renderRow={(i) => (
+        renderRow={(i) => i.__newRow ? (
+          <NewPhoneRow
+            key="__new__"
+            open={addOpen}
+            customers={customers}
+            defaultLocId={defaultLocId}
+            busy={busy}
+            onCancel={closeAddRow}
+            onCreate={async (data, locId, acquisition) => {
+              const created = await onCreateProduct(data, locId, acquisition);
+              if (created) closeAddRow();
+            }}
+          />
+        ) : (
           <tr key={i.id} style={{ cursor: "pointer" }} onClick={() => setProductDetailId(i.id)}>
             <td className="mono col-serial" style={{ color: "#9CA3AF", whiteSpace: "nowrap" }}>{i.productNo ?? "—"}</td>
             <td style={{ whiteSpace: "nowrap" }}>
@@ -140,7 +444,7 @@ export default function StockTab({
             </td>
           </tr>
         )}
-        renderMobileRow={(i) => (
+        renderMobileRow={(i) => i.__newRow ? null : (
           <div className="mob-row mob-row-coded" onClick={() => setProductDetailId(i.id)}>
             <div className={`mob-code-col ${i.condition === "New" ? "st-kesz" : "st-beveve"}`}>
               {String(i.productNo).split("").map((ch, k) => <span key={k}>{ch}</span>)}
@@ -237,7 +541,17 @@ export default function StockTab({
             Eladott telefonok <span className="cnt">{soldStock.length}</span>
           </button>
         </div>
+        <button type="button" className="btn header-add-btn" style={{ marginLeft: "auto" }} disabled={busy || addMounted} title="Új termék" onClick={openAddRow}>
+          <span className="header-add-ring" /><span className="header-add-ring ring2" />
+          <PlusIcon width={16} height={16} className={addAnimPhase === "dropping" ? "svc-plus-drop" : addAnimPhase === "popping" ? "svc-plus-pop" : ""} />
+        </button>
       </div>
+
+      {addMounted && (
+        <div className={`svc-table-ripple${tableRipple ? " pulse" : ""}`} style={{ marginBottom: 16 }}>
+          {renderPhoneTable([{ id: "__new__", __newRow: true }])}
+        </div>
+      )}
 
       {reserveLoc && showReserve && (() => {
         const items = sortItems(condFiltered.filter((i) => i.locationId === reserveLoc.id));

@@ -192,7 +192,7 @@ export default function StockModal({ product, prefill, locations, onClose, onSav
           />
           <ChipField
             label="Raktár állapot"
-            hint={<span style={{ color: "#9CA3AF", fontWeight: 400 }}>— csak "Polcon" látszik a nyilvános webshopban</span>}
+            hint={<span style={{ color: "#9CA3AF", fontWeight: 400 }}>— csak "Webshop" látszik a nyilvános webshopban</span>}
             value={f.stockStatus}
             onChange={(key) => setF({ ...f, stockStatus: key })}
             options={STOCK_STATUSES.map((s) => ({ key: s.key, label: s.label }))}

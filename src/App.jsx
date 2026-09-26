@@ -719,7 +719,7 @@ function AppShell() {
 
   // STOCK
   async function addProduct(data, locId, acquisition) {
-    await withBusy(async () => {
+    return await withBusy(async () => {
       const r = unwrap(await supabase.from("products").insert(pToApi(data, locId)).select());
       const product = pFromApi(r[0]);
       setStock([product, ...stock]);
@@ -772,6 +772,7 @@ function AppShell() {
         setAcquisitionPrintPrompt({ product, acquisition: savedAcq });
       }
       setStockModal(null);
+      return product;
     });
   }
   async function editProduct(id, data, locId) {
@@ -3123,10 +3124,7 @@ function AppShell() {
         onOpenPart={(id) => setPartDetailId(id)}
         onOpenWarranty={(key) => { setTab("warranty"); setWarrantyDetailKey(key); }}
         pageHeader={tab === "stock" ? (
-          <>
-            <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Telefonok</div>
-            <button type="button" className="btn header-add-btn" disabled={busy} title="Új termék" onClick={() => setStockModal("add")}><span className="header-add-ring" /><span className="header-add-ring ring2" /><PlusIcon width={16} height={16} /></button>
-          </>
+          <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Telefonok</div>
         ) : tab === "consignment" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Bizomány</div>
@@ -3287,6 +3285,7 @@ function AppShell() {
             isAdmin={isAdmin} myLocationId={myLocationId}
             onPrintLabels={printPriceLabelsDocs}
             onStockStatusChange={setProductStockStatus}
+            customers={customersTable} defaultLocId={defaultStockLocId} onCreateProduct={addProduct}
           />
         )}
 
