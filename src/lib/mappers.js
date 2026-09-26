@@ -50,7 +50,7 @@ export const pToApi = (p, locId) => ({
   battery_health: p.batteryHealth === "" || p.batteryHealth == null ? null : Number(p.batteryHealth),
   location_id: locId,
   new_price: p.newPrice === "" || p.newPrice == null ? null : Number(p.newPrice),
-  stock_status: p.stockStatus || "polcon",
+  stock_status: p.stockStatus || "webshop",
 });
 
 // Külön, kis patch-objektumok a Felújítás oldalhoz — nem az egész `pToApi`-n mennek át,

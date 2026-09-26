@@ -521,6 +521,10 @@ input[type="date"].svc-nr-cell:hover::-webkit-calendar-picker-indicator{opacity:
 .stk-thumb.sm svg{width:9px;height:9px}
 .stk-thumb.lg{width:38px;height:38px;border-radius:12px;font-size:13px}
 .stk-thumb.lg svg{width:17px;height:17px}
+.stk-serial-cell{display:inline-flex;align-items:center;gap:8px}
+.stk-chk{appearance:none;-webkit-appearance:none;width:16px;height:16px;margin:0;border-radius:5px;border:1.5px solid #D1D5DB;background:#fff;flex-shrink:0;position:relative;cursor:pointer;transition:background .12s,border-color .12s}
+.stk-chk:checked{background:#1DB954;border-color:#1DB954}
+.stk-chk:checked::after{content:"";position:absolute;left:4.5px;top:1.5px;width:4px;height:8px;border:solid #fff;border-width:0 1.5px 1.5px 0;transform:rotate(45deg)}
 .stk-name{font-weight:600;color:#111827;line-height:1.3;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .stk-sub{font-size:11px;color:#9CA3AF;margin-top:1px;font-family:'Roboto Mono',monospace}
 .stk-badges{display:flex;align-items:center;gap:6px;flex-wrap:wrap}

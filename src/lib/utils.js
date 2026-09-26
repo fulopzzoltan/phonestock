@@ -274,12 +274,18 @@ export function cardPortion(t) {
   return 0;
 }
 
+// "webshop" = kint van a nyilvános webshopon (get_public_stock RPC erre szűr); "polcon" =
+// fizikailag raktáron, de tudatosan NEM tesszük fel a webshopra; "szerviz" = javítás/előkészítés
+// alatt (korábbi "javitando"); "lefoglalt" = ügyfélnek foglalva (előleg/foglaló). A színek a
+// Szerviz fül BoardUI-ból kinyert palettájához igazodnak.
 export const STOCK_STATUSES = [
-  { key: "polcon", label: "Polcon" },
-  { key: "lefoglalt", label: "Lefoglalt" },
-  { key: "javitando", label: "Javítandó" },
+  { key: "webshop", label: "Webshop", color: "#00C950" },
+  { key: "polcon", label: "Polcon", color: "#6B7280" },
+  { key: "szerviz", label: "Szerviz", color: "#FB923C" },
+  { key: "lefoglalt", label: "Lefoglalt", color: "#8B5CF6" },
 ];
 export const stockStatusLabel = (s) => STOCK_STATUSES.find((x) => x.key === s)?.label || s;
+export const stockStatusColor = (s) => STOCK_STATUSES.find((x) => x.key === s)?.color || "#6B7280";
 
 // Fizikai állapot skála — egy egységes 4 lépcsős lista, ami a products.condition
 // ("New"/"Refurbished") + products.grade ("A"/"B"/"C") párost egyetlen választható

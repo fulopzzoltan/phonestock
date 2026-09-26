@@ -36,7 +36,7 @@ export default function StockModal({ product, prefill, locations, onClose, onSav
     source: product?.source || prefill?.source || "",
     batteryHealth: product?.batteryHealth ?? "",
     newPrice: product?.newPrice ?? "",
-    stockStatus: product?.stockStatus || "polcon",
+    stockStatus: product?.stockStatus || "webshop",
     productNo: product?.productNo ?? "",
   });
   const [locId, setLocId] = useState(product?.locationId || prefill?.locationId || defaultLocId || locations[0]?.id || "");

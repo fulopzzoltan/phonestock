@@ -958,15 +958,23 @@ function AppShell() {
   }
   async function markProductForRefurb(productId) {
     await withBusy(async () => {
-      unwrap(await supabase.from("products").update({ stock_status: "javitando" }).eq("id", productId));
-      setStock((prev) => prev.map((i) => (i.id === productId ? { ...i, stockStatus: "javitando" } : i)));
+      unwrap(await supabase.from("products").update({ stock_status: "szerviz" }).eq("id", productId));
+      setStock((prev) => prev.map((i) => (i.id === productId ? { ...i, stockStatus: "szerviz" } : i)));
+    });
+  }
+  // A Telefonok listán a Szerviz-stílusú StatusPicker-ből közvetlenül állítható a
+  // raktár-állapot (webshop/polcon/szerviz/lefoglalt), munkalap-modal megnyitása nélkül.
+  async function setProductStockStatus(productId, stockStatus) {
+    await withBusy(async () => {
+      unwrap(await supabase.from("products").update({ stock_status: stockStatus }).eq("id", productId));
+      setStock((prev) => prev.map((i) => (i.id === productId ? { ...i, stockStatus } : i)));
     });
   }
   async function returnProductToStock(productId, txId) {
     await withBusy(async () => {
       const todayStr = today();
-      unwrap(await supabase.from("products").update({ status: "in_stock", stock_status: "polcon", date_added: todayStr }).eq("id", productId));
-      setStock(stock.map((i) => (i.id === productId ? { ...i, status: "in_stock", stockStatus: "polcon", dateAdded: todayStr } : i)));
+      unwrap(await supabase.from("products").update({ status: "in_stock", stock_status: "webshop", date_added: todayStr }).eq("id", productId));
+      setStock(stock.map((i) => (i.id === productId ? { ...i, status: "in_stock", stockStatus: "webshop", dateAdded: todayStr } : i)));
       if (txId) {
         unwrap(await supabase.from("transactions").update({ warranty: null }).eq("id", txId));
         // A visszavett termékkel együtt eladott tartozék-tételeket (fólia, kábel) is töröljük
@@ -1957,9 +1965,9 @@ function AppShell() {
       const order = webOrders.find((o) => o.id === id);
       if (!order) return;
       const productIds = order.items.map((it) => it.productId);
-      unwrap(await supabase.from("products").update({ stock_status: "polcon" }).in("id", productIds));
+      unwrap(await supabase.from("products").update({ stock_status: "webshop" }).in("id", productIds));
       unwrap(await supabase.from("web_orders").update({ status: "lemondva", updated_at: new Date().toISOString() }).eq("id", id));
-      setStock((prev) => prev.map((p) => (productIds.includes(p.id) ? { ...p, stockStatus: "polcon" } : p)));
+      setStock((prev) => prev.map((p) => (productIds.includes(p.id) ? { ...p, stockStatus: "webshop" } : p)));
       setWebOrders((prev) => prev.filter((o) => o.id !== id));
     });
   }
@@ -1969,7 +1977,7 @@ function AppShell() {
       if (!order) return;
       const { data: customerId } = await supabase.rpc("upsert_customer", { p_name: order.guestName, p_phone: order.guestPhone });
       const productIds = order.items.map((it) => it.productId);
-      unwrap(await supabase.from("products").update({ status: "sold", stock_status: "polcon" }).in("id", productIds));
+      unwrap(await supabase.from("products").update({ status: "sold", stock_status: "webshop" }).in("id", productIds));
       const newTxs = [];
       for (const it of order.items) {
         const r = unwrap(await supabase.from("transactions").insert({
@@ -1983,7 +1991,7 @@ function AppShell() {
         newTxs.push(txFromApi(r[0]));
       }
       unwrap(await supabase.from("web_orders").update({ status: "atadva", updated_at: new Date().toISOString() }).eq("id", id));
-      setStock((prev) => prev.map((p) => (productIds.includes(p.id) ? { ...p, status: "sold", stockStatus: "polcon" } : p)));
+      setStock((prev) => prev.map((p) => (productIds.includes(p.id) ? { ...p, status: "sold", stockStatus: "webshop" } : p)));
       setTransactions((prev) => [...newTxs, ...prev]);
       setWebOrders((prev) => prev.filter((o) => o.id !== id));
       if (customerId) await refreshCustomerLoyalty(customerId);
@@ -2495,14 +2503,14 @@ function AppShell() {
           warranty: decision.warranty || null,
           battery_health: decision.batteryHealth === "" || decision.batteryHealth == null ? null : Number(decision.batteryHealth),
         } : {}),
-        ...(markReady ? { stock_status: "polcon", repair_rank: null } : {}),
+        ...(markReady ? { stock_status: "webshop", repair_rank: null } : {}),
       };
       unwrap(await supabase.from("products").update(patch).eq("id", productId));
       setStock((prev) => prev.map((p) => (p.id === productId ? {
         ...p,
         ...(decision ? { condition: patch.condition, grade: patch.grade, warranty: patch.warranty, batteryHealth: patch.battery_health } : {}),
         inspectionAnswers: answers, inspectionCompletedAt: patch.inspection_completed_at,
-        ...(markReady ? { stockStatus: "polcon", repairRank: null } : {}),
+        ...(markReady ? { stockStatus: "webshop", repairRank: null } : {}),
       } : p)));
     });
   }
@@ -2551,7 +2559,7 @@ function AppShell() {
   // javítandó darabok, és innen mennek majd ki bármelyik helyszínre — ezért NEM szűrünk a
   // bal oldali helyszín-választóval, mindig minden helyszín javítandó tétele látszik.
   const refurbPhones = useMemo(() => {
-    let s = stock.filter((i) => i.status === "in_stock" && i.stockStatus === "javitando");
+    let s = stock.filter((i) => i.status === "in_stock" && i.stockStatus === "szerviz");
     return [...s].sort((a, b) => {
       const ra = a.repairRank ?? 999999, rb = b.repairRank ?? 999999;
       if (ra !== rb) return ra - rb;
@@ -2562,7 +2570,7 @@ function AppShell() {
   // A "+" gombbal a Felújítás fülön ide, a meglévő (még nem javítandó) raktárkészletből
   // lehet átemelni egy tételt — ugyanúgy mindkét helyszínről, mint a refurbPhones listán.
   const refurbPickable = useMemo(() => {
-    return stock.filter((i) => i.status === "in_stock" && i.stockStatus !== "javitando");
+    return stock.filter((i) => i.status === "in_stock" && i.stockStatus !== "szerviz");
   }, [stock]);
 
   const filteredTransactions = useMemo(() => {
@@ -3278,6 +3286,7 @@ function AppShell() {
             soldStock={soldStock}
             isAdmin={isAdmin} myLocationId={myLocationId}
             onPrintLabels={printPriceLabelsDocs}
+            onStockStatusChange={setProductStockStatus}
           />
         )}
 

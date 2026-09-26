@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { money, displayName, phoneCode, daysOnShelf, isSlowMoving, stockStatusLabel, conditionGradeLabel, exportToCsv, today } from "../lib/utils";
-import { SearchIcon, PhoneCaseIcon, ServiceIcon, CartIcon, ScanIcon, PrintIcon, CloseIcon, MoreIcon } from "../components/icons";
+import { money, displayName, phoneCode, daysOnShelf, isSlowMoving, stockStatusLabel, stockStatusColor, STOCK_STATUSES, conditionGradeLabel, exportToCsv, today } from "../lib/utils";
+import { SearchIcon, PhoneCaseIcon, CartIcon, ScanIcon, PrintIcon, CloseIcon, MoreIcon, ChevronDownIcon, CheckIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import HistorySection from "../components/HistorySection";
 import ResponsiveTable from "../components/ResponsiveTable";
@@ -17,11 +17,57 @@ function sortItems(items) {
   return arr;
 }
 
+// Raktár-állapot választó — a Szerviz fül StatusPicker-jével azonos komponens-mintát és CSS
+// osztályokat (wl-status-wrap/status-picker-trigger/wl-status-menu) újrahasznosítva, hogy a
+// két fül kinézete egységes legyen. A pötty-szín a STOCK_STATUSES saját színéből jön.
+function StockStatusPicker({ item, disabled, onChange }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onDocMouseDown(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false); }
+    document.addEventListener("mousedown", onDocMouseDown);
+    return () => document.removeEventListener("mousedown", onDocMouseDown);
+  }, [open]);
+
+  const dotColor = stockStatusColor(item.stockStatus);
+
+  return (
+    <div className="wl-status-wrap" ref={ref} onClick={(e) => e.stopPropagation()}>
+      <button type="button" className="status-picker-trigger" disabled={disabled} onClick={() => setOpen((v) => !v)}>
+        <span className="status-dot-halo" style={{ background: `color-mix(in srgb, ${dotColor} 22%, white)` }}>
+          <span className="status-dot" style={{ background: dotColor }} />
+        </span>
+        {stockStatusLabel(item.stockStatus)}
+        <ChevronDownIcon width={11} height={11} style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform .12s" }} />
+      </button>
+      {open && (
+        <div className="wl-status-menu status-drop-menu">
+          {STOCK_STATUSES.map((s) => {
+            const isCurrent = s.key === item.stockStatus;
+            return (
+              <div
+                key={s.key}
+                className={`wl-status-opt${isCurrent ? " current" : ""}`}
+                onClick={() => { setOpen(false); if (!isCurrent) onChange(item.id, s.key); }}
+              >
+                <span className="dot" style={{ background: s.color }} />{s.label}
+                {isCurrent && <CheckIcon width={13} height={13} style={{ marginLeft: "auto", flexShrink: 0 }} />}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 export default function StockTab({
   effectiveLocFilter, locName, busy, search, setSearch, onScan, loadingData, filteredStock,
   locations, reserveLocId, setProductDetailId, setSellModal,
-  soldStock, isAdmin = true, myLocationId = null, onPrintLabels,
+  soldStock, isAdmin = true, myLocationId = null, onPrintLabels, onStockStatusChange,
 }) {
   const [condFilter, setCondFilter] = useState("all"); // all | New | Refurbished
   const reserveLoc = locations.find((l) => l.name === "Tartalék");
@@ -61,21 +107,23 @@ export default function StockTab({
     return (
       <ResponsiveTable
         className="tw-apple"
-        columns={[{ key: "n", label: "Sorszám", className: "col-serial" }, { key: "c", label: "" }, { key: "p", label: "Termék", className: "col-device" }, { key: "s", label: "Specifikáció", className: "col-grow" }, { key: "f", label: "" }, { key: "a", label: "Ár", className: "num-col" }, { key: "x", label: "" }]}
+        columns={[{ key: "n", label: "Sorszám", className: "col-serial" }, { key: "p", label: "Termék", className: "col-device" }, { key: "s", label: "Specifikáció", className: "col-grow" }, { key: "st", label: "Állapot", className: "col-status" }, { key: "a", label: "Ár", className: "num-col" }, { key: "x", label: "" }]}
         rows={items}
         rowKey={(i) => i.id}
         renderRow={(i) => (
           <tr key={i.id} style={{ cursor: "pointer" }} onClick={() => setProductDetailId(i.id)}>
-            <td className="mono col-serial" style={{ color: "#9CA3AF", whiteSpace: "nowrap" }}>{phoneCode(i.productNo) || "—"}</td>
-            <td onClick={(e) => e.stopPropagation()}>
-              <input type="checkbox" className="chk" checked={selectedIds.has(i.id)} onChange={() => toggleSelect(i.id)} title="Kijelölés címkenyomtatáshoz" />
+            <td className="col-serial" style={{ whiteSpace: "nowrap" }}>
+              <span className="stk-serial-cell" onClick={(e) => e.stopPropagation()}>
+                <input type="checkbox" className="stk-chk" checked={selectedIds.has(i.id)} onChange={() => toggleSelect(i.id)} title="Kijelölés címkenyomtatáshoz" />
+                <span className="mono" style={{ color: "#9CA3AF" }}>{i.productNo ?? "—"}</span>
+              </span>
             </td>
             <td style={{ whiteSpace: "nowrap" }}>
               <div className="stk-name" style={{ flexWrap: "nowrap" }}>
+                <span className="mono" style={{ color: "#ADB1B8", fontSize: 12 }}>T</span>
                 {displayName(i.brand, i.model)}
                 <span className={`st st-fill ${i.condition === "New" ? "st-kesz" : "st-beveve"}`}>{conditionGradeLabel(i.condition, i.grade)}</span>
                 {i.acquisition?.acquisitionType === "consignment" && <span className="badge-loc">Bizomány</span>}
-                {i.stockStatus === "lefoglalt" && <span style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }} title="Nem látszik a webshopban">{stockStatusLabel(i.stockStatus)}</span>}
               </div>
             </td>
             <td style={{ whiteSpace: "nowrap" }}>
@@ -83,13 +131,11 @@ export default function StockTab({
                 {i.storage && <span className="stk-sub" style={{ marginTop: 0 }}>{i.storage}</span>}
                 {i.brand !== "Apple" && i.ram && <span className="stk-sub" style={{ marginTop: 0 }}>{i.ram} RAM</span>}
                 {i.color && <span className="stk-sub" style={{ marginTop: 0 }}>{i.color}</span>}
+                {isSlowMoving(i, reserveLocId) && <span className="stk-day-pill" title={`${daysOnShelf(i.dateAdded)} napja a polcon`}>{daysOnShelf(i.dateAdded)}</span>}
               </div>
             </td>
-            <td style={{ whiteSpace: "nowrap" }}>
-              <span className="svc-flags">
-                {i.stockStatus === "javitando" && <span className="stk-repair-badge" title="Javítandó — nem látszik a webshopban"><ServiceIcon width={11} height={11} /></span>}
-                {isSlowMoving(i, reserveLocId) && <span className="stk-day-pill" title={`${daysOnShelf(i.dateAdded)} napja a polcon`}>{daysOnShelf(i.dateAdded)}</span>}
-              </span>
+            <td className="col-status" style={{ whiteSpace: "nowrap" }}>
+              <StockStatusPicker item={i} disabled={busy} onChange={onStockStatusChange} />
             </td>
             <td className="row-price" title={`Beszerzési ár: ${money(i.costPrice)}`}>{money(i.salePrice)}</td>
             <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
@@ -107,6 +153,7 @@ export default function StockTab({
             <div className="mob-row-content">
               <div className="mob-row-top">
                 <div className="mob-row-main">
+                  <span className="mono" style={{ color: "#ADB1B8", fontSize: 12, flexShrink: 0 }}>T</span>
                   <span style={{ flex: 1, minWidth: 0 }}>{displayName(i.brand, i.model)}</span>
                   <span className={`st st-fill ${i.condition === "New" ? "st-kesz" : "st-beveve"}`} style={{ flexShrink: 0 }}>{conditionGradeLabel(i.condition, i.grade)}</span>
                 </div>
@@ -117,8 +164,9 @@ export default function StockTab({
                 {i.brand !== "Apple" && i.ram && <span>{i.ram} RAM</span>}
                 {i.color && <span>{i.color}</span>}
                 {i.acquisition?.acquisitionType === "consignment" && <span className="badge-loc">Bizomány</span>}
-                {i.stockStatus === "javitando" && <span className="tag" style={{ background: "var(--danger-soft)", color: "var(--danger-ink)", fontWeight: 700 }}>Javítandó</span>}
-                {i.stockStatus === "lefoglalt" && <span style={{ fontSize: 10, fontWeight: 700, color: "#9CA3AF", background: "#F1F2F6", borderRadius: 999, padding: "2px 7px" }}>{stockStatusLabel(i.stockStatus)}</span>}
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "#374151" }}>
+                  <span style={{ width: 6, height: 6, borderRadius: 999, background: stockStatusColor(i.stockStatus) }} />{stockStatusLabel(i.stockStatus)}
+                </span>
                 {isSlowMoving(i, reserveLocId) && <span className="tag" style={{ background: "var(--warning-soft)", color: "var(--warning-ink)", fontWeight: 700 }}>{daysOnShelf(i.dateAdded)} napja</span>}
               </div>
               {canAct(i) && (
