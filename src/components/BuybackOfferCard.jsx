@@ -1,4 +1,4 @@
-import { money, displayName } from "../lib/utils";
+import { money, displayName, formatDate } from "../lib/utils";
 import { ChevronLeftIcon, ChevronRightIcon } from "./icons";
 import CallLink from "./CallLink";
 import Thumb from "./Thumb";
@@ -25,7 +25,7 @@ export default function BuybackOfferCard({ offer, onOpen, onStep, stepPrev, step
       </div>
       <div className="t-footer">
         <span className="t-price">{money(offer.finalPrice ?? offer.estimatedPrice)}</span>
-        <span className="t-date">{offer.createdAt?.slice(0, 10)}</span>
+        <span className="t-date">{formatDate(offer.createdAt)}</span>
       </div>
     </div>
   );

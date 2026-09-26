@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { money, warrantyExpiry, isWarrantyActive, SITE_URL } from "../lib/utils";
+import { money, warrantyExpiry, isWarrantyActive, SITE_URL, formatDate } from "../lib/utils";
 import { supabase } from "../lib/supabaseClient";
 import { CloseIcon } from "./icons";
 import Row from "./DetailRow";
@@ -60,8 +60,8 @@ export default function SaleReceiptPanel({ tx, locName, onClose, onPrint, onEdit
           {onEdit && <button className="btn sec sm" onClick={() => onEdit(tx)}>Szerkesztés</button>}
           <button className="btn sec sm" onClick={() => onPrint(tx)}>Nyomtatás</button>
           {saleSignature ? (
-            <a className="btn sec sm" href={signatureUrl(saleSignature.imagePath)} target="_blank" rel="noreferrer" style={{ color: "#22C55E" }}>
-              ✓ Aláírva {saleSignature.signedAt?.slice(0, 10)}
+            <a className="btn sec sm" href={signatureUrl(saleSignature.imagePath)} target="_blank" rel="noreferrer" style={{ color: "var(--primary)" }}>
+              ✓ Aláírva {formatDate(saleSignature.signedAt)}
             </a>
           ) : (
             <button className="btn sec sm" onClick={() => window.open(`${receiptLink}?sign=sale`, "_blank")}>Aláíratás</button>

@@ -513,7 +513,7 @@ export default function StatusLookup({ token, shortCode, signStage, minimal = fa
             {signMode && (signStage === "service_intake" || handoverAllowed) && (
               signature ? (
                 <div className="ticket-extra-card" style={{ textAlign: "center" }}>
-                  <div style={{ color: "#22C55E", fontWeight: 700, fontSize: 14 }}>✓ {s.signedLabel} {signature.signer_name}</div>
+                  <div style={{ color: "var(--primary)", fontWeight: 700, fontSize: 14 }}>✓ {s.signedLabel} {signature.signer_name}</div>
                   <div style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}>{new Date(signature.signed_at).toLocaleString("hu-HU")}</div>
                 </div>
               ) : (

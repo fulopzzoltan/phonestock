@@ -5,7 +5,7 @@ import { myPurchaseFromApi, myTicketFromApi, customerRequestFromApi } from "./li
 import { money, warrantyExpiry, isWarrantyActive, statusCls, subStatusLabel, SITE_URL } from "./lib/utils";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
-import { CartIcon, ServiceIcon, WarrantyIcon, NoteIcon, PhoneCaseIcon, ChargerIcon, HeadphoneIcon, GiftIcon, CheckIcon } from "./components/icons";
+import { CartIcon, ChargerIcon, CheckIcon, GiftIcon, HeadphoneIcon, NoteIcon, PhoneCaseIcon, ServiceIcon, WarrantyIcon } from "./components/icons";
 
 const TIER_ICONS = [PhoneCaseIcon, ChargerIcon, HeadphoneIcon, GiftIcon];
 
@@ -524,7 +524,7 @@ function Dashboard({ profile }) {
                       Még <b>{nextReward.pointCost - loyalty.pointsBalance} pont</b> hiányzik a(z) <b>{nextReward.label}</b> ingyenes választásához!
                     </div>
                   ) : tierGroups.length > 0 ? (
-                    <div className="cp-loyalty-ring-label" style={{ color: "#15803D", fontWeight: 700 }}>Minden elérhető jutalmat kiváltasz a pontjaiddal! 🎉</div>
+                    <div className="cp-loyalty-ring-label" style={{ color: "#15803D", fontWeight: 700 }}><GiftIcon className="inline-ic" />Minden elérhető jutalmat kiváltasz a pontjaiddal!</div>
                   ) : null}
                 </div>
                 {tierGroups.length > 0 && (

@@ -1,4 +1,5 @@
 import PublicHeader from "./components/PublicHeader";
+import { CallIcon, MailIcon } from "./components/icons";
 import PublicFooter from "./components/PublicFooter";
 import { t } from "./lib/i18n";
 
@@ -103,8 +104,8 @@ const TERMS_CONTENT = (
     <h2>8. Panaszkezelés</h2>
     <p>A Vásárló észrevételeit, panaszait az alábbi elérhetőségeken jelezheti:</p>
     <ul>
-      <li>📧 <a href="mailto:info@telefonos.ro">info@telefonos.ro</a></li>
-      <li>📞 <a href="tel:0773985278">0773 985 278</a></li>
+      <li><MailIcon className="inline-ic" /><a href="mailto:info@telefonos.ro">info@telefonos.ro</a></li>
+      <li><CallIcon className="inline-ic" /><a href="tel:0773985278">0773 985 278</a></li>
     </ul>
     <p>A Szolgáltató törekszik a panaszok gyors és korrekt rendezésére.</p>
 
@@ -203,7 +204,7 @@ const PRIVACY_CONTENT = (
       <li>kikérni az adataidat (adathordozhatóság)</li>
       <li>tiltakozni az adatkezelés ellen</li>
     </ul>
-    <p>Ha ezek közül bármelyikkel élnél, írj nekünk: 📧 <a href="mailto:info@telefonos.ro">info@telefonos.ro</a></p>
+    <p>Ha ezek közül bármelyikkel élnél, írj nekünk: <MailIcon className="inline-ic" /><a href="mailto:info@telefonos.ro">info@telefonos.ro</a></p>
 
     <h2>9. Adatbiztonság</h2>
     <p>Megfelelő technikai és szervezési intézkedésekkel védjük az adataidat a jogosulatlan hozzáféréstől, módosítástól vagy elvesztéstől.</p>
@@ -248,8 +249,8 @@ const RETURNS_CONTENT = (
 
     <h2>6. Elérhetőség</h2>
     <ul>
-      <li>📧 <a href="mailto:info@telefonos.ro">info@telefonos.ro</a></li>
-      <li>📞 <a href="tel:0773985278">0773 985 278</a></li>
+      <li><MailIcon className="inline-ic" /><a href="mailto:info@telefonos.ro">info@telefonos.ro</a></li>
+      <li><CallIcon className="inline-ic" /><a href="tel:0773985278">0773 985 278</a></li>
     </ul>
   </>
 );

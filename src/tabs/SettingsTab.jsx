@@ -107,7 +107,7 @@ function SmartBillSettings({ settings, updateSettings, busy, locations }) {
         </button>
         {testState && testState !== "busy" && (
           testState.ok
-            ? <span style={{ color: "#22C55E", fontWeight: 700 }}>✓ OK</span>
+            ? <span style={{ color: "var(--primary)", fontWeight: 700 }}>✓ OK</span>
             : <span style={{ color: "#EF4444", fontWeight: 700 }}>✗ {testState.error}</span>
         )}
       </div>

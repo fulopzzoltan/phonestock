@@ -6,7 +6,7 @@ import { money } from "./lib/utils";
 import PublicHeader from "./components/PublicHeader";
 import PublicFooter from "./components/PublicFooter";
 import { EmptyState } from "./components/EmptyState";
-import { CartIcon, ChevronDownIcon, FoliaIcon } from "./components/icons";
+import { CardIcon, CartIcon, CashIcon, ChevronDownIcon, FoliaIcon, LockIcon, TruckIcon } from "./components/icons";
 
 const ROMANIAN_COUNTIES = [
   "Alba", "Arad", "Argeș", "Bacău", "Bihor", "Bistrița-Năsăud", "Botoșani", "Brăila", "Brașov", "București",
@@ -308,13 +308,13 @@ export default function Checkout() {
 
               {deliveryMethod === "pickup" ? (
                 <div className="checkout-trust">
-                  <span>💳 Visa / Mastercard</span>
-                  <span>🔒 Biztonságos fizetés — Netopia</span>
+                  <span><CardIcon className="inline-ic" />Visa / Mastercard</span>
+                  <span><LockIcon className="inline-ic" />Biztonságos fizetés — Netopia</span>
                 </div>
               ) : (
                 <div className="checkout-trust">
-                  <span>💵 Fizetés utánvéttel</span>
-                  <span>🚚 SameDay futár</span>
+                  <span><CashIcon className="inline-ic" />Fizetés utánvéttel</span>
+                  <span><TruckIcon className="inline-ic" />SameDay futár</span>
                 </div>
               )}
               <div className="login-note" style={{ marginBottom: 10 }}>

@@ -1,4 +1,4 @@
-import { formatPhone, money } from "../lib/utils";
+import { formatPhone, money, formatDate } from "../lib/utils";
 import { SearchIcon, CustomersIcon, CallIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 
@@ -28,7 +28,7 @@ export default function CustomersTab({
                     <td className="mono" style={{ whiteSpace: "nowrap" }}>{formatPhone(c.phone) || "—"}</td>
                     <td style={{ whiteSpace: "nowrap" }}>{c.purchases.length} db · <span className="mono">{money(c.purchaseTotal)}</span></td>
                     <td style={{ whiteSpace: "nowrap" }}>{c.tickets.length} db · <span className="mono">{money(c.ticketTotal)}</span></td>
-                    <td className="mono" style={{ color: "#6B7280", whiteSpace: "nowrap" }}>{c.lastActivity || "—"}</td>
+                    <td style={{ color: "#6B7280", whiteSpace: "nowrap" }}>{formatDate(c.lastActivity) || "—"}</td>
                     <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
                       {c.phone && <a className="btn sec sm icon-only" title="Hívás" href={`tel:${c.phone.replace(/\s/g, "")}`}><CallIcon width={13} height={13} /></a>}
                     </td>
@@ -49,7 +49,7 @@ export default function CustomersTab({
                     <span className="mono">{formatPhone(c.phone) || "—"}</span>
                     <span>{c.purchases.length} vásárlás · {money(c.purchaseTotal)}</span>
                     <span>{c.tickets.length} szerviz · {money(c.ticketTotal)}</span>
-                    <span>{c.lastActivity || "—"}</span>
+                    <span>{formatDate(c.lastActivity) || "—"}</span>
                   </div>
                   {c.phone && (
                     <div className="mob-row-sub" style={{ marginTop: 8 }} onClick={(e) => e.stopPropagation()}>

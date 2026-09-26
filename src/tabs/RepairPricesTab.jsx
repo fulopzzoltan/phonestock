@@ -1,4 +1,4 @@
-import { money } from "../lib/utils";
+import { money, formatDate } from "../lib/utils";
 import { REPAIR_FAMILIES, PRICED_PROBLEMS, PROBLEM_LABELS } from "../lib/repairCatalog";
 import { RepairPriceIcon } from "../components/icons";
 import { EmptyState } from "../components/EmptyState";
@@ -64,7 +64,7 @@ export default function RepairPricesTab({
                 <td>{l.problemTag ? (PROBLEM_LABELS[l.problemTag] || l.problemTag) : (l.note || "—")}</td>
                 <td className="mono">{l.estimatedPrice != null ? money(l.estimatedPrice) : "—"}</td>
                 <td><span className="badge-loc">{locName(l.preferredLocationId)}</span></td>
-                <td className="mono" style={{ color: "#6B7280" }}>{(l.createdAt || "").slice(0, 10)}</td>
+                <td style={{ color: "#6B7280", whiteSpace: "nowrap" }}>{formatDate(l.createdAt)}</td>
                 <td style={{ display: "flex", gap: 6 }}>
                   {l.status === "Új" && (
                     <>
@@ -88,7 +88,7 @@ export default function RepairPricesTab({
                   <span>{[l.brand, l.model].filter(Boolean).join(" ")}</span>
                   <span>{l.problemTag ? (PROBLEM_LABELS[l.problemTag] || l.problemTag) : (l.note || "—")}</span>
                   <span className="badge-loc">{locName(l.preferredLocationId)}</span>
-                  <span>{(l.createdAt || "").slice(0, 10)}</span>
+                  <span>{formatDate(l.createdAt)}</span>
                 </div>
                 <div className="mob-row-sub" style={{ marginTop: 8 }}>
                   {l.status === "Új" && (

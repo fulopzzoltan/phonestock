@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { money, ticketRemaining, STATUSES, SUB_STATUSES, slaInfo, SITE_URL, statusLabel, ticketCode, partCode } from "../lib/utils";
+import { money, ticketRemaining, STATUSES, SUB_STATUSES, slaInfo, SITE_URL, statusLabel, ticketCode, partCode, formatDate } from "../lib/utils";
 import { supabase } from "../lib/supabaseClient";
 import { CloseIcon } from "./icons";
 import Row from "./DetailRow";
@@ -98,15 +98,15 @@ export default function DetailPanel({ ticket, locName, parts, stock, users = [],
             <button type="button" className="btn sec sm" onClick={copyStatusLink}>{copied ? "Másolva!" : "Nyomon követő link másolása"}</button>
             <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
               {intakeSignature ? (
-                <a className="btn sec sm" href={signatureUrl(intakeSignature.imagePath)} target="_blank" rel="noreferrer" style={{ color: "#22C55E" }}>
-                  ✓ Átvétel aláírva {intakeSignature.signedAt?.slice(0, 10)}
+                <a className="btn sec sm" href={signatureUrl(intakeSignature.imagePath)} target="_blank" rel="noreferrer" style={{ color: "var(--primary)" }}>
+                  ✓ Átvétel aláírva {formatDate(intakeSignature.signedAt)}
                 </a>
               ) : (
                 <button type="button" className="btn sec sm" onClick={() => window.open(`${statusLink}?sign=service_intake`, "_blank")}>Átvételi aláíratás</button>
               )}
               {handoverSignature ? (
-                <a className="btn sec sm" href={signatureUrl(handoverSignature.imagePath)} target="_blank" rel="noreferrer" style={{ color: "#22C55E" }}>
-                  ✓ Átadás aláírva {handoverSignature.signedAt?.slice(0, 10)}
+                <a className="btn sec sm" href={signatureUrl(handoverSignature.imagePath)} target="_blank" rel="noreferrer" style={{ color: "var(--primary)" }}>
+                  ✓ Átadás aláírva {formatDate(handoverSignature.signedAt)}
                 </a>
               ) : (
                 <button type="button" className="btn sec sm" disabled={!handoverSignAllowed} onClick={() => window.open(`${statusLink}?sign=service_handover`, "_blank")}>Átadási aláíratás</button>
@@ -133,7 +133,7 @@ export default function DetailPanel({ ticket, locName, parts, stock, users = [],
             <Row k="Probléma" v={probs.length ? probs.map((p, i) => <span key={i} className="prob-pill">{p}</span>) : null} />
             <Row k="Garancia" v={ticket.warranty ? <span className="gar-pill">{ticket.warranty}</span> : null} />
             <Row k="Fólia" v={ticket.folia ? (
-              <span style={{ color: "#22C55E", fontWeight: 700 }}>
+              <span style={{ color: "var(--primary)", fontWeight: 700 }}>
                 ✓ Igen{ticket.foliaUpsellRequested ? ` (ügyfél kérte online, +${money(ticket.foliaUpsellPrice)})` : ""}
               </span>
             ) : "Nem"} />
@@ -151,8 +151,8 @@ export default function DetailPanel({ ticket, locName, parts, stock, users = [],
           <div className="dp-section">
             <div className="dp-section-title">Minőség &amp; nyomon követhetőség</div>
             <Row k="Technikus" v={ticket.assignedTo ? userName(ticket.assignedTo) : null} />
-            <Row k="Ügyfél beleegyezése" v={ticket.consentAt ? <span style={{ color: "#22C55E", fontWeight: 700 }}>✓ Elfogadva ({ticket.consentAt.slice(0, 10)})</span> : <span style={{ color: "#DC2626" }}>Nincs rögzítve</span>} />
-            <Row k="Minőségellenőrzés" v={ticket.qcAt ? <span style={{ color: "#22C55E", fontWeight: 700 }}>✓ {userName(ticket.qcBy)} ({ticket.qcAt.slice(0, 10)})</span> : null} />
+            <Row k="Ügyfél beleegyezése" v={ticket.consentAt ? <span style={{ color: "var(--primary)", fontWeight: 700 }}>✓ Elfogadva ({formatDate(ticket.consentAt)})</span> : <span style={{ color: "#DC2626" }}>Nincs rögzítve</span>} />
+            <Row k="Minőségellenőrzés" v={ticket.qcAt ? <span style={{ color: "var(--primary)", fontWeight: 700 }}>✓ {userName(ticket.qcBy)} ({formatDate(ticket.qcAt)})</span> : null} />
             {ticket.status === "Minőségellenőrzés" && (
               <div className="row2" style={{ marginTop: 8, alignItems: "flex-end" }}>
                 <div className="field" style={{ margin: 0 }}>
@@ -222,7 +222,7 @@ export default function DetailPanel({ ticket, locName, parts, stock, users = [],
             <div className="dp-section-title">Pénzügyek</div>
             <Row k="Árajánlat" v={money(ticket.price)} />
             <Row k="Anyagköltség" v={money(ticket.matCost)} />
-            <Row k="Profit" v={<span style={{ color: "#22C55E", fontWeight: 700 }}>{money(profit)}</span>} />
+            <Row k="Profit" v={<span style={{ color: "var(--primary)", fontWeight: 700 }}>{money(profit)}</span>} />
             {ticket.ticketKind === "Saját készlet - előkészítés" && ticket.productId && (
               <Row k="Telefon beszerzési ára most" v={<span style={{ fontWeight: 700 }}>{money(stock?.find((p) => p.id === ticket.productId)?.costPrice)}</span>} />
             )}

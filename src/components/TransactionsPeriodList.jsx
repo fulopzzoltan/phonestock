@@ -232,7 +232,7 @@ export default function TransactionsPeriodList({ transactions, locName, onEdit, 
               </div>
             </div>
             {isOpen && (
-              <div className="tw tw-compact" style={{ borderRadius: "0 0 10px 10px", borderTop: "2px solid #22C55E", padding: granularity === "day" ? 16 : 0 }}>
+              <div className="tw tw-compact" style={{ borderRadius: "0 0 10px 10px", borderTop: "2px solid var(--primary)", padding: granularity === "day" ? 16 : 0 }}>
                 {granularity === "day" && (() => {
                   const stats = summarizeTx(rows);
                   return (

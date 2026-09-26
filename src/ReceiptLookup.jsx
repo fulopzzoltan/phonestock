@@ -127,7 +127,7 @@ export default function ReceiptLookup({ token, signStage, minimal = false, lang 
             {signMode && (
               signature ? (
                 <div className="dp-section" style={{ marginTop: 14, textAlign: "center" }}>
-                  <div style={{ color: "#22C55E", fontWeight: 700, fontSize: 14 }}>✓ Aláírva — {signature.signer_name}</div>
+                  <div style={{ color: "var(--primary)", fontWeight: 700, fontSize: 14 }}>✓ Aláírva — {signature.signer_name}</div>
                   <div style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}>{new Date(signature.signed_at).toLocaleString("hu-HU")}</div>
                 </div>
               ) : (

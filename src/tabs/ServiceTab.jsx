@@ -561,7 +561,7 @@ export default function ServiceTab({
             {probsOf(t).length > 0 && (
               <span style={{ fontSize: 12, color: "#374151", fontWeight: 600 }}>{probsOf(t).join(", ")}</span>
             )}
-            <span style={{ marginLeft: 6 }}>{flagsOf(t)}</span>
+            <span style={{ marginLeft: 6, marginTop: 5.5, display: "inline-flex", flexWrap: "wrap", alignItems: "center", gap: 5 }}>{flagsOf(t)}</span>
             {nextActionOf(t) && (() => {
               const na = nextActionOf(t);
               return (

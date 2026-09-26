@@ -360,7 +360,7 @@ export default function DashboardTab({
             { label: "Raktáron", value: `${stockStats.count} db` },
             { label: "Készlet értéke", value: money(stockStats.value) },
             { label: "Besz. érték", value: money(stockStats.cost) },
-            { label: "Várható profit", value: money(stockStats.profit), color: "#22C55E" },
+            { label: "Várható profit", value: money(stockStats.profit), color: "var(--primary)" },
           ]} />
           <div style={{ marginBottom: 14 }}>
             <StockValueChart history={stockHistory} />
@@ -407,9 +407,9 @@ export default function DashboardTab({
           <KpiStrip items={[
             { label: "Sikertelenek %", value: svcStats.sikertelenPct != null ? `${svcStats.sikertelenPct}%` : "—", color: "#9D174D" },
             { label: "Garanciálisok %", value: svcStats.warrantyPct != null ? `${svcStats.warrantyPct}%` : "—", color: "#6D28D9", sub: svcStats.warrantyCount > 0 ? `${svcStats.warrantyCount} munkalap` : null },
-            { label: "Átlagos rés (kiadott)", value: svcStats.avgMargin != null ? money(svcStats.avgMargin) : "—", color: "#22C55E" },
+            { label: "Átlagos rés (kiadott)", value: svcStats.avgMargin != null ? money(svcStats.avgMargin) : "—", color: "var(--primary)" },
             { label: "Átlagos átfutási idő", value: svcStats.avgTAT != null ? `${svcStats.avgTAT} nap` : "—" },
-            { label: "Fólia-ajánlat konverzió", value: svcStats.foliaConversionPct != null ? `${svcStats.foliaConversionPct}%` : "—", color: "#22C55E", sub: svcStats.foliaShown > 0 ? `${svcStats.foliaRequestedCount} / ${svcStats.foliaShown} megrendelte` : null },
+            { label: "Fólia-ajánlat konverzió", value: svcStats.foliaConversionPct != null ? `${svcStats.foliaConversionPct}%` : "—", color: "var(--primary)", sub: svcStats.foliaShown > 0 ? `${svcStats.foliaRequestedCount} / ${svcStats.foliaShown} megrendelte` : null },
           ]} />
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>

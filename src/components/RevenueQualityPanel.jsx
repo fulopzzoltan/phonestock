@@ -13,7 +13,7 @@ import { money, ANALYTICS_START_DATE } from "../lib/utils";
 // bontás — ld. ANALYTICS_START_DATE a utils.js-ben. Előtte a Készlet-bevétel jó része
 // tömbösített/kalapozott manuális tétel volt, azon ez a bontás nem értelmezhető.
 
-const SEG_COLOR = { phone: "#22C55E", service: "#0EA5E9", accessory: "#F59E0B" };
+const SEG_COLOR = { phone: "#1DB954", service: "#0EA5E9", accessory: "#F59E0B" };
 const SEG_LABEL = { phone: "Telefon", service: "Szerviz", accessory: "Tartozék" };
 const SEG_ORDER = ["phone", "service", "accessory"];
 
@@ -287,7 +287,7 @@ export default function RevenueQualityPanel({ transactions, tickets, locations, 
                   </span>
                 </div>
                 <div style={{ height: 7, background: "#F1F2F6", borderRadius: 999, overflow: "hidden" }}>
-                  <div style={{ width: `${idPct}%`, height: "100%", background: idPct >= 90 ? "#22C55E" : idPct >= 60 ? "#F59E0B" : "#EF4444", borderRadius: 999 }} />
+                  <div style={{ width: `${idPct}%`, height: "100%", background: idPct >= 90 ? "#1DB954" : idPct >= 60 ? "#F59E0B" : "#EF4444", borderRadius: 999 }} />
                 </div>
               </div>
             );

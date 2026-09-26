@@ -504,3 +504,15 @@ export const PayrollIcon = (props) => (
     <rect x="2.5" y="6" width="19" height="13" rx="2.2" /><path d="M2.5 10.5h19" /><circle cx="12" cy="14.5" r="2" />
   </svg>
 );
+
+export const TruckIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M2.5 6.5h11v9.5h-11zM13.5 10h4l3 3v3h-7" /><circle cx="7" cy="17.5" r="1.8" /><circle cx="17" cy="17.5" r="1.8" />
+  </svg>
+);
+
+export const PackageIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" /><path d="M4 7.5l8 4.5 8-4.5M12 12v9" />
+  </svg>
+);

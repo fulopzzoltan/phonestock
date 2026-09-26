@@ -10,7 +10,7 @@ import { money } from "../lib/utils";
 // egy adott hónapban eladott telefon beszerzése lehet egy korábbi hónap kiadása
 // volt, úgyhogy havi szinten pontatlan lehet, de negyedéves/éves átlagban jó közelítés.
 const CATS = [
-  { key: "phone", label: "Telefon", color: "#22C55E" },
+  { key: "phone", label: "Telefon", color: "#1DB954" },
   { key: "service", label: "Szerviz", color: "#0EA5E9" },
   { key: "accessory", label: "Tartozék", color: "#F59E0B" },
 ];

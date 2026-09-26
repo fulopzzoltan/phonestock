@@ -18,7 +18,7 @@ function niceMax(n) {
 }
 
 const SERIES = [
-  { key: "revenue", label: "Bevétel", color: "#22C55E" },
+  { key: "revenue", label: "Bevétel", color: "#1DB954" },
   { key: "expenses", label: "Kiadás", color: "#F87171" },
   { key: "profit", label: "Profit", color: "#111827" },
 ];

@@ -16,7 +16,7 @@ export default function PrintSlip({ ticket, location, intakeLocation }) {
     <div style={{ fontFamily: "Inter, sans-serif", color: "#111827", padding: "18px 24px", maxWidth: 760 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 26 }}>
         <div>
-          <div style={{ fontSize: 18, fontWeight: 800 }}>TELEF<span style={{ color: "#22C55E" }}>O</span>NOS</div>
+          <div style={{ fontSize: 18, fontWeight: 800 }}>TELEF<span style={{ color: "var(--primary)" }}>O</span>NOS</div>
           <div style={{ fontSize: 12, color: "#6B7280", marginTop: 2 }}>{location?.phone || ""}</div>
         </div>
         <div style={{ fontSize: 20, fontWeight: 800, textAlign: "center" }}>Szerviz átadási lap</div>

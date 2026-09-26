@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { money, PART_CATEGORIES, partCode, ticketCode, statusCls, subStatusCls } from "../lib/utils";
+import { money, PART_CATEGORIES, partCode, ticketCode, statusCls, subStatusCls, formatDate } from "../lib/utils";
 import { SearchIcon, EditIcon, PartsIcon, ScanIcon, MoreIcon } from "../components/icons";
 import ConfirmDelete from "../components/ConfirmDelete";
 import { EmptyState, LoadingState } from "../components/EmptyState";
@@ -139,7 +139,7 @@ export default function PartsTab({
                 <td>{sp.ticket.customerName || "—"}</td>
                 <td style={{ fontWeight: 700 }}>{sp.quantity} db</td>
                 <td className="row-price">{money((sp.costPrice || 0) * sp.quantity)}</td>
-                <td className="mono" style={{ color: "#9CA3AF" }}>{(sp.usedAt || "").slice(0, 10) || "—"}</td>
+                <td style={{ color: "#9CA3AF", whiteSpace: "nowrap" }}>{formatDate(sp.usedAt) || "—"}</td>
               </tr>
             )}
             renderMobileRow={(sp) => (
@@ -157,7 +157,7 @@ export default function PartsTab({
                   <div className="mob-row-sub">
                     <span>{sp.ticket.customerName || "—"}</span>
                     <span>{sp.quantity} db</span>
-                    <span>{(sp.usedAt || "").slice(0, 10) || "—"}</span>
+                    <span>{formatDate(sp.usedAt) || "—"}</span>
                   </div>
                 </div>
               </div>

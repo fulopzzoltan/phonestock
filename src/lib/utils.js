@@ -41,6 +41,17 @@ export const TRACKING_URL = "https://nyomonkovetes.telefonos.ro";
 export const stripAccents = (str) => (str || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 // rom\u00e1n nemzetk\u00f6zi el\u0151h\u00edv\u00f3 (+40 / 0040) \u2192 helyi 0-s forma, minden m\u00e1s elt\u00e1vol\u00edt\u00e1s ut\u00e1n
 // nem 10 jegy\u0171 0-val kezd\u0151d\u0151 sz\u00e1mot (hib\u00e1s/hi\u00e1nyos adat) \u00fcresre v\u00e1lt, hogy ne mutassuk
+// Megjelenítéshez: "szept. 26." (idei év) vagy "2025. szept. 26." — ISO dátumból vagy időbélyegből.
+export function formatDate(value) {
+  if (!value) return "";
+  const d = new Date(String(value).length <= 10 ? `${value}T00:00:00` : value);
+  if (Number.isNaN(d.getTime())) return String(value);
+  const opts = d.getFullYear() === new Date().getFullYear()
+    ? { month: "short", day: "numeric" }
+    : { year: "numeric", month: "short", day: "numeric" };
+  return d.toLocaleDateString("hu-HU", opts);
+}
+
 export function formatPhone(raw) {
   if (!raw) return "";
   let digits = String(raw).trim().replace(/[\s\-().]/g, "");
@@ -171,7 +182,7 @@ export const STATUSES = [
   { key: "Átvett", label: "Rögzítve", color: "#F59E0B", cls: "st-beveve" },
   { key: "Javítás alatt", label: "Szerelés alatt", color: "#F97316", cls: "st-javitas", narrow: true },
   { key: "Minőségellenőrzés", label: "Tesztelés", color: "#0EA5E9", cls: "st-qc", narrow: true },
-  { key: "Átadásra", label: "Átvehető", color: "#22C55E", cls: "st-kesz" },
+  { key: "Átadásra", label: "Átvehető", color: "#1DB954", cls: "st-kesz" },
 ];
 export const statusCls = (s) => STATUSES.find((c) => c.key === s)?.cls || "st-beveve";
 export const statusLabel = (s) => STATUSES.find((c) => c.key === s)?.label || s;
@@ -184,7 +195,7 @@ export const BUYBACK_STATUSES = [
   { key: "Elfogadva - várjuk a készüléket", color: "#F97316", cls: "st-javitas" },
   { key: "Beérkezett", color: "#0EA5E9", cls: "st-qc" },
   { key: "Bevizsgálás alatt", color: "#8B5CF6", cls: "st-alkatresz" },
-  { key: "Végleges ajánlat", color: "#22C55E", cls: "st-kesz" },
+  { key: "Végleges ajánlat", color: "#1DB954", cls: "st-kesz" },
 ];
 export const buybackStatusCls = (s) => BUYBACK_STATUSES.find((c) => c.key === s)?.cls
   || (s === "Kifizetve" ? "st-kesz" : s === "Elutasítva" ? "st-sikertelen" : "st-beveve");

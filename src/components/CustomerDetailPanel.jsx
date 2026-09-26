@@ -1,4 +1,4 @@
-import { money, statusCls, subStatusLabel, formatPhone, warrantyExpiry, isWarrantyActive } from "../lib/utils";
+import { money, statusCls, subStatusLabel, formatPhone, warrantyExpiry, isWarrantyActive, formatDate } from "../lib/utils";
 import { CloseIcon, EditIcon } from "./icons";
 import Row from "./DetailRow";
 import CallLink from "./CallLink";
@@ -139,7 +139,7 @@ export default function CustomerDetailPanel({ customer, locName, ledger, rewards
               <div className="dp-section-title">Pontelőzmények</div>
               {ledgerRows.map((l) => (
                 <div key={l.id} className="dp-row" style={{ alignItems: "center" }}>
-                  <span className="dp-key">{(l.createdAt || "").slice(0, 10)} · {LEDGER_LABELS[l.kind] || l.kind}</span>
+                  <span className="dp-key">{formatDate(l.createdAt)} · {LEDGER_LABELS[l.kind] || l.kind}</span>
                   <span className="dp-val" style={{ color: l.points >= 0 ? "#15803D" : "#B91C1C", fontWeight: 700 }}>{l.points >= 0 ? "+" : ""}{l.points}</span>
                 </div>
               ))}

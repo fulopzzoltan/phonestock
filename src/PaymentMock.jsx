@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { WarningIcon } from "./components/icons";
 import { supabase } from "./lib/supabaseClient";
 import { clearCart } from "./lib/cart";
 import { money } from "./lib/utils";
@@ -48,7 +49,7 @@ export default function PaymentMock({ token }) {
     <div className="pub-shop">
       <PublicHeader activeNav="cart" />
       <div className="mock-pay-banner">
-        ⚠️ Az online bankkártyás fizetés még nem aktív ezen az oldalon.
+        <WarningIcon className="inline-ic" />Az online bankkártyás fizetés még nem aktív ezen az oldalon.
       </div>
       <main className="pub-lookup-main">
         <div style={{ width: "100%" }}>

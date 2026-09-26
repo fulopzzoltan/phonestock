@@ -584,17 +584,17 @@ export default function StockTab({
         </div>
       )}
       <div className="filter-row svc-filter-row">
-        <button type="button" className={`history-toolbar-btn${showSold ? " active" : ""}`} style={{ marginLeft: 0 }} onClick={() => setShowSold((v) => !v)}>
-          Eladott telefonok <span className="cnt">{soldStock.length}</span>
-        </button>
-        <button type="button" className={`history-toolbar-btn${showReserve ? " active" : ""}`} style={{ marginLeft: 0 }} onClick={() => setShowReserve((v) => !v)}>
-          Tartalék <span className="cnt">{filteredStock.filter((i) => i.stockStatus === "tartalek").length}</span>
-        </button>
         <button type="button" className="history-toolbar-btn stock-more-trigger" onClick={() => setMoreOpen((v) => !v)} title="Szűrők és listák">
           <MoreIcon className="history-toolbar-btn-dots" width={16} height={16} />
           <span className="history-toolbar-btn-text">Szűrők</span>
         </button>
         <div className={`stock-more-wrap${moreOpen ? " open" : ""}`} ref={moreMenuRef}>
+          <button type="button" className={`history-toolbar-btn${showSold ? " active" : ""}`} style={{ marginLeft: 0 }} onClick={() => setShowSold((v) => !v)}>
+            Eladott telefonok <span className="cnt">{soldStock.length}</span>
+          </button>
+          <button type="button" className={`history-toolbar-btn${showReserve ? " active" : ""}`} style={{ marginLeft: 0 }} onClick={() => setShowReserve((v) => !v)}>
+            Tartalék <span className="cnt">{filteredStock.filter((i) => i.stockStatus === "tartalek").length}</span>
+          </button>
           <div className="status-seg">
             {STOCK_STATUSES.filter((s) => s.key === "szerviz" || s.key === "lefoglalt").map((s) => (
               <button key={s.key} className={statusFilter === s.key ? "active" : ""} onClick={() => setStatusFilter((f) => (f === s.key ? "all" : s.key))}>

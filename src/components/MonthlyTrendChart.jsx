@@ -14,7 +14,7 @@ function niceMax(n) {
   return step * pow;
 }
 
-const LOC_COLORS = ["#22C55E", "#0EA5E9", "#F97316"];
+const LOC_COLORS = ["#1DB954", "#0EA5E9", "#F97316"];
 
 export default function MonthlyTrendChart({ months, summaries, liveMonth, locations, locFilter, locName }) {
   const [hover, setHover] = useState(null);
@@ -107,7 +107,7 @@ export default function MonthlyTrendChart({ months, summaries, liveMonth, locati
                 const x = startX + bi * (barW + barGap);
                 const y = yFor(b.data.revenue);
                 const h = H - PAD_B - y;
-                const color = b.isLive && locFilter === "all" ? "#9CA3AF" : (b.loc?.color || "#22C55E");
+                const color = b.isLive && locFilter === "all" ? "#9CA3AF" : (b.loc?.color || "#1DB954");
                 const isHovered = hover && hover.gi === gi && hover.bi === bi;
                 return (
                   <rect

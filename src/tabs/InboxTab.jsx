@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { supabase } from "../lib/supabaseClient";
-import { ChatIcon, SearchIcon, WhatsappIcon, FacebookIcon, MailIcon, CameraIcon, ServiceIcon, RepairPriceIcon, BuybackIcon } from "../components/icons";
+import { BuybackIcon, CameraIcon, ChatIcon, FacebookIcon, MailIcon, NoteIcon, RepairPriceIcon, SearchIcon, ServiceIcon, WhatsappIcon } from "../components/icons";
 import { EmptyState } from "../components/EmptyState";
 import { formatPhone, displayName, money, statusCls, statusLabel } from "../lib/utils";
 
@@ -75,7 +75,7 @@ function buildThreads(messages, customers) {
       customerId: customer?.id || null,
       messages: sorted,
       lastAt: last?.createdAt || "",
-      lastPreview: last?.mediaType ? "📷 Kép" : (last?.body || (last?.templateName ? `Sablon: ${last.templateName}` : "")),
+      lastPreview: last?.mediaType ? "Kép" : (last?.body || (last?.templateName ? `Sablon: ${last.templateName}` : "")),
       unread: sorted.some((m) => m.direction === "in" && !m.readAt),
     };
   }).sort((a, b) => (b.lastAt || "").localeCompare(a.lastAt || ""));
@@ -397,11 +397,11 @@ export default function InboxTab({ messages, customers, tickets = [], repairLead
                       <img src={mediaUrls[m.mediaStoragePath]} alt="melléklet" style={{ maxWidth: 220, maxHeight: 220, borderRadius: 10, display: "block", marginTop: 4 }} />
                     </a>
                   ) : m.mediaStoragePath ? (
-                    <div className="chat-msg-body" style={{ color: "#9CA3AF" }}>📎 kép betöltése...</div>
+                    <div className="chat-msg-body" style={{ color: "#9CA3AF" }}><CameraIcon className="inline-ic" />Kép betöltése...</div>
                   ) : null}
                   {m.body && <div className="chat-msg-body">{m.body}</div>}
                   {!m.body && !m.mediaStoragePath && (
-                    <div className="chat-msg-body">{m.templateName ? `📋 Sablonüzenet: ${m.templateName}` : "—"}</div>
+                    <div className="chat-msg-body">{m.templateName ? <><NoteIcon className="inline-ic" />Sablonüzenet: {m.templateName}</> : "—"}</div>
                   )}
                 </div>
               ))}

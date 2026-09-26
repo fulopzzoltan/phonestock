@@ -4,7 +4,7 @@ import { money } from "../lib/utils";
 // Kiadás-statisztika kategóriánként, összesítve az utolsó N hónapra
 // (alapból 12) — melyik forrás mennyit visz el a kiadásokból.
 const CATS = [
-  { key: "expensePhoneStock", label: "Telefon-beszerzés", color: "#22C55E" },
+  { key: "expensePhoneStock", label: "Telefon-beszerzés", color: "#1DB954" },
   { key: "expenseServiceParts", label: "Szerviz-alkatrész", color: "#0EA5E9" },
   { key: "expenseAccessoryStock", label: "Tartozék-beszerzés", color: "#F59E0B" },
   { key: "expensePayroll", label: "Bér", color: "#EC4899" },

@@ -28,7 +28,7 @@ function Label({ p }) {
       {isNew && (
         <span style={{
           position: "absolute", top: 10, right: 12, width: 30, height: 30, borderRadius: "50%",
-          background: "#22C55E", color: "#fff", fontSize: 11, fontWeight: 800,
+          background: "var(--primary)", color: "#fff", fontSize: 11, fontWeight: 800,
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>Új</span>
       )}
@@ -36,7 +36,7 @@ function Label({ p }) {
       {p.storage && <div style={{ fontSize: 15, fontWeight: 700, color: "#111827" }}>{p.storage}</div>}
       {p.ram && p.brand !== "Apple" && <div style={{ fontSize: 15, fontWeight: 700, color: "#111827" }}>{p.ram} RAM</div>}
       {showBattery && <div style={{ fontSize: 15, fontWeight: 700, color: "#111827" }}>Baterie: {Math.round(Number(p.batteryHealth))}%</div>}
-      {p.warranty && <div style={{ fontSize: 15, fontWeight: 700, color: "#16A34A" }}>Garantie: {warrantyRo(p.warranty)}</div>}
+      {p.warranty && <div style={{ fontSize: 15, fontWeight: 700, color: "#159C46" }}>Garantie: {warrantyRo(p.warranty)}</div>}
       <div style={{
         marginTop: 5, background: "#E11D3F", color: "#fff", fontWeight: 800, fontSize: 18,
         borderRadius: 9, padding: "7px 20px", display: "inline-block",
