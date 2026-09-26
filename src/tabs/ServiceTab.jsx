@@ -6,6 +6,7 @@ import ResponsiveTable from "../components/ResponsiveTable";
 import HandoverPaymentModal from "../components/HandoverPaymentModal";
 import CustomerAutocomplete from "../components/CustomerAutocomplete";
 import BrandPickerButton from "../components/BrandPickerButton";
+import DayChip from "../components/DayChip";
 
 const STATUS_KEYS = STATUSES.map((s) => s.key);
 // BoardUI-ból kinyert valódi színek — ugyanezt használja a StatusPicker trigger pöttye és a
@@ -444,12 +445,7 @@ export default function ServiceTab({
       </>
     );
   };
-  const daysOf = (t) => {
-    const n = daysOnShelf(t.dateIn);
-    if (n == null) return <span className="svc-days">—</span>;
-    if (n <= 0) return <span className="svc-days today">{n}<span className="svc-days-lbl">napja</span></span>;
-    return <span className="svc-days">{n}<span className="svc-days-lbl">napja</span></span>;
-  };
+  const daysOf = (t) => <DayChip days={daysOnShelf(t.dateIn)} />;
   const kliensOf = (t) => {
     if (t.ticketKind === "Saját készlet - előkészítés") {
       return <span className="t-kind-pill" style={{ background: "#F1F5F9", color: "#475569" }}><ServiceIcon width={11} height={11} />Saját — előkészítés</span>;

@@ -10,6 +10,7 @@ import HistorySection from "../components/HistorySection";
 import ResponsiveTable from "../components/ResponsiveTable";
 import BrandPickerButton from "../components/BrandPickerButton";
 import CustomerAutocomplete from "../components/CustomerAutocomplete";
+import DayChip from "../components/DayChip";
 
 const BRAND_PRIORITY = ["Apple", "Samsung", "Huawei"];
 function brandRank(brand) {
@@ -149,6 +150,9 @@ function NewPhoneRow({ open, onCancel, onCreate, customers, defaultLocId, busy }
     <>
       <tr className="svc-nr-row">
         <td className="mono col-serial" style={{ padding: 0 }}>
+          <div className="svc-nr-reveal" style={{ ...revealStyle(140), color: "#B7BCC4", padding: "11px 16px" }}>—</div>
+        </td>
+        <td style={{ padding: 0 }}>
           <div className="svc-nr-reveal" style={{ ...revealStyle(140), color: "#B7BCC4", padding: "11px 16px" }}>—</div>
         </td>
         <td style={{ padding: 0 }}>
@@ -407,6 +411,7 @@ export default function StockTab({
         className="tw-apple stk-table"
         columns={[
           { key: "n", label: "Szám", className: "col-serial" },
+          { key: "i", label: "Bejött" },
           { key: "p", label: "Termék", className: "col-device" },
           { key: "s", label: "Specifikáció", className: "col-grow" },
           {
@@ -443,10 +448,10 @@ export default function StockTab({
         ) : (
           <tr key={i.id} style={{ cursor: "pointer" }} onClick={() => setProductDetailId(i.id)}>
             <td className="mono col-serial" style={{ color: "#9CA3AF", whiteSpace: "nowrap" }}>{phoneCode(i.productNo) || "—"}</td>
+            <td style={{ whiteSpace: "nowrap" }}><DayChip days={daysOnShelf(i.dateAdded)} /></td>
             <td style={{ whiteSpace: "nowrap" }}>
               <div className="stk-name" style={{ flexWrap: "nowrap" }}>
                 {displayName(i.brand, i.model)}
-                {isSlowMoving(i, reserveLocId) && <span className="stk-day-pill" title={`${daysOnShelf(i.dateAdded)} napja a polcon`}>{daysOnShelf(i.dateAdded)}</span>}
                 {i.acquisition?.acquisitionType === "consignment" && <span className="badge-loc">Bizomány</span>}
               </div>
             </td>

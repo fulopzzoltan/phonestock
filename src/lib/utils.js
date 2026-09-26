@@ -100,6 +100,16 @@ export function isSlowMoving(p, reserveLocId) {
   return days != null && days >= SLOW_MOVING_DAYS;
 }
 
+// Napok-szerinti színkód a "Bejött" chipekhez (Szerviz + Telefonok) — minél régebb óta
+// van bent, annál "melegebb" a szín, a SLOW_MOVING_DAYS-hez igazítva.
+export function daysColor(days) {
+  if (days == null) return { bg: "#F3F4F6", fg: "#9CA3AF" };
+  if (days <= 7) return { bg: "#DCFCE7", fg: "#15803D" };
+  if (days <= 20) return { bg: "#DBEAFE", fg: "#1D4ED8" };
+  if (days <= 44) return { bg: "#FEF3C7", fg: "#B45309" };
+  return { bg: "#FEE2E2", fg: "#B91C1C" };
+}
+
 export const READY_STALE_DAYS = 90;
 export function isStaleReady(t) {
   if (t.status !== "Átadásra" || t.subStatus === "Átadva" || !t.readyAt) return false;

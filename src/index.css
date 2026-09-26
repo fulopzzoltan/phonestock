@@ -319,9 +319,9 @@ tr:hover td{background:#FAFAFA}
 .svc-filter-row{flex-wrap:nowrap}
 .svc-filter-row .searchbar{min-width:0;flex-shrink:1}
 .svc-filter-row .history-toolbar-btn,.svc-filter-row .header-add-btn{flex-shrink:0}
-.svc-days{font-weight:600;color:#111827;white-space:nowrap}
-.svc-days.today{color:#111827}
-.svc-days-lbl{color:#9CA3AF;font-weight:400;margin-left:3px}
+.day-chip{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap}
+.day-chip-lbl{font-weight:500;opacity:.7}
+.day-chip-empty{background:#F3F4F6;color:#9CA3AF;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700}
 .svc-probs{display:flex;flex-wrap:nowrap;gap:4px;overflow:hidden}
 
 /* Új munkalap — inline tábla-sor (nem forma-kártya): a "+" gomb egy szerkeszthető sort told a
@@ -744,7 +744,6 @@ input[type="date"].svc-nr-cell:hover::-webkit-calendar-picker-indicator{opacity:
 .col-device{min-width:190px}
 .col-serial{padding-right:6px;text-align:right}
 .stk-repair-badge{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:999px;background:var(--danger);color:#fff;flex-shrink:0}
-.stk-day-pill{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:var(--warning-soft);color:var(--warning-ink);font-size:11px;font-weight:800;flex-shrink:0}
 .stk-actions .iconbtn{padding:6px;border-radius:9px}
 .stk-actions .iconbtn svg{width:15px;height:15px}
 
