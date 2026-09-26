@@ -107,20 +107,14 @@ export default function StockTab({
     return (
       <ResponsiveTable
         className="tw-apple"
-        columns={[{ key: "n", label: "Sorszám", className: "col-serial" }, { key: "p", label: "Termék", className: "col-device" }, { key: "s", label: "Specifikáció", className: "col-grow" }, { key: "st", label: "Állapot", className: "col-status" }, { key: "a", label: "Ár", className: "num-col" }, { key: "x", label: "" }]}
+        columns={[{ key: "n", label: "Szám", className: "col-serial" }, { key: "p", label: "Termék", className: "col-device" }, { key: "s", label: "Specifikáció", className: "col-grow" }, { key: "st", label: "Állapot", className: "col-status" }, { key: "a", label: "Ár", className: "num-col" }, { key: "x", label: "" }]}
         rows={items}
         rowKey={(i) => i.id}
         renderRow={(i) => (
           <tr key={i.id} style={{ cursor: "pointer" }} onClick={() => setProductDetailId(i.id)}>
-            <td className="col-serial" style={{ whiteSpace: "nowrap" }}>
-              <span className="stk-serial-cell" onClick={(e) => e.stopPropagation()}>
-                <input type="checkbox" className="stk-chk" checked={selectedIds.has(i.id)} onChange={() => toggleSelect(i.id)} title="Kijelölés címkenyomtatáshoz" />
-                <span className="mono" style={{ color: "#9CA3AF" }}>{i.productNo ?? "—"}</span>
-              </span>
-            </td>
+            <td className="mono col-serial" style={{ color: "#9CA3AF", whiteSpace: "nowrap" }}>{i.productNo ?? "—"}</td>
             <td style={{ whiteSpace: "nowrap" }}>
               <div className="stk-name" style={{ flexWrap: "nowrap" }}>
-                <span className="mono" style={{ color: "#ADB1B8", fontSize: 12 }}>T</span>
                 {displayName(i.brand, i.model)}
                 <span className={`st st-fill ${i.condition === "New" ? "st-kesz" : "st-beveve"}`}>{conditionGradeLabel(i.condition, i.grade)}</span>
                 {i.acquisition?.acquisitionType === "consignment" && <span className="badge-loc">Bizomány</span>}
@@ -139,6 +133,7 @@ export default function StockTab({
             </td>
             <td className="row-price" title={`Beszerzési ár: ${money(i.costPrice)}`}>{money(i.salePrice)}</td>
             <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
+              <input type="checkbox" className="stk-chk" checked={selectedIds.has(i.id)} onChange={() => toggleSelect(i.id)} title="Kijelölés címkenyomtatáshoz" />
               {canAct(i) && (
                 <button className="btn sec sm icon-only" disabled={busy} title="Eladás" onClick={() => setSellModal(i)}><CartIcon width={13} height={13} /></button>
               )}
@@ -153,7 +148,6 @@ export default function StockTab({
             <div className="mob-row-content">
               <div className="mob-row-top">
                 <div className="mob-row-main">
-                  <span className="mono" style={{ color: "#ADB1B8", fontSize: 12, flexShrink: 0 }}>T</span>
                   <span style={{ flex: 1, minWidth: 0 }}>{displayName(i.brand, i.model)}</span>
                   <span className={`st st-fill ${i.condition === "New" ? "st-kesz" : "st-beveve"}`} style={{ flexShrink: 0 }}>{conditionGradeLabel(i.condition, i.grade)}</span>
                 </div>
