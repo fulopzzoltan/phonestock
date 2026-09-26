@@ -107,7 +107,6 @@ export function useAppState() {
   const [leaveBalanceModal, setLeaveBalanceModal] = useState(null); // null | user obj
   const [repairPrices, setRepairPrices] = useState([]);
   const [repairLeads, setRepairLeads] = useState([]);
-  const [cashHolders, setCashHolders] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [cashSettlements, setCashSettlements] = useState([]);
   const [dayCloses, setDayCloses] = useState([]);
@@ -123,7 +122,7 @@ export function useAppState() {
   const [stockImportQueue, setStockImportQueue] = useState([]); // hátralévő "Telefon"-ként jelölt egységek
 
   return {
-    tab, setTab, locFilter, setLocFilterRaw, lastActiveLocationId, setLastActiveLocationId, setLocFilter,
+    tab, setTab, locFilter, lastActiveLocationId, setLocFilter,
     locations, setLocations, stock, setStock, transactions, setTransactions, tickets, setTickets, parts,
     setParts, productParts, setProductParts, users, setUsers, customersTable, setCustomersTable,
     inboxMessages, setInboxMessages, vaultCredentials, setVaultCredentials, customerProfiles,
@@ -153,7 +152,7 @@ export function useAppState() {
     payrollPayments, setPayrollPayments, companyTaxObligations, setCompanyTaxObligations, leaveTypes,
     setLeaveTypes, leaveBalances, setLeaveBalances, leaveRequests, setLeaveRequests, leaveRequestModal,
     setLeaveRequestModal, leaveBalanceModal, setLeaveBalanceModal, repairPrices, setRepairPrices,
-    repairLeads, setRepairLeads, cashHolders, setCashHolders, reviews, setReviews, cashSettlements,
+    repairLeads, setRepairLeads, reviews, setReviews, cashSettlements,
     setCashSettlements, dayCloses, setDayCloses, repairPriceModal, setRepairPriceModal, repairLeadFilter,
     setRepairLeadFilter, repairLeadConvert, setRepairLeadConvert, loadInFlightRef, lastLoadAtRef,
     pdfImportModal, setPdfImportModal, stockImportQueue, setStockImportQueue,

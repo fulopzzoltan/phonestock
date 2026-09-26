@@ -547,11 +547,11 @@ export function useDerivedData(ctx) {
     stockLocFilter, filteredStock, txByProductId, productConditionById, soldStock, refurbPhones,
     refurbCount, filteredTransactions, dailyIncomeTrend, filteredTickets, attentionCount, stockStats,
     soldPhoneStats, currentMonthLive, monthlyTrendSummary, partGroups, partsStats, filteredParts,
-    activeTickets, handedOverTickets, svcStats, customers, customerStats, buildWarrantyItems,
+    activeTickets, handedOverTickets, svcStats, customers, customerStats,
     activeWarranties, expiredWarranties, filteredWarranties, todoItems, leaveYear, leaveBalanceByUser,
     upcomingLeave, coverageWarnings, detailCustomer, receiptTx, detailTicket, detailProduct, detailPart,
     detailPartAllUnits, partUsage, allUsedParts, activeServiceTicket, productPartUsage,
-    buildDeviceHistory, deviceHistory, editingTicket, noLocationAssigned, pultPendingCounts,
+    deviceHistory, editingTicket, noLocationAssigned, pultPendingCounts,
     inboxUnreadCount, useMacDock,
   };
 }

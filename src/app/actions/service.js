@@ -400,13 +400,6 @@ export function createServiceActions(ctx) {
       openOwnServiceModal(product);
     }
   }
-  // FELÚJÍTÁS — a service_tickets/service_parts-tól szándékosan külön tartott, egyszerű
-  // "mit kell hozzá, kb. mennyibe kerül" feladatlista a javítandó saját telefonokhoz.
-  // A tényleges alkatrész-felhasználás (raktárkészlet levonása) továbbra is a meglévő
-  // "Saját készlet - előkészítés" munkalapon megy, ld. usePartForProduct fent.
-  function activeOwnTicketFor(productId) {
-    return tickets.find((t) => t.productId === productId && t.ticketKind !== "Ügyfél" && t.subStatus !== "Átadva") || null;
-  }
   // Rangsor mozgatás — a szomszédos telefonnal cseréli fel a repair_rank értéket (nincs
   // drag-and-drop, csak fel/le nyilak, ugyanaz az egyszerű minta, mint a loyalty_rewards
   // sort_order-jénél). Ha még egyiknek sincs rangja, 10-es lépésekkel osztjuk ki most.
@@ -434,8 +427,8 @@ export function createServiceActions(ctx) {
 
   return {
     addTicket, openOwnServiceModal, saveOwnServiceTicket, saveTicketEdit, setTicketStatus,
-    addTicketDeposit, completeQc, deleteTicket, syncHandoverCost, addPartToTicket, removePartFromTicket,
+    addTicketDeposit, completeQc, deleteTicket, addPartToTicket, removePartFromTicket,
     addPartToProduct, removePartFromProduct, openPartUsageModal, usePartForTicket, usePartForProduct,
-    activeOwnTicketFor, moveRefurbRank,
+    moveRefurbRank,
   };
 }

@@ -78,12 +78,9 @@ export function createPultActions(ctx) {
       setWaitingItems((prev) => prev.map((w) => (w.id === id ? waitingFromApi(r[0]) : w)));
     });
   }
-  async function deleteWaitingItem(id) {
-    await withBusy(async () => { unwrap(await supabase.from("waiting_items").delete().eq("id", id)); setWaitingItems((prev) => prev.filter((w) => w.id !== id)); });
-  }
 
   return {
     addNote, completeNote, reopenNote, updateNote, deleteNote, addWaitingItem, advanceWaiting,
-    updateWaitingItem, deleteWaitingItem,
+    updateWaitingItem,
   };
 }

@@ -131,7 +131,7 @@ export function createPayrollActions(ctx) {
   }
 
   return {
-    monthRevenue, ensurePayrollPeriod, ensureCompanyTaxPeriod, addCompanyTaxObligation,
+    ensurePayrollPeriod, ensureCompanyTaxPeriod, addCompanyTaxObligation,
     updatePayrollAmount, updateTaxAmount, markPayrollPaid, unmarkPayrollPaid, markTaxPaid, unmarkTaxPaid,
   };
 }

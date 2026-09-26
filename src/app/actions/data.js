@@ -1,10 +1,10 @@
 import { fetchAllRows, supabase, unwrap } from "../../lib/supabaseClient";
-import { acqFromApi, buybackModelFromApi, buybackOfferFromApi, buybackRuleFromApi, cashHolderFromApi, cashSettlementFromApi, chatMessageFromApi, companyTaxObligationFromApi, customerFromApi, customerProfileFromApi, customerRequestFromApi, dayCloseFromApi, employeeFromApi, leaveBalanceFromApi, leaveRequestFromApi, leaveTypeFromApi, loyaltyLedgerFromApi, loyaltyRewardFromApi, monthlySummaryFromApi, noteFromApi, pFromApi, partFromApi, payrollPaymentFromApi, payrollScheduleFromApi, profileFromApi, repairLeadFromApi, repairPriceFromApi, reviewFromApi, settingsFromApi, spFromApi, tFromApi, txFromApi, vaultCredentialFromApi, waitingFromApi, warrantyFromApi, webOrderFromApi } from "../../lib/mappers";
+import { acqFromApi, buybackModelFromApi, buybackOfferFromApi, buybackRuleFromApi, cashSettlementFromApi, chatMessageFromApi, companyTaxObligationFromApi, customerFromApi, customerProfileFromApi, customerRequestFromApi, dayCloseFromApi, employeeFromApi, leaveBalanceFromApi, leaveRequestFromApi, leaveTypeFromApi, loyaltyLedgerFromApi, loyaltyRewardFromApi, monthlySummaryFromApi, noteFromApi, pFromApi, partFromApi, payrollPaymentFromApi, payrollScheduleFromApi, profileFromApi, repairLeadFromApi, repairPriceFromApi, reviewFromApi, settingsFromApi, spFromApi, tFromApi, txFromApi, vaultCredentialFromApi, waitingFromApi, warrantyFromApi, webOrderFromApi } from "../../lib/mappers";
 import { today } from "../../lib/utils";
 
 export function createDataActions(ctx) {
   const {
-    lastLoadAtRef, loadInFlightRef, setBuybackModels, setBuybackOffers, setBuybackRules, setCashHolders,
+    lastLoadAtRef, loadInFlightRef, setBuybackModels, setBuybackOffers, setBuybackRules,
     setCashSettlements, setCompanyTaxObligations, setCustomerProfiles, setCustomerRequests,
     setCustomersTable, setDayCloses, setEmployees, setError, setInboxMessages, setLeaveBalances,
     setLeaveRequests, setLeaveTypes, setLoadingData, setLocations, setLoyaltyLedger, setLoyaltyRewards,
@@ -19,7 +19,7 @@ export function createDataActions(ctx) {
     loadInFlightRef.current = true;
     if (!silent) setLoadingData(true);
     try {
-      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, bbOffers, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds, prodAcqs, dClosesR, loyRewards, loyLedger, custProfiles, revs, emps, paySched, payPays, coTax, wappMsgs, vaultCreds] = await Promise.all([
+      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, bbOffers, lTypes, lBalances, lRequests, rPrices, rLeads, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds, prodAcqs, dClosesR, loyRewards, loyLedger, custProfiles, revs, emps, paySched, payPays, coTax, wappMsgs, vaultCreds] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         fetchAllRows(() => supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false })),
         fetchAllRows(() => supabase.from("transactions").select("*, smartbill_documents(*), signatures(*)").is("deleted_at", null).order("date", { ascending: false })),
@@ -39,7 +39,6 @@ export function createDataActions(ctx) {
         supabase.from("leave_requests").select("*").order("start_date", { ascending: true }),
         supabase.from("repair_prices").select("*"),
         supabase.from("repair_leads").select("*").order("created_at", { ascending: false }),
-        supabase.from("cash_holders").select("*").order("name", { ascending: true }),
         supabase.from("cash_settlements").select("*").order("period_end", { ascending: false }),
         supabase.from("board_notes").select("*").order("created_at", { ascending: false }),
         supabase.from("waiting_items").select("*").order("created_at", { ascending: false }),
@@ -99,7 +98,6 @@ export function createDataActions(ctx) {
       setLeaveRequests((unwrap(lRequests) || []).map(leaveRequestFromApi));
       setRepairPrices((unwrap(rPrices) || []).map(repairPriceFromApi));
       setRepairLeads((unwrap(rLeads) || []).map(repairLeadFromApi));
-      setCashHolders((unwrap(cHolders) || []).map(cashHolderFromApi));
       setCashSettlements((unwrap(cSettlements) || []).map(cashSettlementFromApi));
       setNotes((unwrap(bNotes) || []).map(noteFromApi));
       setWaitingItems((unwrap(wItems) || []).map(waitingFromApi));
@@ -137,6 +135,6 @@ export function createDataActions(ctx) {
   }
 
   return {
-    loadAll, maybeSnapshotStockValue,
+    loadAll,
   };
 }

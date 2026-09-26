@@ -151,7 +151,7 @@ export function createFinanceActions(ctx) {
   }
 
   return {
-    saveCashSettlement, editCashSettlement, deleteCashSettlement, closeDay, reopenDay, addTransactionRaw,
+    saveCashSettlement, editCashSettlement, deleteCashSettlement, closeDay, reopenDay,
     addTransaction, editTransaction, deleteTransaction, checkoutBasket,
   };
 }

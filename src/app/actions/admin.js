@@ -149,6 +149,6 @@ export function createAdminActions(ctx) {
   return {
     updateSettings, editLocation, createVaultCredential, updateVaultCredentialMeta,
     changeVaultCredentialPassword, deleteVaultCredential, revealVaultCredential, updateUserProfile,
-    inviteEmployee, callManageEmployee, changeOwnPassword, resetEmployeePassword, deleteEmployee,
+    inviteEmployee, changeOwnPassword, resetEmployeePassword, deleteEmployee,
   };
 }

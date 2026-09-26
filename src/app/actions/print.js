@@ -3,8 +3,7 @@
 export function createPrintActions(ctx) {
   const {
     setAcquisitionPrintPrompt, setPrintConsignment, setPrintConsignmentList, setPrintPriceLabels,
-    setPrintPurchase, setPrintReceipt, setPrintTicket, setPrintWarranty, stock, stockLocFilter, tickets,
-    transactions,
+    setPrintPurchase, setPrintReceipt, setPrintTicket, setPrintWarranty, tickets, transactions,
   } = ctx;
 
   // Az összes #print-slip-root-beli állapot törlése, mielőtt egy újat beállítunk — így soha
@@ -42,15 +41,6 @@ export function createPrintActions(ctx) {
       window.print();
     });
   }
-  function printConsignmentListDocs() {
-    clearAllPrints();
-    const items = stock.filter((p) => p.status === "in_stock" && p.acquisition?.acquisitionType === "consignment"
-      && (stockLocFilter === "all" || p.locationId === stockLocFilter));
-    setPrintConsignmentList({ items });
-    requestAnimationFrame(() => {
-      window.print();
-    });
-  }
   function printPriceLabelsDocs(items) {
     clearAllPrints();
     setPrintPriceLabels({ items });
@@ -78,7 +68,7 @@ export function createPrintActions(ctx) {
   }
 
   return {
-    clearAllPrints, printTicketSlip, printReceiptSlip, printConsignmentDocs, printConsignmentListDocs,
+    printTicketSlip, printReceiptSlip, printConsignmentDocs,
     printPriceLabelsDocs, printPurchaseDocs, printWarrantySlip,
   };
 }

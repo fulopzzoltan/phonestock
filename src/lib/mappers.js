@@ -475,7 +475,6 @@ export const leaveRequestFromApi = (r) => ({
   status: r.status, requestedAt: r.requested_at, decidedBy: r.decided_by, decidedAt: r.decided_at,
 });
 
-export const cashHolderFromApi = (r) => ({ id: r.id, name: r.name, active: r.active !== false });
 
 export const dayCloseFromApi = (r) => ({
   id: r.id, date: r.date, locationId: r.location_id,

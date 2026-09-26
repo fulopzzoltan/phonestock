@@ -60,7 +60,7 @@ export function createWarrantyActions(ctx) {
   }
 
   return {
-    linkedWarrantyCustomerId, addWarranty, editWarranty, deleteWarranty, editLinkedWarranty,
+    addWarranty, editWarranty, deleteWarranty, editLinkedWarranty,
     clearLinkedWarranty,
   };
 }
