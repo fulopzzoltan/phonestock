@@ -5,8 +5,8 @@ export default function DayChip({ days }) {
   if (days == null) return <span className="day-chip day-chip-empty">—</span>;
   const { bg, fg } = daysColor(days);
   return (
-    <span className="day-chip" style={{ background: bg, color: fg }}>
-      {days}<span className="day-chip-lbl">napja</span>
+    <span className="day-chip" style={{ background: bg, color: fg }} title={`${days} napja`}>
+      {days}
     </span>
   );
 }

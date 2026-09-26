@@ -319,8 +319,7 @@ tr:hover td{background:#FAFAFA}
 .svc-filter-row{flex-wrap:nowrap}
 .svc-filter-row .searchbar{min-width:0;flex-shrink:1}
 .svc-filter-row .history-toolbar-btn,.svc-filter-row .header-add-btn{flex-shrink:0}
-.day-chip{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap}
-.day-chip-lbl{font-weight:500;opacity:.7}
+.day-chip{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap}
 .day-chip-empty{background:#F3F4F6;color:#9CA3AF;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700}
 .svc-probs{display:flex;flex-wrap:nowrap;gap:4px;overflow:hidden}
 
