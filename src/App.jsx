@@ -1,9 +1,9 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef, Suspense, lazy } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
 import { thumbPathOf } from "./lib/imageResize";
 import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi, buybackOfferFromApi, loyaltyLedgerFromApi, loyaltyRewardFromApi, loyaltyRewardToApi, customerProfileFromApi, reviewFromApi, reviewToApi, employeeFromApi, payrollScheduleFromApi, payrollPaymentFromApi, companyTaxObligationFromApi, chatMessageFromApi, vaultCredentialFromApi, refurbTaskFromApi, refurbTaskToApi } from "./lib/mappers";
-import { today, warrantyExpiry, isWarrantyActive, stripAccents, TRACKING_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, partCode, normalizeImei, money, ticketCode, cashPortion, cardPortion, computeSuggestedGrade } from "./lib/utils";
+import { today, warrantyExpiry, isWarrantyActive, stripAccents, TRACKING_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, partCode, normalizeImei, money, ticketRemaining, ticketCode, cashPortion, cardPortion, summarizeTx, computeSuggestedGrade } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
 import PublicHeader from "./components/PublicHeader";
@@ -13,7 +13,7 @@ import SellModal from "./components/SellModal";
 import IssueInvoiceModal from "./components/IssueInvoiceModal";
 import PartModal from "./components/PartModal";
 import PartUsageModal from "./components/PartUsageModal";
-import PdfOrderImportModal from "./components/PdfOrderImportModal";
+const PdfOrderImportModal = lazy(() => import("./components/PdfOrderImportModal"));
 import LiquidToggle from "./components/LiquidToggle";
 import DetailPanel from "./components/DetailPanel";
 import TicketDepositModal from "./components/TicketDepositModal";
@@ -22,32 +22,32 @@ import DeviceHistoryPanel from "./components/DeviceHistoryPanel";
 import PartDetailPanel from "./components/PartDetailPanel";
 import OwnStockServiceModal from "./components/OwnStockServiceModal";
 import TicketFormModal from "./components/TicketFormModal";
-import DashboardTab from "./tabs/DashboardTab";
-import StockTab from "./tabs/StockTab";
-import ConsignmentTab from "./tabs/ConsignmentTab";
-import PultTab from "./tabs/PultTab";
-import FinanceTab from "./tabs/FinanceTab";
-import InvoicesTab from "./tabs/InvoicesTab";
-import CashSettlementTab from "./tabs/CashSettlementTab";
-import PayrollTab from "./tabs/PayrollTab";
-import ServiceTab from "./tabs/ServiceTab";
-import PartsTab from "./tabs/PartsTab";
-import RefurbTab from "./tabs/RefurbTab";
-import CustomersTab from "./tabs/CustomersTab";
-import InboxTab from "./tabs/InboxTab";
-import VaultTab from "./tabs/VaultTab";
+const DashboardTab = lazy(() => import("./tabs/DashboardTab"));
+const StockTab = lazy(() => import("./tabs/StockTab"));
+const ConsignmentTab = lazy(() => import("./tabs/ConsignmentTab"));
+const PultTab = lazy(() => import("./tabs/PultTab"));
+const FinanceTab = lazy(() => import("./tabs/FinanceTab"));
+const InvoicesTab = lazy(() => import("./tabs/InvoicesTab"));
+const CashSettlementTab = lazy(() => import("./tabs/CashSettlementTab"));
+const PayrollTab = lazy(() => import("./tabs/PayrollTab"));
+const ServiceTab = lazy(() => import("./tabs/ServiceTab"));
+const PartsTab = lazy(() => import("./tabs/PartsTab"));
+const RefurbTab = lazy(() => import("./tabs/RefurbTab"));
+const CustomersTab = lazy(() => import("./tabs/CustomersTab"));
+const InboxTab = lazy(() => import("./tabs/InboxTab"));
+const VaultTab = lazy(() => import("./tabs/VaultTab"));
 import VaultCredentialModal from "./components/VaultCredentialModal";
-import WarrantyTab from "./tabs/WarrantyTab";
-import LeaveTab from "./tabs/LeaveTab";
-import BuybackTab from "./tabs/BuybackTab";
+const WarrantyTab = lazy(() => import("./tabs/WarrantyTab"));
+const LeaveTab = lazy(() => import("./tabs/LeaveTab"));
+const BuybackTab = lazy(() => import("./tabs/BuybackTab"));
 import BuybackOfferDetailPanel from "./components/BuybackOfferDetailPanel";
-import RepairPricesTab from "./tabs/RepairPricesTab";
-import ReviewsTab from "./tabs/ReviewsTab";
+const RepairPricesTab = lazy(() => import("./tabs/RepairPricesTab"));
+const ReviewsTab = lazy(() => import("./tabs/ReviewsTab"));
 import ReviewModal from "./components/ReviewModal";
-import UsersTab from "./tabs/UsersTab";
-import TrashTab from "./tabs/TrashTab";
+const UsersTab = lazy(() => import("./tabs/UsersTab"));
+const TrashTab = lazy(() => import("./tabs/TrashTab"));
 import ConfirmDelete from "./components/ConfirmDelete";
-import SettingsTab from "./tabs/SettingsTab";
+const SettingsTab = lazy(() => import("./tabs/SettingsTab"));
 import QuickSaleButtons from "./components/QuickSaleButtons";
 import TransactionQuickAdd from "./components/TransactionQuickAdd";
 import TransactionsPeriodList from "./components/TransactionsPeriodList";
@@ -75,7 +75,7 @@ import Sidebar from "./components/Sidebar";
 import MacDock from "./components/MacDock";
 import BottomNav from "./components/BottomNav";
 import MobileTopbar from "./components/MobileTopbar";
-import ScannerModal from "./components/ScannerModal";
+const ScannerModal = lazy(() => import("./components/ScannerModal"));
 import TeamChatPanel from "./components/TeamChatPanel";
 import ContentTopbar from "./components/ContentTopbar";
 import InviteEmployeeModal from "./components/InviteEmployeeModal";
@@ -359,7 +359,13 @@ function AppShell() {
     requestAnimationFrame(() => window.print());
   }
 
+  // Háttér-frissítés (visibilitychange + focus egyszerre, nyomtatás/fájlválasztó bezárása)
+  // ne fusson duplán, és ne ismétlődjön pár másodpercen belül.
+  const loadInFlightRef = useRef(false);
+  const lastLoadAtRef = useRef(0);
   async function loadAll({ silent = false } = {}) {
+    if (silent && (loadInFlightRef.current || Date.now() - lastLoadAtRef.current < 30000)) return;
+    loadInFlightRef.current = true;
     if (!silent) setLoadingData(true);
     try {
       const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, bbOffers, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds, prodAcqs, dClosesR, loyRewards, loyLedger, custProfiles, revs, emps, paySched, payPays, coTax, wappMsgs, vaultCreds, refurbTsk] = await Promise.all([
@@ -453,9 +459,11 @@ function AppShell() {
       setStockHistory(historyRows.map((r) => ({ date: r.date, value: Number(r.value) || 0 })));
       maybeSnapshotStockValue(prodRows, historyRows);
       setError("");
+      lastLoadAtRef.current = Date.now();
     } catch (e) {
       if (!silent) setError("Betöltési hiba: " + e.message);
     } finally {
+      loadInFlightRef.current = false;
       if (!silent) setLoadingData(false);
     }
   }
@@ -508,17 +516,31 @@ function AppShell() {
   // az Árulás/Cashflow fülön), egy kolléga rögzítése eddig csak kézi frissítésre jelent meg a
   // másiknál. Ugyanaz a csendes, csak-látható-lapon futó pollozás, NEM Realtime websocket (ld. a
   // fenti megjegyzést) — a tranzakciólista lekérdezése pontosan az kezdeti betöltéssel egyezik.
+  // Csak akkor cseréljük az állapotot, ha a letöltött adat tényleg változott — különben minden
+  // 30 mp-ben az összes tőle függő számítás és a teljes felület újrafutna feleslegesen.
+  const pollSigRef = useRef({ chat: "", tx: "", dc: "" });
   useEffect(() => {
     const id = setInterval(async () => {
       if (document.visibilityState !== "visible") return;
-      const [chatRows, txRows, dayCloseRows] = await Promise.all([
-        fetchAllRows(() => supabase.from("chat_messages").select("*").order("created_at", { ascending: true })),
-        fetchAllRows(() => supabase.from("transactions").select("*, smartbill_documents(*), signatures(*)").is("deleted_at", null).order("date", { ascending: false })),
-        fetchAllRows(() => supabase.from("day_closes").select("*").order("date", { ascending: false })),
-      ]);
-      setInboxMessages((unwrap(chatRows) || []).map(chatMessageFromApi));
-      setTransactions((unwrap(txRows) || []).map(txFromApi));
-      setDayCloses((unwrap(dayCloseRows) || []).map(dayCloseFromApi));
+      try {
+        const [chatRows, txRows, dayCloseRows] = await Promise.all([
+          fetchAllRows(() => supabase.from("chat_messages").select("*").order("created_at", { ascending: true })),
+          fetchAllRows(() => supabase.from("transactions").select("*, smartbill_documents(*), signatures(*)").is("deleted_at", null).order("date", { ascending: false })),
+          fetchAllRows(() => supabase.from("day_closes").select("*").order("date", { ascending: false })),
+        ]);
+        const chat = unwrap(chatRows) || [];
+        const tx = unwrap(txRows) || [];
+        const dc = unwrap(dayCloseRows) || [];
+        const sig = pollSigRef.current;
+        const chatSig = JSON.stringify(chat);
+        const txSig = JSON.stringify(tx);
+        const dcSig = JSON.stringify(dc);
+        if (chatSig !== sig.chat) { sig.chat = chatSig; setInboxMessages(chat.map(chatMessageFromApi)); }
+        if (txSig !== sig.tx) { sig.tx = txSig; setTransactions(tx.map(txFromApi)); }
+        if (dcSig !== sig.dc) { sig.dc = dcSig; setDayCloses(dc.map(dayCloseFromApi)); }
+      } catch {
+        // csendes háttérfrissítés — hálózati hiba esetén a következő körben újrapróbálja
+      }
     }, 30000);
     return () => clearInterval(id);
   }, []);
@@ -549,28 +571,28 @@ function AppShell() {
   async function restoreProduct(id) {
     await withBusy(async () => {
       const r = unwrap(await supabase.from("products").update({ deleted_at: null }).eq("id", id).select());
-      setStock([pFromApi(r[0]), ...stock]);
+      setStock((prev) => [pFromApi(r[0]), ...prev]);
       setTrash((t) => ({ ...t, products: t.products.filter((p) => p.id !== id) }));
     });
   }
   async function restorePart(id) {
     await withBusy(async () => {
       const r = unwrap(await supabase.from("parts").update({ deleted_at: null }).eq("id", id).select());
-      setParts([partFromApi(r[0]), ...parts]);
+      setParts((prev) => [partFromApi(r[0]), ...prev]);
       setTrash((t) => ({ ...t, parts: t.parts.filter((p) => p.id !== id) }));
     });
   }
   async function restoreTransaction(id) {
     await withBusy(async () => {
       const r = unwrap(await supabase.from("transactions").update({ deleted_at: null }).eq("id", id).select());
-      setTransactions([txFromApi(r[0]), ...transactions]);
+      setTransactions((prev) => [txFromApi(r[0]), ...prev]);
       setTrash((t) => ({ ...t, transactions: t.transactions.filter((x) => x.id !== id) }));
     });
   }
   async function restoreTicket(id) {
     await withBusy(async () => {
       const r = unwrap(await supabase.from("service_tickets").update({ deleted_at: null }).eq("id", id).select());
-      setTickets([{ ...tFromApi(r[0]), usedParts: [] }, ...tickets]);
+      setTickets((prev) => [{ ...tFromApi(r[0]), usedParts: [] }, ...prev]);
       setTrash((t) => ({ ...t, tickets: t.tickets.filter((x) => x.id !== id) }));
     });
   }
@@ -626,9 +648,11 @@ function AppShell() {
     await withBusy(async () => {
       const notes = [];
       const deleteEach = async (items, label, delFn) => {
+        // Kategórián belül párhuzamosan (egyszerre max. 8), a blokkolt tétel marad a kukában.
         let deleted = 0;
-        for (const item of items) {
-          try { await delFn(item); deleted++; } catch { /* blokkolt tétel, marad a kukában */ }
+        for (let i = 0; i < items.length; i += 8) {
+          const results = await Promise.allSettled(items.slice(i, i + 8).map(delFn));
+          deleted += results.filter((r) => r.status === "fulfilled").length;
         }
         const blocked = items.length - deleted;
         if (blocked > 0) notes.push(`${label}: ${deleted} törölve, ${blocked} nem törölhető (más rekordhoz van kötve).`);
@@ -722,7 +746,7 @@ function AppShell() {
     await withBusy(async () => {
       const r = unwrap(await supabase.from("products").insert(pToApi(data, locId)).select());
       const product = pFromApi(r[0]);
-      setStock([product, ...stock]);
+      setStock((prev) => [product, ...prev]);
 
       if (acquisition) {
         let customerId = acquisition.sellerCustomerId || null;
@@ -777,14 +801,14 @@ function AppShell() {
   async function editProduct(id, data, locId) {
     await withBusy(async () => {
       const r = unwrap(await supabase.from("products").update(pToApi(data, locId)).eq("id", id).select());
-      setStock(stock.map((i) => (i.id === id ? { ...pFromApi(r[0]), acquisition: i.acquisition } : i)));
+      setStock((prev) => prev.map((i) => (i.id === id ? { ...pFromApi(r[0]), acquisition: i.acquisition } : i)));
       setStockModal(null);
     });
   }
   async function deleteProduct(id) {
     await withBusy(async () => {
       unwrap(await supabase.from("products").update({ deleted_at: new Date().toISOString() }).eq("id", id));
-      setStock(stock.filter((i) => i.id !== id));
+      setStock((prev) => prev.filter((i) => i.id !== id));
     });
   }
   async function sellProduct(txData, locId, tradeIns, smartbillInvoice) {
@@ -854,7 +878,7 @@ function AppShell() {
       }
 
       setStock(updatedStock);
-      setTransactions([...newTxs, ...transactions]);
+      setTransactions((prev) => [...newTxs, ...prev]);
       setSellModal(null);
       if (customerId) await refreshCustomerLoyalty(customerId);
       // mainTxId-t használjuk forrás-azonosítónak (nem a productId-t), hogy egy később
@@ -966,7 +990,7 @@ function AppShell() {
     await withBusy(async () => {
       const todayStr = today();
       unwrap(await supabase.from("products").update({ status: "in_stock", stock_status: "polcon", date_added: todayStr }).eq("id", productId));
-      setStock(stock.map((i) => (i.id === productId ? { ...i, status: "in_stock", stockStatus: "polcon", dateAdded: todayStr } : i)));
+      setStock((prev) => prev.map((i) => (i.id === productId ? { ...i, status: "in_stock", stockStatus: "polcon", dateAdded: todayStr } : i)));
       if (txId) {
         unwrap(await supabase.from("transactions").update({ warranty: null }).eq("id", txId));
         // A visszavett termékkel együtt eladott tartozék-tételeket (fólia, kábel) is töröljük
@@ -981,7 +1005,7 @@ function AppShell() {
             unwrap(await supabase.from("transactions").update({ deleted_at: new Date().toISOString() }).in("id", removedIds));
           }
         }
-        setTransactions(transactions.filter((t) => !removedIds.includes(t.id)).map((t) => (t.id === txId ? { ...t, warranty: null } : t)));
+        setTransactions((prev) => prev.filter((t) => !removedIds.includes(t.id)).map((t) => (t.id === txId ? { ...t, warranty: null } : t)));
       }
     });
   }
@@ -1028,7 +1052,7 @@ function AppShell() {
   async function deletePart(id) {
     await withBusy(async () => {
       unwrap(await supabase.from("parts").update({ deleted_at: new Date().toISOString() }).eq("id", id));
-      setParts(parts.filter((p) => p.id !== id));
+      setParts((prev) => prev.filter((p) => p.id !== id));
     });
   }
   // A raktár-nézet egy csoport-sorát törli — az abban a pillanatban raktáron lévő összes
@@ -1054,41 +1078,41 @@ function AppShell() {
   async function addBuybackModel(data) {
     await withBusy(async () => {
       const r = unwrap(await supabase.from("buyback_models").insert(buybackModelToApi(data)).select());
-      setBuybackModels([...buybackModels, buybackModelFromApi(r[0])]);
+      setBuybackModels((prev) => [...prev, buybackModelFromApi(r[0])]);
       setBuybackModelModal(null);
     });
   }
   async function editBuybackModel(id, data) {
     await withBusy(async () => {
       const r = unwrap(await supabase.from("buyback_models").update(buybackModelToApi(data)).eq("id", id).select());
-      setBuybackModels(buybackModels.map((m) => (m.id === id ? buybackModelFromApi(r[0]) : m)));
+      setBuybackModels((prev) => prev.map((m) => (m.id === id ? buybackModelFromApi(r[0]) : m)));
       setBuybackModelModal(null);
     });
   }
   async function deleteBuybackModel(id) {
     await withBusy(async () => {
       unwrap(await supabase.from("buyback_models").update({ deleted_at: new Date().toISOString() }).eq("id", id));
-      setBuybackModels(buybackModels.filter((m) => m.id !== id));
+      setBuybackModels((prev) => prev.filter((m) => m.id !== id));
     });
   }
   async function addBuybackRule(data) {
     await withBusy(async () => {
       const r = unwrap(await supabase.from("buyback_deduction_rules").insert(buybackRuleToApi(data)).select());
-      setBuybackRules([...buybackRules, buybackRuleFromApi(r[0])]);
+      setBuybackRules((prev) => [...prev, buybackRuleFromApi(r[0])]);
       setBuybackRuleModal(null);
     });
   }
   async function editBuybackRule(id, data) {
     await withBusy(async () => {
       const r = unwrap(await supabase.from("buyback_deduction_rules").update(buybackRuleToApi(data)).eq("id", id).select());
-      setBuybackRules(buybackRules.map((r2) => (r2.id === id ? buybackRuleFromApi(r[0]) : r2)));
+      setBuybackRules((prev) => prev.map((r2) => (r2.id === id ? buybackRuleFromApi(r[0]) : r2)));
       setBuybackRuleModal(null);
     });
   }
   async function deleteBuybackRule(id) {
     await withBusy(async () => {
       unwrap(await supabase.from("buyback_deduction_rules").delete().eq("id", id));
-      setBuybackRules(buybackRules.filter((r) => r.id !== id));
+      setBuybackRules((prev) => prev.filter((r) => r.id !== id));
     });
   }
 
@@ -1096,7 +1120,7 @@ function AppShell() {
   async function setBuybackOfferStatus(id, status) {
     await withBusy(async () => {
       const r = unwrap(await supabase.from("buyback_offers").update({ status }).eq("id", id).select());
-      setBuybackOffers(buybackOffers.map((o) => (o.id === id ? buybackOfferFromApi(r[0]) : o)));
+      setBuybackOffers((prev) => prev.map((o) => (o.id === id ? buybackOfferFromApi(r[0]) : o)));
     });
   }
   async function payoutBuybackOffer(id, finalPrice) {
@@ -1106,7 +1130,7 @@ function AppShell() {
       const amount = Number(finalPrice) || 0;
       const r = unwrap(await supabase.from("buyback_offers").update({ status: "Kifizetve", final_price: amount }).eq("id", id).select());
       const updated = buybackOfferFromApi(r[0]);
-      setBuybackOffers(buybackOffers.map((o) => (o.id === id ? updated : o)));
+      setBuybackOffers((prev) => prev.map((o) => (o.id === id ? updated : o)));
       if (amount > 0) {
         const tr = unwrap(await supabase.from("transactions").insert(
           txToApi({
@@ -1122,7 +1146,7 @@ function AppShell() {
   async function rejectBuybackOffer(id) {
     await withBusy(async () => {
       const r = unwrap(await supabase.from("buyback_offers").update({ status: "Elutasítva" }).eq("id", id).select());
-      setBuybackOffers(buybackOffers.map((o) => (o.id === id ? buybackOfferFromApi(r[0]) : o)));
+      setBuybackOffers((prev) => prev.map((o) => (o.id === id ? buybackOfferFromApi(r[0]) : o)));
     });
   }
   function convertBuybackOfferToProduct(offer) {
@@ -1266,7 +1290,7 @@ function AppShell() {
       const r = unwrap(await supabase.from("leave_requests").insert({
         user_id: user.id, leave_type_id: leaveTypeId || null, start_date: startDate, end_date: endDate, days, note: note || null,
       }).select());
-      setLeaveRequests([...leaveRequests, leaveRequestFromApi(r[0])].sort((a, b) => a.startDate.localeCompare(b.startDate)));
+      setLeaveRequests((prev) => [...prev, leaveRequestFromApi(r[0])].sort((a, b) => a.startDate.localeCompare(b.startDate)));
       setLeaveRequestModal(false);
       sendChatMessage(`${profile?.fullName || "Valaki"} szabadságot kért: ${startDate} – ${endDate} (${days} munkanap)`);
     });
@@ -1275,7 +1299,7 @@ function AppShell() {
     await withBusy(async () => {
       const r = unwrap(await supabase.from("leave_requests").update({ status, decided_by: user.id, decided_at: new Date().toISOString() }).eq("id", id).select());
       const updated = leaveRequestFromApi(r[0]);
-      setLeaveRequests(leaveRequests.map((lr) => (lr.id === id ? updated : lr)));
+      setLeaveRequests((prev) => prev.map((lr) => (lr.id === id ? updated : lr)));
       if (status === "Jóváhagyva") {
         const reqUser = users.find((u) => u.id === updated.userId);
         sendChatMessage(`${reqUser?.fullName || "Kolléga"} szabadsága jóváhagyva: ${updated.startDate} – ${updated.endDate}`);
@@ -1285,7 +1309,7 @@ function AppShell() {
   async function revokeLeaveRequest(id) {
     await withBusy(async () => {
       const r = unwrap(await supabase.from("leave_requests").update({ status: "Visszavonva" }).eq("id", id).select());
-      setLeaveRequests(leaveRequests.map((lr) => (lr.id === id ? leaveRequestFromApi(r[0]) : lr)));
+      setLeaveRequests((prev) => prev.map((lr) => (lr.id === id ? leaveRequestFromApi(r[0]) : lr)));
     });
   }
   async function saveLeaveBalance(userId, year, entitledDays) {
@@ -1294,7 +1318,7 @@ function AppShell() {
         { user_id: userId, year, entitled_days: entitledDays }, { onConflict: "user_id,year" }
       ).select());
       const updated = leaveBalanceFromApi(r[0]);
-      setLeaveBalances([...leaveBalances.filter((b) => !(b.userId === userId && b.year === year)), updated]);
+      setLeaveBalances((prev) => [...prev.filter((b) => !(b.userId === userId && b.year === year)), updated]);
       setLeaveBalanceModal(null);
     });
   }
@@ -1309,7 +1333,7 @@ function AppShell() {
         transfer_amount: data.transferAmount, note: data.note || null,
         settled_by: user.id,
       }).select());
-      setCashSettlements([cashSettlementFromApi(r[0]), ...cashSettlements]);
+      setCashSettlements((prev) => [cashSettlementFromApi(r[0]), ...prev]);
     });
   }
   async function editCashSettlement(id, data) {
@@ -1317,24 +1341,24 @@ function AppShell() {
       const r = unwrap(await supabase.from("cash_settlements").update({
         period_start: data.periodStart, period_end: data.periodEnd, note: data.note || null,
       }).eq("id", id).select());
-      setCashSettlements(cashSettlements.map((s) => (s.id === id ? cashSettlementFromApi(r[0]) : s)));
+      setCashSettlements((prev) => prev.map((s) => (s.id === id ? cashSettlementFromApi(r[0]) : s)));
     });
   }
   async function deleteCashSettlement(id) {
     await withBusy(async () => {
       unwrap(await supabase.from("cash_settlements").delete().eq("id", id));
-      setCashSettlements(cashSettlements.filter((s) => s.id !== id));
+      setCashSettlements((prev) => prev.filter((s) => s.id !== id));
     });
   }
   async function closeDay(date, locId) {
     await withBusy(async () => {
       const dayTx = transactions.filter((t) => t.date === date && t.locationId === locId);
+      const sum = summarizeTx(dayTx);
       const snapshot = {
-        snapshot_income_cash: dayTx.filter((t) => t.type === "income").reduce((s, t) => s + cashPortion(t), 0),
-        snapshot_income_card: dayTx.filter((t) => t.type === "income").reduce((s, t) => s + cardPortion(t), 0),
-        snapshot_expense_cash: dayTx.filter((t) => t.type === "expense" && t.payment).reduce((s, t) => s + (Number(t.amount) || 0), 0),
-        snapshot_margin: dayTx.filter((t) => t.type === "income").reduce((s, t) => s + ((Number(t.amount) || 0) - (Number(t.costPrice) || 0)), 0)
-          - dayTx.filter((t) => t.type === "expense" && !t.payment).reduce((s, t) => s + (Number(t.amount) || 0), 0),
+        snapshot_income_cash: sum.incomeCash,
+        snapshot_income_card: sum.incomeCard,
+        snapshot_expense_cash: sum.expenseReal,
+        snapshot_margin: sum.margin,
         snapshot_tx_count: dayTx.length,
       };
       // (date, location_id) egyedi kulcs — ha a napot már lezártuk majd újranyitottuk,
@@ -1345,17 +1369,17 @@ function AppShell() {
         const r = unwrap(await supabase.from("day_closes").update({
           closed_by: user.id, closed_at: new Date().toISOString(), reopened_at: null, reopened_by: null, ...snapshot,
         }).eq("id", existing.id).select());
-        setDayCloses(dayCloses.map((d) => (d.id === existing.id ? dayCloseFromApi(r[0]) : d)));
+        setDayCloses((prev) => prev.map((d) => (d.id === existing.id ? dayCloseFromApi(r[0]) : d)));
       } else {
         const r = unwrap(await supabase.from("day_closes").insert({ date, location_id: locId, closed_by: user.id, ...snapshot }).select());
-        setDayCloses([dayCloseFromApi(r[0]), ...dayCloses]);
+        setDayCloses((prev) => [dayCloseFromApi(r[0]), ...prev]);
       }
     });
   }
   async function reopenDay(id) {
     await withBusy(async () => {
       const r = unwrap(await supabase.from("day_closes").update({ reopened_at: new Date().toISOString(), reopened_by: user.id }).eq("id", id).select());
-      setDayCloses(dayCloses.map((d) => (d.id === id ? dayCloseFromApi(r[0]) : d)));
+      setDayCloses((prev) => prev.map((d) => (d.id === id ? dayCloseFromApi(r[0]) : d)));
     });
   }
 
@@ -1377,12 +1401,12 @@ function AppShell() {
   async function rejectRepairLead(id) {
     await withBusy(async () => {
       unwrap(await supabase.from("repair_leads").update({ status: "Elvetve" }).eq("id", id).select());
-      setRepairLeads(repairLeads.map((l) => (l.id === id ? { ...l, status: "Elvetve" } : l)));
+      setRepairLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status: "Elvetve" } : l)));
     });
   }
   async function convertRepairLead(id, ticketId) {
     unwrap(await supabase.from("repair_leads").update({ status: "Feldolgozva", converted_ticket_id: ticketId }).eq("id", id).select());
-    setRepairLeads(repairLeads.map((l) => (l.id === id ? { ...l, status: "Feldolgozva", convertedTicketId: ticketId } : l)));
+    setRepairLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status: "Feldolgozva", convertedTicketId: ticketId } : l)));
   }
 
   // SETTINGS (admin write, mindenki olvassa — SMS-kapcsolók, jelszóváltás onnan nyílik)
@@ -1578,7 +1602,7 @@ function AppShell() {
   async function updateUserProfile(id, patch) {
     await withBusy(async () => {
       const r = unwrap(await supabase.from("profiles").update(patch).eq("id", id).select());
-      setUsers(users.map((u) => (u.id === id ? profileFromApi(r[0]) : u)));
+      setUsers((prev) => prev.map((u) => (u.id === id ? profileFromApi(r[0]) : u)));
     });
   }
   async function inviteEmployee({ email, fullName, locationId }) {
@@ -1635,7 +1659,7 @@ function AppShell() {
   async function deleteEmployee(userId) {
     const ok = await callManageEmployee("delete", userId);
     if (ok) {
-      setUsers(users.filter((u) => u.id !== userId));
+      setUsers((prev) => prev.filter((u) => u.id !== userId));
       setInfo("Felhasználó eltávolítva.");
     }
   }
@@ -1651,7 +1675,7 @@ function AppShell() {
     await withBusy(async () => {
       const customerId = await linkedWarrantyCustomerId(data);
       const r = unwrap(await supabase.from("warranties").insert(warrantyToApi({ ...data, customerId }, locId)).select());
-      setWarranties([...warranties, warrantyFromApi(r[0])]);
+      setWarranties((prev) => [...prev, warrantyFromApi(r[0])]);
       setWarrantyModal(null);
     });
   }
@@ -1659,24 +1683,24 @@ function AppShell() {
     await withBusy(async () => {
       const customerId = await linkedWarrantyCustomerId(data);
       const r = unwrap(await supabase.from("warranties").update(warrantyToApi({ ...data, customerId }, locId)).eq("id", id).select());
-      setWarranties(warranties.map((w) => (w.id === id ? warrantyFromApi(r[0]) : w)));
+      setWarranties((prev) => prev.map((w) => (w.id === id ? warrantyFromApi(r[0]) : w)));
       setWarrantyModal(null);
     });
   }
   async function deleteWarranty(id) {
     await withBusy(async () => {
       unwrap(await supabase.from("warranties").update({ deleted_at: new Date().toISOString() }).eq("id", id));
-      setWarranties(warranties.filter((w) => w.id !== id));
+      setWarranties((prev) => prev.filter((w) => w.id !== id));
     });
   }
   async function editLinkedWarranty(kind, refId, warranty, fromDate) {
     await withBusy(async () => {
       if (kind === "sale") {
         unwrap(await supabase.from("transactions").update({ warranty, date: fromDate }).eq("id", refId));
-        setTransactions(transactions.map((t) => (t.id === refId ? { ...t, warranty, date: fromDate } : t)));
+        setTransactions((prev) => prev.map((t) => (t.id === refId ? { ...t, warranty, date: fromDate } : t)));
       } else {
         unwrap(await supabase.from("service_tickets").update({ warranty, date_out: fromDate }).eq("id", refId));
-        setTickets(tickets.map((t) => (t.id === refId ? { ...t, warranty, dateOut: fromDate } : t)));
+        setTickets((prev) => prev.map((t) => (t.id === refId ? { ...t, warranty, dateOut: fromDate } : t)));
       }
     });
   }
@@ -1684,10 +1708,10 @@ function AppShell() {
     await withBusy(async () => {
       if (kind === "sale") {
         unwrap(await supabase.from("transactions").update({ warranty: null }).eq("id", refId));
-        setTransactions(transactions.map((t) => (t.id === refId ? { ...t, warranty: null } : t)));
+        setTransactions((prev) => prev.map((t) => (t.id === refId ? { ...t, warranty: null } : t)));
       } else {
         unwrap(await supabase.from("service_tickets").update({ warranty: null }).eq("id", refId));
-        setTickets(tickets.map((t) => (t.id === refId ? { ...t, warranty: null } : t)));
+        setTickets((prev) => prev.map((t) => (t.id === refId ? { ...t, warranty: null } : t)));
       }
     });
   }
@@ -1841,7 +1865,7 @@ function AppShell() {
       }
       const r = unwrap(await supabase.from("transactions").update({ ...txToApi(data, locId), customer_id: customerId }).eq("id", id).select());
       if (!r[0]) throw new Error("A mentés nem sikerült — előfordulhat, hogy nincs jogosultságod ehhez a helyszínhez, vagy időközben törölték a tételt.");
-      setTransactions(transactions.map((t) => (t.id === id ? txFromApi(r[0]) : t)));
+      setTransactions((prev) => prev.map((t) => (t.id === id ? txFromApi(r[0]) : t)));
       setTxModal(null);
     });
   }
@@ -1849,7 +1873,7 @@ function AppShell() {
     await withBusy(async () => {
       const tx = transactions.find((t) => t.id === id);
       unwrap(await supabase.from("transactions").update({ deleted_at: new Date().toISOString() }).eq("id", id));
-      setTransactions(transactions.filter((t) => t.id !== id));
+      setTransactions((prev) => prev.filter((t) => t.id !== id));
       if (tx?.customerId && tx.type === "income" && ["Készlet", "Szerviz"].includes(tx.category)) await refreshCustomerLoyalty(tx.customerId);
     });
   }
@@ -2074,7 +2098,7 @@ function AppShell() {
       }
       const r = unwrap(await supabase.from("service_tickets").insert({ ...tToApi(data, locId), customer_id: customerId }).select());
       const newTicket = tFromApi(r[0]);
-      setTickets([newTicket, ...tickets]);
+      setTickets((prev) => [newTicket, ...prev]);
       setTicketModal(null);
 
       if (data.reserve) {
@@ -2148,7 +2172,7 @@ function AppShell() {
         payload.folia_upsell_requested = false;
       }
       const r = unwrap(await supabase.from("service_tickets").update(payload).eq("id", id).select());
-      setTickets(tickets.map((t) => (t.id === id ? tFromApi(r[0]) : t)));
+      setTickets((prev) => prev.map((t) => (t.id === id ? tFromApi(r[0]) : t)));
       setTicketModal(null);
     });
   }
@@ -2158,7 +2182,7 @@ function AppShell() {
       const becameReady = status === "Átadásra" && !(ticket && ticket.status === "Átadásra");
       // Ha korábban vettünk fel előleget erre a munkalapra, az átadáskor csak a fennmaradó
       // összeget könyveljük — az előleg tranzakciója már külön, a felvételekor bekerült.
-      const remainingAtHandover = Math.max(0, (Number(ticket?.price) || 0) - (Number(ticket?.depositPaid) || 0));
+      const remainingAtHandover = ticketRemaining(ticket);
       // A bevétel/anyagköltség tételt csak EGYSZER, a munkalap életében először hozzuk létre —
       // ha valaki visszaállítja a státuszt, majd újra "Átadva"-ra teszi, ez ne írja fel duplán
       // a Bevétel/Kiadás-t (és ne szaporítsa a hűségpontot, ami a tranzakció-insert triggerére épül).
@@ -2184,7 +2208,7 @@ function AppShell() {
         patch.handover_material_transaction_id = null;
       }
       unwrap(await supabase.from("service_tickets").update(patch).eq("id", id));
-      setTickets(tickets.map((t) => (t.id === id ? {
+      setTickets((prev) => prev.map((t) => (t.id === id ? {
         ...t, status, subStatus,
         dateOut: subStatus === "Átadva" ? today() : (shouldReverseHandover ? null : t.dateOut),
         unlockType: subStatus === "Átadva" ? null : t.unlockType,
@@ -2300,14 +2324,14 @@ function AppShell() {
     const patch = { qc_by: qcByUserId || null, qc_at: new Date().toISOString() };
     await withBusy(async () => {
       unwrap(await supabase.from("service_tickets").update(patch).eq("id", id));
-      setTickets(tickets.map((t) => (t.id === id ? { ...t, qcBy: patch.qc_by, qcAt: patch.qc_at } : t)));
+      setTickets((prev) => prev.map((t) => (t.id === id ? { ...t, qcBy: patch.qc_by, qcAt: patch.qc_at } : t)));
     });
     await setTicketStatus(id, "Átadásra", null);
   }
   async function deleteTicket(id) {
     await withBusy(async () => {
       unwrap(await supabase.from("service_tickets").update({ deleted_at: new Date().toISOString() }).eq("id", id));
-      setTickets(tickets.filter((t) => t.id !== id));
+      setTickets((prev) => prev.filter((t) => t.id !== id));
       setDetailId(null);
     });
   }
@@ -2334,17 +2358,12 @@ function AppShell() {
       const units = (part.units || [part]).slice(0, qty);
       if (units.length < qty) throw new Error(`Csak ${units.length} db van raktáron ebből: ${part.name}.`);
       const usedAt = new Date().toISOString();
-      const newSp = [];
-      let addedCost = 0;
-      for (const unit of units) {
-        const unitCost = Number(unit.costPrice) || 0;
-        const r = unwrap(await supabase.from("service_parts").insert({
-          service_ticket_id: ticketId, part_id: unit.id, part_name: unit.name, quantity: 1, cost_price: unitCost,
-        }).select());
-        newSp.push(spFromApi(r[0]));
-        unwrap(await supabase.from("parts").update({ status: "felhasznalva", used_in_ticket_id: ticketId, used_at: usedAt }).eq("id", unit.id));
-        addedCost += unitCost;
-      }
+      const addedCost = units.reduce((s, u) => s + (Number(u.costPrice) || 0), 0);
+      const inserted = unwrap(await supabase.from("service_parts").insert(units.map((unit) => ({
+        service_ticket_id: ticketId, part_id: unit.id, part_name: unit.name, quantity: 1, cost_price: Number(unit.costPrice) || 0,
+      }))).select());
+      const newSp = inserted.map(spFromApi);
+      unwrap(await supabase.from("parts").update({ status: "felhasznalva", used_in_ticket_id: ticketId, used_at: usedAt }).in("id", units.map((u) => u.id)));
       const newMatCost = (Number(ticket.matCost) || 0) + addedCost;
       unwrap(await supabase.from("service_tickets").update({ mat_cost: newMatCost }).eq("id", ticketId));
       await syncHandoverCost(ticket, newMatCost);
@@ -2354,7 +2373,7 @@ function AppShell() {
         if (product) {
           const newCostPrice = (Number(product.costPrice) || 0) + addedCost;
           unwrap(await supabase.from("products").update({ cost_price: newCostPrice }).eq("id", ticket.productId));
-          setStock(stock.map((p) => (p.id === ticket.productId ? { ...p, costPrice: newCostPrice } : p)));
+          setStock((prev) => prev.map((p) => (p.id === ticket.productId ? { ...p, costPrice: newCostPrice } : p)));
         }
       }
 
@@ -2382,11 +2401,11 @@ function AppShell() {
         if (product) {
           const newCostPrice = Math.max(0, (Number(product.costPrice) || 0) - (Number(usedPart.costPrice) || 0) * usedPart.quantity);
           unwrap(await supabase.from("products").update({ cost_price: newCostPrice }).eq("id", ticket.productId));
-          setStock(stock.map((p) => (p.id === ticket.productId ? { ...p, costPrice: newCostPrice } : p)));
+          setStock((prev) => prev.map((p) => (p.id === ticket.productId ? { ...p, costPrice: newCostPrice } : p)));
         }
       }
 
-      setTickets(tickets.map((t) => (t.id === ticketId ? { ...t, matCost: newMatCost, usedParts: (t.usedParts || []).filter((sp) => sp.id !== usedPart.id) } : t)));
+      setTickets((prev) => prev.map((t) => (t.id === ticketId ? { ...t, matCost: newMatCost, usedParts: (t.usedParts || []).filter((sp) => sp.id !== usedPart.id) } : t)));
     });
   }
   function openPartUsageModal(part) {
@@ -2449,8 +2468,11 @@ function AppShell() {
     const ranks = ordered.map((p, i) => p.repairRank ?? (i + 1) * 10);
     const rankA = ranks[swapIdx], rankB = ranks[idx];
     await withBusy(async () => {
-      unwrap(await supabase.from("products").update({ repair_rank: rankA }).eq("id", a.id));
-      unwrap(await supabase.from("products").update({ repair_rank: rankB }).eq("id", b.id));
+      const [ra, rb] = await Promise.all([
+        supabase.from("products").update({ repair_rank: rankA }).eq("id", a.id),
+        supabase.from("products").update({ repair_rank: rankB }).eq("id", b.id),
+      ]);
+      unwrap(ra); unwrap(rb);
       setStock((prev) => prev.map((p) => {
         if (p.id === a.id) return { ...p, repairRank: rankA };
         if (p.id === b.id) return { ...p, repairRank: rankB };
@@ -3221,6 +3243,7 @@ function AppShell() {
           <div className="banner warn">Nincs helyszín hozzárendelve a fiókodhoz. Kérj meg egy adminisztrátort, hogy rendeljen hozzá egy helyszínt, addig nem látsz adatokat.</div>
         )}
 
+        <Suspense fallback={<div className="card" style={{ padding: 40, textAlign: "center", color: "#9CA3AF", fontSize: 13 }}>Betöltés...</div>}>
         {!noLocationAssigned && tab === "pult" && (
           <PultTab
             effectiveLocFilter={effectiveLocFilter} locName={locName} filteredTickets={filteredTickets} setDetailId={setDetailId}
@@ -3455,6 +3478,7 @@ function AppShell() {
             editLocation={editLocation}
           />
         )}
+        </Suspense>
       </div>
       {useMacDock && (
         <div className="mac-pult-fade" aria-hidden="true">
@@ -3512,6 +3536,7 @@ function AppShell() {
         />
       )}
       {pdfImportModal && (
+        <Suspense fallback={null}>
         <PdfOrderImportModal
           locations={allowedLocations}
           defaultLocId={defaultLocId}
@@ -3519,6 +3544,7 @@ function AppShell() {
           onClose={() => setPdfImportModal(false)}
           onImport={importPdfOrder}
         />
+        </Suspense>
       )}
       {txModal && (
         <TransactionModal
@@ -3820,7 +3846,7 @@ function AppShell() {
           onInvite={inviteEmployee}
         />
       )}
-      <ScannerModal open={scannerOpen} onClose={() => setScannerOpen(false)} onDetect={handleScanResult} />
+      {scannerOpen && <Suspense fallback={null}><ScannerModal open onClose={() => setScannerOpen(false)} onDetect={handleScanResult} /></Suspense>}
       {chatOpen && (
         <TeamChatPanel
           messages={chatMessages}

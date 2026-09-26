@@ -185,10 +185,10 @@ export default function InboxTab({ messages, customers, tickets = [], repairLead
     const paths = active.messages.filter((m) => m.mediaStoragePath && !mediaUrls[m.mediaStoragePath]).map((m) => m.mediaStoragePath);
     if (!paths.length) return;
     (async () => {
-      const results = await Promise.all(paths.map((p) => supabase.storage.from("chat-media").createSignedUrl(p, 3600)));
+      const { data } = await supabase.storage.from("chat-media").createSignedUrls(paths, 3600);
       setMediaUrls((prev) => {
         const next = { ...prev };
-        results.forEach((r, i) => { if (r.data?.signedUrl) next[paths[i]] = r.data.signedUrl; });
+        (data || []).forEach((r) => { if (r.signedUrl && r.path) next[r.path] = r.signedUrl; });
         return next;
       });
     })();

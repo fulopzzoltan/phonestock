@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { money, adaptivePeriodBucket, periodLabel, today, cashPortion, cardPortion } from "../lib/utils";
+import { money, adaptivePeriodBucket, periodLabel, today, cashPortion, cardPortion, summarizeTx } from "../lib/utils";
 import { FinanceIcon } from "./icons";
 import { EmptyState } from "./EmptyState";
 
@@ -151,16 +151,6 @@ export function TransactionRowsTable({ rows, locName, onEdit, onDelete, onOpenRe
   );
 }
 
-function dayStats(rows) {
-  const incomeCash = rows.filter((t) => t.type === "income").reduce((s, t) => s + cashPortion(t), 0);
-  const incomeCard = rows.filter((t) => t.type === "income").reduce((s, t) => s + cardPortion(t), 0);
-  const expenseCash = rows.filter((t) => t.type === "expense").reduce((s, t) => s + cashPortion(t), 0);
-  const expenseReal = rows.filter((t) => t.type === "expense" && t.payment).reduce((s, t) => s + (Number(t.amount) || 0), 0);
-  const margin = rows.filter((t) => t.type === "income").reduce((s, t) => s + ((Number(t.amount) || 0) - (Number(t.costPrice) || 0)), 0)
-    - rows.filter((t) => t.type === "expense" && !t.payment).reduce((s, t) => s + (Number(t.amount) || 0), 0);
-  const cashOnHand = incomeCash - expenseCash;
-  return { incomeCash, incomeCard, expenseCash, expenseReal, margin, cashOnHand };
-}
 
 export default function TransactionsPeriodList({ transactions, locName, onEdit, onDelete, onOpenReceipt, busy, productConditionById, showLocation = true }) {
   const currentKey = adaptivePeriodBucket(today()).key;
@@ -244,7 +234,7 @@ export default function TransactionsPeriodList({ transactions, locName, onEdit, 
             {isOpen && (
               <div className="tw tw-compact" style={{ borderRadius: "0 0 10px 10px", borderTop: "2px solid #22C55E", padding: granularity === "day" ? 16 : 0 }}>
                 {granularity === "day" && (() => {
-                  const stats = dayStats(rows);
+                  const stats = summarizeTx(rows);
                   return (
                     <div className="statrow c5" style={{ marginBottom: 14 }}>
                       <div className="statcard"><div className="lbl">Bevétel (készpénz)</div><div className="val" style={{ color: "#15803D" }}>{money(stats.incomeCash)}</div></div>

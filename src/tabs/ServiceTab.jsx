@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { money, STATUSES, SUB_STATUSES, statusLabel, statusCls, subStatusCls, subStatusLabel, displayName, ticketCode, daysOnShelf, slaInfo, isStaleReady } from "../lib/utils";
+import { money, ticketRemaining, STATUSES, SUB_STATUSES, statusLabel, statusCls, subStatusCls, subStatusLabel, displayName, ticketCode, daysOnShelf, slaInfo, isStaleReady } from "../lib/utils";
 import { SearchIcon, ServiceIcon, ClockIcon, WarrantyIcon, FoliaIcon, DropletIcon, ChevronRightIcon, CheckIcon, ScanIcon, PartsIcon, PhoneCaseIcon, MoreIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import ResponsiveTable from "../components/ResponsiveTable";
@@ -27,7 +27,7 @@ export default function ServiceTab({
   const [handedOverQuery, setHandedOverQuery] = useState("");
 
   function runAction(t, na) {
-    if (na.subStatus === "Átadva" && (Number(t.price) || 0) - (Number(t.depositPaid) || 0) > 0) {
+    if (na.subStatus === "Átadva" && ticketRemaining(t) > 0) {
       setHandoverPrompt(t);
     } else {
       onStatusChange(t.id, na.status, na.subStatus);
@@ -120,7 +120,7 @@ export default function ServiceTab({
       <td className="row-price">
         {(Number(t.depositPaid) || 0) > 0 ? (
           <>
-            {money(t.price - t.depositPaid)}
+            {money(ticketRemaining(t))}
             <div className="row-price-sub">-{money(t.depositPaid)} előleg</div>
           </>
         ) : money(t.price)}
@@ -149,7 +149,7 @@ export default function ServiceTab({
             <span style={{ flexShrink: 0 }}>{statusPill(t)}</span>
           </div>
           <div className="mob-row-amount" style={{ fontSize: 13 }}>
-            {(Number(t.depositPaid) || 0) > 0 ? money(t.price - t.depositPaid) : money(t.price)}
+            {money((Number(t.depositPaid) || 0) > 0 ? ticketRemaining(t) : t.price)}
           </div>
         </div>
         <div className="mob-row-sub" style={{ marginTop: 13, fontSize: 12.5 }}>

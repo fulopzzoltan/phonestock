@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { TransactionRowsTable } from "./TransactionsPeriodList";
 import { useBasketBar, BasketTopBar, BasketBody } from "./BasketBar";
-import { money, today, cashPortion, cardPortion } from "../lib/utils";
+import { money, today, summarizeTx } from "../lib/utils";
 import { EmptyState } from "./EmptyState";
 import { FinanceIcon, ChevronLeftIcon, ChevronRightIcon } from "./icons";
 
@@ -17,16 +17,6 @@ function addMonths(y, m, delta) {
 }
 function monthLabel(y, m) { return `${y}. ${MONTH_NAMES[m]}`; }
 
-function dayStats(rows) {
-  const incomeCash = rows.filter((t) => t.type === "income").reduce((s, t) => s + cashPortion(t), 0);
-  const incomeCard = rows.filter((t) => t.type === "income").reduce((s, t) => s + cardPortion(t), 0);
-  const expenseCash = rows.filter((t) => t.type === "expense").reduce((s, t) => s + cashPortion(t), 0);
-  const expense = rows.filter((t) => t.type === "expense" && t.payment).reduce((s, t) => s + (Number(t.amount) || 0), 0);
-  const margin = rows.filter((t) => t.type === "income").reduce((s, t) => s + ((Number(t.amount) || 0) - (Number(t.costPrice) || 0)), 0)
-    - rows.filter((t) => t.type === "expense" && !t.payment).reduce((s, t) => s + (Number(t.amount) || 0), 0);
-  const cashOnHand = incomeCash - expenseCash;
-  return { incomeCash, incomeCard, expenseCash, expense, margin, cashOnHand };
-}
 
 // A naptár állapota (hónap, kiválasztott nap, archívum) egy közös hookban él, mert a
 // tényleges rács a bal oldali sávban jelenik meg, a bővebb infó (hó-összesítő, kiválasztott
@@ -84,10 +74,10 @@ export function useTransactionsCalendar({ transactions, dayCloses, allowedLocati
   }
 
   const selectedRows = selectedDay ? (txByDay.get(selectedDay) || []).sort((a, b) => (a.createdAt || "").localeCompare(b.createdAt || "")) : [];
-  const selectedStats = selectedDay ? dayStats(selectedRows) : null;
+  const selectedStats = selectedDay ? summarizeTx(selectedRows) : null;
 
   const monthPrefix = `${viewY}-${pad(viewM + 1)}`;
-  const monthStats = useMemo(() => dayStats(transactions.filter((t) => t.date.startsWith(monthPrefix))), [transactions, monthPrefix]);
+  const monthStats = useMemo(() => summarizeTx(transactions.filter((t) => t.date.startsWith(monthPrefix))), [transactions, monthPrefix]);
 
   const archiveMonths = useMemo(() => {
     if (!isAdmin) return [];
@@ -99,7 +89,7 @@ export function useTransactionsCalendar({ transactions, dayCloses, allowedLocati
     }
     return Object.keys(byMonth).sort((a, b) => b.localeCompare(a)).map((key) => {
       const [y, m] = key.split("-").map(Number);
-      return { key, y, m: m - 1, ...dayStats(byMonth[key]) };
+      return { key, y, m: m - 1, ...summarizeTx(byMonth[key]) };
     });
   }, [transactions, isAdmin, oldestAllowedDate]);
 
@@ -240,7 +230,7 @@ export function CalendarDetail({
             <div className="statrow c5" style={{ marginBottom: 14 }}>
               <div className="statcard"><div className="lbl">Bevétel (készpénz)</div><div className="val" style={{ color: "#15803D" }}>{money(selectedStats.incomeCash)}</div></div>
               <div className="statcard"><div className="lbl">Bevétel (kártya)</div><div className="val" style={{ color: "#15803D" }}>{money(selectedStats.incomeCard)}</div></div>
-              <div className="statcard"><div className="lbl">Kiadás</div><div className="val" style={{ color: "#B91C1C" }}>{money(selectedStats.expense)}</div></div>
+              <div className="statcard"><div className="lbl">Kiadás</div><div className="val" style={{ color: "#B91C1C" }}>{money(selectedStats.expenseReal)}</div></div>
               <div className="statcard"><div className="lbl">Árrés</div><div className="val">{money(selectedStats.margin)}</div></div>
               <div className="statcard accent"><div className="lbl">Kézpénz maradt</div><div className="val">{money(selectedStats.cashOnHand)}</div></div>
             </div>
@@ -268,7 +258,7 @@ export function CalendarDetail({
                       <td style={{ fontWeight: 500, color: "#111827", textTransform: "capitalize" }}>{monthLabel(mo.y, mo.m)}</td>
                       <td className="num-col" style={{ color: "#15803D" }}>{money(mo.incomeCash)}</td>
                       <td className="num-col" style={{ color: "#15803D" }}>{money(mo.incomeCard)}</td>
-                      <td className="num-col" style={{ color: "#B91C1C" }}>{money(mo.expense)}</td>
+                      <td className="num-col" style={{ color: "#B91C1C" }}>{money(mo.expenseReal)}</td>
                       <td className="num-col">{money(mo.margin)}</td>
                       <td>
                         <button type="button" className="toggle-link" style={{ margin: 0 }} onClick={() => { setViewY(mo.y); setViewM(mo.m); setSelectedDay(null); }}>

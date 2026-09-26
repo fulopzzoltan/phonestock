@@ -4,24 +4,14 @@ import { TransactionRowsTable } from "../components/TransactionsPeriodList";
 import { useTransactionsCalendar, CalendarPicker, CalendarDetail } from "../components/TransactionsCalendar";
 import { EmptyState } from "../components/EmptyState";
 import { FinanceIcon, MoreIcon } from "../components/icons";
-import { money, today, cashPortion, cardPortion } from "../lib/utils";
+import { money, today, summarizeTx } from "../lib/utils";
 
-function dayStats(tx) {
-  const incomeCash = tx.filter((t) => t.type === "income").reduce((s, t) => s + cashPortion(t), 0);
-  const incomeCard = tx.filter((t) => t.type === "income").reduce((s, t) => s + cardPortion(t), 0);
-  const expenseReal = tx.filter((t) => t.type === "expense" && t.payment).reduce((s, t) => s + (Number(t.amount) || 0), 0);
-  const margin = tx.filter((t) => t.type === "income").reduce((s, t) => s + ((Number(t.amount) || 0) - (Number(t.costPrice) || 0)), 0)
-    - tx.filter((t) => t.type === "expense" && !t.payment).reduce((s, t) => s + (Number(t.amount) || 0), 0);
-  const income = tx.filter((t) => t.type === "income").reduce((s, t) => s + (Number(t.amount) || 0), 0);
-  const expense = tx.filter((t) => t.type === "expense").reduce((s, t) => s + (Number(t.amount) || 0), 0);
-  return { incomeCash, incomeCard, expenseReal, margin, income, expense };
-}
 
 // A KPI-kártyák (egyenleg + bevétel/kiadás/árrés) egy bal oldali, függőleges sávban
 // gyűlnek össze helyszínenként — nem a tartalom fölött, vízszintes sorban, hanem mellette,
 // hogy a tényleges rögzítés/lista mindig a fő figyelem maradjon.
 function KpiColumn({ loc, locTx, expected, showHeading }) {
-  const stats = dayStats(locTx);
+  const stats = summarizeTx(locTx);
   return (
     <div style={{ marginBottom: 18 }}>
       {showHeading && <div style={{ fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 8 }}>{loc.name}</div>}
@@ -125,9 +115,7 @@ export default function FinanceTab({
 
   const expectedByLoc = Object.fromEntries(allowedLocations.map((l) => {
     const locTx = transactions.filter((t) => t.locationId === l.id && t.date === todayStr);
-    const income = locTx.filter((t) => t.type === "income").reduce((s, t) => s + cashPortion(t), 0);
-    const expense = locTx.filter((t) => t.type === "expense").reduce((s, t) => s + cashPortion(t), 0);
-    return [l.id, income - expense];
+    return [l.id, summarizeTx(locTx).cashOnHand];
   }));
 
   const basketLocId = locsToShow.some((l) => l.id === defaultLocId) ? defaultLocId : locsToShow[0]?.id;

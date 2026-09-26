@@ -1,5 +1,8 @@
 export const money = (n) => Math.round(Number(n) || 0).toLocaleString("hu-HU") + " Lei";
 
+// Munkalap átadáskor még fizetendő összeg: ár mínusz a már felvett előleg, sosem negatív.
+export const ticketRemaining = (t) => Math.max(0, (Number(t?.price) || 0) - (Number(t?.depositPaid) || 0));
+
 // Kliens-oldali CSV export — a már betöltött listákból (Készlet, Ügyfelek,
 // Tranzakciók stb.) generál letölthető CSV-t, szerver-oldali munka nélkül.
 // columns: [{ key, label }], rows: a lista, amiből a `key` mezőket olvassuk ki
@@ -267,6 +270,26 @@ export function cardPortion(t) {
   if (t.payment === "Kártya") return Number(t.amount) || 0;
   if (t.payment === "Vegyes") return Number(t.paymentCardAmount) || 0;
   return 0;
+}
+
+// Egy tranzakció-halmaz napi/havi összesítője (Pénzügy KPI, időszaklista, naptár) egy menetben.
+// expenseReal: csak a fizetési móddal rögzített (tényleges pénzmozgású) kiadások;
+// a fizetési mód nélküli kiadás (pl. anyagköltség) csak az árrést csökkenti.
+export function summarizeTx(rows) {
+  let incomeCash = 0, incomeCard = 0, expenseCash = 0, expenseReal = 0, margin = 0;
+  for (const t of rows) {
+    const amount = Number(t.amount) || 0;
+    if (t.type === "income") {
+      incomeCash += cashPortion(t);
+      incomeCard += cardPortion(t);
+      margin += amount - (Number(t.costPrice) || 0);
+    } else if (t.type === "expense") {
+      expenseCash += cashPortion(t);
+      if (t.payment) expenseReal += amount;
+      else margin -= amount;
+    }
+  }
+  return { incomeCash, incomeCard, expenseCash, expenseReal, margin, cashOnHand: incomeCash - expenseCash };
 }
 
 export const STOCK_STATUSES = [

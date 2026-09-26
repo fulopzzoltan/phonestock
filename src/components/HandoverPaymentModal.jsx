@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { CloseIcon } from "./icons";
-import { money } from "../lib/utils";
+import { money, ticketRemaining } from "../lib/utils";
 
 // Munkalap átadásakor, ha van fizetendő összeg, itt kérdezzük meg a fizetés
 // módját — "Vegyes" esetén a TransactionModal-ból ismert készpénz/kártya
@@ -10,7 +10,7 @@ export default function HandoverPaymentModal({ ticket, onClose, onConfirm, busy 
   const [cash, setCash] = useState("");
   const [card, setCard] = useState("");
   const deposit = Number(ticket.depositPaid) || 0;
-  const amount = Math.max(0, (Number(ticket.price) || 0) - deposit);
+  const amount = ticketRemaining(ticket);
   const splitSum = (Number(cash) || 0) + (Number(card) || 0);
   const splitValid = payment !== "Vegyes" || (cash !== "" && card !== "" && splitSum === amount);
 

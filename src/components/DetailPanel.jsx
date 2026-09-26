@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { money, STATUSES, SUB_STATUSES, slaInfo, SITE_URL, statusLabel, ticketCode, partCode } from "../lib/utils";
+import { money, ticketRemaining, STATUSES, SUB_STATUSES, slaInfo, SITE_URL, statusLabel, ticketCode, partCode } from "../lib/utils";
 import { supabase } from "../lib/supabaseClient";
 import { CloseIcon } from "./icons";
 import Row from "./DetailRow";
@@ -229,7 +229,7 @@ export default function DetailPanel({ ticket, locName, parts, stock, users = [],
             {(Number(ticket.depositPaid) || 0) > 0 && (
               <>
                 <Row k="Előleg" v={<span style={{ fontWeight: 700 }}>{money(ticket.depositPaid)}</span>} />
-                <Row k="Hátralévő" v={<span style={{ fontWeight: 700 }}>{money(Math.max(0, (Number(ticket.price) || 0) - (Number(ticket.depositPaid) || 0)))}</span>} />
+                <Row k="Hátralévő" v={<span style={{ fontWeight: 700 }}>{money(ticketRemaining(ticket))}</span>} />
               </>
             )}
             {ticket.subStatus !== "Átadva" && onAddDeposit && (
