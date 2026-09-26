@@ -12,8 +12,8 @@ const GREETINGS = ["Szia!", "Hello!", "Üdv újra!", "Szevasz!", "Jó munkát ma
 
 export default function PultTab({
   effectiveLocFilter, filteredTickets, setDetailId,
-  notes, addNote, completeNote, deleteNote,
-  waitingItems, addWaitingItem, advanceWaiting,
+  notes, addNote, completeNote, deleteNote, updateNote,
+  waitingItems, addWaitingItem, advanceWaiting, updateWaitingItem,
   users, currentUserId, tickets, stock, parts, customersTable, warranties, locName,
   upcomingLeave,
   webOrders, confirmWebOrder, cancelWebOrder, completeWebOrder, generateWebOrderAwb,
@@ -153,7 +153,7 @@ export default function PultTab({
         {openNotes.length === 0 ? <EmptyState icon={NoteIcon}>Nincs nyitott cetli.</EmptyState> : (
           <div className="stk-grid">
             {openNotes.map((n) => (
-              <NoteCard key={n.id} note={n} users={users} currentUserId={currentUserId} onComplete={() => completeNote(n.id)} onDelete={() => deleteNote(n.id)}
+              <NoteCard key={n.id} note={n} users={users} currentUserId={currentUserId} onComplete={() => completeNote(n.id)} onDelete={() => deleteNote(n.id)} onEdit={(body) => updateNote(n.id, body)}
                 onOpenLink={{ ticket: onOpenTicket, product: onOpenProduct, part: onOpenPart, customer: onOpenCustomer, warranty: onOpenWarranty }} />
             ))}
           </div>
@@ -165,7 +165,7 @@ export default function PultTab({
       </div>
 
       <div className="pult-section">
-        <WaitingList items={activeWaiting} closedItems={closedWaiting} customers={customersTable} onAdd={addWaitingItem} onAdvance={advanceWaiting} />
+        <WaitingList items={activeWaiting} closedItems={closedWaiting} customers={customersTable} onAdd={addWaitingItem} onAdvance={advanceWaiting} onUpdate={updateWaitingItem} />
       </div>
     </div>
   );

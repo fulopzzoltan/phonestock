@@ -9,16 +9,20 @@ import PublicFooter from "./components/PublicFooter";
 import PhoneMiniCard from "./components/PhoneMiniCard";
 import { WarningIcon } from "./components/icons";
 import { EmptyState, LoadingState } from "./components/EmptyState";
+import FinderLandingIntro from "./components/FinderLandingIntro";
 
 const SITE = "https://phonestock-manager.netlify.app";
-const STEP_ORDER = ["condition", "budget", "storage", "brand", "result"];
+// "intro" külön lépés a kérdéssor elé (ugyanaz a minta, mint a BuybackFlow-nál és a
+// RepairEstimatornál) — nincs benne a pöttyös progress-sorban, csak a 4 valódi kérdés.
+const STEP_ORDER = ["intro", "condition", "budget", "storage", "brand", "result"];
+const DOT_STEPS = ["condition", "budget", "storage", "brand"];
 
 export default function PhoneFinder({ lang = "hu" }) {
   const s = t(lang);
   const [phones, setPhones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
-  const [step, setStep] = useState("condition");
+  const [step, setStep] = useState("intro");
   const [answers, setAnswers] = useState({ condition: "any", budget: "any", storage: "any", brands: [] });
 
   useEffect(() => {
@@ -134,21 +138,27 @@ export default function PhoneFinder({ lang = "hu" }) {
   }
 
   return (
-    <div className="pub-shop">
+    <div className={`pub-shop${step === "intro" ? " bb-landing-page" : ""}`}>
       {seoHead}
       <PublicHeader activeNav="finder" lang={lang} />
-      <main className="bb-main">
-        <div className="pub-promo-eyebrow" style={{ marginBottom: 10, textAlign: "center" }}>{s.finderBrandName}</div>
-        {step !== "result" && (
+      <main className={step === "intro" ? "pub-main" : "bb-main"}>
+        {step !== "intro" && <div className="pub-promo-eyebrow" style={{ marginBottom: 10, textAlign: "center" }}>{s.finderBrandName}</div>}
+        {step === "intro" ? (
+          <button type="button" className="pub-back-link" onClick={goBack}>{s.back}</button>
+        ) : step !== "result" && (
           <div className="pub-wizard-steprow">
             <button type="button" className="pub-back-link pub-wizard-back" onClick={goBack}>{s.back}</button>
             <div className="pub-steps">
-              {STEP_ORDER.slice(0, 4).map((st, i) => (
-                <div key={st} className={`pub-step${stepIndex === i ? " active" : ""}`} />
+              {DOT_STEPS.map((st, i) => (
+                <div key={st} className={`pub-step${DOT_STEPS.indexOf(step) === i ? " active" : ""}`} />
               ))}
             </div>
             <span />
           </div>
+        )}
+
+        {step === "intro" && (
+          <FinderLandingIntro phones={phones} onCta={() => setStep("condition")} />
         )}
 
         {step === "condition" && (

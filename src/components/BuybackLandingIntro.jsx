@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { PinIcon, WarrantyIcon, TransferIcon, ClockIcon, CardIcon, ConsignmentIcon } from "./icons";
+import FaqAccordion from "./FaqAccordion";
 
 const STEPS = [
   { title: "Válaszd ki a modellt és az állapotát.", desc: "2 perc alatt megvan a becsült érték — nem kell hozzá regisztráció, csak pár kattintás." },
@@ -39,7 +40,6 @@ const FAQ_ITEMS = [
 // eltérően nem újrafelhasznált kártya-minta, csak ezen az oldalon él.
 export default function BuybackLandingIntro({ brands, models, onCta }) {
   const [activeBrand, setActiveBrand] = useState(brands.includes("Apple") ? "Apple" : brands[0]);
-  const [openFaq, setOpenFaq] = useState(0);
 
   const brandModels = useMemo(() => {
     const best = {};
@@ -149,17 +149,7 @@ export default function BuybackLandingIntro({ brands, models, onCta }) {
 
       <div className="bb-faq">
         <div className="bb-landing-steps-title" style={{ textAlign: "center", marginBottom: 24 }}>Gyakori kérdések</div>
-        <div className="bb-faq-list">
-          {FAQ_ITEMS.map((f, i) => (
-            <div className="bb-faq-row" key={f.q}>
-              <button type="button" className="bb-faq-q" aria-expanded={openFaq === i} onClick={() => setOpenFaq(openFaq === i ? -1 : i)}>
-                {f.q}
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ transform: openFaq === i ? "rotate(180deg)" : "none" }}><path d="M6 9l6 6 6-6" /></svg>
-              </button>
-              {openFaq === i && <p className="bb-faq-a">{f.a}</p>}
-            </div>
-          ))}
-        </div>
+        <FaqAccordion items={FAQ_ITEMS} />
       </div>
 
       <div className="bb-landing-final-cta">

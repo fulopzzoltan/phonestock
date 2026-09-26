@@ -60,7 +60,7 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
 .loc-drop{width:100%;display:flex;align-items:center;justify-content:space-between;gap:6px;border:1px solid #E8EAEF;background:#F8FAFB;border-radius:9px;padding:7px 9px;font-size:11.5px;font-weight:700;color:#101828;cursor:pointer;font-family:inherit}
 .loc-drop.static{cursor:default}
 .loc-drop-left{display:flex;align-items:center;gap:6px;color:#5B6472;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.loc-drop-menu{position:absolute;top:calc(100% + 4px);left:0;min-width:100%;width:max-content;background:#fff;border:1px solid #E8EAEF;border-radius:10px;box-shadow:0 8px 24px rgba(16,24,40,.12);padding:4px;z-index:20}
+.loc-drop-menu{position:absolute;top:calc(100% + 4px);left:0;min-width:100%;width:max-content;background:#fff;border:1px solid #E8EAEF;border-radius:10px;box-shadow:0 8px 24px rgba(16,24,40,.12);padding:4px;z-index:20;display:flex;flex-direction:column;gap:4px}
 .loc-drop-item{display:block;width:100%;text-align:left;border:none;background:none;font-family:inherit;font-size:12px;font-weight:600;color:#5B6472;padding:8px 9px;border-radius:7px;cursor:pointer;white-space:nowrap}
 .loc-drop-item:hover{background:#F1F2F6}
 .loc-drop-item.active{background:#F1F2F6;color:#111827}
@@ -94,7 +94,7 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
 .bnav-btn.active{color:var(--sidebar-accent-text)}
 .bnav-btn.active .md-item-appicon{transform:translateY(-1px) scale(1.05)}
 .bnav-ic-wrap{position:relative;display:inline-flex;transition:transform .15s}
-.bnav-badge{position:absolute;top:-5px;right:-5px;min-width:15px;height:15px;padding:0 4px;border-radius:999px;background:#DC2626;color:#fff;font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1}
+.bnav-badge{position:absolute;top:-5px;right:-5px;min-width:15px;height:15px;padding:0 4px;border-radius:999px;background:#FF3B30;color:#fff;font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1}
 
 /* "Több" lap — iOS kezdőképernyő-szerű rács a korábbi függőleges lista helyett,
    ugyanazokkal a színes app-ikon csempékkel, mint a desktop Mac-dokkon. */
@@ -105,7 +105,7 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
 .ios-app-icon-wrap{position:relative;display:inline-flex}
 .ios-app-icon-wrap .md-item-appicon{transition:transform .12s}
 .ios-app-label{font-size:10.5px;font-weight:600;color:#374151;text-align:center;line-height:1.25;max-width:70px}
-.ios-app-badge{position:absolute;top:-5px;right:-5px;min-width:15px;height:15px;padding:0 4px;border-radius:999px;background:#DC2626;color:#fff;font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1}
+.ios-app-badge{position:absolute;top:-5px;right:-5px;min-width:15px;height:15px;padding:0 4px;border-radius:999px;background:#FF3B30;color:#fff;font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1}
 .ios-app-pad{visibility:hidden}
 
 /* BOTTOM SHEET — "Több" panel + mobilon a modalok is ezt a mintát követik (lásd media query) */
@@ -151,7 +151,7 @@ body{font-family:'Inter',sans-serif;background:#F5F6F8;color:#111827;min-height:
 .ctb-search-sub{font-size:11px;color:#9CA3AF}
 .ctb-search-empty{padding:12px 10px;font-size:12.5px;color:#9CA3AF}
 .ctb-chat-btn{position:relative}
-.ctb-chat-badge{position:absolute;top:-5px;right:-5px;background:#DC2626;color:#fff;font-size:9.5px;font-weight:700;min-width:15px;height:15px;border-radius:999px;display:flex;align-items:center;justify-content:center;padding:0 3px;box-shadow:0 0 0 2px #fff}
+.ctb-chat-badge{position:absolute;top:-5px;right:-5px;background:#FF3B30;color:#fff;font-size:9.5px;font-weight:700;min-width:15px;height:15px;border-radius:999px;display:flex;align-items:center;justify-content:center;padding:0 3px}
 .user-chip-wrap{position:relative}
 .user-chip{display:flex;align-items:center;gap:8px;border:1px solid #E8EAEF;background:#F8FAFB;border-radius:9px;padding:5px 9px 5px 6px;cursor:pointer;font-family:inherit}
 .user-chip:hover{border-color:#1DB954}
@@ -309,10 +309,83 @@ tr:hover td{background:#FAFAFA}
 .mode-pill.expense.active{background:#FEE2E2;border-color:#FCA5A5;color:#B91C1C}
 .mode-pill.income.active{background:#DCFCE7;border-color:#86EFAC;color:#15803D}
 
-.svc-days{font-weight:600;color:#111827;white-space:nowrap}
-.svc-days.today{color:#111827}
-.svc-days-lbl{color:#9CA3AF;font-weight:400;margin-left:3px}
+.svc-table td,.svc-table th{font-size:13px;padding-left:10px;padding-right:10px}
+.svc-table th{height:auto;padding-top:12px;padding-bottom:12px;text-transform:none;font-weight:600;letter-spacing:normal}
+.svc-table .col-serial{padding-right:8px}
+.svc-table .stk-actions{justify-content:flex-end}
+.stk-table td,.stk-table th{font-size:13px;padding-left:10px;padding-right:10px}
+.stk-table th{height:auto;padding-top:12px;padding-bottom:12px;text-transform:none;font-weight:600;letter-spacing:normal}
+.svc-filter-row .searchbar,.svc-filter-row .history-toolbar-btn{border-radius:18px}
+.svc-filter-row{flex-wrap:nowrap}
+.svc-filter-row .searchbar{min-width:0;flex-shrink:1}
+.svc-filter-row .history-toolbar-btn,.svc-filter-row .header-add-btn{flex-shrink:0}
+.svc-filter-row .status-seg{margin-left:auto}
+.day-chip{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap}
+.day-chip-empty{background:#F3F4F6;color:#9CA3AF;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700}
 .svc-probs{display:flex;flex-wrap:nowrap;gap:4px;overflow:hidden}
+
+/* Új munkalap — inline tábla-sor (nem forma-kártya): a "+" gomb egy szerkeszthető sort told a
+   tábla tetejére, a másodlagos mezők pedig egy sűrű, aláhúzásos "cella"-sávban jelennek meg
+   alatta — vékony elválasztó, apró oszlopfejléc-szerű mikro-címke, nem kártya-doboz. Zöld
+   háttérmosás helyett csak egy vékony bal szegély jelzi az aktív sort. */
+.svc-nr-stack{display:flex;flex-direction:column;gap:6px}
+.svc-nr-top{width:100%;font-size:13px;font-family:inherit;border:1px solid #E1E4E9;background:#fff;border-radius:7px;padding:7px 9px;box-sizing:border-box;color:#111827;transition:border-color .12s,box-shadow .12s}
+.svc-nr-top:focus{outline:none;border-color:#1DB954;box-shadow:0 0 0 3px rgba(29,185,84,.12)}
+.svc-nr-top::placeholder{color:#ADB1B8}
+.svc-nr-chip{display:inline-flex;padding:5px 12px;border-radius:8px;font-size:13px;font-weight:600;background:#F3F4F6;color:#4B5563;cursor:pointer;border:1px solid transparent}
+.svc-nr-chip.on{background:#E8FBEF;color:#0F7A36;border-color:#1DB954}
+.svc-nr-more-toggle{display:flex;align-items:center;gap:6px;width:100%;padding:9px 16px;font-size:11.5px;font-weight:700;color:#6B7280;background:none;border:none;border-top:1px solid #F1F2F4;font-family:inherit;cursor:pointer}
+.svc-nr-more-toggle:hover{color:#374151;background:#FAFBFC}
+.svc-nr-more-toggle .chev{transition:transform .15s;flex-shrink:0}
+.svc-nr-more-toggle.open .chev{transform:rotate(90deg)}
+.svc-nr-rr{padding:14px 16px 16px;background:#FAFBFC}
+.svc-nr-rr-grid{display:grid;gap:18px;align-items:end}
+.svc-nr-rr-3{grid-template-columns:repeat(3,1fr)}
+.svc-nr-rr-4{grid-template-columns:repeat(4,1fr)}
+.svc-nr-rr-5{grid-template-columns:repeat(5,1fr)}
+.svc-nr-rr-lbl{display:block;font-size:9.5px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.svc-nr-cell{width:100%;font-size:12.5px;font-family:inherit;border:none;border-bottom:1.5px solid #D8DBE0;background:transparent;padding:3px 1px 7px;box-sizing:border-box;color:#111827;appearance:none;border-radius:0;transition:border-color .12s}
+.svc-nr-cell:hover{border-bottom-color:#B7BCC4}
+.svc-nr-cell:focus{outline:none;border-bottom-color:#1DB954}
+.svc-nr-cell::placeholder{color:#C7CBD1}
+.svc-nr-cell:disabled{color:#C7CBD1;cursor:default}
+select.svc-nr-cell{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 1px center;background-size:11px;padding-right:16px}
+input[type="date"].svc-nr-cell{cursor:pointer}
+input[type="date"].svc-nr-cell::-webkit-calendar-picker-indicator{opacity:.45;cursor:pointer;transition:opacity .12s}
+input[type="date"].svc-nr-cell:hover::-webkit-calendar-picker-indicator{opacity:.8}
+.svc-nr-flag{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#6B7280;cursor:pointer;white-space:nowrap}
+.svc-nr-flag input[type="checkbox"]{appearance:none;-webkit-appearance:none;width:15px;height:15px;margin:0;border-radius:4px;border:1.5px solid #D1D5DB;background:#fff;flex-shrink:0;position:relative;cursor:pointer;transition:background .12s,border-color .12s}
+.svc-nr-flag input[type="checkbox"]:checked{background:#1DB954;border-color:#1DB954}
+.svc-nr-flag input[type="checkbox"]:checked::after{content:"";position:absolute;left:4px;top:1px;width:4px;height:8px;border:solid #fff;border-width:0 1.5px 1.5px 0;transform:rotate(45deg)}
+.svc-nr-flag.on{color:#0F7A36}
+.svc-nr-row:last-of-type .svc-nr-rr{border-radius:0 0 17px 17px}
+.svc-nr-row td{border-left:3px solid #1DB954}
+.svc-nr-row td:not(:first-child){border-left:none}
+
+/* "+" gomb -> "beleesik" a táblába (a gomb ikonja eltűnik, a tábla tetején zöld fény-impulzus
+   fut végig), majd a sor onnan bomlik ki lefelé — lásd az "Új munkalap — táblázat-érzés"
+   design artifact animált verzióját. */
+.svc-plus-drop{animation:svcPlusDrop .34s cubic-bezier(.4,0,.7,1) forwards}
+.svc-plus-pop{animation:svcPlusPop .3s cubic-bezier(.34,1.56,.64,1) forwards}
+@keyframes svcPlusDrop{
+  0%{transform:translateY(0) scale(1) rotate(0deg);opacity:1}
+  45%{transform:translateY(3px) scale(.85) rotate(20deg);opacity:1}
+  100%{transform:translateY(16px) scale(.25) rotate(60deg);opacity:0}
+}
+@keyframes svcPlusPop{
+  0%{transform:translateY(-10px) scale(.3) rotate(-40deg);opacity:0}
+  60%{transform:translateY(0) scale(1.15) rotate(6deg);opacity:1}
+  100%{transform:translateY(0) scale(1) rotate(0deg);opacity:1}
+}
+.svc-table-ripple{position:relative}
+.svc-table-ripple::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:#1DB954;transform:scaleX(0);transform-origin:right center;opacity:0;pointer-events:none}
+.svc-table-ripple.pulse::before{animation:svcRipple .5s ease-out}
+@keyframes svcRipple{
+  0%{transform:scaleX(0);opacity:.9}
+  60%{transform:scaleX(1);opacity:.5}
+  100%{transform:scaleX(1);opacity:0}
+}
+.svc-nr-reveal{overflow:hidden;transition:max-height .38s cubic-bezier(.4,0,.2,1),opacity .3s ease}
 .row-price{font-family:'Roboto Mono',monospace;font-weight:700;font-size:13px;color:#111827;white-space:nowrap}
 .row-price-sub{font-family:'Inter',sans-serif;font-weight:600;font-size:10px;color:#9CA3AF;white-space:nowrap;margin-top:1px}
 .toggle-link:hover{color:var(--accent-dark)}
@@ -367,6 +440,11 @@ tr:hover td{background:#FAFAFA}
 .paid-toggle{display:flex;align-items:center;gap:5px;border:1.5px solid #E5E7EB;background:#fff;border-radius:999px;padding:6px 12px;font-size:11px;font-weight:700;color:#9CA3AF;cursor:pointer;white-space:nowrap;width:118px;justify-content:center;font-family:inherit}
 .paid-toggle.done{border-color:transparent;background:var(--primary-soft);color:var(--primary-ink)}
 .st{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:600}
+.status-picker-trigger{display:inline-flex;align-items:center;gap:7px;background:none;border:none;color:#111827;padding:6px 4px;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:600}
+.status-picker-trigger:disabled{cursor:default;opacity:.6}
+.status-picker-trigger svg{color:#C7CBD1;flex-shrink:0}
+.status-picker-trigger .status-dot-halo{width:12px;height:12px;border-radius:999px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center}
+.status-picker-trigger .status-dot{width:6px;height:6px;border-radius:999px;flex-shrink:0}
 .st-beveve{background:#E0E7FF;color:#4338CA;--pill-bg:#E0E7FF;--pill-fg:#4338CA}
 .st-alkatresz{background:var(--info-soft);color:var(--info-ink);--pill-bg:var(--info-soft);--pill-fg:var(--info-ink)}
 .st-javitas{background:var(--warning-soft);color:var(--warning-ink);--pill-bg:var(--warning-soft);--pill-fg:var(--warning-ink)}
@@ -397,17 +475,19 @@ tr:hover td{background:#FAFAFA}
 .liquid-toggle:disabled{cursor:default;opacity:.55}
 .lt-track{position:absolute;inset:0;border-radius:999px;background:#1DB954;transition:background .32s ease}
 .liquid-toggle.on .lt-track{background:#DC2626}
-.lt-blobs{position:absolute;inset:0}
-.lt-thumb,.lt-drop{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transform:translateX(20px)}
-.lt-thumb{transition:transform .38s cubic-bezier(.34,1.56,.64,1)}
-.lt-drop{transition:transform .46s cubic-bezier(.22,.9,.4,1) .05s}
-.liquid-toggle.on .lt-thumb,.liquid-toggle.on .lt-drop{transform:translateX(0)}
+.lt-thumb{position:absolute;top:50%;left:3px;right:auto;width:20px;height:20px;border-radius:999px;background:#fff;
+  box-shadow:0 3px 8px rgba(0,0,0,.18),0 1px 2px rgba(0,0,0,.22);
+  transform:translateY(-50%);
+  transition:left .32s cubic-bezier(.34,1.56,.64,1),right .32s cubic-bezier(.34,1.56,.64,1),width .16s ease,height .16s ease}
+.liquid-toggle.on .lt-thumb{left:auto;right:3px}
+.liquid-toggle:active:not(:disabled) .lt-thumb{width:34px;height:24px}
 .badge-expense{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700;background:#FEE2E2;color:#B91C1C}
 .badge-refurb{display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:#fff;color:#C2410C;border:1px solid #FDBA74}
 .badge-new{display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:#fff;color:#6D28D9;border:1px solid #DDD6FE}
 .badge-buyin{display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:#fff;color:#1D4ED8;border:1px solid #BFDBFE}
 .badge-service{display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:#fff;color:#EA580C;border:1px solid #FED7AA}
-.prob-pill{display:inline-flex;padding:2px 7px;border-radius:var(--radius-pill);font-size:10.5px;font-weight:500;background:#F3F4F6;color:#374151;margin:1px}
+.prob-pill{display:inline-flex;padding:5px 12px;border-radius:8px;font-size:13px;font-weight:600;background:#F3F4F6;color:#4B5563;margin:1px}
+.prob-pill.sm{padding:2px 8px;font-size:11px;margin:0}
 
 /* ====== BELÉPÉSEK (jelszókezelő) ====== */
 .vault-list{display:flex;flex-direction:column;gap:10px}
@@ -427,17 +507,18 @@ tr:hover td{background:#FAFAFA}
 .sla-badge.sla-warn{background:#FEF3C7;color:#92400E}
 .sla-badge.sla-overdue{background:#FEE2E2;color:#B91C1C}
 
-/* Szerviz állapotsáv (Probléma/Státusz között) — egységes, kitöltött színes körök:
-   Ázott, Garanciális, Alkatrészre vár, Készülékre vár, Fólia (.t-folia), Ígért határidő. */
-.svc-flags{display:flex;align-items:center;gap:5px}
-.svc-flag{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:999px;color:#fff;flex-shrink:0}
-.svc-flag-water{background:#0EA5E9}
-.svc-flag-warranty{background:#4F46E5}
-.svc-flag-part{background:#7C3AED}
-.svc-flag-device{background:#0891B2}
-.svc-flag-due-ok{background:#60A5FA}
-.svc-flag-due-warn{background:#F59E0B}
-.svc-flag-due-overdue{background:#DC2626}
+/* Szerviz állapotsáv (Probléma/Státusz között) — egységes, szöveges chipek:
+   Ázott, Garanciális, Alkatrészre vár, Készülékre vár, Fólia (.svc-flag-folia), Ígért határidő. */
+.svc-flags{display:flex;align-items:center;flex-wrap:wrap;gap:5px}
+.svc-flag-chip{display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:8px;font-size:13px;font-weight:600;white-space:nowrap}
+.svc-flag-chip.svc-flag-water{background:#DBEAFE;color:#1E40AF}
+.svc-flag-chip.svc-flag-warranty{background:#E0E7FF;color:#3730A3}
+.svc-flag-chip.svc-flag-part{background:#F3E8FF;color:#6B21A8}
+.svc-flag-chip.svc-flag-device{background:#CFFAFE;color:#155E75}
+.svc-flag-chip.svc-flag-folia{background:var(--primary-soft);color:var(--primary-ink)}
+.svc-flag-chip.svc-flag-due-ok{background:#F3F4F6;color:#4B5563}
+.svc-flag-chip.svc-flag-due-warn{background:var(--warning-soft);color:var(--warning-ink)}
+.svc-flag-chip.svc-flag-due-overdue{background:var(--failed-soft);color:var(--failed)}
 
 /* STOCK TAB — redesigned rows/cards */
 .stk-row{display:flex;align-items:center;gap:11px}
@@ -447,10 +528,16 @@ tr:hover td{background:#FAFAFA}
 .stk-thumb.sm svg{width:9px;height:9px}
 .stk-thumb.lg{width:38px;height:38px;border-radius:12px;font-size:13px}
 .stk-thumb.lg svg{width:17px;height:17px}
+.stk-serial-cell{display:inline-flex;align-items:center;gap:8px}
+.stk-print-chk{color:#9CA3AF;transition:background .12s,border-color .12s,color .12s}
+.stk-print-chk.active{background:#1DB954;border-color:#1DB954;color:#fff}
 .stk-name{font-weight:600;color:#111827;line-height:1.3;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .stk-sub{font-size:11px;color:#9CA3AF;margin-top:1px;font-family:'Roboto Mono',monospace}
-.stk-badges{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.stk-badges .stk-sub:not(:first-child)::before{content:"·";margin-right:6px;color:#D1D5DB}
+.stk-badges{display:flex;align-items:center;gap:3px;flex-wrap:wrap}
+.stk-spec-w{display:inline-block;width:42px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;text-align:right}
+.stk-spec-wl{text-align:left}
+.stk-status-w{display:inline-block;width:62px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
+.stk-badges .stk-sub:not(:first-child)::before{content:"·";margin-right:4px;color:#D1D5DB}
 .loc-group-head{display:flex;align-items:center;justify-content:space-between;margin:0 0 8px 2px}
 .stk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
 .stk-card{background:#fff;border-radius:20px;border:1px solid #EEF0F2;box-shadow:var(--shadow-card);padding:19px;cursor:pointer;transition:transform .12s,box-shadow .12s,border-color .12s;display:flex;flex-direction:column;height:100%}
@@ -514,6 +601,15 @@ tr:hover td{background:#FAFAFA}
 .wl-row:first-child{border-top:none}
 .wl-text{font-size:12.5px;color:#111827;overflow-wrap:anywhere;flex:1;min-width:0}
 .wl-supplier{color:#9CA3AF}
+.wl-row-btn{width:22px;height:22px;border-radius:999px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;color:#9CA3AF;cursor:pointer;padding:0;flex-shrink:0;transition:background .12s,color .12s}
+.wl-row-btn:hover{background:#F3F4F6;color:#374151}
+.wl-row-edit{align-items:flex-start;gap:6px}
+.wl-edit-fields{display:flex;flex-direction:column;gap:6px;flex:1;min-width:0}
+.wl-edit-line2{display:flex;gap:6px}
+.wl-edit-actions{display:flex;gap:2px;flex-shrink:0;padding-top:1px}
+.wl-edit-input{font-size:12.5px;font-family:inherit;border:1px solid #E5E7EB;border-radius:8px;padding:5px 8px;outline:none;flex:1;min-width:0;background:#F9FAFB}
+.wl-edit-input:focus{border-color:var(--accent);background:#fff}
+.wl-edit-supplier{flex:0 0 100px}
 .wl-cust-wrap{position:relative;flex-shrink:0}
 .wl-cust-btn{width:26px;height:26px;border-radius:999px;border:1px solid #E5E7EB;background:#fff;color:#9CA3AF;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
 .wl-cust-btn:hover{color:var(--primary-ink);border-color:var(--primary-soft);background:var(--primary-soft)}
@@ -536,12 +632,14 @@ tr:hover td{background:#FAFAFA}
 .wl-status-pill.grey .dot{background:var(--wl-dot)}
 :root{--wl-blue-dot:#3B82F6;--wl-purple-dot:#8B5CF6;--wl-green-dot:#22C55E;--wl-grey-dot:#9CA3AF}
 
-.wl-status-menu{position:absolute;right:0;top:36px;width:172px;background:#fff;border:1px solid #EEF0F2;border-radius:12px;
-  box-shadow:0 10px 30px rgba(16,24,40,.14);padding:5px;z-index:6}
-.wl-status-opt{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;font-size:12px;font-weight:600;color:#6B7280;cursor:pointer}
-.wl-status-opt .dot{width:7px;height:7px;border-radius:999px;flex-shrink:0}
-.wl-status-opt:hover{background:#F9FAFB}
-.wl-status-opt.current{background:#F3F4F6;color:#111827}
+.wl-status-menu{position:absolute;right:0;top:38px;width:196px;background:#fff;border:1px solid #EEF0F2;border-radius:14px;
+  box-shadow:0 10px 30px rgba(16,24,40,.14);padding:6px;z-index:6;display:flex;flex-direction:column;gap:4px}
+.wl-status-menu.status-drop-menu{right:auto;left:0}
+.wl-status-opt{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:13px;font-weight:600;color:#374151;cursor:pointer}
+.wl-status-opt .dot{width:8px;height:8px;border-radius:999px;flex-shrink:0}
+.part-add-menu{width:260px;padding:10px}
+.wl-status-opt:hover{background:#F5F5F7}
+.wl-status-opt.current{background:#F5F5F7;color:#111827}
 
 .wl-foot{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
 .wl-kebab{width:30px;height:30px;border-radius:999px;border:1px solid #EEF0F2;background:#fff;display:flex;align-items:center;justify-content:center;color:#6B7280;cursor:pointer;padding:0}
@@ -593,6 +691,7 @@ tr:hover td{background:#FAFAFA}
 .note-card.done{opacity:.55}
 .note-card-tape{position:absolute;top:-9px;left:16px;width:44px;height:17px;transform:rotate(-6deg);border-radius:2px;background:repeating-linear-gradient(45deg,rgba(255,255,255,.85) 0 4px,rgba(255,255,255,.4) 4px 8px);box-shadow:0 2px 3px rgba(0,0,0,.08)}
 .note-card-body{font-family:'Kalam',cursive;font-weight:700;font-size:16px;line-height:1.32;margin:8px 0 10px;overflow-wrap:anywhere;word-break:break-word}
+.note-card-edit{font-family:'Kalam',cursive;font-weight:700;font-size:16px;line-height:1.32;margin:8px 0 10px;overflow-wrap:anywhere;word-break:break-word;width:100%;flex:1;resize:none;border:none;outline:none;background:rgba(255,255,255,.35);border-radius:6px;padding:2px 4px;min-height:52px}
 .note-card-link{align-self:flex-start;display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.65);border:none;border-radius:999px;padding:3px 10px 3px 8px;font-size:10.5px;font-weight:700;font-family:'Inter',sans-serif;margin-bottom:10px;cursor:pointer}
 .note-card-meta{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:6px}
 .note-card-meta .iconbtn{color:inherit;padding:0}
@@ -640,13 +739,14 @@ tr:hover td{background:#FAFAFA}
 .stk-card-iconbtn{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center}
 .stk-card-iconbtn.edit{background:#F1F2F6;color:#4B5563}
 .stk-card-actions .btn{height:36px}
-.stk-actions{display:flex;gap:6px;align-items:center}
+.stk-actions{display:flex;gap:6px;align-items:center;justify-content:flex-end}
+.stk-svcell{display:flex;gap:6px;align-items:center;white-space:nowrap}
 .col-grow{width:100%}
 .col-status{width:1%;white-space:nowrap}
-.col-device{min-width:230px}
+.svc-table .st.st-fill{font-size:13px}
+.col-device{min-width:150px}
 .col-serial{padding-right:6px;text-align:right}
 .stk-repair-badge{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:999px;background:var(--danger);color:#fff;flex-shrink:0}
-.stk-day-pill{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:var(--warning-soft);color:var(--warning-ink);font-size:11px;font-weight:800;flex-shrink:0}
 .stk-actions .iconbtn{padding:6px;border-radius:9px}
 .stk-actions .iconbtn svg{width:15px;height:15px}
 
@@ -680,7 +780,7 @@ tr:hover td{background:#FAFAFA}
 .t-card-kind-prep .t-kind-pill{background:#F1F5F9;color:#475569}
 .t-card-kind-warranty{background:#FDF2F8;border-left:3px solid #DB2777}
 .t-card-kind-warranty .t-kind-pill{background:#FCE7F3;color:#BE185D}
-.t-kind-pill{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;margin-bottom:4px}
+.t-kind-pill{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:700;padding:5px 12px;border-radius:8px;margin-bottom:4px}
 .t-kind-pill svg{flex-shrink:0}
 .t-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .t-sn{font-size:10px;font-weight:700;color:#9CA3AF;font-family:'Roboto Mono',monospace}
@@ -913,7 +1013,7 @@ tr:hover td{background:#FAFAFA}
     box-shadow:var(--shadow-lg);padding:12px;flex-direction:column;gap:8px;z-index:50;min-width:230px;
   }
   .stock-more-wrap.open{display:flex}
-  .stock-more-wrap .status-seg{flex-direction:column;background:transparent;padding:0;gap:4px}
+  .stock-more-wrap .status-seg{flex-direction:column;background:transparent;padding:0;gap:4px;margin-left:0}
   .stock-more-wrap .status-seg button{justify-content:flex-start}
   .stock-more-export{display:none}
   .stock-more-wrap .history-toolbar-btn{width:auto;height:36px;padding:0 14px;justify-content:flex-start;margin-left:0}
@@ -937,6 +1037,63 @@ tr:hover td{background:#FAFAFA}
 .wf-sectitle{font-size:13.5px;font-weight:800;line-height:1.3;margin-bottom:12px}
 .dd-trigger{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:11px;padding:10px 12px;color:#111827;font-family:inherit;font-size:13px;cursor:pointer;text-align:left}
 .dd-trigger:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(29,185,84,.1)}
+
+/* Szerviz munkalap űrlap — Apple Settings-stílusú csoportosított lista (design: "Szerviz munkalap
+   űrlap — konzisztens redesign" artifact, C tábla, jóváhagyva). Csak a TicketFormModal-ban él,
+   "wf2-" előtaggal elkülönítve a StockModal is használta régi .wf-sec/.wf-sectitle rendszertől. */
+.modal.wf2{max-width:640px;background:#F2F2F7;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',Inter,sans-serif}
+.wf2-body{display:flex;flex-direction:column;gap:26px}
+.wf2-sec{display:flex;flex-direction:column}
+.wf2-cap{font-size:12px;font-weight:600;color:#6D6D72;text-transform:uppercase;letter-spacing:.03em;padding:0 18px 6px 16px}
+.wf2-cap.ic{padding-left:48px}
+.wf2-foot{font-size:12px;color:#8A8A8E;line-height:1.45;padding:6px 18px 0 16px}
+.wf2-grp{background:#fff;border-radius:12px;overflow:visible}
+.wf2-row{display:flex;align-items:center;gap:12px;height:46px;padding:0 16px;box-sizing:border-box;position:relative}
+.wf2-row+.wf2-row{border-top:1px solid #E5E5EA}
+.wf2-row-lbl{font-size:15px;color:#000;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wf2-row-val{flex:1;text-align:right;font-size:15px;color:#8A8A8E}
+.wf2-ic{width:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#8A8A8E}
+.wf2-check{width:20px;height:20px;border-radius:999px;border:1.5px solid #D1D1D6;flex-shrink:0;background:none;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff}
+.wf2-check.on{border-color:#1DB954;background:#1DB954}
+.wf2-sw{position:relative;width:46px;height:26px;border-radius:999px;background:#E5E5EA;flex-shrink:0;border:none;padding:0;cursor:pointer}
+.wf2-sw.on{background:#1DB954}
+.wf2-sw:disabled{opacity:.5;cursor:default}
+.wf2-seg{display:flex;flex-wrap:wrap;gap:7px;padding:14px 16px}
+.wf2-seg-btn{border:1px solid #E5E5EA;background:#fff;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:500;color:#3C3C43;cursor:pointer;font-family:inherit;white-space:nowrap;transition:background .15s ease,border-color .15s ease,color .15s ease}
+.wf2-seg-btn.on{background:#1DB954;border-color:#1DB954;color:#fff;font-weight:600}
+.wf2-sw-th{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:999px;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.18);transition:left .18s}
+.wf2-sw.on .wf2-sw-th{left:23px}
+.wf2-chev{color:#C7C7CC;flex-shrink:0;display:flex}
+.wf2-row-btn{all:unset;display:flex;align-items:center;gap:12px;flex:1;cursor:pointer;min-width:0}
+/* natív field/dropdown komponensek (DropdownField, CustomerAutocomplete, BrandField) újrahasznosítva,
+   csak vizuálisan "sor"-formába igazítva — a working logika (kattintás-kívülre zárás, keresés, stb.)
+   változatlan marad */
+.wf2-row .field{margin:0;flex:1;min-width:0}
+.wf2-flex1{flex:1;min-width:0}
+.wf2-row .field label{display:none}
+.wf2-row .dd-trigger{background:none;border:none;padding:0;font-size:15px;color:#8A8A8E;justify-content:flex-end;gap:6px}
+.wf2-row .dd-trigger:focus{box-shadow:none;background:none}
+.wf2-row .dd-trigger > span:first-child{color:inherit}
+.wf2-row .dd-trigger svg{transform:rotate(-90deg)!important;color:#C7C7CC!important}
+.wf2-row input,.wf2-row select{width:100%;background:none;border:none;outline:none;font-size:15px;text-align:right;color:#8A8A8E;padding:0;font-family:inherit;box-shadow:none!important}
+.wf2-row input::placeholder{color:#C7C7CC}
+.wf2-row input:disabled{opacity:.5}
+.wf2-row input[type="number"]::-webkit-outer-spin-button,
+.wf2-row input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.wf2-row input[type="number"]{-moz-appearance:textfield}
+.wf2-row .autocomplete-list{left:auto;right:0;width:260px;text-align:left}
+.wf2-row .autocomplete-list input{text-align:left;color:#111827}
+.wf2-tags{display:flex;flex-wrap:wrap;gap:7px;padding:14px 16px}
+.wf2-date{flex:1;display:flex;align-items:center;justify-content:flex-end;gap:4px;min-width:0}
+.wf2-date input{flex:1;min-width:0;position:relative}
+.wf2-date input::-webkit-calendar-picker-indicator{position:absolute;inset:0;width:100%;opacity:0;cursor:pointer;margin:0}
+.wf2-top-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.modal.wf2{scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.18) transparent}
+.modal.wf2::-webkit-scrollbar{width:6px}
+.modal.wf2::-webkit-scrollbar-track{background:transparent}
+.modal.wf2::-webkit-scrollbar-thumb{background:rgba(0,0,0,.18);border-radius:999px}
+.modal.wf2::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.28)}
+@media (max-width:640px){.wf2-row .autocomplete-list{width:220px}}
 
 /* LOGIN */
 .login-shell{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(160deg,#12332B 0%,#0B2018 100%)}
@@ -1019,9 +1176,6 @@ tr:hover td{background:#FAFAFA}
 .mob-row-sub{margin-top:5px;font-size:11.5px;color:#6B7280;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 /* Szerviz munkalap-kártya: mindent egy hajszálnyit nagyobbra, a gomb kivételével. */
 .svc-row-lg .st{font-size:11.5px;padding:3.5px 10px}
-.svc-row-lg .svc-flag{width:21px;height:21px}
-.svc-row-lg .svc-flag svg{width:12px;height:12px}
-.svc-row-lg .t-folia svg{width:13px;height:13px}
 /* Kódos kártya-elrendezés: a sorszám számjegyei egy státusz-színű, teljes magasságú
    csíkban futnak a kártya bal szélén, minden más tartalom egy közös oszlopból indul
    jobbra tőle — közös minta Szerviz/Alkatrész/Telefon mobil kártyákhoz. */
@@ -2218,12 +2372,12 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .shell.mac-pult .content-col{
   position:relative;
   flex:none;width:calc(100% - 48px);max-width:1360px;margin:24px auto;
-  background:#fff;border-radius:20px;border:1px solid rgba(255,255,255,.6);
+  background:#fff;border-radius:20px;
   box-shadow:0 40px 90px rgba(20,20,25,.28), 0 2px 8px rgba(20,20,25,.08);
   height:calc(100vh - 48px);display:flex;flex-direction:column;
 }
 .shell.mac-pult .content-topbar{
-  height:52px;padding:0 30px;border-bottom:1px solid rgba(0,0,0,.08);
+  height:52px;padding:0 16px;border-bottom:1px solid rgba(0,0,0,.08);
   background:linear-gradient(#fafafb,#f5f5f7);
   border-top-left-radius:20px;border-top-right-radius:20px;flex-shrink:0;
 }
@@ -2238,7 +2392,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .shell.mac-pult .content-topbar .user-chip{background:#fff;border-radius:999px;border-color:rgba(0,0,0,.08);padding:3px 12px 3px 4px}
 .shell.mac-pult .content-topbar .user-avatar{background:linear-gradient(135deg,#0A84FF,#7db8ff);color:#fff}
 
-.mac-pult-content{background:#f6f7f9;padding:26px 30px 150px;scrollbar-width:none;border-bottom-left-radius:20px;border-bottom-right-radius:20px}
+.mac-pult-content{background:#f6f7f9;padding:26px 16px 150px;scrollbar-width:none;border-bottom-left-radius:20px;border-bottom-right-radius:20px}
 .mac-pult-content::-webkit-scrollbar{display:none}
 .mac-pult-content > *{max-width:1400px;margin-left:auto;margin-right:auto}
 .mac-pult-content .pult-section{border-radius:14px;border-color:rgba(0,0,0,.08);box-shadow:0 1px 2px rgba(16,24,40,.04), 0 10px 24px rgba(16,24,40,.05)}
@@ -2310,7 +2464,7 @@ a.pub-lang-opt:hover{background:var(--pub-paper-raised);color:var(--pub-accent-i
 .md-item .md-dot{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:999px;background:#1DB954;opacity:0}
 .md-item.active .md-dot{opacity:1}
 .md-item .md-badge{position:absolute;top:-5px;right:-5px;min-width:19px;height:19px;padding:0 4px;border-radius:999px;
-  background:#ff3b30;color:#fff;font-size:10.5px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;text-align:center}
+  background:#FF3B30;color:#fff;font-size:10.5px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;text-align:center}
 .md-item .md-label{position:absolute;left:50%;top:-28px;transform:translateX(-50%);white-space:nowrap;
   background:rgba(29,29,31,.92);color:#fff;font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:7px;
   opacity:0;pointer-events:none;transition:opacity .1s;z-index:20}

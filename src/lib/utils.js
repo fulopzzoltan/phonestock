@@ -103,6 +103,16 @@ export function isSlowMoving(p, reserveLocId) {
   return days != null && days >= SLOW_MOVING_DAYS;
 }
 
+// Napok-szerinti színkód a "Bejött" chipekhez (Szerviz + Telefonok) — minél régebb óta
+// van bent, annál "melegebb" a szín, a SLOW_MOVING_DAYS-hez igazítva.
+export function daysColor(days) {
+  if (days == null) return { bg: "#F3F4F6", fg: "#9CA3AF" };
+  if (days <= 7) return { bg: "#DCFCE7", fg: "#15803D" };
+  if (days <= 20) return { bg: "#DBEAFE", fg: "#1D4ED8" };
+  if (days <= 44) return { bg: "#FEF3C7", fg: "#B45309" };
+  return { bg: "#FEE2E2", fg: "#B91C1C" };
+}
+
 export const READY_STALE_DAYS = 90;
 export function isStaleReady(t) {
   if (t.status !== "Átadásra" || t.subStatus === "Átadva" || !t.readyAt) return false;
@@ -126,6 +136,12 @@ export function normalizeImei(imei) {
 export function normalizeBrand(raw) {
   return (raw || "").trim();
 }
+// Csak megjelenítéshez — az adatbázisban tárolt ügyfélnevet nem módosítja, csak a kiírt
+// szöveget alakítja "Nagy Kezdőbetűs" formára (pl. "fiko barna" -> "Fiko Barna"), hogy a
+// gépelés közben elmaradt nagybetűzés ne látsszon a listákon.
+export function titleCase(str) {
+  return (str || "").toLowerCase().replace(/(^|[\s-])\S/g, (c) => c.toUpperCase());
+}
 // A products.storage szabad szöveg — "32 GB", "32GB", "64" mind ugyanazt jelentheti,
 // mert admin oldalon szabadon gépelhető be. Ezt egységesítjük a webshop szűrőiben/listáiban,
 // hogy ne szerepeljen többször ugyanaz az érték.
@@ -135,16 +151,15 @@ export function normalizeStorage(raw) {
   if (!m) return raw.trim();
   return `${m[1]} ${(m[2] || "GB").toUpperCase()}`;
 }
-const TICKET_LOCATION_LETTERS = { "Gyimes": "GY", "Szentgyörgy": "CS" };
 // locationName = a felvétel (intake) helyszínének neve — ez a munkalap létrehozásakor
 // örökre rögzül (intake_location_id), nem változik akkor sem, ha a javítás közben
 // másik boltba kerül a telefon (location_id az él, azt mutatja a helyszín-címke).
-// Formátum: szám elöl, utána a helyszín-rövidítés, végén "S" (=szerviz) — pl. 2199GYS, 2227CSS
-// (CS = Csíkszentgyörgy).
+// Csak a szám jelenik meg, helyszín-rövidítés (korábbi "-GYS"/"-CSS" utótag) nélkül;
+// a szentgyörgyi sorszámok mind "2"-vel kezdődnek, ezt is levágjuk a rövidebb megjelenésért.
 export function ticketCode(ticketNo, locationName) {
   if (ticketNo == null) return null;
-  const letter = TICKET_LOCATION_LETTERS[locationName] || "";
-  return `${ticketNo}-${letter}S`;
+  const raw = String(ticketNo);
+  return locationName === "Szentgyörgy" ? raw.replace(/^2/, "") : raw;
 }
 
 // "key" = adatbázisban tárolt érték (ne változtasd, meglévő sorok erre hivatkoznak),
@@ -242,7 +257,7 @@ export const PHONE_COLORS = [
   "Fekete", "Fehér", "Szürke", "Ezüst", "Titán", "Kék", "Sötét kék", "Zöld",
   "Menta", "Világoszöld", "Arany", "Rózsaarany", "Rózsaszín", "Piros", "Narancs", "Lila", "Egyéb",
 ];
-export const SOURCES = ["Konszignáció", "Számla"];
+export const SOURCES = ["Számla", "Konszignáció", "Bizomány"];
 export const PAYMENTS = ["Készpénz", "Kártya", "Átutalás", "Vegyes"];
 export const CATEGORIES = ["Fix", "Készlet", "Marketing", "Eszköz", "Szerviz", "Bér", "Adó", "Hitel", "Tartozékok", "Egyéb"];
 
@@ -292,12 +307,19 @@ export function summarizeTx(rows) {
   return { incomeCash, incomeCard, expenseCash, expenseReal, margin, cashOnHand: incomeCash - expenseCash };
 }
 
+// "webshop" = kint van a nyilvános webshopon (get_public_stock RPC erre szűr); "polcon" =
+// fizikailag raktáron, de tudatosan NEM tesszük fel a webshopra; "szerviz" = javítás/előkészítés
+// alatt (korábbi "javitando"); "lefoglalt" = ügyfélnek foglalva (előleg/foglaló). A színek a
+// Szerviz fül BoardUI-ból kinyert palettájához igazodnak.
 export const STOCK_STATUSES = [
-  { key: "polcon", label: "Polcon" },
-  { key: "lefoglalt", label: "Lefoglalt" },
-  { key: "javitando", label: "Javítandó" },
+  { key: "webshop", label: "Webshop", color: "#00C950" },
+  { key: "polcon", label: "Polcon", color: "#6B7280" },
+  { key: "szerviz", label: "Javítandó", color: "#FB923C" },
+  { key: "lefoglalt", label: "Lefoglalt", color: "#8B5CF6" },
+  { key: "tartalek", label: "Tartalék", color: "#0EA5E9" },
 ];
 export const stockStatusLabel = (s) => STOCK_STATUSES.find((x) => x.key === s)?.label || s;
+export const stockStatusColor = (s) => STOCK_STATUSES.find((x) => x.key === s)?.color || "#6B7280";
 
 // Fizikai állapot skála — egy egységes 4 lépcsős lista, ami a products.condition
 // ("New"/"Refurbished") + products.grade ("A"/"B"/"C") párost egyetlen választható
@@ -310,6 +332,24 @@ export const CONDITION_GRADES = [
 ];
 export const conditionGradeKey = (condition, grade) => (condition === "New" ? "New" : (grade || "A"));
 export const conditionGradeLabel = (condition, grade) => CONDITION_GRADES.find((g) => g.key === conditionGradeKey(condition, grade))?.label || "Felújított";
+
+// Beszerzés típusa — "purchase" = cégtől, számlával; "consignment" pedig magánszemélytől
+// jön, de két alesete van attól függően, hogy már kifizettük-e az eladónak: ha igen (pl.
+// átvételkor kifizetve), az "Konszignáció", ha még nem (eladáskor fizetünk), az "Bizomány".
+export const acquisitionLabel = (acquisition) => {
+  if (!acquisition) return null;
+  if (acquisition.acquisitionType === "purchase") return "Számla";
+  if (acquisition.acquisitionType === "consignment") return acquisition.payoutStatus === "kifizetve" ? "Konszignáció" : "Bizomány";
+  return null;
+};
+// Ugyanez a besorolás, de a termék létrehozásakor még nincs elmentett `product_acquisitions`
+// sor (és így `payoutStatus` sem) — csak a form-on kiválasztott acqType/payoutNow pár áll
+// rendelkezésre. A products.source mezőt ezzel töltjük fel mentéskor.
+export const acquisitionSourceLabel = (acquisitionType, payoutNow) => {
+  if (acquisitionType === "purchase") return "Számla";
+  if (acquisitionType === "consignment") return payoutNow ? "Konszignáció" : "Bizomány";
+  return null;
+};
 
 // Felvásárlás állapot-kérdései — a publikus /eladom flow és az admin levonási-szabály
 // szerkesztő is ezt használja, hogy a question_key/answer_key kulcsok ne csúszhassanak szét.

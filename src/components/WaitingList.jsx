@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { EmptyState } from "./EmptyState";
-import { PartsIcon, UserIcon } from "./icons";
+import { PartsIcon, UserIcon, EditIcon, CheckIcon, CloseIcon } from "./icons";
 
 const STATUS_LABEL = { megrendelve: "Megrendelve", megerkezett: "Megérkezett", ertesitve: "Értesítve", lezarva: "Lezárva" };
 const STATUS_COLOR = { megrendelve: "blue", megerkezett: "purple", ertesitve: "green", lezarva: "grey" };
@@ -105,7 +105,62 @@ function ClosedPopover({ items }) {
   );
 }
 
-export default function WaitingList({ items, closedItems = [], onAdd, onAdvance }) {
+function WaitingRow({ w, onAdvance, onUpdate }) {
+  const [editing, setEditing] = useState(false);
+  const [desc, setDesc] = useState(w.description);
+  const [supplier, setSupplier] = useState(w.supplier || "");
+  const [customerName, setCustomerName] = useState(w.customerName || "");
+  const [customerPhone, setCustomerPhone] = useState(w.customerPhone || "");
+
+  function startEdit() {
+    setDesc(w.description); setSupplier(w.supplier || "");
+    setCustomerName(w.customerName || ""); setCustomerPhone(w.customerPhone || "");
+    setEditing(true);
+  }
+  function save() {
+    const trimmed = desc.trim();
+    if (trimmed) onUpdate?.(w.id, { description: trimmed, supplier: supplier.trim(), customerName: customerName.trim(), customerPhone: customerPhone.trim() });
+    setEditing(false);
+  }
+  function cancel() {
+    setDesc(w.description); setSupplier(w.supplier || "");
+    setCustomerName(w.customerName || ""); setCustomerPhone(w.customerPhone || "");
+    setEditing(false);
+  }
+  const onEnterKey = (e) => { if (e.key === "Enter") save(); if (e.key === "Escape") cancel(); };
+
+  if (editing) {
+    return (
+      <div className="wl-row wl-row-edit">
+        <div className="wl-edit-fields">
+          <input className="wl-edit-input" value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="Mit várunk" autoFocus onKeyDown={onEnterKey} />
+          <div className="wl-edit-line2">
+            <input className="wl-edit-input" value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Kinek (név)" onKeyDown={onEnterKey} />
+            <input className="wl-edit-input" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="Telefonszám" onKeyDown={onEnterKey} />
+            <input className="wl-edit-input wl-edit-supplier" value={supplier} onChange={(e) => setSupplier(e.target.value)} placeholder="Forrás" onKeyDown={onEnterKey} />
+          </div>
+        </div>
+        <div className="wl-edit-actions">
+          <button type="button" className="wl-row-btn" title="Mentés" onClick={save}><CheckIcon width={13} height={13} strokeWidth={2.4} /></button>
+          <button type="button" className="wl-row-btn" title="Mégse" onClick={cancel}><CloseIcon width={13} height={13} /></button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="wl-row">
+      <span className="wl-text">
+        {w.description}{w.supplier ? <span className="wl-supplier"> ({w.supplier})</span> : ""}
+      </span>
+      {onUpdate && <button type="button" className="wl-row-btn" title="Szerkesztés" onClick={startEdit}><EditIcon width={12} height={12} /></button>}
+      {(w.customerName || w.customerPhone) && <CustomerInfo name={w.customerName} phone={w.customerPhone} />}
+      <StatusPill status={w.status} onChange={(s) => onAdvance(w.id, s)} disabled={false} />
+    </div>
+  );
+}
+
+export default function WaitingList({ items, closedItems = [], onAdd, onAdvance, onUpdate }) {
   const [open, setOpen] = useState(false);
   const [description, setDescription] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
@@ -128,13 +183,7 @@ export default function WaitingList({ items, closedItems = [], onAdd, onAdvance 
       {items.length === 0 && !open ? <EmptyState icon={PartsIcon}>Nincs, amire várnánk.</EmptyState> : (
         <div className="wl-list" style={{ marginBottom: 10 }}>
           {items.map((w) => (
-            <div key={w.id} className="wl-row">
-              <span className="wl-text">
-                {w.description}{w.supplier ? <span className="wl-supplier"> ({w.supplier})</span> : ""}
-              </span>
-              {(w.customerName || w.customerPhone) && <CustomerInfo name={w.customerName} phone={w.customerPhone} />}
-              <StatusPill status={w.status} onChange={(s) => onAdvance(w.id, s)} disabled={false} />
-            </div>
+            <WaitingRow key={w.id} w={w} onAdvance={onAdvance} onUpdate={onUpdate} />
           ))}
         </div>
       )}

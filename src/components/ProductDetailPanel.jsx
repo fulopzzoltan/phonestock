@@ -125,7 +125,7 @@ export default function ProductDetailPanel({
                 style={{ marginTop: 10 }}
                 disabled={busy}
                 onClick={() => {
-                  if (window.confirm("Biztosan visszaveszed ezt a telefont? Visszakerül a raktárba (Polcon állapotba), és megszűnik rajta a garancia. A bevételi tranzakció változatlan marad — ha vissza kell fizetni az árat, azt külön rögzítsd kiadásként.")) {
+                  if (window.confirm("Biztosan visszaveszed ezt a telefont? Visszakerül a raktárba (Webshop állapotba), és megszűnik rajta a garancia. A bevételi tranzakció változatlan marad — ha vissza kell fizetni az árat, azt külön rögzítsd kiadásként.")) {
                     onReturnToStock(product.id, saleTx?.id);
                   }
                 }}

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef, Suspense, lazy } from "react";
 import { useAuth } from "./lib/AuthContext";
 import { supabase, unwrap, fetchAllRows } from "./lib/supabaseClient";
 import { thumbPathOf } from "./lib/imageResize";
-import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi, buybackOfferFromApi, loyaltyLedgerFromApi, loyaltyRewardFromApi, loyaltyRewardToApi, customerProfileFromApi, reviewFromApi, reviewToApi, employeeFromApi, payrollScheduleFromApi, payrollPaymentFromApi, companyTaxObligationFromApi, chatMessageFromApi, vaultCredentialFromApi, refurbTaskFromApi, refurbTaskToApi } from "./lib/mappers";
+import { pFromApi, pToApi, txFromApi, txToApi, tFromApi, tToApi, partFromApi, partToApi, spFromApi, profileFromApi, customerFromApi, customerToApi, monthlySummaryFromApi, warrantyFromApi, warrantyToApi, buybackModelFromApi, buybackModelToApi, buybackRuleFromApi, buybackRuleToApi, leaveTypeFromApi, leaveBalanceFromApi, leaveRequestFromApi, repairPriceFromApi, repairLeadFromApi, cashHolderFromApi, cashSettlementFromApi, noteFromApi, waitingFromApi, settingsFromApi, customerRequestFromApi, webOrderFromApi, acqFromApi, acqToApi, sbDocFromApi, dayCloseFromApi, buybackOfferFromApi, loyaltyLedgerFromApi, loyaltyRewardFromApi, loyaltyRewardToApi, customerProfileFromApi, reviewFromApi, reviewToApi, employeeFromApi, payrollScheduleFromApi, payrollPaymentFromApi, companyTaxObligationFromApi, chatMessageFromApi, vaultCredentialFromApi } from "./lib/mappers";
 import { today, warrantyExpiry, isWarrantyActive, stripAccents, TRACKING_URL, countWorkdays, rollingBusinessWeekStart, slaInfo, isSlowMoving, isStaleReady, QUICK_SALES, phoneCode, partCode, normalizeImei, money, ticketRemaining, ticketCode, cashPortion, cardPortion, summarizeTx, computeSuggestedGrade } from "./lib/utils";
 import { REPAIR_FAMILIES } from "./lib/repairCatalog";
 import Login from "./Login";
@@ -24,7 +24,6 @@ import OwnStockServiceModal from "./components/OwnStockServiceModal";
 import TicketFormModal from "./components/TicketFormModal";
 const DashboardTab = lazy(() => import("./tabs/DashboardTab"));
 const StockTab = lazy(() => import("./tabs/StockTab"));
-const ConsignmentTab = lazy(() => import("./tabs/ConsignmentTab"));
 const PultTab = lazy(() => import("./tabs/PultTab"));
 const FinanceTab = lazy(() => import("./tabs/FinanceTab"));
 const InvoicesTab = lazy(() => import("./tabs/InvoicesTab"));
@@ -32,7 +31,6 @@ const CashSettlementTab = lazy(() => import("./tabs/CashSettlementTab"));
 const PayrollTab = lazy(() => import("./tabs/PayrollTab"));
 const ServiceTab = lazy(() => import("./tabs/ServiceTab"));
 const PartsTab = lazy(() => import("./tabs/PartsTab"));
-const RefurbTab = lazy(() => import("./tabs/RefurbTab"));
 const CustomersTab = lazy(() => import("./tabs/CustomersTab"));
 const InboxTab = lazy(() => import("./tabs/InboxTab"));
 const VaultTab = lazy(() => import("./tabs/VaultTab"));
@@ -187,11 +185,10 @@ function AppShell() {
   const [transactions, setTransactions] = useState([]);
   const [tickets, setTickets] = useState([]);
   const [parts, setParts] = useState([]);
-  // Felújítás — saját (nem ügyfél-) telefonok javítás-menedzsmentje, szándékosan külön a
-  // service_tickets/service_parts-tól (ld. TASKS_FELUJITAS.md), csak a "mit kell hozzá,
-  // kb. mennyibe kerül" feladatlistát tárolja itt; a tényleges alkatrész-felhasználás
-  // változatlanul a meglévő "Saját készlet - előkészítés" munkalapon megy.
-  const [refurbTasks, setRefurbTasks] = useState([]);
+  // Termékhez (munkalap nélkül) hozzárendelt alkatrészek — a Telefonok fülön, Szerviz
+  // státuszú saját telefonoknál, ahol nem hozunk létre külön munkalapot a felhasználáshoz.
+  // productId -> service_parts sorok tömbje (service_ticket_id IS NULL, product_id kitöltve).
+  const [productParts, setProductParts] = useState({});
   const [users, setUsers] = useState([]);
   const [customersTable, setCustomersTable] = useState([]);
   // Közös postaláda (WhatsApp + Messenger) — "inbox", nem "chat", mert a `chatMessages`
@@ -219,14 +216,12 @@ function AppShell() {
   const [search, setSearch] = useState("");
   const [svcSearch, setSvcSearch] = useState("");
   const [partSearch, setPartSearch] = useState("");
-  const [refurbSearch, setRefurbSearch] = useState("");
   const [custSearch, setCustSearch] = useState("");
 
   const [stockModal, setStockModal] = useState(null); // null | "add" | product obj (edit)
   const [sellModal, setSellModal] = useState(null);
   const [issueInvoiceModal, setIssueInvoiceModal] = useState(null); // null | true (nyitva, tranzakció-választás alatt)
   const [partModal, setPartModal] = useState(null); // null | "add" | part obj (edit)
-  const [refurbPickerOpen, setRefurbPickerOpen] = useState(false);
   const [txModal, setTxModal] = useState(null); // null | tx obj (edit)
   const [ticketModal, setTicketModal] = useState(null); // null | "add" | ticket obj (edit)
   const [depositModal, setDepositModal] = useState(null); // null | ticket obj
@@ -368,7 +363,7 @@ function AppShell() {
     loadInFlightRef.current = true;
     if (!silent) setLoadingData(true);
     try {
-      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, bbOffers, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds, prodAcqs, dClosesR, loyRewards, loyLedger, custProfiles, revs, emps, paySched, payPays, coTax, wappMsgs, vaultCreds, refurbTsk] = await Promise.all([
+      const [locs, prods, txs, tcks, prs, sps, usrs, hist, custs, msums, warrs, bbModels, bbRules, bbOffers, lTypes, lBalances, lRequests, rPrices, rLeads, cHolders, cSettlements, bNotes, wItems, appSettings, custReqs, webOrds, prodAcqs, dClosesR, loyRewards, loyLedger, custProfiles, revs, emps, paySched, payPays, coTax, wappMsgs, vaultCreds] = await Promise.all([
         supabase.from("locations").select("*").order("name", { ascending: true }),
         fetchAllRows(() => supabase.from("products").select("*").is("deleted_at", null).order("created_at", { ascending: false })),
         fetchAllRows(() => supabase.from("transactions").select("*, smartbill_documents(*), signatures(*)").is("deleted_at", null).order("date", { ascending: false })),
@@ -407,7 +402,6 @@ function AppShell() {
         supabase.from("company_tax_obligations").select("*").order("due_date", { ascending: true }),
         fetchAllRows(() => supabase.from("chat_messages").select("*").order("created_at", { ascending: true })),
         supabase.from("vault_credentials").select("*").order("site_name", { ascending: true }),
-        supabase.from("refurb_tasks").select("*").order("created_at", { ascending: true }),
       ]);
       setLocations(unwrap(locs) || []);
       const prodRows = unwrap(prods) || [];
@@ -419,10 +413,13 @@ function AppShell() {
       setTransactions((unwrap(txs) || []).map(txFromApi));
       setDayCloses((unwrap(dClosesR) || []).map(dayCloseFromApi));
       const spByTicket = {};
+      const spByProduct = {};
       (unwrap(sps) || []).map(spFromApi).forEach((sp) => {
-        (spByTicket[sp.ticketId] ||= []).push(sp);
+        if (sp.ticketId) (spByTicket[sp.ticketId] ||= []).push(sp);
+        else if (sp.productId) (spByProduct[sp.productId] ||= []).push(sp);
       });
       setTickets((unwrap(tcks) || []).map((r) => ({ ...tFromApi(r), usedParts: spByTicket[r.id] || [] })));
+      setProductParts(spByProduct);
       setParts((unwrap(prs) || []).map(partFromApi));
       setUsers((unwrap(usrs) || []).map(profileFromApi));
       setCustomersTable((unwrap(custs) || []).map(customerFromApi));
@@ -441,7 +438,6 @@ function AppShell() {
       setCompanyTaxObligations((unwrap(coTax) || []).map(companyTaxObligationFromApi));
       setInboxMessages((unwrap(wappMsgs) || []).map(chatMessageFromApi));
       setVaultCredentials((unwrap(vaultCreds) || []).map(vaultCredentialFromApi));
-      setRefurbTasks((unwrap(refurbTsk) || []).map(refurbTaskFromApi));
       setLeaveTypes((unwrap(lTypes) || []).map(leaveTypeFromApi));
       setLeaveBalances((unwrap(lBalances) || []).map(leaveBalanceFromApi));
       setLeaveRequests((unwrap(lRequests) || []).map(leaveRequestFromApi));
@@ -730,7 +726,6 @@ function AppShell() {
     setSvcSearch(code);
     setSearch(code);
     setPartSearch(code);
-    setRefurbSearch(code);
     setInfo(`Nincs pontos találat "${code}" kódra — a keresőbe bemásoltuk.`);
   }
   const stockLocations = isAdmin ? locations : locations.filter((l) => l.id === myLocationId);
@@ -743,7 +738,7 @@ function AppShell() {
 
   // STOCK
   async function addProduct(data, locId, acquisition) {
-    await withBusy(async () => {
+    return await withBusy(async () => {
       const r = unwrap(await supabase.from("products").insert(pToApi(data, locId)).select());
       const product = pFromApi(r[0]);
       setStock((prev) => [product, ...prev]);
@@ -796,6 +791,7 @@ function AppShell() {
         setAcquisitionPrintPrompt({ product, acquisition: savedAcq });
       }
       setStockModal(null);
+      return product;
     });
   }
   async function editProduct(id, data, locId) {
@@ -980,17 +976,19 @@ function AppShell() {
       setStock((prev) => prev.map((i) => (i.id === productId ? { ...i, acquisition: updatedAcq } : i)));
     });
   }
-  async function markProductForRefurb(productId) {
+  // A Telefonok listán a Szerviz-stílusú StatusPicker-ből közvetlenül állítható a
+  // raktár-állapot (webshop/polcon/szerviz/lefoglalt), munkalap-modal megnyitása nélkül.
+  async function setProductStockStatus(productId, stockStatus) {
     await withBusy(async () => {
-      unwrap(await supabase.from("products").update({ stock_status: "javitando" }).eq("id", productId));
-      setStock((prev) => prev.map((i) => (i.id === productId ? { ...i, stockStatus: "javitando" } : i)));
+      unwrap(await supabase.from("products").update({ stock_status: stockStatus }).eq("id", productId));
+      setStock((prev) => prev.map((i) => (i.id === productId ? { ...i, stockStatus } : i)));
     });
   }
   async function returnProductToStock(productId, txId) {
     await withBusy(async () => {
       const todayStr = today();
-      unwrap(await supabase.from("products").update({ status: "in_stock", stock_status: "polcon", date_added: todayStr }).eq("id", productId));
-      setStock((prev) => prev.map((i) => (i.id === productId ? { ...i, status: "in_stock", stockStatus: "polcon", dateAdded: todayStr } : i)));
+      unwrap(await supabase.from("products").update({ status: "in_stock", stock_status: "webshop", date_added: todayStr }).eq("id", productId));
+      setStock((prev) => prev.map((i) => (i.id === productId ? { ...i, status: "in_stock", stockStatus: "webshop", dateAdded: todayStr } : i)));
       if (txId) {
         unwrap(await supabase.from("transactions").update({ warranty: null }).eq("id", txId));
         // A visszavett termékkel együtt eladott tartozék-tételeket (fólia, kábel) is töröljük
@@ -1904,6 +1902,12 @@ function AppShell() {
       setNotes((prev) => prev.map((n) => (n.id === id ? noteFromApi(r[0]) : n)));
     });
   }
+  async function updateNote(id, body) {
+    await withBusy(async () => {
+      const r = unwrap(await supabase.from("board_notes").update({ body }).eq("id", id).select());
+      setNotes((prev) => prev.map((n) => (n.id === id ? noteFromApi(r[0]) : n)));
+    });
+  }
   async function deleteNote(id) {
     await withBusy(async () => { unwrap(await supabase.from("board_notes").delete().eq("id", id)); setNotes((prev) => prev.filter((n) => n.id !== id)); });
   }
@@ -1927,6 +1931,20 @@ function AppShell() {
   async function advanceWaiting(id, nextStatus) {
     await withBusy(async () => {
       const r = unwrap(await supabase.from("waiting_items").update({ status: nextStatus, updated_at: new Date().toISOString() }).eq("id", id).select());
+      setWaitingItems((prev) => prev.map((w) => (w.id === id ? waitingFromApi(r[0]) : w)));
+    });
+  }
+  async function updateWaitingItem(id, data) {
+    await withBusy(async () => {
+      let customerId = null;
+      if (data.customerPhone) {
+        const { data: cid } = await supabase.rpc("upsert_customer", { p_name: data.customerName, p_phone: data.customerPhone });
+        customerId = cid || null;
+      }
+      const r = unwrap(await supabase.from("waiting_items").update({
+        description: data.description, supplier: data.supplier || null,
+        customer_name: data.customerName || null, customer_phone: data.customerPhone || null, customer_id: customerId,
+      }).eq("id", id).select());
       setWaitingItems((prev) => prev.map((w) => (w.id === id ? waitingFromApi(r[0]) : w)));
     });
   }
@@ -1961,9 +1979,9 @@ function AppShell() {
       const order = webOrders.find((o) => o.id === id);
       if (!order) return;
       const productIds = order.items.map((it) => it.productId);
-      unwrap(await supabase.from("products").update({ stock_status: "polcon" }).in("id", productIds));
+      unwrap(await supabase.from("products").update({ stock_status: "webshop" }).in("id", productIds));
       unwrap(await supabase.from("web_orders").update({ status: "lemondva", updated_at: new Date().toISOString() }).eq("id", id));
-      setStock((prev) => prev.map((p) => (productIds.includes(p.id) ? { ...p, stockStatus: "polcon" } : p)));
+      setStock((prev) => prev.map((p) => (productIds.includes(p.id) ? { ...p, stockStatus: "webshop" } : p)));
       setWebOrders((prev) => prev.filter((o) => o.id !== id));
     });
   }
@@ -1973,7 +1991,7 @@ function AppShell() {
       if (!order) return;
       const { data: customerId } = await supabase.rpc("upsert_customer", { p_name: order.guestName, p_phone: order.guestPhone });
       const productIds = order.items.map((it) => it.productId);
-      unwrap(await supabase.from("products").update({ status: "sold", stock_status: "polcon" }).in("id", productIds));
+      unwrap(await supabase.from("products").update({ status: "sold", stock_status: "webshop" }).in("id", productIds));
       const newTxs = [];
       for (const it of order.items) {
         const r = unwrap(await supabase.from("transactions").insert({
@@ -1987,7 +2005,7 @@ function AppShell() {
         newTxs.push(txFromApi(r[0]));
       }
       unwrap(await supabase.from("web_orders").update({ status: "atadva", updated_at: new Date().toISOString() }).eq("id", id));
-      setStock((prev) => prev.map((p) => (productIds.includes(p.id) ? { ...p, status: "sold", stockStatus: "polcon" } : p)));
+      setStock((prev) => prev.map((p) => (productIds.includes(p.id) ? { ...p, status: "sold", stockStatus: "webshop" } : p)));
       setTransactions((prev) => [...newTxs, ...prev]);
       setWebOrders((prev) => prev.filter((o) => o.id !== id));
       if (customerId) await refreshCustomerLoyalty(customerId);
@@ -2408,6 +2426,48 @@ function AppShell() {
       setTickets((prev) => prev.map((t) => (t.id === ticketId ? { ...t, matCost: newMatCost, usedParts: (t.usedParts || []).filter((sp) => sp.id !== usedPart.id) } : t)));
     });
   }
+  // Alkatrész hozzárendelése közvetlenül egy termékhez, munkalap nélkül — a Telefonok fülön,
+  // Szerviz státuszú saját telefonoknál. Ugyanaz a fizikai darab -> service_parts sor minta,
+  // mint addPartToTicket-nél, csak ticket helyett product_id-hoz kötve, és a beszerzési ár
+  // közvetlenül a products.cost_price-ra megy (nincs mat_cost/munkalap a szinkronhoz).
+  async function addPartToProduct(product, part, qty) {
+    await withBusy(async () => {
+      const units = (part.units || [part]).slice(0, qty);
+      if (units.length < qty) throw new Error(`Csak ${units.length} db van raktáron ebből: ${part.name}.`);
+      const usedAt = new Date().toISOString();
+      const newSp = [];
+      let addedCost = 0;
+      for (const unit of units) {
+        const unitCost = Number(unit.costPrice) || 0;
+        const r = unwrap(await supabase.from("service_parts").insert({
+          product_id: product.id, part_id: unit.id, part_name: unit.name, quantity: 1, cost_price: unitCost,
+        }).select());
+        newSp.push(spFromApi(r[0]));
+        unwrap(await supabase.from("parts").update({ status: "felhasznalva", used_at: usedAt }).eq("id", unit.id));
+        addedCost += unitCost;
+      }
+      const newCostPrice = (Number(product.costPrice) || 0) + addedCost;
+      unwrap(await supabase.from("products").update({ cost_price: newCostPrice }).eq("id", product.id));
+      setStock((prev) => prev.map((p) => (p.id === product.id ? { ...p, costPrice: newCostPrice } : p)));
+
+      const usedIds = new Set(units.map((u) => u.id));
+      setParts((prev) => prev.map((p) => (usedIds.has(p.id) ? { ...p, status: "felhasznalva", usedAt } : p)));
+      setProductParts((prev) => ({ ...prev, [product.id]: [...(prev[product.id] || []), ...newSp] }));
+    });
+  }
+  async function removePartFromProduct(product, usedPart) {
+    await withBusy(async () => {
+      unwrap(await supabase.from("service_parts").delete().eq("id", usedPart.id));
+      if (usedPart.partId) {
+        unwrap(await supabase.from("parts").update({ status: "raktáron", used_in_ticket_id: null, used_at: null }).eq("id", usedPart.partId));
+        setParts((prev) => prev.map((p) => (p.id === usedPart.partId ? { ...p, status: "raktáron", usedInTicketId: null, usedAt: null } : p)));
+      }
+      const newCostPrice = Math.max(0, (Number(product.costPrice) || 0) - (Number(usedPart.costPrice) || 0) * usedPart.quantity);
+      unwrap(await supabase.from("products").update({ cost_price: newCostPrice }).eq("id", product.id));
+      setStock((prev) => prev.map((p) => (p.id === product.id ? { ...p, costPrice: newCostPrice } : p)));
+      setProductParts((prev) => ({ ...prev, [product.id]: (prev[product.id] || []).filter((sp) => sp.id !== usedPart.id) }));
+    });
+  }
   function openPartUsageModal(part) {
     setPartUsageModal({ part });
   }
@@ -2437,25 +2497,6 @@ function AppShell() {
   function activeOwnTicketFor(productId) {
     return tickets.find((t) => t.productId === productId && t.ticketKind !== "Ügyfél" && t.subStatus !== "Átadva") || null;
   }
-  async function addRefurbTask(productId, { description, estCost }) {
-    await withBusy(async () => {
-      const r = unwrap(await supabase.from("refurb_tasks").insert(refurbTaskToApi({ description, estCost }, productId)).select());
-      setRefurbTasks((prev) => [...prev, refurbTaskFromApi(r[0])]);
-    });
-  }
-  async function updateRefurbTaskStatus(taskId, status) {
-    await withBusy(async () => {
-      const completedAt = status === "kesz" ? new Date().toISOString() : null;
-      unwrap(await supabase.from("refurb_tasks").update({ status, completed_at: completedAt }).eq("id", taskId));
-      setRefurbTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, status, completedAt } : t)));
-    });
-  }
-  async function deleteRefurbTask(taskId) {
-    await withBusy(async () => {
-      unwrap(await supabase.from("refurb_tasks").delete().eq("id", taskId));
-      setRefurbTasks((prev) => prev.filter((t) => t.id !== taskId));
-    });
-  }
   // Rangsor mozgatás — a szomszédos telefonnal cseréli fel a repair_rank értéket (nincs
   // drag-and-drop, csak fel/le nyilak, ugyanaz az egyszerű minta, mint a loyalty_rewards
   // sort_order-jénél). Ha még egyiknek sincs rangja, 10-es lépésekkel osztjuk ki most.
@@ -2480,35 +2521,6 @@ function AppShell() {
       }));
     });
   }
-  // A tesztelő/kategorizáló varázsló mentése — a nyers válaszokat auditcélra eltesszük,
-  // de a döntés (condition/grade/warranty/battery) a normál products-mezőkbe kerül, hogy
-  // minden más (StockTab, vitrin, garanciajegy) változtatás nélkül ugyanúgy működjön.
-  // `decision` lehet null — ha a kérdőív blokkoló hibát talált (pl. repedt kijelző), a
-  // válaszokat így is elmentjük audit-nyomnak, de a minőség/garancia döntést és a polcra-
-  // küldést nem engedjük, amíg a hiba nincs javítva.
-  async function saveRefurbInspection(productId, decision, answers, markReady) {
-    await withBusy(async () => {
-      const patch = {
-        inspection_answers: answers,
-        inspection_completed_at: new Date().toISOString(),
-        ...(decision ? {
-          condition: decision.condition,
-          grade: decision.condition === "New" ? null : decision.grade,
-          warranty: decision.warranty || null,
-          battery_health: decision.batteryHealth === "" || decision.batteryHealth == null ? null : Number(decision.batteryHealth),
-        } : {}),
-        ...(markReady ? { stock_status: "polcon", repair_rank: null } : {}),
-      };
-      unwrap(await supabase.from("products").update(patch).eq("id", productId));
-      setStock((prev) => prev.map((p) => (p.id === productId ? {
-        ...p,
-        ...(decision ? { condition: patch.condition, grade: patch.grade, warranty: patch.warranty, batteryHealth: patch.battery_health } : {}),
-        inspectionAnswers: answers, inspectionCompletedAt: patch.inspection_completed_at,
-        ...(markReady ? { stockStatus: "polcon", repairRank: null } : {}),
-      } : p)));
-    });
-  }
-
   // FILTERED DATA
   // A Telefonok fülön az alkalmazottak is lássák mindkét helyszín készletét (csak megtekintés) —
   // ezért ez a szűrő admin esetén a locFilter-t követi, alkalmazottnál mindig "all".
@@ -2542,18 +2554,14 @@ function AppShell() {
     return withTx.sort((a, b) => (b.saleTx?.date || "").localeCompare(a.saleTx?.date || ""));
   }, [stock, stockLocFilter, search, reserveLocId, txByProductId]);
 
-  // FELÚJÍTÁS — a "Javítandó" raktár-állapotú saját telefonok, kézi rangsor szerint
-  // rendezve (repairRank hiánya esetén a lista végére kerül, dátum szerint másodlagosan).
-  const refurbTasksByProduct = useMemo(() => {
-    const m = new Map();
-    for (const t of refurbTasks) (m.get(t.productId) || m.set(t.productId, []).get(t.productId)).push(t);
-    return m;
-  }, [refurbTasks]);
-  // A Felújítás egy közös, helyszín-független sor: mindkét üzletből ide kerülnek be a
+  // A "Javítandó" raktár-állapotú saját telefonok, kézi rangsor szerint rendezve
+  // (repairRank hiánya esetén a lista végére kerül, dátum szerint másodlagosan) — a
+  // Telefonok fülön, Szerviz szűrésnél a rangsoroló gombok ezt a sorrendet módosítják.
+  // Ez egy közös, helyszín-független sor: mindkét üzletből ide kerülnek be a
   // javítandó darabok, és innen mennek majd ki bármelyik helyszínre — ezért NEM szűrünk a
   // bal oldali helyszín-választóval, mindig minden helyszín javítandó tétele látszik.
   const refurbPhones = useMemo(() => {
-    let s = stock.filter((i) => i.status === "in_stock" && i.stockStatus === "javitando");
+    let s = stock.filter((i) => i.status === "in_stock" && i.stockStatus === "szerviz");
     return [...s].sort((a, b) => {
       const ra = a.repairRank ?? 999999, rb = b.repairRank ?? 999999;
       if (ra !== rb) return ra - rb;
@@ -2561,11 +2569,6 @@ function AppShell() {
     });
   }, [stock]);
   const refurbCount = refurbPhones.length;
-  // A "+" gombbal a Felújítás fülön ide, a meglévő (még nem javítandó) raktárkészletből
-  // lehet átemelni egy tételt — ugyanúgy mindkét helyszínről, mint a refurbPhones listán.
-  const refurbPickable = useMemo(() => {
-    return stock.filter((i) => i.status === "in_stock" && i.stockStatus !== "javitando");
-  }, [stock]);
 
   const filteredTransactions = useMemo(() => {
     if (effectiveLocFilter === "all") return transactions;
@@ -3117,24 +3120,11 @@ function AppShell() {
         onOpenPart={(id) => setPartDetailId(id)}
         onOpenWarranty={(key) => { setTab("warranty"); setWarrantyDetailKey(key); }}
         pageHeader={tab === "stock" ? (
-          <>
-            <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Telefonok</div>
-            <button type="button" className="btn header-add-btn" disabled={busy} title="Új termék" onClick={() => setStockModal("add")}><span className="header-add-ring" /><span className="header-add-ring ring2" /><PlusIcon width={16} height={16} /></button>
-          </>
-        ) : tab === "consignment" ? (
-          <>
-            <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Bizomány</div>
-            <button type="button" className="btn header-add-btn" disabled={busy} title="Lista nyomtatása" onClick={printConsignmentListDocs}><span className="header-add-ring" /><span className="header-add-ring ring2" /><PrintIcon width={16} height={16} /></button>
-          </>
+          <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Telefonok</div>
         ) : tab === "parts" ? (
           <>
             <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Alkatrész raktár</div>
             <button type="button" className="btn header-add-btn" disabled={busy} title="Új alkatrész" onClick={() => setPartModal("add")}><span className="header-add-ring" /><span className="header-add-ring ring2" /><PlusIcon width={16} height={16} /></button>
-          </>
-        ) : tab === "refurb" ? (
-          <>
-            <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Felújítás</div>
-            <button type="button" className="btn header-add-btn" disabled={busy} title="Telefon átemelése a raktárból" onClick={() => setRefurbPickerOpen(true)}><span className="header-add-ring" /><span className="header-add-ring ring2" /><PlusIcon width={16} height={16} /></button>
           </>
         ) : tab === "payroll" ? (
           <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Költségek</div>
@@ -3151,10 +3141,7 @@ function AppShell() {
         ) : tab === "dashboard" ? (
           <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Áttekintés</div>
         ) : tab === "service" ? (
-          <>
-            <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Szerviz</div>
-            <button type="button" className="btn header-add-btn" disabled={busy} title="Új munkalap" onClick={() => setTicketModal("add")}><span className="header-add-ring" /><span className="header-add-ring ring2" /><PlusIcon width={16} height={16} /></button>
-          </>
+          <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Szerviz</div>
         ) : tab === "buyback" ? (
           <div className="page-title" style={{ fontSize: 19, whiteSpace: "nowrap" }}>Felvásárlás</div>
         ) : tab === "cash-settlement" ? (
@@ -3227,13 +3214,6 @@ function AppShell() {
           </div>
         ) : (tab === "cash-settlement" || tab === "payroll") ? (
           <button type="button" className="loc-drop" style={{ width: "auto" }} onClick={() => setTab("finance")}>← Bevételek és kiadások</button>
-        ) : tab === "stock" ? (
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <button type="button" className="loc-drop" style={{ width: "auto" }} onClick={() => setTab("consignment")}>Bizomány</button>
-            <button type="button" className="loc-drop" style={{ width: "auto" }} onClick={() => setTab("refurb")}>Felújítás</button>
-          </div>
-        ) : (tab === "consignment" || tab === "refurb") ? (
-          <button type="button" className="loc-drop" style={{ width: "auto" }} onClick={() => setTab("stock")}>← Telefonok</button>
         ) : null}
       />
       <div className={`main${useMacDock ? " mac-pult-content" : ""}`}>
@@ -3247,8 +3227,8 @@ function AppShell() {
         {!noLocationAssigned && tab === "pult" && (
           <PultTab
             effectiveLocFilter={effectiveLocFilter} locName={locName} filteredTickets={filteredTickets} setDetailId={setDetailId}
-            notes={notes} addNote={addNote} completeNote={completeNote} reopenNote={reopenNote} deleteNote={deleteNote}
-            waitingItems={waitingItems} addWaitingItem={addWaitingItem} advanceWaiting={advanceWaiting}
+            notes={notes} addNote={addNote} completeNote={completeNote} reopenNote={reopenNote} deleteNote={deleteNote} updateNote={updateNote}
+            waitingItems={waitingItems} addWaitingItem={addWaitingItem} advanceWaiting={advanceWaiting} updateWaitingItem={updateWaitingItem}
             users={users} currentUserId={profile?.id} tickets={tickets} stock={stock} parts={parts} customersTable={customersTable} warranties={warranties}
             upcomingLeave={upcomingLeave}
             customerRequests={customerRequests} advanceCustomerRequest={advanceCustomerRequest}
@@ -3284,16 +3264,11 @@ function AppShell() {
             soldStock={soldStock}
             isAdmin={isAdmin} myLocationId={myLocationId}
             onPrintLabels={printPriceLabelsDocs}
-          />
-        )}
-
-        {!noLocationAssigned && tab === "consignment" && (
-          <ConsignmentTab
-            effectiveLocFilter={stockLocFilter} locName={locName} busy={busy}
-            loadingData={loadingData} stock={filteredStock} locations={locations}
-            setProductDetailId={setProductDetailId}
-            payoutConsignor={payoutConsignor}
-            printConsignmentList={printConsignmentListDocs}
+            onStockStatusChange={setProductStockStatus}
+            customers={customersTable} defaultLocId={defaultStockLocId} onCreateProduct={addProduct}
+            refurbPhones={refurbPhones} moveRefurbRank={moveRefurbRank}
+            parts={parts} productParts={productParts} addPartToProduct={addPartToProduct}
+            removePartFromProduct={removePartFromProduct}
           />
         )}
 
@@ -3343,10 +3318,13 @@ function AppShell() {
 
         {!noLocationAssigned && tab === "service" && (
           <ServiceTab
-            effectiveLocFilter={effectiveLocFilter} locName={locName} busy={busy} setTicketModal={setTicketModal}
+            effectiveLocFilter={effectiveLocFilter} locName={locName} busy={busy}
             svcSearch={svcSearch} setSvcSearch={setSvcSearch} onScan={() => setScannerOpen(true)}
             loadingData={loadingData} activeTickets={activeTickets} setDetailId={setDetailId}
-            handedOverTickets={handedOverTickets} onStatusChange={setTicketStatus}
+            handedOverTickets={handedOverTickets} onStatusChange={setTicketStatus} onPrint={printTicketSlip}
+            parts={parts} onAddPart={addPartToTicket}
+            customers={customersTable}
+            defaultLocId={myLocationId || defaultLocId} onCreateTicket={addTicket}
           />
         )}
 
@@ -3356,20 +3334,6 @@ function AppShell() {
             loadingData={loadingData} filteredParts={filteredParts} setPartDetailId={setPartDetailId} deletePart={deletePartGroup}
             partsStats={partsStats} allUsedParts={allUsedParts} locName={locName} setDetailId={setDetailId}
             onUsePart={openPartUsageModal}
-          />
-        )}
-
-        {!noLocationAssigned && tab === "refurb" && (
-          <RefurbTab
-            loadingData={loadingData} refurbPhones={refurbPhones} refurbTasksByProduct={refurbTasksByProduct}
-            busy={busy} locName={locName}
-            refurbSearch={refurbSearch} setRefurbSearch={setRefurbSearch} onScan={() => setScannerOpen(true)}
-            moveRefurbRank={moveRefurbRank} addRefurbTask={addRefurbTask} updateRefurbTaskStatus={updateRefurbTaskStatus}
-            deleteRefurbTask={deleteRefurbTask} saveRefurbInspection={saveRefurbInspection}
-            activeOwnTicketFor={activeOwnTicketFor} parts={parts} usePartForProduct={usePartForProduct}
-            removePartFromTicket={removePartFromTicket} openOwnServiceModal={openOwnServiceModal} onOpenTicket={setDetailId}
-            refurbPickable={refurbPickable} onAddToRefurb={markProductForRefurb}
-            pickerOpen={refurbPickerOpen} onClosePicker={() => setRefurbPickerOpen(false)}
           />
         )}
 
@@ -3575,7 +3539,7 @@ function AppShell() {
           customers={customersTable}
           stock={stock}
           tickets={tickets}
-          defaultLocId={defaultLocId}
+          defaultLocId={myLocationId || defaultLocId}
           onClose={() => { setTicketModal(null); setRepairLeadConvert(null); }}
           busy={busy}
           onSave={(data, locId) => (editingTicket ? saveTicketEdit(editingTicket.id, data, locId) : addTicket(data, locId))}
