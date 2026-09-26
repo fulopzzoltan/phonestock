@@ -52,7 +52,7 @@ function StockStatusPicker({ item, disabled, onChange }) {
         <span className="status-dot-halo" style={{ background: `color-mix(in srgb, ${dotColor} 22%, white)` }}>
           <span className="status-dot" style={{ background: dotColor }} />
         </span>
-        {stockStatusLabel(item.stockStatus)}
+        <span className="stk-status-w">{stockStatusLabel(item.stockStatus)}</span>
         <ChevronDownIcon width={11} height={11} style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform .12s" }} />
       </button>
       {open && (
@@ -446,16 +446,16 @@ export default function StockTab({
             <td style={{ whiteSpace: "nowrap" }}>
               <div className="stk-name" style={{ flexWrap: "nowrap" }}>
                 {displayName(i.brand, i.model)}
-                <span className={`st st-fill ${i.condition === "New" ? "st-kesz" : "st-beveve"}`}>{conditionGradeLabel(i.condition, i.grade)}</span>
+                {isSlowMoving(i, reserveLocId) && <span className="stk-day-pill" title={`${daysOnShelf(i.dateAdded)} napja a polcon`}>{daysOnShelf(i.dateAdded)}</span>}
                 {i.acquisition?.acquisitionType === "consignment" && <span className="badge-loc">Bizomány</span>}
               </div>
             </td>
             <td style={{ whiteSpace: "nowrap" }}>
               <div className="stk-badges" style={{ flexWrap: "nowrap" }}>
-                {i.storage && <span className="stk-sub" style={{ marginTop: 0 }}>{i.storage}</span>}
-                {i.brand !== "Apple" && i.ram && <span className="stk-sub" style={{ marginTop: 0 }}>{i.ram} RAM</span>}
-                {i.color && <span className="stk-sub" style={{ marginTop: 0 }}>{i.color}</span>}
-                {isSlowMoving(i, reserveLocId) && <span className="stk-day-pill" title={`${daysOnShelf(i.dateAdded)} napja a polcon`}>{daysOnShelf(i.dateAdded)}</span>}
+                <span className="stk-sub" style={{ marginTop: 0 }}><span className="stk-spec-w">{i.storage || "—"}</span></span>
+                <span className="stk-sub" style={{ marginTop: 0 }}><span className="stk-spec-w">{i.brand === "Apple" ? (i.batteryHealth != null ? `${i.batteryHealth}%` : "—") : (i.ram || "—")}</span></span>
+                <span className="stk-sub" style={{ marginTop: 0 }}><span className="stk-spec-w">{i.color || "—"}</span></span>
+                <span className={`st st-fill ${i.condition === "New" ? "st-kesz" : "st-beveve"}`}>{conditionGradeLabel(i.condition, i.grade)}</span>
               </div>
             </td>
             <td className="col-status" style={{ whiteSpace: "nowrap" }}>
@@ -463,7 +463,14 @@ export default function StockTab({
             </td>
             <td className="row-price" title={`Beszerzési ár: ${money(i.costPrice)}`}>{money(i.salePrice)}</td>
             <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
-              <input type="checkbox" className="stk-chk" checked={selectedIds.has(i.id)} onChange={() => toggleSelect(i.id)} title="Kijelölés címkenyomtatáshoz" />
+              <button
+                type="button"
+                className={`btn sec sm icon-only stk-print-chk${selectedIds.has(i.id) ? " active" : ""}`}
+                onClick={() => toggleSelect(i.id)}
+                title="Kijelölés címkenyomtatáshoz"
+              >
+                <PrintIcon width={13} height={13} />
+              </button>
               {canAct(i) && (
                 <button className="btn sec sm icon-only" disabled={busy} title="Eladás" onClick={() => setSellModal(i)}><CartIcon width={13} height={13} /></button>
               )}
