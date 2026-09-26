@@ -533,6 +533,7 @@ input[type="date"].svc-nr-cell:hover::-webkit-calendar-picker-indicator{opacity:
 .stk-sub{font-size:11px;color:#9CA3AF;margin-top:1px;font-family:'Roboto Mono',monospace}
 .stk-badges{display:flex;align-items:center;gap:3px;flex-wrap:wrap}
 .stk-spec-w{display:inline-block;width:42px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;text-align:right}
+.stk-spec-wl{text-align:left}
 .stk-status-w{display:inline-block;width:62px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
 .stk-badges .stk-sub:not(:first-child)::before{content:"·";margin-right:4px;color:#D1D5DB}
 .loc-group-head{display:flex;align-items:center;justify-content:space-between;margin:0 0 8px 2px}

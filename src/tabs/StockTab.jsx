@@ -453,8 +453,8 @@ export default function StockTab({
             <td style={{ whiteSpace: "nowrap" }}>
               <div className="stk-badges" style={{ flexWrap: "nowrap" }}>
                 <span className="stk-sub" style={{ marginTop: 0 }}><span className="stk-spec-w">{i.storage || "—"}</span></span>
-                <span className="stk-sub" style={{ marginTop: 0 }}><span className="stk-spec-w">{i.brand === "Apple" ? (i.batteryHealth != null ? `${i.batteryHealth}%` : "—") : (i.ram || "—")}</span></span>
-                <span className="stk-sub" style={{ marginTop: 0 }}><span className="stk-spec-w">{i.color || "—"}</span></span>
+                <span className="stk-sub" style={{ marginTop: 0 }}><span className="stk-spec-w stk-spec-wl">{i.brand === "Apple" ? (i.batteryHealth != null ? `${i.batteryHealth}%` : "—") : (i.ram || "—")}</span></span>
+                <span className="stk-sub" style={{ marginTop: 0 }}><span className="stk-spec-w stk-spec-wl">{i.color || "—"}</span></span>
                 <span className={`st st-fill ${i.condition === "New" ? "st-kesz" : "st-beveve"}`}>{conditionGradeLabel(i.condition, i.grade)}</span>
               </div>
             </td>
