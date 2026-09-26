@@ -1,7 +1,7 @@
 import { useState } from "react";
 import LocationField from "./LocationField";
 import { CloseIcon } from "./icons";
-import { WARRANTIES, SOURCES, STOCK_STATUSES, CONDITION_GRADES, conditionGradeKey, STORAGE_OPTIONS, RAM_OPTIONS, PHONE_COLORS, normalizeImei } from "../lib/utils";
+import { WARRANTIES, SOURCES, STOCK_STATUSES, CONDITION_GRADES, conditionGradeKey, STORAGE_OPTIONS, RAM_OPTIONS, PHONE_COLORS, normalizeImei, acquisitionSourceLabel } from "../lib/utils";
 import { ChipField, DropdownField } from "./FormPickers";
 import BrandField from "./BrandField";
 import PicklistField from "./PicklistField";
@@ -71,7 +71,11 @@ export default function StockModal({ product, prefill, locations, onClose, onSav
       consignorPayoutAmount: acqType === "consignment" ? payoutAmount : null,
       payoutNow: acqType === "consignment" ? payoutNow : false,
     };
-    const finalF = acqType === "consignment" ? { ...f, costPrice: payoutAmount } : f;
+    const finalF = {
+      ...f,
+      ...(acqType === "consignment" ? { costPrice: payoutAmount } : null),
+      ...(isEdit ? null : { source: acquisitionSourceLabel(acqType, payoutNow) }),
+    };
     onSave(finalF, locId, acquisition);
   }
   return (
@@ -81,12 +85,13 @@ export default function StockModal({ product, prefill, locations, onClose, onSav
 
         {!isEdit && (
           <div className="wf-sec">
-            <SectionHead n={1} title="Beszerzés" sub="Saját vásárlás vagy bizomány" />
+            <SectionHead n={1} title="Beszerzés" sub="Számla, konszignáció vagy bizomány" />
             <div className="field">
-              <label>Beszerzés típusa</label>
+              <label>Forrás</label>
               <div className="seg">
-                <button type="button" className={acqType === "purchase" ? "active" : ""} onClick={() => setAcqType("purchase")}>Saját vásárlás</button>
-                <button type="button" className={acqType === "consignment" ? "active" : ""} onClick={() => setAcqType("consignment")}>Bizomány</button>
+                <button type="button" className={acqType === "purchase" ? "active" : ""} onClick={() => setAcqType("purchase")}>Számla</button>
+                <button type="button" className={acqType === "consignment" && payoutNow ? "active" : ""} onClick={() => { setAcqType("consignment"); setPayoutNow(true); }}>Konszignáció</button>
+                <button type="button" className={acqType === "consignment" && !payoutNow ? "active" : ""} onClick={() => { setAcqType("consignment"); setPayoutNow(false); }}>Bizomány</button>
               </div>
             </div>
             <div className="row2">
@@ -109,12 +114,8 @@ export default function StockModal({ product, prefill, locations, onClose, onSav
               <>
                 <div className="field"><label>Eladó címe (a szerződéshez)</label><input value={seller.address} onChange={setSellerField("address")} /></div>
                 <div className="field">
-                  <label>Kifizetendő összeg eladáskor (Lei)</label>
+                  <label>Kifizetendő összeg{payoutNow ? "" : " eladáskor"} (Lei)</label>
                   <input type="number" value={payoutAmount} onChange={(e) => setPayoutAmount(e.target.value)} placeholder="0" />
-                </div>
-                <div className="field" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <input type="checkbox" id="payoutNow" checked={payoutNow} onChange={(e) => setPayoutNow(e.target.checked)} style={{ width: "auto" }} />
-                  <label htmlFor="payoutNow" style={{ margin: 0 }}>Kifizetés most (nem eladáskor, hanem azonnal, átvételkor)</label>
                 </div>
               </>
             )}
@@ -184,12 +185,14 @@ export default function StockModal({ product, prefill, locations, onClose, onSav
             onChange={(v) => setF({ ...f, warranty: v })}
             options={[{ key: "", label: "Nincs" }, ...WARRANTIES.map((w) => ({ key: w, label: w }))]}
           />
-          <ChipField
-            label="Forrás"
-            value={f.source}
-            onChange={(key) => setF({ ...f, source: key })}
-            options={[{ key: "", label: "—" }, ...SOURCES.map((s) => ({ key: s, label: s }))]}
-          />
+          {isEdit && (
+            <ChipField
+              label="Forrás"
+              value={f.source}
+              onChange={(key) => setF({ ...f, source: key })}
+              options={[{ key: "", label: "—" }, ...SOURCES.map((s) => ({ key: s, label: s }))]}
+            />
+          )}
           <ChipField
             label="Raktár állapot"
             hint={<span style={{ color: "#9CA3AF", fontWeight: 400 }}>— csak "Webshop" látszik a nyilvános webshopban</span>}

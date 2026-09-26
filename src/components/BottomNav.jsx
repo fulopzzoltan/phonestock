@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { LeaveIcon, DashboardIcon, UsersNavIcon, TrashNavIcon, BuybackIcon, RepairPriceIcon, ReviewsIcon, LockIcon, MoreIcon, RefurbIcon, CashSettlementIcon, PayrollIcon } from "./icons";
+import { LeaveIcon, DashboardIcon, UsersNavIcon, TrashNavIcon, BuybackIcon, RepairPriceIcon, ReviewsIcon, LockIcon, MoreIcon, CashSettlementIcon, PayrollIcon } from "./icons";
 import {
   AppIcon, Toggle, Wrench, Phone, Chip, Bubble, People, Shield, Euro,
   Lock,
@@ -21,8 +21,6 @@ const MORE_SECTIONS = [
     label: "Napi munka",
     items: [
       { key: "stock", label: "Telefonok", from: "#22D3EE", to: "#0891B2", Icon: Phone, countKey: "refurb" },
-      { key: "consignment", label: "Bizomány", from: "#67E8F9", to: "#0E7490", Icon: Phone },
-      { key: "refurb", label: "Felújítás", from: "#38BDF8", to: "#0369A1", Icon: RefurbIcon },
       { key: "parts", label: "Alkatrészek", from: "#A78BFA", to: "#7C3AED", Icon: Chip },
       { key: "vault", label: "Belépések", from: "#94A3B8", to: "#1E293B", Icon: Lock, employeeOnly: true },
     ],

@@ -53,25 +53,6 @@ export const pToApi = (p, locId) => ({
   stock_status: p.stockStatus || "webshop",
 });
 
-// Külön, kis patch-objektumok a Felújítás oldalhoz — nem az egész `pToApi`-n mennek át,
-// hogy ne írjuk felül véletlenül a többi mezőt egy rangsor- vagy tesztelés-mentésnél.
-export const refurbTaskFromApi = (r) => ({
-  id: r.id,
-  productId: r.product_id,
-  description: r.description,
-  estCost: r.est_cost,
-  status: r.status,
-  createdAt: r.created_at,
-  completedAt: r.completed_at,
-});
-
-export const refurbTaskToApi = (t, productId) => ({
-  product_id: productId,
-  description: t.description,
-  est_cost: Number(t.estCost) || 0,
-  status: t.status || "kell",
-});
-
 export const sbDocFromApi = (r) => ({
   id: r.id,
   docType: r.doc_type,
@@ -631,6 +612,7 @@ export const warrantyToApi = (w, locId) => ({
 export const spFromApi = (r) => ({
   id: r.id,
   ticketId: r.service_ticket_id,
+  productId: r.product_id,
   partId: r.part_id,
   partName: r.part_name,
   quantity: r.quantity,

@@ -319,6 +319,7 @@ tr:hover td{background:#FAFAFA}
 .svc-filter-row{flex-wrap:nowrap}
 .svc-filter-row .searchbar{min-width:0;flex-shrink:1}
 .svc-filter-row .history-toolbar-btn,.svc-filter-row .header-add-btn{flex-shrink:0}
+.svc-filter-row .status-seg{margin-left:auto}
 .day-chip{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap}
 .day-chip-empty{background:#F3F4F6;color:#9CA3AF;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700}
 .svc-probs{display:flex;flex-wrap:nowrap;gap:4px;overflow:hidden}
@@ -339,6 +340,7 @@ tr:hover td{background:#FAFAFA}
 .svc-nr-more-toggle.open .chev{transform:rotate(90deg)}
 .svc-nr-rr{padding:14px 16px 16px;background:#FAFBFC}
 .svc-nr-rr-grid{display:grid;gap:18px;align-items:end}
+.svc-nr-rr-3{grid-template-columns:repeat(3,1fr)}
 .svc-nr-rr-4{grid-template-columns:repeat(4,1fr)}
 .svc-nr-rr-5{grid-template-columns:repeat(5,1fr)}
 .svc-nr-rr-lbl{display:block;font-size:9.5px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
@@ -737,11 +739,12 @@ input[type="date"].svc-nr-cell:hover::-webkit-calendar-picker-indicator{opacity:
 .stk-card-iconbtn{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center}
 .stk-card-iconbtn.edit{background:#F1F2F6;color:#4B5563}
 .stk-card-actions .btn{height:36px}
-.stk-actions{display:flex;gap:6px;align-items:center}
+.stk-actions{display:flex;gap:6px;align-items:center;justify-content:flex-end}
+.stk-svcell{display:flex;gap:6px;align-items:center;white-space:nowrap}
 .col-grow{width:100%}
 .col-status{width:1%;white-space:nowrap}
 .svc-table .st.st-fill{font-size:13px}
-.col-device{min-width:190px}
+.col-device{min-width:150px}
 .col-serial{padding-right:6px;text-align:right}
 .stk-repair-badge{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:999px;background:var(--danger);color:#fff;flex-shrink:0}
 .stk-actions .iconbtn{padding:6px;border-radius:9px}
@@ -1010,7 +1013,7 @@ input[type="date"].svc-nr-cell:hover::-webkit-calendar-picker-indicator{opacity:
     box-shadow:var(--shadow-lg);padding:12px;flex-direction:column;gap:8px;z-index:50;min-width:230px;
   }
   .stock-more-wrap.open{display:flex}
-  .stock-more-wrap .status-seg{flex-direction:column;background:transparent;padding:0;gap:4px}
+  .stock-more-wrap .status-seg{flex-direction:column;background:transparent;padding:0;gap:4px;margin-left:0}
   .stock-more-wrap .status-seg button{justify-content:flex-start}
   .stock-more-export{display:none}
   .stock-more-wrap .history-toolbar-btn{width:auto;height:36px;padding:0 14px;justify-content:flex-start;margin-left:0}

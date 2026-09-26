@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { money, STATUSES, SUB_STATUSES, statusLabel, statusCls, subStatusCls, subStatusLabel, displayName, ticketCode, daysOnShelf, slaInfo, isStaleReady, partCode, titleCase, PROBLEM_TAGS, WARRANTIES } from "../lib/utils";
-import { SearchIcon, ServiceIcon, WarrantyIcon, ChevronRightIcon, ChevronDownIcon, CheckIcon, ScanIcon, MoreIcon, PrintIcon, PlusIcon, CloseIcon } from "../components/icons";
+import { SearchIcon, ServiceIcon, WarrantyIcon, ChevronRightIcon, ChevronDownIcon, CheckIcon, ScanIcon, MoreIcon, PrintIcon, PlusIcon, PartsIcon, CloseIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import ResponsiveTable from "../components/ResponsiveTable";
 import HandoverPaymentModal from "../components/HandoverPaymentModal";
@@ -117,7 +117,7 @@ function PartAddPopover({ ticket, parts, onAddPart, disabled }) {
   return (
     <div className="wl-status-wrap" ref={ref} onClick={(e) => e.stopPropagation()}>
       <button type="button" className="btn sec sm icon-only" disabled={disabled} title="Alkatrész hozzáadása" onClick={() => setOpen((v) => !v)}>
-        <PlusIcon width={13} height={13} />
+        <PartsIcon width={13} height={13} />
       </button>
       {open && (
         <div className="wl-status-menu part-add-menu">

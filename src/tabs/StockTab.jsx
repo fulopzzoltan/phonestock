@@ -1,16 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   money, displayName, phoneCode, daysOnShelf, isSlowMoving, stockStatusLabel, stockStatusColor, STOCK_STATUSES,
-  conditionGradeLabel, STORAGE_OPTIONS, RAM_OPTIONS, PHONE_COLORS, SOURCES, WARRANTIES,
+  conditionGradeLabel, acquisitionLabel, acquisitionSourceLabel, STORAGE_OPTIONS, RAM_OPTIONS, PHONE_COLORS, WARRANTIES,
   CONDITION_GRADES, conditionGradeKey,
 } from "../lib/utils";
-import { SearchIcon, PhoneCaseIcon, CartIcon, ScanIcon, PrintIcon, CloseIcon, MoreIcon, ChevronDownIcon, CheckIcon, PlusIcon } from "../components/icons";
+import { SearchIcon, PhoneCaseIcon, CartIcon, ScanIcon, PrintIcon, CloseIcon, MoreIcon, ChevronDownIcon, CheckIcon, PlusIcon, PartsIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
 import HistorySection from "../components/HistorySection";
 import ResponsiveTable from "../components/ResponsiveTable";
 import BrandPickerButton from "../components/BrandPickerButton";
 import CustomerAutocomplete from "../components/CustomerAutocomplete";
 import DayChip from "../components/DayChip";
+import PhonePartsPicker from "../components/PhonePartsPicker";
 
 const BRAND_PRIORITY = ["Apple", "Samsung", "Huawei"];
 function brandRank(brand) {
@@ -29,6 +30,30 @@ function groupItemsByStatus(items) {
   const arr = [...items];
   arr.sort((a, b) => (STATUS_ORDER[a.stockStatus] ?? 99) - (STATUS_ORDER[b.stockStatus] ?? 99));
   return arr;
+}
+
+// Alkatrész-hozzárendelés szerviz-státuszú telefonhoz — közvetlenül a termékhez köti a
+// felhasznált alkatrészt (service_parts.product_id), munkalap létrehozása nélkül.
+function PartsAssignModal({ product, parts, usedParts, addPartToProduct, removePartFromProduct, busy, onClose }) {
+  const availableParts = parts.filter((p) => Number(p.quantity) > 0);
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 480 }}>
+        <h2>
+          {displayName(product.brand, product.model)}
+          <button className="iconbtn" onClick={onClose}><CloseIcon /></button>
+        </h2>
+        <PhonePartsPicker
+          usedParts={usedParts}
+          availableParts={availableParts}
+          allParts={parts}
+          onAdd={(part, qty) => addPartToProduct(product, part, qty)}
+          onRemove={(sp) => removePartFromProduct(product, sp)}
+          busy={busy}
+        />
+      </div>
+    </div>
+  );
 }
 
 // Raktár-állapot választó — a Szerviz fül StatusPicker-jével azonos komponens-mintát és CSS
@@ -92,7 +117,6 @@ function NewPhoneRow({ open, onCancel, onCreate, customers, defaultLocId, busy }
   const [salePrice, setSalePrice] = useState("");
   const [newPrice, setNewPrice] = useState("");
   const [warranty, setWarranty] = useState("");
-  const [source, setSource] = useState("");
   const [stockStatus, setStockStatus] = useState("webshop");
   const [condition, setCondition] = useState("New");
   const [grade, setGrade] = useState("A");
@@ -134,7 +158,7 @@ function NewPhoneRow({ open, onCancel, onCreate, customers, defaultLocId, busy }
     const finalF = {
       brand, model, condition, grade, storage, ram, color, imei,
       costPrice: isConsignment ? payoutAmount : costPrice,
-      salePrice, warranty, source, batteryHealth, newPrice, stockStatus, productNo,
+      salePrice, warranty, source: acquisitionSourceLabel(acqType, payoutNow), batteryHealth, newPrice, stockStatus, productNo,
     };
     const acquisition = {
       acquisitionType: acqType,
@@ -182,9 +206,14 @@ function NewPhoneRow({ open, onCancel, onCreate, customers, defaultLocId, busy }
             <StockStatusPicker item={{ id: null, stockStatus }} disabled={busy} onChange={(_, key) => setStockStatus(key)} />
           </div>
         </td>
-        <td className="row-price" style={{ padding: 0 }}>
+        <td className="row-price" style={{ padding: 0, minWidth: 110 }}>
           <div className="svc-nr-reveal" style={{ ...revealStyle(140), padding: "11px 16px" }}>
-            <input className="svc-nr-top" style={{ textAlign: "right" }} placeholder="0 Lei" value={salePrice} onChange={(e) => setSalePrice(e.target.value)} disabled={busy} />
+            <div className="svc-nr-stack">
+              <input className="svc-nr-top" style={{ textAlign: "right" }} placeholder="0 Lei (eladási)" value={salePrice} onChange={(e) => setSalePrice(e.target.value)} disabled={busy} />
+              {!isConsignment && (
+                <input className="svc-nr-top" style={{ textAlign: "right" }} placeholder="0 Lei (beszerzési)" value={costPrice} onChange={(e) => setCostPrice(e.target.value)} disabled={busy} />
+              )}
+            </div>
           </div>
         </td>
         <td className="stk-actions" style={{ padding: 0 }}>
@@ -216,10 +245,11 @@ function NewPhoneRow({ open, onCancel, onCreate, customers, defaultLocId, busy }
             <div className="svc-nr-rr">
               <div className="svc-nr-rr-grid svc-nr-rr-4">
                 <div>
-                  <span className="svc-nr-rr-lbl">Beszerzés típusa</span>
+                  <span className="svc-nr-rr-lbl">Forrás</span>
                   <div style={{ display: "flex", gap: 6 }}>
-                    <span className={`svc-nr-chip${acqType === "purchase" ? " on" : ""}`} onClick={() => !busy && setAcqType("purchase")}>Saját vásárlás</span>
-                    <span className={`svc-nr-chip${acqType === "consignment" ? " on" : ""}`} onClick={() => !busy && setAcqType("consignment")}>Bizomány</span>
+                    <span className={`svc-nr-chip${acqType === "purchase" ? " on" : ""}`} onClick={() => !busy && setAcqType("purchase")}>Számla</span>
+                    <span className={`svc-nr-chip${acqType === "consignment" && payoutNow ? " on" : ""}`} onClick={() => { if (busy) return; setAcqType("consignment"); setPayoutNow(true); }}>Konszignáció</span>
+                    <span className={`svc-nr-chip${acqType === "consignment" && !payoutNow ? " on" : ""}`} onClick={() => { if (busy) return; setAcqType("consignment"); setPayoutNow(false); }}>Bizomány</span>
                   </div>
                 </div>
                 <div>
@@ -240,7 +270,7 @@ function NewPhoneRow({ open, onCancel, onCreate, customers, defaultLocId, busy }
               </div>
 
               {isConsignment && (
-                <div className="svc-nr-rr-grid svc-nr-rr-4" style={{ marginTop: 12 }}>
+                <div className="svc-nr-rr-grid svc-nr-rr-3" style={{ marginTop: 12 }}>
                   <div>
                     <span className="svc-nr-rr-lbl">Eladó neve</span>
                     <CustomerAutocomplete
@@ -257,14 +287,8 @@ function NewPhoneRow({ open, onCancel, onCreate, customers, defaultLocId, busy }
                     <input className="svc-nr-cell" placeholder="07xx xxx xxx" value={sellerPhone} onChange={(e) => setSellerPhone(e.target.value)} disabled={busy} />
                   </div>
                   <div>
-                    <span className="svc-nr-rr-lbl">Kifizetendő összeg</span>
+                    <span className="svc-nr-rr-lbl">Kifizetendő összeg{payoutNow ? "" : " eladáskor"}</span>
                     <input className="svc-nr-cell" placeholder="0 Lei" value={payoutAmount} onChange={(e) => setPayoutAmount(e.target.value)} disabled={busy} />
-                  </div>
-                  <div>
-                    <span className="svc-nr-rr-lbl">Kifizetés most</span>
-                    <label className={`svc-nr-flag${payoutNow ? " on" : ""}`} style={{ paddingTop: 6 }}>
-                      <input type="checkbox" checked={payoutNow} onChange={(e) => setPayoutNow(e.target.checked)} disabled={busy} />Átvételkor, nem eladáskor
-                    </label>
                   </div>
                 </div>
               )}
@@ -287,12 +311,6 @@ function NewPhoneRow({ open, onCancel, onCreate, customers, defaultLocId, busy }
                     })}
                   </div>
                 </div>
-                {!isConsignment && (
-                  <div>
-                    <span className="svc-nr-rr-lbl">Beszerzési ár</span>
-                    <input className="svc-nr-cell" placeholder="0 Lei" value={costPrice} onChange={(e) => setCostPrice(e.target.value)} disabled={busy} />
-                  </div>
-                )}
                 <div>
                   <span className="svc-nr-rr-lbl">Becsült új kori ár</span>
                   <input className="svc-nr-cell" placeholder="pl. 2500" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} disabled={busy} />
@@ -312,15 +330,6 @@ function NewPhoneRow({ open, onCancel, onCreate, customers, defaultLocId, busy }
                 )}
               </div>
 
-              <div className="svc-nr-rr-grid svc-nr-rr-4" style={{ marginTop: 12 }}>
-                <div>
-                  <span className="svc-nr-rr-lbl">Forrás</span>
-                  <select className="svc-nr-cell" value={source} onChange={(e) => setSource(e.target.value)} disabled={busy}>
-                    <option value="">—</option>
-                    {SOURCES.map((s) => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </div>
-              </div>
             </div>
           )}
         </td>
@@ -335,11 +344,18 @@ export default function StockTab({
   locations, reserveLocId, setProductDetailId, setSellModal,
   soldStock, isAdmin = true, myLocationId = null, onPrintLabels, onStockStatusChange,
   customers, defaultLocId, onCreateProduct,
+  refurbPhones = [], moveRefurbRank, parts = [], productParts = {}, addPartToProduct, removePartFromProduct,
 }) {
   const [statusFilter, setStatusFilter] = useState("all"); // all | STOCK_STATUSES key
   const [groupByStatus, setGroupByStatus] = useState(false);
   const [showSold, setShowSold] = useState(false);
   const [showReserve, setShowReserve] = useState(false);
+  const [partsProduct, setPartsProduct] = useState(null);
+  const szervizRank = useMemo(() => {
+    const m = new Map();
+    refurbPhones.forEach((p, idx) => m.set(p.id, idx + 1));
+    return m;
+  }, [refurbPhones]);
   const [moreOpen, setMoreOpen] = useState(false);
   const moreMenuRef = useRef(null);
   useEffect(() => {
@@ -416,15 +432,26 @@ export default function StockTab({
           { key: "s", label: "Specifikáció", className: "col-grow" },
           {
             key: "st", className: "col-status", label: (
-              <button
-                type="button"
-                onClick={() => setGroupByStatus((v) => !v)}
-                title="Rendezés állapot szerint"
-                style={{ display: "flex", alignItems: "center", gap: 3, background: "none", border: "none", padding: "0 0 0 4px", font: "inherit", fontWeight: 600, color: groupByStatus ? "#111827" : "inherit", cursor: "pointer" }}
-              >
-                Állapot
-                <ChevronDownIcon width={10} height={10} style={{ opacity: groupByStatus ? 1 : 0.45, transform: groupByStatus ? "rotate(180deg)" : "none", transition: "transform .12s" }} />
-              </button>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                {statusFilter === "szerviz" && (
+                  <div style={{ height: 0, overflow: "hidden" }} aria-hidden="true">
+                    <div className="rf-rank-ctrl">
+                      <button type="button" className="rf-rank-btn" tabIndex={-1}><ChevronDownIcon width={10} height={10} /></button>
+                      <span className="rf-rank-num">1</span>
+                      <button type="button" className="rf-rank-btn" tabIndex={-1}><ChevronDownIcon width={10} height={10} /></button>
+                    </div>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setGroupByStatus((v) => !v)}
+                  title="Rendezés állapot szerint"
+                  style={{ display: "flex", alignItems: "center", gap: 3, background: "none", border: "none", padding: 0, font: "inherit", fontWeight: 600, color: groupByStatus ? "#111827" : "inherit", cursor: "pointer" }}
+                >
+                  Állapot
+                  <ChevronDownIcon width={10} height={10} style={{ opacity: groupByStatus ? 1 : 0.45, transform: groupByStatus ? "rotate(180deg)" : "none", transition: "transform .12s" }} />
+                </button>
+              </div>
             ),
           },
           { key: "a", label: "Ár", className: "num-col" },
@@ -452,30 +479,50 @@ export default function StockTab({
             <td style={{ whiteSpace: "nowrap" }}>
               <div className="stk-name" style={{ flexWrap: "nowrap" }}>
                 {displayName(i.brand, i.model)}
-                {i.acquisition?.acquisitionType === "consignment" && <span className="badge-loc">Bizomány</span>}
               </div>
             </td>
             <td style={{ whiteSpace: "nowrap" }}>
               <div className="stk-badges" style={{ flexWrap: "nowrap" }}>
                 <span className="stk-sub" style={{ marginTop: 0 }}><span className="stk-spec-w">{i.storage || "—"}</span></span>
-                <span className="stk-sub" style={{ marginTop: 0 }}><span className="stk-spec-w stk-spec-wl" style={{ width: 34 }}>{i.brand === "Apple" ? (i.batteryHealth != null ? `${i.batteryHealth}%` : "—") : (i.ram || "—")}</span></span>
+                <span className="stk-sub" style={{ marginTop: 0 }}><span className="stk-spec-w stk-spec-wl" style={{ width: 28 }}>{i.brand === "Apple" ? (i.batteryHealth != null ? `${i.batteryHealth}%` : "—") : (i.ram || "—")}</span></span>
                 <span className="stk-sub" style={{ marginTop: 0 }}><span className="stk-spec-w stk-spec-wl">{i.color || "—"}</span></span>
                 <span className="prob-pill sm" style={{ marginLeft: 5 }}>{conditionGradeLabel(i.condition, i.grade)}</span>
+                {acquisitionLabel(i.acquisition) && <span className="prob-pill sm" style={{ marginLeft: 5 }}>{acquisitionLabel(i.acquisition)}</span>}
               </div>
             </td>
             <td className="col-status" style={{ whiteSpace: "nowrap" }}>
-              <StockStatusPicker item={i} disabled={busy} onChange={onStockStatusChange} />
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                {statusFilter === "szerviz" && i.stockStatus === "szerviz" && (
+                  <div className="rf-rank-ctrl" onClick={(e) => e.stopPropagation()}>
+                    <button type="button" className="rf-rank-btn" disabled={busy || (szervizRank.get(i.id) ?? 1) <= 1} onClick={() => moveRefurbRank?.(i.id, -1)} title="Előrébb a rangsorban">
+                      <ChevronDownIcon width={10} height={10} style={{ transform: "rotate(180deg)" }} />
+                    </button>
+                    <span className="rf-rank-num">{szervizRank.get(i.id) ?? "—"}</span>
+                    <button type="button" className="rf-rank-btn" disabled={busy || (szervizRank.get(i.id) ?? refurbPhones.length) >= refurbPhones.length} onClick={() => moveRefurbRank?.(i.id, 1)} title="Hátrébb a rangsorban">
+                      <ChevronDownIcon width={10} height={10} />
+                    </button>
+                  </div>
+                )}
+                <StockStatusPicker item={i} disabled={busy} onChange={onStockStatusChange} />
+              </div>
             </td>
             <td className="row-price" title={`Beszerzési ár: ${money(i.costPrice)}`}>{money(i.salePrice)}</td>
             <td className="stk-actions" onClick={(e) => e.stopPropagation()}>
-              <button
-                type="button"
-                className={`btn sec sm icon-only stk-print-chk${selectedIds.has(i.id) ? " active" : ""}`}
-                onClick={() => toggleSelect(i.id)}
-                title="Kijelölés címkenyomtatáshoz"
-              >
-                <PrintIcon width={13} height={13} />
-              </button>
+              {!(statusFilter === "szerviz" && i.stockStatus === "szerviz") && (
+                <button
+                  type="button"
+                  className={`btn sec sm icon-only stk-print-chk${selectedIds.has(i.id) ? " active" : ""}`}
+                  onClick={() => toggleSelect(i.id)}
+                  title="Kijelölés címkenyomtatáshoz"
+                >
+                  <PrintIcon width={13} height={13} />
+                </button>
+              )}
+              {statusFilter === "szerviz" && i.stockStatus === "szerviz" && (
+                <button type="button" className="btn sec sm icon-only" disabled={busy} title="Alkatrész hozzárendelése" onClick={() => setPartsProduct(i)}>
+                  <PartsIcon width={13} height={13} />
+                </button>
+              )}
               {canAct(i) && (
                 <button className="btn sec sm icon-only" disabled={busy} title="Eladás" onClick={() => setSellModal(i)}><CartIcon width={13} height={13} /></button>
               )}
@@ -499,7 +546,7 @@ export default function StockTab({
                 {i.storage && <span>{i.storage}</span>}
                 {i.brand !== "Apple" && i.ram && <span>{i.ram} RAM</span>}
                 {i.color && <span>{i.color}</span>}
-                {i.acquisition?.acquisitionType === "consignment" && <span className="badge-loc">Bizomány</span>}
+                {acquisitionLabel(i.acquisition) && <span className="prob-pill sm">{acquisitionLabel(i.acquisition)}</span>}
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "#374151" }}>
                   <span style={{ width: 6, height: 6, borderRadius: 999, background: stockStatusColor(i.stockStatus) }} />{stockStatusLabel(i.stockStatus)}
                 </span>
@@ -540,7 +587,7 @@ export default function StockTab({
         <button type="button" className={`history-toolbar-btn${showSold ? " active" : ""}`} style={{ marginLeft: 0 }} onClick={() => setShowSold((v) => !v)}>
           Eladott telefonok <span className="cnt">{soldStock.length}</span>
         </button>
-        <button type="button" className={`history-toolbar-btn${showReserve ? " active" : ""}`} onClick={() => setShowReserve((v) => !v)}>
+        <button type="button" className={`history-toolbar-btn${showReserve ? " active" : ""}`} style={{ marginLeft: 0 }} onClick={() => setShowReserve((v) => !v)}>
           Tartalék <span className="cnt">{filteredStock.filter((i) => i.stockStatus === "tartalek").length}</span>
         </button>
         <button type="button" className="history-toolbar-btn stock-more-trigger" onClick={() => setMoreOpen((v) => !v)} title="Szűrők és listák">
@@ -556,7 +603,7 @@ export default function StockTab({
             ))}
           </div>
         </div>
-        {onScan && <button type="button" className="btn sec scan-trigger" style={{ marginLeft: "auto" }} onClick={onScan} title="QR/vonalkód szkennelése"><ScanIcon width={16} height={16} /></button>}
+        {onScan && <button type="button" className="btn sec scan-trigger" onClick={onScan} title="QR/vonalkód szkennelése"><ScanIcon width={16} height={16} /></button>}
         <div className="searchbar"><SearchIcon /><input value={search} onChange={(e) => setSearch(e.target.value)} /></div>
         <button type="button" className="btn header-add-btn" disabled={busy || addMounted} title="Új termék" onClick={openAddRow}>
           <span className="header-add-ring" /><span className="header-add-ring ring2" />
@@ -637,7 +684,10 @@ export default function StockTab({
 
       {loadingData ? <LoadingState /> : statusFiltered.length === 0 ? <EmptyState icon={PhoneCaseIcon}>Nincs termék raktáron.</EmptyState> : (
         visibleLocations.map((loc) => {
-          const items = (groupByStatus ? groupItemsByStatus : sortItems)(statusFiltered.filter((i) => i.locationId === loc.id));
+          const locItems = statusFiltered.filter((i) => i.locationId === loc.id);
+          const items = statusFilter === "szerviz"
+            ? [...locItems].sort((a, b) => (szervizRank.get(a.id) ?? 999999) - (szervizRank.get(b.id) ?? 999999))
+            : (groupByStatus ? groupItemsByStatus : sortItems)(locItems);
           if (items.length === 0) return null;
           return (
             <div key={loc.id} style={{ marginBottom: 18 }}>
@@ -645,6 +695,18 @@ export default function StockTab({
             </div>
           );
         })
+      )}
+
+      {partsProduct && (
+        <PartsAssignModal
+          product={partsProduct}
+          parts={parts}
+          usedParts={productParts[partsProduct.id] || []}
+          addPartToProduct={addPartToProduct}
+          removePartFromProduct={removePartFromProduct}
+          busy={busy}
+          onClose={() => setPartsProduct(null)}
+        />
       )}
     </div>
   );

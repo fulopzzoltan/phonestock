@@ -45,7 +45,7 @@ export default function Sidebar({
           )}
         </button>
         <button className={`navbtn ${tab === "service" ? "active" : ""}`} onClick={() => go("service")}><ServiceIcon className="nav-ic" />Szerviz</button>
-        <button className={`navbtn ${tab === "stock" || tab === "consignment" || tab === "refurb" ? "active" : ""}`} onClick={() => go("stock")}>
+        <button className={`navbtn ${tab === "stock" ? "active" : ""}`} onClick={() => go("stock")}>
           <PhoneCaseIcon className="nav-ic" />Telefonok
           {refurbCount > 0 && <span className="nav-pill-group"><span className="nav-pill amber">{refurbCount}</span></span>}
         </button>

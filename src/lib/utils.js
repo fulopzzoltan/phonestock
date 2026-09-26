@@ -254,7 +254,7 @@ export const PHONE_COLORS = [
   "Fekete", "Fehér", "Szürke", "Ezüst", "Titán", "Kék", "Sötét kék", "Zöld",
   "Menta", "Világoszöld", "Arany", "Rózsaarany", "Rózsaszín", "Piros", "Narancs", "Lila", "Egyéb",
 ];
-export const SOURCES = ["Konszignáció", "Számla"];
+export const SOURCES = ["Számla", "Konszignáció", "Bizomány"];
 export const PAYMENTS = ["Készpénz", "Kártya", "Átutalás", "Vegyes"];
 export const CATEGORIES = ["Fix", "Készlet", "Marketing", "Eszköz", "Szerviz", "Bér", "Adó", "Hitel", "Tartozékok", "Egyéb"];
 
@@ -291,7 +291,7 @@ export function cardPortion(t) {
 export const STOCK_STATUSES = [
   { key: "webshop", label: "Webshop", color: "#00C950" },
   { key: "polcon", label: "Polcon", color: "#6B7280" },
-  { key: "szerviz", label: "Szerviz", color: "#FB923C" },
+  { key: "szerviz", label: "Javítandó", color: "#FB923C" },
   { key: "lefoglalt", label: "Lefoglalt", color: "#8B5CF6" },
   { key: "tartalek", label: "Tartalék", color: "#0EA5E9" },
 ];
@@ -309,6 +309,24 @@ export const CONDITION_GRADES = [
 ];
 export const conditionGradeKey = (condition, grade) => (condition === "New" ? "New" : (grade || "A"));
 export const conditionGradeLabel = (condition, grade) => CONDITION_GRADES.find((g) => g.key === conditionGradeKey(condition, grade))?.label || "Felújított";
+
+// Beszerzés típusa — "purchase" = cégtől, számlával; "consignment" pedig magánszemélytől
+// jön, de két alesete van attól függően, hogy már kifizettük-e az eladónak: ha igen (pl.
+// átvételkor kifizetve), az "Konszignáció", ha még nem (eladáskor fizetünk), az "Bizomány".
+export const acquisitionLabel = (acquisition) => {
+  if (!acquisition) return null;
+  if (acquisition.acquisitionType === "purchase") return "Számla";
+  if (acquisition.acquisitionType === "consignment") return acquisition.payoutStatus === "kifizetve" ? "Konszignáció" : "Bizomány";
+  return null;
+};
+// Ugyanez a besorolás, de a termék létrehozásakor még nincs elmentett `product_acquisitions`
+// sor (és így `payoutStatus` sem) — csak a form-on kiválasztott acqType/payoutNow pár áll
+// rendelkezésre. A products.source mezőt ezzel töltjük fel mentéskor.
+export const acquisitionSourceLabel = (acquisitionType, payoutNow) => {
+  if (acquisitionType === "purchase") return "Számla";
+  if (acquisitionType === "consignment") return payoutNow ? "Konszignáció" : "Bizomány";
+  return null;
+};
 
 // Felvásárlás állapot-kérdései — a publikus /eladom flow és az admin levonási-szabály
 // szerkesztő is ezt használja, hogy a question_key/answer_key kulcsok ne csúszhassanak szét.
