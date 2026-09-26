@@ -95,8 +95,8 @@ function fmtTime(iso) {
 // standard messaging window) nagyjából ugyanígy működik: csak az ügyfél UTOLSÓ beérkezett
 // üzenetétől számított 24 órán belül küldhető szabad szöveg, utána csak jóváhagyott sablon.
 function windowInfo(thread) {
-  const last = thread?.messages[thread.messages.length - 1];
-  if (!last || last.direction !== "in" || !last.createdAt) return null;
+  const last = thread?.messages.findLast((m) => m.direction === "in");
+  if (!last || !last.createdAt) return null;
   const msLeft = new Date(last.createdAt).getTime() + 24 * 3600 * 1000 - Date.now();
   return { closed: msLeft <= 0, msLeft };
 }

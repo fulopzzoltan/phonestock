@@ -27,7 +27,7 @@ export default function ServiceTab({
   const [handedOverQuery, setHandedOverQuery] = useState("");
 
   function runAction(t, na) {
-    if (na.subStatus === "Átadva" && (Number(t.price) || 0) > 0) {
+    if (na.subStatus === "Átadva" && (Number(t.price) || 0) - (Number(t.depositPaid) || 0) > 0) {
       setHandoverPrompt(t);
     } else {
       onStatusChange(t.id, na.status, na.subStatus);

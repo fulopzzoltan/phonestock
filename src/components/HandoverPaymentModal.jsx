@@ -9,7 +9,8 @@ export default function HandoverPaymentModal({ ticket, onClose, onConfirm, busy 
   const [payment, setPayment] = useState("Készpénz");
   const [cash, setCash] = useState("");
   const [card, setCard] = useState("");
-  const amount = Number(ticket.price) || 0;
+  const deposit = Number(ticket.depositPaid) || 0;
+  const amount = Math.max(0, (Number(ticket.price) || 0) - deposit);
   const splitSum = (Number(cash) || 0) + (Number(card) || 0);
   const splitValid = payment !== "Vegyes" || (cash !== "" && card !== "" && splitSum === amount);
 
@@ -19,6 +20,7 @@ export default function HandoverPaymentModal({ ticket, onClose, onConfirm, busy 
         <h2>Munkalap átadása <button className="iconbtn" onClick={onClose}><CloseIcon /></button></h2>
         <p style={{ margin: "0 0 14px", fontSize: 13, color: "#6B7280" }}>
           Fizetendő összeg: <strong>{money(amount)}</strong>
+          {deposit > 0 && <> (előleg levonva: {money(deposit)})</>}
         </p>
         <div className="field">
           <label>Fizetés módja</label>
