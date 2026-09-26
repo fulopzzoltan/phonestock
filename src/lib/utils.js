@@ -283,6 +283,7 @@ export const STOCK_STATUSES = [
   { key: "polcon", label: "Polcon", color: "#6B7280" },
   { key: "szerviz", label: "Szerviz", color: "#FB923C" },
   { key: "lefoglalt", label: "Lefoglalt", color: "#8B5CF6" },
+  { key: "tartalek", label: "Tartalék", color: "#0EA5E9" },
 ];
 export const stockStatusLabel = (s) => STOCK_STATUSES.find((x) => x.key === s)?.label || s;
 export const stockStatusColor = (s) => STOCK_STATUSES.find((x) => x.key === s)?.color || "#6B7280";

@@ -313,7 +313,12 @@ tr:hover td{background:#FAFAFA}
 .svc-table th{height:auto;padding-top:12px;padding-bottom:12px;text-transform:none;font-weight:600;letter-spacing:normal}
 .svc-table .col-serial{padding-right:8px}
 .svc-table .stk-actions{justify-content:flex-end}
+.stk-table td,.stk-table th{font-size:13px;padding-left:10px;padding-right:10px}
+.stk-table th{height:auto;padding-top:12px;padding-bottom:12px;text-transform:none;font-weight:600;letter-spacing:normal}
 .svc-filter-row .searchbar,.svc-filter-row .history-toolbar-btn{border-radius:18px}
+.svc-filter-row{flex-wrap:nowrap}
+.svc-filter-row .searchbar{min-width:0;flex-shrink:1}
+.svc-filter-row .history-toolbar-btn,.svc-filter-row .header-add-btn{flex-shrink:0}
 .svc-days{font-weight:600;color:#111827;white-space:nowrap}
 .svc-days.today{color:#111827}
 .svc-days-lbl{color:#9CA3AF;font-weight:400;margin-left:3px}

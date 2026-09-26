@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   money, displayName, phoneCode, daysOnShelf, isSlowMoving, stockStatusLabel, stockStatusColor, STOCK_STATUSES,
-  conditionGradeLabel, exportToCsv, today, STORAGE_OPTIONS, RAM_OPTIONS, PHONE_COLORS, SOURCES, WARRANTIES,
-  CONDITION_GRADES, conditionGradeKey, normalizeImei,
+  conditionGradeLabel, STORAGE_OPTIONS, RAM_OPTIONS, PHONE_COLORS, SOURCES, WARRANTIES,
+  CONDITION_GRADES, conditionGradeKey,
 } from "../lib/utils";
 import { SearchIcon, PhoneCaseIcon, CartIcon, ScanIcon, PrintIcon, CloseIcon, MoreIcon, ChevronDownIcon, CheckIcon, PlusIcon } from "../components/icons";
 import { EmptyState, LoadingState } from "../components/EmptyState";
@@ -20,6 +20,13 @@ function brandRank(brand) {
 function sortItems(items) {
   const arr = [...items];
   arr.sort((a, b) => brandRank(a.brand) - brandRank(b.brand));
+  return arr;
+}
+
+const STATUS_ORDER = Object.fromEntries(STOCK_STATUSES.map((s, i) => [s.key, i]));
+function groupItemsByStatus(items) {
+  const arr = [...items];
+  arr.sort((a, b) => (STATUS_ORDER[a.stockStatus] ?? 99) - (STATUS_ORDER[b.stockStatus] ?? 99));
   return arr;
 }
 
@@ -325,8 +332,8 @@ export default function StockTab({
   soldStock, isAdmin = true, myLocationId = null, onPrintLabels, onStockStatusChange,
   customers, defaultLocId, onCreateProduct,
 }) {
-  const [condFilter, setCondFilter] = useState("all"); // all | New | Refurbished
-  const reserveLoc = locations.find((l) => l.name === "Tartalék");
+  const [statusFilter, setStatusFilter] = useState("all"); // all | STOCK_STATUSES key
+  const [groupByStatus, setGroupByStatus] = useState(false);
   const [showSold, setShowSold] = useState(false);
   const [showReserve, setShowReserve] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
@@ -387,9 +394,9 @@ export default function StockTab({
   // a másik helyszín készletét csak megtekintheti.
   const canAct = (item) => isAdmin || item.locationId === myLocationId || item.locationId === reserveLocId;
 
-  const condFiltered = useMemo(() => (
-    condFilter === "all" ? filteredStock : filteredStock.filter((i) => i.condition === condFilter)
-  ), [filteredStock, condFilter]);
+  const statusFiltered = useMemo(() => (
+    statusFilter === "all" ? filteredStock : filteredStock.filter((i) => i.stockStatus === statusFilter)
+  ), [filteredStock, statusFilter]);
 
   const visibleLocations = (effectiveLocFilter === "all" ? locations : locations.filter((l) => l.id === effectiveLocFilter || l.id === reserveLocId))
     .filter((l) => l.id !== reserveLocId);
@@ -397,8 +404,27 @@ export default function StockTab({
   function renderPhoneTable(items) {
     return (
       <ResponsiveTable
-        className="tw-apple"
-        columns={[{ key: "n", label: "Szám", className: "col-serial" }, { key: "p", label: "Termék", className: "col-device" }, { key: "s", label: "Specifikáció", className: "col-grow" }, { key: "st", label: "Állapot", className: "col-status" }, { key: "a", label: "Ár", className: "num-col" }, { key: "x", label: "" }]}
+        className="tw-apple stk-table"
+        columns={[
+          { key: "n", label: "Szám", className: "col-serial" },
+          { key: "p", label: "Termék", className: "col-device" },
+          { key: "s", label: "Specifikáció", className: "col-grow" },
+          {
+            key: "st", className: "col-status", label: (
+              <button
+                type="button"
+                onClick={() => setGroupByStatus((v) => !v)}
+                title="Rendezés állapot szerint"
+                style={{ display: "flex", alignItems: "center", gap: 3, background: "none", border: "none", padding: "0 0 0 4px", font: "inherit", fontWeight: 600, color: groupByStatus ? "#111827" : "inherit", cursor: "pointer" }}
+              >
+                Állapot
+                <ChevronDownIcon width={10} height={10} style={{ opacity: groupByStatus ? 1 : 0.45, transform: groupByStatus ? "rotate(180deg)" : "none", transition: "transform .12s" }} />
+              </button>
+            ),
+          },
+          { key: "a", label: "Ár", className: "num-col" },
+          { key: "x", label: "" },
+        ]}
         rows={items}
         rowKey={(i) => i.id}
         renderRow={(i) => i.__newRow ? (
@@ -416,7 +442,7 @@ export default function StockTab({
           />
         ) : (
           <tr key={i.id} style={{ cursor: "pointer" }} onClick={() => setProductDetailId(i.id)}>
-            <td className="mono col-serial" style={{ color: "#9CA3AF", whiteSpace: "nowrap" }}>{i.productNo ?? "—"}</td>
+            <td className="mono col-serial" style={{ color: "#9CA3AF", whiteSpace: "nowrap" }}>{phoneCode(i.productNo) || "—"}</td>
             <td style={{ whiteSpace: "nowrap" }}>
               <div className="stk-name" style={{ flexWrap: "nowrap" }}>
                 {displayName(i.brand, i.model)}
@@ -479,18 +505,6 @@ export default function StockTab({
     );
   }
 
-  function exportStock() {
-    exportToCsv(`keszlet-${today()}`, [
-      { key: "n", label: "Sorszám" }, { key: (i) => i.brand, label: "Márka" }, { key: (i) => i.model, label: "Modell" },
-      { key: (i) => (i.condition === "New" ? "Új" : "Felújított"), label: "Állapot" }, { key: (i) => i.grade || "", label: "Grade" },
-      { key: (i) => i.storage || "", label: "Tárhely" }, { key: (i) => i.ram || "", label: "RAM" }, { key: (i) => i.color || "", label: "Szín" },
-      { key: (i) => i.imei || "", label: "IMEI" }, { key: (i) => locName(i.locationId), label: "Helyszín" },
-      { key: (i) => i.costPrice ?? "", label: "Beszerzési ár" }, { key: (i) => i.salePrice ?? "", label: "Eladási ár" },
-      { key: (i) => i.warranty || "", label: "Garancia" }, { key: (i) => stockStatusLabel(i.stockStatus), label: "Raktár állapot" },
-      { key: (i) => i.source || "", label: "Forrás" }, { key: (i) => i.dateAdded || "", label: "Felvéve" },
-    ], condFiltered.map((i) => ({ ...i, n: phoneCode(i.productNo) || "" })));
-  }
-
   return (
     <div className="apple-page">
       {selectedIds.size > 0 && (
@@ -511,37 +525,28 @@ export default function StockTab({
         </div>
       )}
       <div className="filter-row svc-filter-row">
-        <div className="searchbar"><SearchIcon /><input value={search} onChange={(e) => setSearch(e.target.value)} /></div>
-        {onScan && <button type="button" className="btn sec scan-trigger" onClick={onScan} title="QR/vonalkód szkennelése"><ScanIcon width={16} height={16} /></button>}
+        <button type="button" className={`history-toolbar-btn${showSold ? " active" : ""}`} style={{ marginLeft: 0 }} onClick={() => setShowSold((v) => !v)}>
+          Eladott telefonok <span className="cnt">{soldStock.length}</span>
+        </button>
+        <button type="button" className={`history-toolbar-btn${showReserve ? " active" : ""}`} onClick={() => setShowReserve((v) => !v)}>
+          Tartalék <span className="cnt">{filteredStock.filter((i) => i.stockStatus === "tartalek").length}</span>
+        </button>
         <button type="button" className="history-toolbar-btn stock-more-trigger" onClick={() => setMoreOpen((v) => !v)} title="Szűrők és listák">
           <MoreIcon className="history-toolbar-btn-dots" width={16} height={16} />
           <span className="history-toolbar-btn-text">Szűrők</span>
         </button>
         <div className={`stock-more-wrap${moreOpen ? " open" : ""}`} ref={moreMenuRef}>
           <div className="status-seg">
-            <button className={condFilter === "all" ? "active" : ""} onClick={() => setCondFilter("all")}>
-              <span className="dot" style={{ background: "#9CA3AF" }} />Mind <span className="cnt">{filteredStock.length}</span>
-            </button>
-            <button className={condFilter === "New" ? "active" : ""} onClick={() => setCondFilter("New")}>
-              <span className="dot" style={{ background: "#22C55E" }} />Új <span className="cnt">{filteredStock.filter((i) => i.condition === "New").length}</span>
-            </button>
-            <button className={condFilter === "Refurbished" ? "active" : ""} onClick={() => setCondFilter("Refurbished")}>
-              <span className="dot" style={{ background: "#F59E0B" }} />Felújított <span className="cnt">{filteredStock.filter((i) => i.condition === "Refurbished").length}</span>
-            </button>
+            {STOCK_STATUSES.filter((s) => s.key === "szerviz" || s.key === "lefoglalt").map((s) => (
+              <button key={s.key} className={statusFilter === s.key ? "active" : ""} onClick={() => setStatusFilter((f) => (f === s.key ? "all" : s.key))}>
+                <span className="dot" style={{ background: s.color }} />{s.label} <span className="cnt">{filteredStock.filter((i) => i.stockStatus === s.key).length}</span>
+              </button>
+            ))}
           </div>
-          <button type="button" className="btn sec sm stock-more-export" onClick={exportStock} disabled={condFiltered.length === 0} title="A jelenleg szűrt lista letöltése CSV-ként">Exportálás CSV-be</button>
-          {reserveLoc && (
-            <button type="button" className={`history-toolbar-btn${showReserve ? " active" : ""}`} onClick={() => { setShowReserve((v) => !v); setMoreOpen(false); }}>
-              <PhoneCaseIcon width={14} height={14} />
-              Tartalék <span className="cnt">{condFiltered.filter((i) => i.locationId === reserveLoc.id).length}</span>
-            </button>
-          )}
-          <button type="button" className={`history-toolbar-btn${showSold ? " active" : ""}`} style={{ marginLeft: reserveLoc ? 0 : "auto" }} onClick={() => { setShowSold((v) => !v); setMoreOpen(false); }}>
-            <PhoneCaseIcon width={14} height={14} />
-            Eladott telefonok <span className="cnt">{soldStock.length}</span>
-          </button>
         </div>
-        <button type="button" className="btn header-add-btn" style={{ marginLeft: "auto" }} disabled={busy || addMounted} title="Új termék" onClick={openAddRow}>
+        {onScan && <button type="button" className="btn sec scan-trigger" style={{ marginLeft: "auto" }} onClick={onScan} title="QR/vonalkód szkennelése"><ScanIcon width={16} height={16} /></button>}
+        <div className="searchbar"><SearchIcon /><input value={search} onChange={(e) => setSearch(e.target.value)} /></div>
+        <button type="button" className="btn header-add-btn" disabled={busy || addMounted} title="Új termék" onClick={openAddRow}>
           <span className="header-add-ring" /><span className="header-add-ring ring2" />
           <PlusIcon width={16} height={16} className={addAnimPhase === "dropping" ? "svc-plus-drop" : addAnimPhase === "popping" ? "svc-plus-pop" : ""} />
         </button>
@@ -553,8 +558,8 @@ export default function StockTab({
         </div>
       )}
 
-      {reserveLoc && showReserve && (() => {
-        const items = sortItems(condFiltered.filter((i) => i.locationId === reserveLoc.id));
+      {showReserve && (() => {
+        const items = (groupByStatus ? groupItemsByStatus : sortItems)(filteredStock.filter((i) => i.stockStatus === "tartalek"));
         return (
           <div style={{ marginBottom: 16 }}>
             {items.length === 0 ? <div className="tw tw-apple"><EmptyState icon={PhoneCaseIcon}>Nincs termék a Tartalékban.</EmptyState></div> : renderPhoneTable(items)}
@@ -566,7 +571,7 @@ export default function StockTab({
         hideToggle
         open={showSold}
         onToggle={setShowSold}
-        className="tw-apple"
+        className="tw-apple stk-table"
         icon={PhoneCaseIcon}
         label="Eladott telefonok"
         items={soldStock}
@@ -618,9 +623,9 @@ export default function StockTab({
         )}
       </HistorySection>
 
-      {loadingData ? <LoadingState /> : condFiltered.length === 0 ? <EmptyState icon={PhoneCaseIcon}>Nincs termék raktáron.</EmptyState> : (
+      {loadingData ? <LoadingState /> : statusFiltered.length === 0 ? <EmptyState icon={PhoneCaseIcon}>Nincs termék raktáron.</EmptyState> : (
         visibleLocations.map((loc) => {
-          const items = sortItems(condFiltered.filter((i) => i.locationId === loc.id));
+          const items = (groupByStatus ? groupItemsByStatus : sortItems)(statusFiltered.filter((i) => i.locationId === loc.id));
           if (items.length === 0) return null;
           return (
             <div key={loc.id} style={{ marginBottom: 18 }}>
